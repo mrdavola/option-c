@@ -1,22 +1,31 @@
 "use client"
 
-import { useRef, useCallback, useState } from "react"
+import { useCallback, useState, useEffect } from "react"
 import type { StandardsGraph, NodeStatus } from "@/lib/graph-types"
+import type Sigma from "sigma"
+import type Graph from "graphology"
 import { useGraph } from "./use-graph"
 
 interface KnowledgeGraphProps {
   data: StandardsGraph
   progressMap: Map<string, NodeStatus>
   onNodeClick?: (nodeId: string) => void
+  onGraphReady?: (sigma: Sigma, graph: Graph) => void
 }
 
-export function KnowledgeGraph({ data, progressMap, onNodeClick }: KnowledgeGraphProps) {
+export function KnowledgeGraph({ data, progressMap, onNodeClick, onGraphReady }: KnowledgeGraphProps) {
   const [container, setContainer] = useState<HTMLDivElement | null>(null)
   const containerRef = useCallback((node: HTMLDivElement | null) => {
     setContainer(node)
   }, [])
 
-  useGraph(container, data, progressMap, onNodeClick)
+  const { sigma, graph } = useGraph(container, data, progressMap, onNodeClick)
+
+  useEffect(() => {
+    if (sigma.current && graph.current && onGraphReady) {
+      onGraphReady(sigma.current, graph.current)
+    }
+  }, [sigma.current, graph.current, onGraphReady])
 
   return (
     <div
