@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
-import { GeistSans } from "geist/font/sans";
+import { Nunito } from "next/font/google";
 import { GeistMono } from "geist/font/mono";
+
+const nunito = Nunito({
+  subsets: ["latin"],
+  variable: "--font-sans",
+});
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 
@@ -18,7 +23,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${GeistSans.variable} ${GeistMono.variable} dark h-full antialiased`}
+      className={`${nunito.variable} ${GeistMono.variable} dark h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <ClerkProvider>

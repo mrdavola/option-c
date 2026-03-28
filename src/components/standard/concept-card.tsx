@@ -17,9 +17,10 @@ interface Explanation {
 interface ConceptCardProps {
   standard: StandardNode
   onReady: () => void
+  interests?: string[]
 }
 
-export function ConceptCard({ standard, onReady }: ConceptCardProps) {
+export function ConceptCard({ standard, onReady, interests }: ConceptCardProps) {
   const [readingLevel, setReadingLevel] = useState<ReadingLevel>("default")
   const [explanation, setExplanation] = useState<Explanation | null>(null)
   const [loading, setLoading] = useState(true)
@@ -35,6 +36,7 @@ export function ConceptCard({ standard, onReady }: ConceptCardProps) {
           description: standard.description,
           grade: standard.grade,
           readingLevel: level,
+          interests: interests ?? [],
         }),
       })
       const data = await res.json()
@@ -48,7 +50,7 @@ export function ConceptCard({ standard, onReady }: ConceptCardProps) {
     } finally {
       setLoading(false)
     }
-  }, [standard.id, standard.description, standard.grade])
+  }, [standard.id, standard.description, standard.grade, interests])
 
   // Fetch on mount and when level changes
   useEffect(() => {

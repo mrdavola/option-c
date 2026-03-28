@@ -20,6 +20,7 @@ interface StandardPanelProps {
   open: boolean
   onClose: () => void
   onUnlock: (standardId: string) => void
+  interests?: string[]
 }
 
 export function StandardPanel({
@@ -27,6 +28,7 @@ export function StandardPanel({
   open,
   onClose,
   onUnlock,
+  interests,
 }: StandardPanelProps) {
   const [step, setStep] = useState<FlowStep>("learn")
 
@@ -50,6 +52,7 @@ export function StandardPanel({
             <ConceptCard
               standard={standard}
               onReady={() => setStep("examples")}
+              interests={interests}
             />
           )}
 

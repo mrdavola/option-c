@@ -5,7 +5,9 @@ import type { StandardsGraph, StandardNode, NodeStatus } from "@/lib/graph-types
 import { buildGraphData, getNodeColor, getNodeSize, getEdgeColor } from "@/lib/graph-utils"
 import { KnowledgeGraph } from "./knowledge-graph"
 import { ProgressOverlay } from "./progress-overlay"
-import { WelcomeOverlay } from "./welcome-overlay"
+import { TutorialHint } from "./tutorial-hint"
+import { OnboardingFlow } from "@/components/onboarding/onboarding-flow"
+import type { OnboardingData } from "@/components/onboarding/onboarding-flow"
 import { StandardPanel } from "@/components/standard/standard-panel"
 
 interface GraphPageProps {
@@ -52,7 +54,9 @@ export function GraphPage({ data }: GraphPageProps) {
   const [selectedStandard, setSelectedStandard] = useState<StandardNode | null>(null)
   const [panelOpen, setPanelOpen] = useState(false)
   const [focusNodeId, setFocusNodeId] = useState<string | null>(null)
-  const [showWelcome, setShowWelcome] = useState(true)
+  const [onboardingComplete, setOnboardingComplete] = useState(false)
+  const [studentData, setStudentData] = useState<OnboardingData | null>(null)
+  const [tutorialStep, setTutorialStep] = useState(0)
 
   // Compute counts from progressMap
   const counts = useMemo(() => {
@@ -73,9 +77,10 @@ export function GraphPage({ data }: GraphPageProps) {
       if (node) {
         setSelectedStandard(node)
         setPanelOpen(true)
+        if (tutorialStep === 0) setTutorialStep(1)
       }
     }
-  }, [data.nodes])
+  }, [data.nodes, tutorialStep])
 
   const handleUnlock = useCallback((standardId: string) => {
     setPanelOpen(false)
@@ -101,7 +106,20 @@ export function GraphPage({ data }: GraphPageProps) {
     // Focus camera on the unlocked node
     setFocusNodeId(standardId)
     setTimeout(() => setFocusNodeId(null), 2000)
-  }, [data, progressMap])
+
+    if (tutorialStep < 2) setTutorialStep(2)
+  }, [data, progressMap, tutorialStep])
+
+  if (!onboardingComplete) {
+    return (
+      <OnboardingFlow
+        onComplete={(completedData) => {
+          setStudentData(completedData)
+          setOnboardingComplete(true)
+        }}
+      />
+    )
+  }
 
   return (
     <div className="h-screen w-screen relative">
@@ -111,17 +129,17 @@ export function GraphPage({ data }: GraphPageProps) {
         focusNodeId={focusNodeId}
       />
       <ProgressOverlay total={counts.total} available={counts.available} unlocked={counts.unlocked} />
-      {showWelcome && (
-        <WelcomeOverlay
-          availableCount={counts.available}
-          onDismiss={() => setShowWelcome(false)}
-        />
-      )}
+      <TutorialHint
+        message="See that glowing dot? Click it to start."
+        visible={tutorialStep === 0}
+        position="center"
+      />
       <StandardPanel
         standard={selectedStandard}
         open={panelOpen}
         onClose={() => setPanelOpen(false)}
         onUnlock={handleUnlock}
+        interests={studentData?.interests}
       />
     </div>
   )

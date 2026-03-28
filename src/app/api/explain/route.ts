@@ -4,11 +4,12 @@ import { z } from "zod"
 export const maxDuration = 30
 
 export async function POST(req: Request) {
-  const { standardId, description, grade, readingLevel } = await req.json() as {
+  const { standardId, description, grade, readingLevel, interests } = await req.json() as {
     standardId: string
     description: string
     grade: string
     readingLevel: "simpler" | "default" | "challenge"
+    interests?: string[]
   }
 
   const levelInstruction = {
@@ -17,9 +18,15 @@ export async function POST(req: Request) {
     challenge: `Explain at a level 2 grades above ${grade === "K" ? "kindergarten" : `grade ${grade}`}. Use precise math vocabulary. Connect to broader math concepts. Give a more complex real-world application.`,
   }[readingLevel]
 
+  const interestInstruction =
+    interests && interests.length > 0
+      ? `If the student is interested in ${interests.join(", ")}, relate the explanation to those interests when possible.`
+      : ""
+
   const { text } = await generateText({
     model: "anthropic/claude-sonnet-4.5",
     system: `You explain math concepts to students. ${levelInstruction}
+${interestInstruction}
 
 Respond in EXACTLY this JSON format, no markdown, no code fences:
 {"whatIsThis":"...","commonMistakes":"...","realWorldUse":"..."}
