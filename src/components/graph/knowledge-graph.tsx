@@ -148,7 +148,7 @@ export function KnowledgeGraph({ graphData, onNodeClick, focusNodeId }: Knowledg
         }}
         nodeOpacity={0.9}
         nodeResolution={8}
-        nodeRelSize={4}
+        nodeRelSize={2}
         linkColor={(link: any) => link.color}
         linkWidth={0.1}
         linkOpacity={0.6}

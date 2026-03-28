@@ -69,9 +69,15 @@ export function ConceptCard({ standard, onReady }: ConceptCardProps) {
 
       {loading ? (
         <div className="space-y-3">
-          <div className="h-24 bg-zinc-800/50 rounded-lg animate-pulse" />
-          <div className="h-16 bg-zinc-800/50 rounded-lg animate-pulse" />
-          <div className="h-16 bg-zinc-800/50 rounded-lg animate-pulse" />
+          <div className="flex flex-col items-center justify-center py-8 gap-3">
+            <div className="w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+            <p className="text-sm text-zinc-400 animate-pulse">
+              Writing an explanation just for you...
+            </p>
+          </div>
+          <div className="h-20 bg-zinc-700/30 rounded-lg animate-pulse" />
+          <div className="h-14 bg-zinc-700/30 rounded-lg animate-pulse" />
+          <div className="h-14 bg-zinc-700/30 rounded-lg animate-pulse" />
         </div>
       ) : explanation ? (
         <div className="space-y-3">

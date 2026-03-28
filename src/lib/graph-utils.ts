@@ -46,12 +46,12 @@ export function getNodeColor(node: StandardNode, status: NodeStatus): string {
 }
 
 export function getNodeSize(status: NodeStatus, isHub: boolean): number {
-  const base = isHub ? 1.5 : 0.8
+  const base = isHub ? 0.6 : 0.3
   switch (status) {
-    case "locked": return base * 0.3
+    case "locked": return base * 0.2
     case "available": return base * 1.0
     case "in_progress": return base * 1.2
-    case "unlocked": return base * 0.9
+    case "unlocked": return base * 0.8
   }
 }
 
