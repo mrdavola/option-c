@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ClerkProvider } from "@clerk/nextjs";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -20,7 +21,9 @@ export default function RootLayout({
       className={`${GeistSans.variable} ${GeistMono.variable} dark h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        <TooltipProvider>{children}</TooltipProvider>
+        <ClerkProvider>
+          <TooltipProvider>{children}</TooltipProvider>
+        </ClerkProvider>
       </body>
     </html>
   );
