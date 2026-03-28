@@ -1,8 +1,9 @@
 "use client"
 
 import { useState, useCallback, useMemo } from "react"
-import type { StandardsGraph, NodeStatus } from "@/lib/graph-types"
+import type { StandardsGraph, StandardNode, NodeStatus } from "@/lib/graph-types"
 import { KnowledgeGraph } from "./knowledge-graph"
+import { StandardPanel } from "@/components/standard/standard-panel"
 
 interface GraphPageProps {
   data: StandardsGraph
@@ -32,12 +33,23 @@ function computeInitialProgress(data: StandardsGraph): Map<string, NodeStatus> {
 export function GraphPage({ data }: GraphPageProps) {
   const initialProgress = useMemo(() => computeInitialProgress(data), [data])
   const [progressMap, setProgressMap] = useState<Map<string, NodeStatus>>(initialProgress)
-  const [selectedNode, setSelectedNode] = useState<string | null>(null)
+  const [selectedStandard, setSelectedStandard] = useState<StandardNode | null>(null)
+  const [panelOpen, setPanelOpen] = useState(false)
 
   const handleNodeClick = useCallback((nodeId: string) => {
-    console.log("Node clicked:", nodeId)
-    setSelectedNode(nodeId)
-  }, [])
+    const status = progressMap.get(nodeId)
+    if (status === "available" || status === "in_progress") {
+      const node = data.nodes.find((n) => n.id === nodeId)
+      if (node) {
+        setSelectedStandard(node)
+        setPanelOpen(true)
+      }
+    } else if (status === "locked") {
+      console.log("Locked — need prerequisites")
+    } else if (status === "unlocked") {
+      console.log("Already unlocked")
+    }
+  }, [progressMap, data.nodes])
 
   return (
     <div className="h-screen w-screen">
@@ -45,6 +57,12 @@ export function GraphPage({ data }: GraphPageProps) {
         data={data}
         progressMap={progressMap}
         onNodeClick={handleNodeClick}
+      />
+      <StandardPanel
+        standard={selectedStandard}
+        open={panelOpen}
+        onClose={() => setPanelOpen(false)}
+        onUnlock={(id) => { /* Task 9 will wire this */ console.log("Unlock:", id) }}
       />
     </div>
   )
