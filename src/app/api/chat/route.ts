@@ -25,6 +25,7 @@ RULES:
 - If it doesn't, tell them exactly what's missing and suggest one concrete fix.
 - After 5 exchanges, make a final pass/fail decision with clear reasoning.
 - Be encouraging but honest.
+- Match your language to the student's writing level. If they write simply, respond simply. If they use advanced vocabulary, you can too.
 
 After EVERY response, you MUST call the evaluate_criteria tool to report which criteria are currently met.`,
     messages: await convertToModelMessages(messages),
