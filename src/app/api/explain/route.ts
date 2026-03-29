@@ -15,12 +15,14 @@ export async function POST(req: Request) {
   const levelInstruction = {
     simpler: `Explain at a 2nd-grade reading level. Use very short sentences. Simple words only. Use "you" a lot. Give a concrete everyday example a young kid would understand.`,
     default: `Explain at a ${grade === "K" ? "kindergarten" : `grade ${grade}`} reading level. Use age-appropriate language. Be clear and direct. Give a relatable real-world example.`,
-    challenge: `Explain at a level 2 grades above ${grade === "K" ? "kindergarten" : `grade ${grade}`}. Use precise math vocabulary. Connect to broader math concepts. Give a more complex real-world application.`,
+    challenge: `Explain at a ${grade === "K" ? "kindergarten" : `grade ${grade}`} reading level. The student wants this explained through their personal interests. Make EVERY example and explanation connect directly to their interests. Make it feel personal — like this concept was made for them.`,
   }[readingLevel]
 
   const interestInstruction =
     interests && interests.length > 0
-      ? `If the student is interested in ${interests.join(", ")}, relate the explanation to those interests when possible.`
+      ? readingLevel === "challenge"
+        ? `The student is into ${interests.join(", ")}. EVERY example must use one of these interests. For "What is this?" — explain through their interests. For "Common mistakes" — frame it in terms of their interests. For "Where you'll use this" — show how it appears in ${interests[0]} specifically.`
+        : `If the student is interested in ${interests.join(", ")}, relate the explanation to those interests when possible.`
       : ""
 
   const { text } = await generateText({

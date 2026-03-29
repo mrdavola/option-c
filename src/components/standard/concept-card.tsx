@@ -174,20 +174,12 @@ export function ConceptCard({ standard, onReady, interests, readOnly }: ConceptC
       {/* Reading level adjustment — contextual buttons */}
       <div className="flex flex-col items-center gap-2">
         {readingLevel === "default" && (
-          <div className="flex gap-2">
-            <button
-              onClick={() => handleLevelChange("simpler")}
-              className="px-4 py-2 text-xs rounded-full border border-blue-500/30 text-blue-400 hover:bg-blue-500/10 transition-colors"
-            >
-              I don't get it — say it simpler
-            </button>
-            <button
-              onClick={() => handleLevelChange("challenge")}
-              className="px-4 py-2 text-xs rounded-full border border-zinc-700 text-zinc-500 hover:text-zinc-300 hover:border-zinc-500 transition-colors"
-            >
-              Too easy
-            </button>
-          </div>
+          <button
+            onClick={() => handleLevelChange("simpler")}
+            className="px-4 py-2 text-xs rounded-full border border-blue-500/30 text-blue-400 hover:bg-blue-500/10 transition-colors"
+          >
+            I don't get it — say it simpler
+          </button>
         )}
         {readingLevel === "simpler" && (
           <div className="flex gap-2">
@@ -199,13 +191,21 @@ export function ConceptCard({ standard, onReady, interests, readOnly }: ConceptC
             </button>
           </div>
         )}
+        {readingLevel !== "challenge" && interests && interests.length > 0 && (
+          <button
+            onClick={() => handleLevelChange("challenge")}
+            className="px-4 py-2 text-xs rounded-full border border-dashed border-zinc-700 text-zinc-500 hover:text-zinc-300 hover:border-zinc-500 transition-colors"
+          >
+            Explain it using my interests ({interests.join(", ")})
+          </button>
+        )}
         {readingLevel === "challenge" && (
           <div className="flex gap-2">
             <button
               onClick={() => handleLevelChange("default")}
               className="px-4 py-2 text-xs rounded-full border border-zinc-700 text-zinc-500 hover:text-zinc-300 hover:border-zinc-500 transition-colors"
             >
-              Whoa, too much — go back
+              Show me the regular version
             </button>
           </div>
         )}
