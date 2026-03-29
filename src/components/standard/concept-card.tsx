@@ -14,6 +14,45 @@ interface Explanation {
   realWorldUse: string
 }
 
+function ConceptIllustration({ description, grade }: { description: string; grade: string }) {
+  const [svg, setSvg] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    setLoading(true)
+    fetch("/api/illustrate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ description, grade }),
+    })
+      .then(res => res.text())
+      .then(text => {
+        if (text.includes("<svg")) setSvg(text)
+        else setSvg(null)
+      })
+      .catch(() => setSvg(null))
+      .finally(() => setLoading(false))
+  }, [description, grade])
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-6 gap-2 bg-zinc-800/30 rounded-lg">
+        <div className="w-5 h-5 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
+        <p className="text-xs text-zinc-500">Drawing a picture...</p>
+      </div>
+    )
+  }
+
+  if (!svg) return null
+
+  return (
+    <div
+      className="rounded-lg overflow-hidden border border-zinc-800"
+      dangerouslySetInnerHTML={{ __html: svg }}
+    />
+  )
+}
+
 interface ConceptCardProps {
   standard: StandardNode
   onReady: () => void
@@ -23,6 +62,7 @@ interface ConceptCardProps {
 
 export function ConceptCard({ standard, onReady, interests, readOnly }: ConceptCardProps) {
   const [readingLevel, setReadingLevel] = useState<ReadingLevel>("default")
+  const [showIllustration, setShowIllustration] = useState(false)
   const [explanation, setExplanation] = useState<Explanation | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -118,6 +158,18 @@ export function ConceptCard({ standard, onReady, interests, readOnly }: ConceptC
           </Card>
         </div>
       ) : null}
+
+      {/* Show me — stick figure illustration */}
+      {!showIllustration ? (
+        <button
+          onClick={() => setShowIllustration(true)}
+          className="w-full py-3 text-sm rounded-lg border border-dashed border-zinc-700 text-zinc-400 hover:text-zinc-200 hover:border-zinc-500 transition-colors flex items-center justify-center gap-2"
+        >
+          <span>✏️</span> Show me what this looks like
+        </button>
+      ) : (
+        <ConceptIllustration description={standard.description} grade={standard.grade} />
+      )}
 
       {/* Reading level adjustment — contextual buttons */}
       <div className="flex flex-col items-center gap-2">
