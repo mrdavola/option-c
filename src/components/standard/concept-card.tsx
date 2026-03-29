@@ -119,38 +119,44 @@ export function ConceptCard({ standard, onReady, interests, readOnly }: ConceptC
         </div>
       ) : null}
 
-      {/* Reading level adjustment */}
-      <div className="flex items-center justify-center gap-2">
-        <button
-          onClick={() => handleLevelChange("simpler")}
-          className={`px-3 py-1.5 text-xs rounded-full border transition-colors ${
-            readingLevel === "simpler"
-              ? "bg-blue-500/20 border-blue-500/40 text-blue-400"
-              : "border-zinc-700 text-zinc-500 hover:text-zinc-300 hover:border-zinc-500"
-          }`}
-        >
-          Simpler
-        </button>
-        <button
-          onClick={() => handleLevelChange("default")}
-          className={`px-3 py-1.5 text-xs rounded-full border transition-colors ${
-            readingLevel === "default"
-              ? "bg-zinc-500/20 border-zinc-500/40 text-zinc-300"
-              : "border-zinc-700 text-zinc-500 hover:text-zinc-300 hover:border-zinc-500"
-          }`}
-        >
-          Just right
-        </button>
-        <button
-          onClick={() => handleLevelChange("challenge")}
-          className={`px-3 py-1.5 text-xs rounded-full border transition-colors ${
-            readingLevel === "challenge"
-              ? "bg-amber-500/20 border-amber-500/40 text-amber-400"
-              : "border-zinc-700 text-zinc-500 hover:text-zinc-300 hover:border-zinc-500"
-          }`}
-        >
-          Challenge me
-        </button>
+      {/* Reading level adjustment — contextual buttons */}
+      <div className="flex flex-col items-center gap-2">
+        {readingLevel === "default" && (
+          <div className="flex gap-2">
+            <button
+              onClick={() => handleLevelChange("simpler")}
+              className="px-4 py-2 text-xs rounded-full border border-blue-500/30 text-blue-400 hover:bg-blue-500/10 transition-colors"
+            >
+              I don't get it — say it simpler
+            </button>
+            <button
+              onClick={() => handleLevelChange("challenge")}
+              className="px-4 py-2 text-xs rounded-full border border-zinc-700 text-zinc-500 hover:text-zinc-300 hover:border-zinc-500 transition-colors"
+            >
+              Too easy
+            </button>
+          </div>
+        )}
+        {readingLevel === "simpler" && (
+          <div className="flex gap-2">
+            <button
+              onClick={() => handleLevelChange("default")}
+              className="px-4 py-2 text-xs rounded-full border border-zinc-700 text-zinc-500 hover:text-zinc-300 hover:border-zinc-500 transition-colors"
+            >
+              OK I think I get it — show me the normal version
+            </button>
+          </div>
+        )}
+        {readingLevel === "challenge" && (
+          <div className="flex gap-2">
+            <button
+              onClick={() => handleLevelChange("default")}
+              className="px-4 py-2 text-xs rounded-full border border-zinc-700 text-zinc-500 hover:text-zinc-300 hover:border-zinc-500 transition-colors"
+            >
+              Whoa, too much — go back
+            </button>
+          </div>
+        )}
       </div>
 
       {!readOnly && (
