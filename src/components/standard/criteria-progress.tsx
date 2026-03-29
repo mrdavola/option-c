@@ -13,9 +13,9 @@ interface CriteriaProgressProps {
 }
 
 const criteriaLabels = [
-  { key: "playable" as const, label: "Others can play it" },
-  { key: "authentic" as const, label: "Real-world math" },
-  { key: "essential" as const, label: "Math helps you win" },
+  { key: "playable" as const, label: "Your game makes sense" },
+  { key: "authentic" as const, label: "The math is real" },
+  { key: "essential" as const, label: "You need math to win" },
 ]
 
 export function CriteriaProgress({ criteria }: CriteriaProgressProps) {
@@ -47,7 +47,7 @@ export function CriteriaProgress({ criteria }: CriteriaProgressProps) {
           )
         })}
       </div>
-      <p className="text-xs text-muted-foreground">{metCount}/3 criteria met</p>
+      <p className="text-xs text-muted-foreground">{metCount}/3 — {metCount === 3 ? "You did it!" : metCount === 0 ? "Tell me your game idea" : "Keep going!"}</p>
     </div>
   )
 }
