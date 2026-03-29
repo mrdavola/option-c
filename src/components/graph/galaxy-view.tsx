@@ -179,7 +179,7 @@ export function GalaxyView({ galaxyData, onPlanetClick, currentPlanetId, initial
     const group = new THREE.Group()
 
     // Main planet sphere
-    const geometry = new THREE.SphereGeometry(Math.sqrt(node.val) * 2, 16, 12)
+    const geometry = new THREE.SphereGeometry(Math.sqrt(node.val) * 1.2, 16, 12)
     const material = new THREE.MeshLambertMaterial({
       color: node.color,
       emissive: node.color,
@@ -193,8 +193,8 @@ export function GalaxyView({ galaxyData, onPlanetClick, currentPlanetId, initial
     // Pulse ring for completed planets
     if (node.isCompleted) {
       const ringGeom = new THREE.RingGeometry(
-        Math.sqrt(node.val) * 2.5,
-        Math.sqrt(node.val) * 3,
+        Math.sqrt(node.val) * 1.6,
+        Math.sqrt(node.val) * 1.9,
         32
       )
       const ringMat = new THREE.MeshBasicMaterial({
@@ -208,26 +208,43 @@ export function GalaxyView({ galaxyData, onPlanetClick, currentPlanetId, initial
       group.add(ring)
     }
 
-    // Text label
+    // Text label — truncate long names
     const canvas = document.createElement("canvas")
     const ctx = canvas.getContext("2d")!
-    canvas.width = 256
-    canvas.height = 64
-    ctx.fillStyle = "transparent"
-    ctx.fillRect(0, 0, 256, 64)
-    ctx.font = "bold 20px sans-serif"
+    canvas.width = 512
+    canvas.height = 80
+    ctx.clearRect(0, 0, 512, 80)
+
+    // Shorten long domain names
+    let displayName = node.name
+    const shortNames: Record<string, string> = {
+      "Operations & Algebraic Thinking": "Algebra",
+      "Number & Operations In Base Ten": "Base Ten",
+      "Number & Operations-Fractions": "Fractions",
+      "Number & Operations - Fractions": "Fractions",
+      "Counting & Cardinality": "Counting",
+      "Measurement & Data": "Measurement",
+      "Ratios & Proportional Relationships": "Ratios",
+      "The Number System": "Numbers",
+      "Expressions & Equations": "Equations",
+      "Statistics & Probability": "Statistics",
+    }
+    if (shortNames[displayName]) displayName = shortNames[displayName]
+    if (displayName.length > 16) displayName = displayName.slice(0, 15) + "..."
+
+    ctx.font = "bold 28px sans-serif"
     ctx.fillStyle = "white"
     ctx.textAlign = "center"
-    ctx.fillText(node.name, 128, 24)
-    ctx.font = "14px sans-serif"
-    ctx.fillStyle = "rgba(255,255,255,0.6)"
-    ctx.fillText(`Grade ${node.grade}`, 128, 46)
+    ctx.fillText(displayName, 256, 32)
+    ctx.font = "18px sans-serif"
+    ctx.fillStyle = "rgba(255,255,255,0.5)"
+    ctx.fillText(`Grade ${node.grade}`, 256, 58)
 
     const texture = new THREE.CanvasTexture(canvas)
     const spriteMat = new THREE.SpriteMaterial({ map: texture, transparent: true })
     const sprite = new THREE.Sprite(spriteMat)
-    sprite.scale.set(20, 5, 1)
-    sprite.position.set(0, Math.sqrt(node.val) * 3 + 3, 0)
+    sprite.scale.set(18, 3.5, 1)
+    sprite.position.set(0, Math.sqrt(node.val) * 1.8 + 3, 0)
     group.add(sprite)
 
     return group
