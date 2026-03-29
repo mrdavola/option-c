@@ -317,14 +317,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                 interests: [...prev.interests, ...newInterests.filter(i => !prev.interests.includes(i))],
               }))
             }}
-            onNext={() => setStep(3)}
-          />
-        </StepWrapper>
-        <StepWrapper visible={step === 3}>
-          <WelcomeStep
-            name={data.name}
-            conceptCount={42}
-            onGo={() => onComplete(data)}
+            onNext={() => onComplete(data)}
           />
         </StepWrapper>
       </div>
