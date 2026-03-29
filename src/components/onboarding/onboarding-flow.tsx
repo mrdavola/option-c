@@ -140,12 +140,35 @@ function GradeStep({
 function InterestsStep({
   selected,
   onToggle,
+  onAddCustom,
   onNext,
 }: {
   selected: string[]
   onToggle: (interest: string) => void
+  onAddCustom: (interests: string[]) => void
   onNext: () => void
 }) {
+  const [showCustom, setShowCustom] = useState(false)
+  const [customText, setCustomText] = useState("")
+
+  const handleCustomSubmit = () => {
+    if (!customText.trim()) return
+    // Parse by commas, "and", or just whitespace-separated phrases
+    const parsed = customText
+      .split(/[,\n]+/)
+      .map(s => s.replace(/^\s*(and|&)\s*/i, "").trim())
+      .filter(s => s.length > 0 && s.length < 30)
+      .map(s => s.charAt(0).toUpperCase() + s.slice(1))
+    if (parsed.length > 0) {
+      onAddCustom(parsed)
+      setCustomText("")
+      setShowCustom(false)
+    }
+  }
+
+  // Separate preset vs custom interests for display
+  const customSelected = selected.filter(s => !INTERESTS.includes(s))
+
   return (
     <div className="flex flex-col items-center gap-6">
       <h1 className="text-3xl font-bold text-white text-center">
@@ -168,7 +191,45 @@ function InterestsStep({
             </button>
           )
         })}
+        {customSelected.map((interest) => (
+          <button
+            key={interest}
+            onClick={() => onToggle(interest)}
+            className="rounded-full px-4 py-2 text-sm font-medium bg-blue-500/20 border-blue-500/50 text-blue-300 border transition-all duration-200"
+          >
+            {interest} ×
+          </button>
+        ))}
+        {!showCustom && (
+          <button
+            onClick={() => setShowCustom(true)}
+            className="rounded-full px-4 py-2 text-sm font-medium border border-dashed border-zinc-600 text-zinc-500 hover:text-zinc-300 hover:border-zinc-400 transition-all duration-200"
+          >
+            + Other...
+          </button>
+        )}
       </div>
+      {showCustom && (
+        <form
+          onSubmit={(e) => { e.preventDefault(); handleCustomSubmit() }}
+          className="w-full flex gap-2"
+        >
+          <input
+            autoFocus
+            value={customText}
+            onChange={(e) => setCustomText(e.target.value)}
+            placeholder="skateboarding, Roblox, dinosaurs..."
+            className="flex-1 bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+          />
+          <button
+            type="submit"
+            disabled={!customText.trim()}
+            className="bg-blue-500 hover:bg-blue-600 disabled:opacity-30 text-white rounded-xl px-4 py-2.5 text-sm transition-colors"
+          >
+            Add
+          </button>
+        </form>
+      )}
       <Button
         onClick={onNext}
         size="lg"
@@ -250,6 +311,12 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
           <InterestsStep
             selected={data.interests}
             onToggle={toggleInterest}
+            onAddCustom={(newInterests) => {
+              setData((prev) => ({
+                ...prev,
+                interests: [...prev.interests, ...newInterests.filter(i => !prev.interests.includes(i))],
+              }))
+            }}
             onNext={() => setStep(3)}
           />
         </StepWrapper>
