@@ -53,6 +53,51 @@ function ConceptIllustration({ description, grade }: { description: string; grad
   )
 }
 
+function InterestInput({ onSubmit }: { onSubmit: (interest: string) => void }) {
+  const [value, setValue] = useState("")
+  const [expanded, setExpanded] = useState(false)
+
+  if (!expanded) {
+    return (
+      <button
+        onClick={() => setExpanded(true)}
+        className="px-4 py-2 text-xs rounded-full border border-dashed border-zinc-700 text-zinc-500 hover:text-zinc-300 hover:border-zinc-500 transition-colors"
+      >
+        Explain it using something I'm into...
+      </button>
+    )
+  }
+
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault()
+        if (value.trim()) {
+          onSubmit(value.trim())
+          setValue("")
+          setExpanded(false)
+        }
+      }}
+      className="flex gap-2 w-full"
+    >
+      <input
+        autoFocus
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        placeholder="basketball, Roblox, cooking..."
+        className="flex-1 bg-zinc-800 border border-zinc-700 rounded-full px-4 py-2 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-blue-500/50"
+      />
+      <button
+        type="submit"
+        disabled={!value.trim()}
+        className="px-3 py-2 text-xs rounded-full bg-blue-500/20 border border-blue-500/30 text-blue-400 hover:bg-blue-500/30 disabled:opacity-30 transition-colors"
+      >
+        Go
+      </button>
+    </form>
+  )
+}
+
 interface ConceptCardProps {
   standard: StandardNode
   onReady: () => void
@@ -65,6 +110,7 @@ export function ConceptCard({ standard, onReady, interests, readOnly }: ConceptC
   const [showIllustration, setShowIllustration] = useState(false)
   const [explanation, setExplanation] = useState<Explanation | null>(null)
   const [loading, setLoading] = useState(true)
+  const [customInterest, setCustomInterest] = useState<string | null>(null)
 
   const fetchExplanation = useCallback(async (level: ReadingLevel) => {
     setLoading(true)
@@ -77,7 +123,7 @@ export function ConceptCard({ standard, onReady, interests, readOnly }: ConceptC
           description: standard.description,
           grade: standard.grade,
           readingLevel: level,
-          interests: interests ?? [],
+          interests: customInterest ? [customInterest] : (interests ?? []),
         }),
       })
       const data = await res.json()
@@ -91,7 +137,7 @@ export function ConceptCard({ standard, onReady, interests, readOnly }: ConceptC
     } finally {
       setLoading(false)
     }
-  }, [standard.id, standard.description, standard.grade, interests])
+  }, [standard.id, standard.description, standard.grade, interests, customInterest])
 
   // Fetch on mount and when level changes
   useEffect(() => {
@@ -191,22 +237,30 @@ export function ConceptCard({ standard, onReady, interests, readOnly }: ConceptC
             </button>
           </div>
         )}
-        {readingLevel !== "challenge" && interests && interests.length > 0 && (
-          <button
-            onClick={() => handleLevelChange("challenge")}
-            className="px-4 py-2 text-xs rounded-full border border-dashed border-zinc-700 text-zinc-500 hover:text-zinc-300 hover:border-zinc-500 transition-colors"
-          >
-            Explain it using my interests ({interests.join(", ")})
-          </button>
+        {readingLevel !== "challenge" && (
+          <InterestInput
+            onSubmit={(interest) => {
+              setCustomInterest(interest)
+              handleLevelChange("challenge")
+            }}
+          />
         )}
         {readingLevel === "challenge" && (
-          <div className="flex gap-2">
+          <div className="flex flex-col items-center gap-2">
             <button
-              onClick={() => handleLevelChange("default")}
+              onClick={() => { setCustomInterest(null); handleLevelChange("default") }}
               className="px-4 py-2 text-xs rounded-full border border-zinc-700 text-zinc-500 hover:text-zinc-300 hover:border-zinc-500 transition-colors"
             >
               Show me the regular version
             </button>
+            <InterestInput
+              onSubmit={(interest) => {
+                setCustomInterest(interest)
+                // Re-trigger fetch by toggling level
+                setReadingLevel("default")
+                setTimeout(() => setReadingLevel("challenge"), 50)
+              }}
+            />
           </div>
         )}
       </div>
