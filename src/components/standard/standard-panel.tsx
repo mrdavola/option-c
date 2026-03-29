@@ -45,7 +45,7 @@ export function StandardPanel({
     <Sheet open={open} onOpenChange={(isOpen) => { if (!isOpen) onClose() }}>
       <SheetContent
         side="right"
-        className="w-full sm:max-w-[640px] lg:max-w-[720px] overflow-y-auto"
+        className="w-full sm:w-[50vw] sm:max-w-[720px] overflow-y-auto"
       >
         <SheetHeader>
           <SheetTitle className="text-lg">{standard.description}</SheetTitle>
