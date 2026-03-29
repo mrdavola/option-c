@@ -50,6 +50,21 @@ export function StandardPanel({
         </SheetHeader>
 
         <div className="px-4 pb-4">
+          {step !== "learn" && nodeStatus !== "locked" && nodeStatus !== "unlocked" && (
+            <button
+              onClick={() => {
+                if (step === "examples") setStep("learn")
+                else if (step === "earn") setStep("examples")
+              }}
+              className="flex items-center gap-1 text-sm text-zinc-400 hover:text-zinc-200 mb-3 transition-colors"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M10 12L6 8l4-4" />
+              </svg>
+              Back
+            </button>
+          )}
+
           {nodeStatus === "locked" ? (
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-amber-400 text-sm">
