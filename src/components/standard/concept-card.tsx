@@ -18,9 +18,10 @@ interface ConceptCardProps {
   standard: StandardNode
   onReady: () => void
   interests?: string[]
+  readOnly?: boolean
 }
 
-export function ConceptCard({ standard, onReady, interests }: ConceptCardProps) {
+export function ConceptCard({ standard, onReady, interests, readOnly }: ConceptCardProps) {
   const [readingLevel, setReadingLevel] = useState<ReadingLevel>("default")
   const [explanation, setExplanation] = useState<Explanation | null>(null)
   const [loading, setLoading] = useState(true)
@@ -152,9 +153,11 @@ export function ConceptCard({ standard, onReady, interests }: ConceptCardProps) 
         </button>
       </div>
 
-      <Button onClick={onReady} size="lg" className="w-full">
-        Next →
-      </Button>
+      {!readOnly && (
+        <Button onClick={onReady} size="lg" className="w-full">
+          Next →
+        </Button>
+      )}
     </div>
   )
 }

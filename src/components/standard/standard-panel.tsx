@@ -21,6 +21,7 @@ interface StandardPanelProps {
   onClose: () => void
   onUnlock: (standardId: string) => void
   interests?: string[]
+  nodeStatus?: "locked" | "available" | "in_progress" | "unlocked"
 }
 
 export function StandardPanel({
@@ -29,6 +30,7 @@ export function StandardPanel({
   onClose,
   onUnlock,
   interests,
+  nodeStatus,
 }: StandardPanelProps) {
   const [step, setStep] = useState<FlowStep>("learn")
 
@@ -48,29 +50,59 @@ export function StandardPanel({
         </SheetHeader>
 
         <div className="px-4 pb-4">
-          {step === "learn" && (
-            <ConceptCard
-              standard={standard}
-              onReady={() => setStep("examples")}
-              interests={interests}
-            />
-          )}
+          {nodeStatus === "locked" ? (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-amber-400 text-sm">
+                <span>🔒</span>
+                <span>This concept is locked — complete its prerequisites first.</span>
+              </div>
+              <ConceptCard
+                standard={standard}
+                onReady={() => {}}
+                interests={interests}
+                readOnly
+              />
+            </div>
+          ) : nodeStatus === "unlocked" ? (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-emerald-400 text-sm">
+                <span>✓</span>
+                <span>You've already unlocked this concept!</span>
+              </div>
+              <ConceptCard
+                standard={standard}
+                onReady={() => {}}
+                interests={interests}
+                readOnly
+              />
+            </div>
+          ) : (
+            <>
+              {step === "learn" && (
+                <ConceptCard
+                  standard={standard}
+                  onReady={() => setStep("examples")}
+                  interests={interests}
+                />
+              )}
 
-          {step === "examples" && (
-            <ExamplesCard
-              standardDescription={standard.description}
-              onReady={() => setStep("earn")}
-            />
-          )}
+              {step === "examples" && (
+                <ExamplesCard
+                  standardDescription={standard.description}
+                  onReady={() => setStep("earn")}
+                />
+              )}
 
-          {step === "earn" && (
-            <GenieChat
-              standardDescription={standard.description}
-              onUnlock={() => {
-                setStep("unlocked")
-                onUnlock(standard.id)
-              }}
-            />
+              {step === "earn" && (
+                <GenieChat
+                  standardDescription={standard.description}
+                  onUnlock={() => {
+                    setStep("unlocked")
+                    onUnlock(standard.id)
+                  }}
+                />
+              )}
+            </>
           )}
         </div>
       </SheetContent>

@@ -4,16 +4,14 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import type { NodeStatus } from "@/lib/graph-types"
 import type { GraphData, GraphNode } from "@/lib/graph-utils"
 
-// We need dynamic import for react-force-graph-3d (requires browser/WebGL)
-let ForceGraph3DComponent: any = null
-
 interface KnowledgeGraphProps {
   graphData: GraphData
   onNodeClick?: (nodeId: string, status: NodeStatus) => void
   focusNodeId?: string | null
+  initialGrade?: string | null
 }
 
-export function KnowledgeGraph({ graphData, onNodeClick, focusNodeId }: KnowledgeGraphProps) {
+export function KnowledgeGraph({ graphData, onNodeClick, focusNodeId, initialGrade }: KnowledgeGraphProps) {
   const fgRef = useRef<any>(null)
   const [ForceGraph3D, setForceGraph3D] = useState<any>(null)
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
@@ -74,33 +72,82 @@ export function KnowledgeGraph({ graphData, onNodeClick, focusNodeId }: Knowledg
     }
   }, [focusNodeId, graphData.nodes])
 
-  // Zoom to fit available nodes on first load
+  // Zoom to grade-relevant available nodes on first load
   const hasZoomedRef = useRef(false)
   useEffect(() => {
     if (!fgRef.current || hasZoomedRef.current || !ForceGraph3D) return
-    // Wait for layout to stabilize
     const timer = setTimeout(() => {
       if (fgRef.current && !hasZoomedRef.current) {
         hasZoomedRef.current = true
-        // Find available nodes and zoom to their center
+        // Prefer nodes matching student's grade, fall back to all available
         const available = graphData.nodes.filter(n => n.status === "available")
-        if (available.length > 0) {
-          const withPos = available.filter((n: any) => n.x !== undefined)
-          if (withPos.length > 0) {
-            const cx = withPos.reduce((s: number, n: any) => s + n.x, 0) / withPos.length
-            const cy = withPos.reduce((s: number, n: any) => s + n.y, 0) / withPos.length
-            const cz = withPos.reduce((s: number, n: any) => s + n.z, 0) / withPos.length
-            fgRef.current.cameraPosition(
-              { x: cx, y: cy, z: cz + 200 },
-              { x: cx, y: cy, z: cz },
-              2000
-            )
-          }
+        const gradeMatches = initialGrade
+          ? available.filter(n => n.grade === initialGrade)
+          : []
+        const targets = gradeMatches.length > 0 ? gradeMatches : available
+        const withPos = targets.filter((n: any) => n.x !== undefined)
+        if (withPos.length > 0) {
+          const cx = withPos.reduce((s: number, n: any) => s + n.x, 0) / withPos.length
+          const cy = withPos.reduce((s: number, n: any) => s + n.y, 0) / withPos.length
+          const cz = withPos.reduce((s: number, n: any) => s + n.z, 0) / withPos.length
+          fgRef.current.cameraPosition(
+            { x: cx, y: cy, z: cz + 150 },
+            { x: cx, y: cy, z: cz },
+            2000
+          )
         }
       }
     }, 2000)
     return () => clearTimeout(timer)
-  }, [ForceGraph3D, graphData.nodes])
+  }, [ForceGraph3D, graphData.nodes, initialGrade])
+
+  // WASD / Arrow key camera controls
+  useEffect(() => {
+    if (!fgRef.current) return
+    const speed = 3
+    const keys = new Set<string>()
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const key = e.key.toLowerCase()
+      if (["w", "a", "s", "d", "arrowup", "arrowdown", "arrowleft", "arrowright", "q", "e"].includes(key)) {
+        e.preventDefault()
+        keys.add(key)
+        orbitingRef.current = false
+      }
+    }
+    const handleKeyUp = (e: KeyboardEvent) => {
+      keys.delete(e.key.toLowerCase())
+    }
+
+    let animFrame: number
+    const moveCamera = () => {
+      if (keys.size > 0 && fgRef.current) {
+        const pos = fgRef.current.cameraPosition()
+        let dx = 0, dy = 0, dz = 0
+        if (keys.has("w") || keys.has("arrowup")) dz -= speed
+        if (keys.has("s") || keys.has("arrowdown")) dz += speed
+        if (keys.has("a") || keys.has("arrowleft")) dx -= speed
+        if (keys.has("d") || keys.has("arrowright")) dx += speed
+        if (keys.has("q")) dy += speed
+        if (keys.has("e")) dy -= speed
+        fgRef.current.cameraPosition({
+          x: pos.x + dx,
+          y: pos.y + dy,
+          z: pos.z + dz,
+        })
+      }
+      animFrame = requestAnimationFrame(moveCamera)
+    }
+    animFrame = requestAnimationFrame(moveCamera)
+
+    window.addEventListener("keydown", handleKeyDown)
+    window.addEventListener("keyup", handleKeyUp)
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown)
+      window.removeEventListener("keyup", handleKeyUp)
+      cancelAnimationFrame(animFrame)
+    }
+  }, [ForceGraph3D])
 
   const handleNodeClick = useCallback((node: GraphNode) => {
     orbitingRef.current = false
@@ -143,7 +190,7 @@ export function KnowledgeGraph({ graphData, onNodeClick, focusNodeId }: Knowledg
         nodeColor={(node: GraphNode) => node.color}
         nodeVal={(node: GraphNode) => node.val}
         nodeLabel={(node: GraphNode) => {
-          if (node.status === "locked") return ""
+          if (node.status === "locked") return `🔒 ${node.name}`
           return `${node.name}\n${node.id}`
         }}
         nodeOpacity={0.9}

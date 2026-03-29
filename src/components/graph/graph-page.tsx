@@ -72,13 +72,17 @@ export function GraphPage({ data }: GraphPageProps) {
   const graphData = useMemo(() => buildGraphData(data, progressMap), [data, progressMap])
 
   const handleNodeClick = useCallback((nodeId: string, status: NodeStatus) => {
+    const node = data.nodes.find((n) => n.id === nodeId)
+    if (!node) return
+
     if (status === "available" || status === "in_progress") {
-      const node = data.nodes.find((n) => n.id === nodeId)
-      if (node) {
-        setSelectedStandard(node)
-        setPanelOpen(true)
-        if (tutorialStep === 0) setTutorialStep(1)
-      }
+      setSelectedStandard(node)
+      setPanelOpen(true)
+      if (tutorialStep === 0) setTutorialStep(1)
+    } else if (status === "locked" || status === "unlocked") {
+      // Locked and unlocked nodes open in read-only mode
+      setSelectedStandard(node)
+      setPanelOpen(true)
     }
   }, [data.nodes, tutorialStep])
 
@@ -127,6 +131,7 @@ export function GraphPage({ data }: GraphPageProps) {
         graphData={graphData}
         onNodeClick={handleNodeClick}
         focusNodeId={focusNodeId}
+        initialGrade={studentData?.grade ?? null}
       />
       <ProgressOverlay total={counts.total} available={counts.available} unlocked={counts.unlocked} />
       <TutorialHint
@@ -140,6 +145,7 @@ export function GraphPage({ data }: GraphPageProps) {
         onClose={() => setPanelOpen(false)}
         onUnlock={handleUnlock}
         interests={studentData?.interests}
+        nodeStatus={selectedStandard ? progressMap.get(selectedStandard.id) : undefined}
       />
     </div>
   )
