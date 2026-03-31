@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { ClerkProvider } from "@clerk/nextjs";
 import { Nunito } from "next/font/google";
 import { GeistMono } from "geist/font/mono";
 
@@ -26,9 +25,7 @@ export default function RootLayout({
       className={`${nunito.variable} ${GeistMono.variable} dark h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        <ClerkProvider>
-          <TooltipProvider>{children}</TooltipProvider>
-        </ClerkProvider>
+        <TooltipProvider>{children}</TooltipProvider>
       </body>
     </html>
   );
