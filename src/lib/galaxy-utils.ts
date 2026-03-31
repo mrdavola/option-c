@@ -144,12 +144,14 @@ export function buildBridges(data: StandardsGraph, planets: Planet[]): Bridge[] 
 
 export type ColorMode = "domain" | "mastery"
 
-// Mastery colors
+// Mastery colors — Montessori terminology:
+// locked = "Not Started" (grey), available = "Ready to Explore" (blue),
+// working = "Progressing" (yellow), mastered = "Demonstrated" (green)
 const MASTERY_COLORS = {
-  locked: "#555555",     // grey
-  available: "#3b82f6",  // blue
-  working: "#eab308",    // yellow
-  mastered: "#22c55e",   // green
+  locked: "#555555",     // grey — Not Started
+  available: "#3b82f6",  // blue — Ready to Explore
+  working: "#eab308",    // yellow — Progressing
+  mastered: "#22c55e",   // green — Demonstrated
 }
 
 function getMasteryColor(planet: { unlockedCount: number; availableCount: number; moonCount: number; isCompleted: boolean }): string {
@@ -223,7 +225,7 @@ export function buildGalaxyData(
       target: bridge.targetPlanetId,
       edgeCount: bridge.edgeCount,
       isLit,
-      color: isLit ? "rgba(96,165,250,0.4)" : "rgba(255,255,255,0.04)",
+      color: isLit ? "rgba(96,165,250,0.6)" : "rgba(255,255,255,0.12)",
     }
   })
 

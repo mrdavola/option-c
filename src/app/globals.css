@@ -126,6 +126,15 @@
   animation: bounce-slow 2s ease-in-out infinite;
 }
 
+@keyframes wave-expand {
+  0% { width: 0; height: 0; opacity: 1; }
+  70% { opacity: 0.8; }
+  100% { width: 200vmax; height: 200vmax; opacity: 0; }
+}
+.animate-wave-expand {
+  animation: wave-expand 1.5s ease-out forwards;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

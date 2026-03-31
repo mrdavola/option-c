@@ -21,6 +21,7 @@ RULES:
 - Add short text labels (1-3 words max) to clarify what's happening.
 - The illustration should be immediately understandable by a ${grade === "K" ? "kindergarten" : `grade ${grade}`} student.
 - Keep it SIMPLE. 3-5 elements max. Stick figures have circle heads, line bodies, line arms/legs.
+- Stick figures have circle heads with NO facial features — no eyes, no mouth, no expressions. Just a plain circle for the head.
 - Make it fun and slightly silly — a stick figure reacting to the math concept.`,
     prompt: `Create a stick-figure SVG illustration showing this math concept: "${description}"`,
   })

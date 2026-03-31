@@ -62,6 +62,8 @@ export function GraphPage({ data }: GraphPageProps) {
   const [viewMode, setViewMode] = useState<"galaxy" | "planet">("galaxy")
   const [currentPlanetId, setCurrentPlanetId] = useState<string | null>(null)
   const [colorMode, setColorMode] = useState<ColorMode>("domain")
+  const [showWaveEffect, setShowWaveEffect] = useState(false)
+  const [waveColor, setWaveColor] = useState("#22c55e")
 
   // Build planet/bridge data
   const planets = useMemo(() => buildPlanets(data), [data])
@@ -163,6 +165,15 @@ export function GraphPage({ data }: GraphPageProps) {
   const handleUnlock = useCallback((standardId: string) => {
     setPanelOpen(false)
 
+    // Determine the planet color for the wave effect
+    const node = data.nodes.find(n => n.id === standardId)
+    if (node) {
+      const planet = planets.find(p => p.id === `${node.grade}.${node.domainCode}`)
+      if (planet) setWaveColor(planet.color)
+    }
+    setShowWaveEffect(true)
+    setTimeout(() => setShowWaveEffect(false), 1500)
+
     const newlyAvailable = computeNewlyAvailable(data, progressMap, standardId)
 
     setProgressMap(prev => {
@@ -182,7 +193,7 @@ export function GraphPage({ data }: GraphPageProps) {
     }).catch(() => {})
 
     if (tutorialStep < 3) setTutorialStep(3)
-  }, [data, progressMap, tutorialStep])
+  }, [data, progressMap, tutorialStep, planets])
 
   if (!onboardingComplete) {
     return (
@@ -237,7 +248,7 @@ export function GraphPage({ data }: GraphPageProps) {
             <div className="text-sm">
               <span className="text-emerald-400 font-mono font-bold text-base">{counts.unlocked}</span>
               <span className="text-zinc-500 ml-1.5 text-xs">
-                {counts.unlocked === 1 ? "skill" : "skills"} explored
+                {counts.unlocked === 1 ? "skill" : "skills"} demonstrated
               </span>
             </div>
             <div className="w-20 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
@@ -280,19 +291,19 @@ export function GraphPage({ data }: GraphPageProps) {
           <div className="bg-zinc-900/80 backdrop-blur-sm rounded-lg px-3 py-2 border border-zinc-800 flex gap-3">
             <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-emerald-500" />
-              <span className="text-[10px] text-zinc-400">Mastered</span>
+              <span className="text-[10px] text-zinc-400">Demonstrated</span>
             </div>
             <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-yellow-500" />
-              <span className="text-[10px] text-zinc-400">Working</span>
+              <span className="text-[10px] text-zinc-400">Progressing</span>
             </div>
             <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-blue-500" />
-              <span className="text-[10px] text-zinc-400">Ready</span>
+              <span className="text-[10px] text-zinc-400">Ready to Explore</span>
             </div>
             <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-zinc-500" />
-              <span className="text-[10px] text-zinc-400">Locked</span>
+              <span className="text-[10px] text-zinc-400">Not Started</span>
             </div>
           </div>
         )}
@@ -322,6 +333,18 @@ export function GraphPage({ data }: GraphPageProps) {
         totalStandards={counts.total}
         unlockedCount={counts.unlocked}
       />
+
+      {/* Wave effect on unlock */}
+      {showWaveEffect && (
+        <div className="fixed inset-0 z-50 pointer-events-none flex items-center justify-center">
+          <div
+            className="rounded-full animate-wave-expand"
+            style={{
+              background: `radial-gradient(circle, transparent 30%, ${waveColor}40 50%, transparent 70%)`,
+            }}
+          />
+        </div>
+      )}
 
       {/* Standard panel */}
       <StandardPanel

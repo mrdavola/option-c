@@ -34,10 +34,10 @@ function statusBorder(status: NodeStatus): string {
 
 function statusLabel(status: NodeStatus): string {
   switch (status) {
-    case "locked": return "Locked"
-    case "available": return "Ready to learn"
-    case "in_progress": return "In progress"
-    case "unlocked": return "Mastered"
+    case "locked": return "Not Started"
+    case "available": return "Ready to Explore"
+    case "in_progress": return "Progressing"
+    case "unlocked": return "Demonstrated"
   }
 }
 
@@ -53,6 +53,7 @@ export function PlanetView({
     moons.map(m => m.orbitOffset)
   )
   const [hoveredMoon, setHoveredMoon] = useState<string | null>(null)
+  const hoveredMoonRef = useRef<string | null>(null)
   const animRef = useRef<number>(0)
   const lastTimeRef = useRef<number>(0)
 
@@ -68,7 +69,11 @@ export function PlanetView({
       lastTimeRef.current = time
 
       setAngles(prev =>
-        prev.map((a, i) => a + speeds[i] * dt * 0.5)
+        prev.map((a, i) => {
+          // Pause orbit when this moon is hovered
+          if (moons[i] && hoveredMoonRef.current === moons[i].id) return a
+          return a + speeds[i] * dt * 0.05
+        })
       )
       animRef.current = requestAnimationFrame(animate)
     }
@@ -141,6 +146,7 @@ export function PlanetView({
           const x = center + Math.cos(angle) * radius
           const y = center + Math.sin(angle) * radius
           const moonSize = moon.size * 5
+          const hitSize = Math.max(moonSize, 24) // minimum 24px hit target
           const isHovered = hoveredMoon === moon.id
 
           return (
@@ -151,10 +157,13 @@ export function PlanetView({
                   moon.status !== "locked" ? "cursor-pointer hover:scale-125" : "cursor-default"
                 }`}
                 style={{
-                  left: x - moonSize / 2,
-                  top: y - moonSize / 2,
-                  width: moonSize,
-                  height: moonSize,
+                  left: x - hitSize / 2,
+                  top: y - hitSize / 2,
+                  width: hitSize,
+                  height: hitSize,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                   backgroundColor: moon.color,
                   boxShadow: moon.status !== "locked"
                     ? `0 0 ${moonSize}px ${statusGlow(moon.status)}`
@@ -162,8 +171,8 @@ export function PlanetView({
                   transform: isHovered ? "scale(1.3)" : "scale(1)",
                 }}
                 onClick={() => onMoonClick(moon.id, moon.status)}
-                onMouseEnter={() => setHoveredMoon(moon.id)}
-                onMouseLeave={() => setHoveredMoon(null)}
+                onMouseEnter={() => { setHoveredMoon(moon.id); hoveredMoonRef.current = moon.id }}
+                onMouseLeave={() => { setHoveredMoon(null); hoveredMoonRef.current = null }}
                 aria-label={`${moon.description} - ${statusLabel(moon.status)}`}
               />
 

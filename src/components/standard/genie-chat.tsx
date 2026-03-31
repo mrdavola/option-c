@@ -54,13 +54,7 @@ export function GenieChat({ standardDescription, onUnlock }: GenieChatProps) {
     }
   }, [messages, unlocked])
 
-  // Call onUnlock after a short delay when all criteria met
-  useEffect(() => {
-    if (unlocked) {
-      const timer = setTimeout(() => onUnlock(), 1500)
-      return () => clearTimeout(timer)
-    }
-  }, [unlocked, onUnlock])
+  // No longer auto-unlock — student clicks the launch button instead
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -127,8 +121,33 @@ export function GenieChat({ standardDescription, onUnlock }: GenieChatProps) {
       </div>
 
       {unlocked ? (
-        <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-center text-sm text-emerald-400">
-          All criteria met! Nice work — your game idea is solid.
+        <div className="space-y-3">
+          <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-center text-sm text-emerald-400">
+            All 3 criteria met. When you're ready, hit the button below.
+          </div>
+          <button
+            onClick={onUnlock}
+            className="w-full py-3 text-base font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition-colors"
+          >
+            Launch my game &rarr;
+          </button>
+          <form onSubmit={handleSubmit} className="flex gap-2">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Or keep refining your idea..."
+              disabled={status !== "ready"}
+              className="flex-1 rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-zinc-600 focus:outline-none disabled:opacity-50"
+            />
+            <button
+              type="submit"
+              disabled={status !== "ready" || !input.trim()}
+              className="rounded-lg bg-zinc-800 p-2 text-zinc-400 transition-colors hover:bg-zinc-700 hover:text-zinc-200 disabled:opacity-50"
+            >
+              <Send className="size-4" />
+            </button>
+          </form>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="flex gap-2">

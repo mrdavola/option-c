@@ -33,7 +33,7 @@ ${interestInstruction}
 Respond in EXACTLY this JSON format, no markdown, no code fences:
 {"whatIsThis":"...","commonMistakes":"...","realWorldUse":"..."}
 
-Each field should be 1-3 sentences. Be warm and encouraging. Never use the word "standard" — just explain the concept.`,
+Each field should be 1-3 sentences. Be warm and encouraging. Never use the word "standard" — just explain the concept. Use exclamation marks sparingly — at most one per response. Be warm and encouraging but calm, not over-the-top enthusiastic.`,
     prompt: `Explain this math concept: "${description}" (Standard ${standardId}, Grade ${grade})`,
   })
 

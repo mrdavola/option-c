@@ -26,6 +26,8 @@ RULES:
 - After 5 exchanges, make a final pass/fail decision with clear reasoning.
 - Be encouraging but honest.
 - Match your language to the student's writing level. If they write simply, respond simply. If they use advanced vocabulary, you can too.
+- Use exclamation marks sparingly — at most one per response. Be warm and encouraging but calm, not over-the-top enthusiastic.
+- When all 3 criteria are met, congratulate the student calmly and tell them they can launch their game when ready. Do NOT end the conversation — let them keep refining if they want.
 
 After EVERY response, you MUST call the evaluate_criteria tool to report which criteria are currently met.`,
     messages: await convertToModelMessages(messages),

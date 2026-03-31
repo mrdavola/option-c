@@ -299,8 +299,8 @@ export function GalaxyView({ galaxyData, onPlanetClick, currentPlanetId, initial
         }
         nodeResolution={16}
         linkColor={(link: GalaxyLink) => link.color}
-        linkWidth={(link: GalaxyLink) => Math.max(0.2, Math.min(link.edgeCount * 0.3, 3))}
-        linkOpacity={0.7}
+        linkWidth={(link: GalaxyLink) => Math.max(0.5, Math.min(link.edgeCount * 0.5, 4))}
+        linkOpacity={0.9}
         linkDirectionalArrowLength={4}
         linkDirectionalArrowRelPos={1}
         linkDirectionalArrowColor={(link: GalaxyLink) => link.color}

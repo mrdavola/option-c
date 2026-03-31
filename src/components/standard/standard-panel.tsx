@@ -13,6 +13,47 @@ import { Lock, CheckCircle, ChevronLeft } from "lucide-react"
 import { ConceptCard } from "./concept-card"
 import { GenieChat } from "./genie-chat"
 
+function getShortTitle(standard: StandardNode): string {
+  const id = standard.id.toUpperCase()
+  const domain = standard.domainCode?.toUpperCase() ?? ""
+
+  // Map domain codes and ID patterns to short descriptors
+  if (domain === "CC") return "Counting"
+  if (domain === "OA") {
+    if (/ADD|SUM|PLUS/i.test(standard.description)) return "Addition"
+    if (/SUBTRACT|MINUS|DIFFER/i.test(standard.description)) return "Subtraction"
+    if (/MULTIPLY|FACTOR|PRODUCT/i.test(standard.description)) return "Multiplication"
+    if (/DIVIDE|DIVISOR|QUOTIENT/i.test(standard.description)) return "Division"
+    return "Algebra"
+  }
+  if (domain === "NBT") return "Base Ten"
+  if (domain === "NF") return "Fractions"
+  if (domain === "MD") {
+    if (/AREA/i.test(standard.description)) return "Area"
+    if (/VOLUME/i.test(standard.description)) return "Volume"
+    if (/TIME|CLOCK|HOUR/i.test(standard.description)) return "Time"
+    if (/MEASURE|LENGTH|INCH|METER/i.test(standard.description)) return "Measurement"
+    return "Measurement"
+  }
+  if (domain === "G") return "Geometry"
+  if (domain === "RP") return "Ratios"
+  if (domain === "NS") return "Numbers"
+  if (domain === "EE") return "Equations"
+  if (domain === "SP") return "Statistics"
+  if (domain === "F") return "Functions"
+
+  // HS domains
+  if (id.includes("A-")) return "Algebra"
+  if (id.includes("F-")) return "Functions"
+  if (id.includes("G-")) return "Geometry"
+  if (id.includes("N-")) return "Numbers"
+  if (id.includes("S-")) return "Statistics"
+
+  // Fallback: first 4 words of description
+  const words = standard.description.split(/\s+/)
+  return words.slice(0, 4).join(" ")
+}
+
 type FlowStep = "learn" | "earn" | "unlocked"
 
 interface StandardPanelProps {
@@ -48,8 +89,11 @@ export function StandardPanel({
         className="w-full sm:w-[75vw] lg:w-[60vw] overflow-y-auto"
       >
         <SheetHeader>
-          <SheetTitle className="text-lg">{standard.description}</SheetTitle>
-          <SheetDescription>{standard.id} · {standard.domain}</SheetDescription>
+          <SheetTitle className="text-lg">{getShortTitle(standard)}</SheetTitle>
+          <SheetDescription>
+            {standard.description}
+            <span className="block text-xs text-zinc-500 mt-1">{standard.id}</span>
+          </SheetDescription>
         </SheetHeader>
 
         <div className="px-4 pb-4">
@@ -67,7 +111,7 @@ export function StandardPanel({
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-amber-400 text-sm">
                 <Lock className="size-4 shrink-0" />
-                <span>This concept is locked — complete its prerequisites first.</span>
+                <span>You haven't started this one yet — complete its prerequisites first.</span>
               </div>
               <ConceptCard
                 standard={standard}
@@ -80,7 +124,7 @@ export function StandardPanel({
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-emerald-400 text-sm">
                 <CheckCircle className="size-4 shrink-0" />
-                <span>You've already unlocked this concept!</span>
+                <span>You've demonstrated this concept — nice work.</span>
               </div>
               <ConceptCard
                 standard={standard}
