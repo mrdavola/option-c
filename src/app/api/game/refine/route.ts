@@ -1,14 +1,19 @@
-import { generateText } from "ai"
+import Anthropic from "@anthropic-ai/sdk"
 
 export const maxDuration = 60
+
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
 export async function POST(req: Request) {
   const { currentHtml, feedback, designDoc } = await req.json()
 
-  const { text } = await generateText({
-    model: "anthropic/claude-sonnet-4.5",
-    system: `You modify existing HTML games based on student feedback. Output ONLY the complete updated HTML file. No markdown. No code fences. Start with <!DOCTYPE html>.`,
-    prompt: `Here is an existing HTML game:
+  const message = await anthropic.messages.create({
+    model: "claude-sonnet-4-5-20250514",
+    max_tokens: 8000,
+    system: "You modify existing HTML games based on student feedback. Output ONLY the complete updated HTML file. No markdown. No code fences. Start with <!DOCTYPE html>.",
+    messages: [{
+      role: "user",
+      content: `Here is an existing HTML game:
 
 ${currentHtml}
 
@@ -23,7 +28,10 @@ Original game design:
 Generate the updated complete HTML file incorporating the requested changes.
 Keep all existing functionality that wasn't mentioned in the feedback.
 All CSS and JavaScript must remain inline.`,
+    }],
   })
+
+  const text = message.content[0].type === "text" ? message.content[0].text : ""
 
   let cleanHtml = text || ""
   if (cleanHtml.startsWith("```")) {

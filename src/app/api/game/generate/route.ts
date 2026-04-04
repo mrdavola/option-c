@@ -1,6 +1,8 @@
-import { generateText } from "ai"
+import Anthropic from "@anthropic-ai/sdk"
 
 export const maxDuration = 60
+
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
 export async function POST(req: Request) {
   const { designDoc, designChoices } = await req.json()
@@ -9,10 +11,13 @@ export async function POST(req: Request) {
   const colorInstructions = designChoices?.color ? `Color scheme: ${designChoices.color}.` : ""
   const characterInstructions = designChoices?.characters ? `Characters/style: ${designChoices.characters}.` : ""
 
-  const { text } = await generateText({
-    model: "anthropic/claude-sonnet-4.5",
-    system: `You generate complete, self-contained HTML files for playable browser games. Output ONLY the HTML. No markdown. No code fences. Start with <!DOCTYPE html>.`,
-    prompt: `Generate a complete, self-contained HTML file for a playable browser game.
+  const message = await anthropic.messages.create({
+    model: "claude-sonnet-4-5-20250514",
+    max_tokens: 8000,
+    system: "You generate complete, self-contained HTML files for playable browser games. Output ONLY the HTML. No markdown. No code fences. Start with <!DOCTYPE html>.",
+    messages: [{
+      role: "user",
+      content: `Generate a complete, self-contained HTML file for a playable browser game.
 
 GAME DESIGN:
 - Title: ${designDoc.title}
@@ -36,7 +41,10 @@ REQUIREMENTS:
 - Responsive — works on desktop and mobile.
 - Include clear instructions on how to play.
 - Maximum 500 lines of code. Keep it simple but polished.`,
+    }],
   })
+
+  const text = message.content[0].type === "text" ? message.content[0].text : ""
 
   if (!text || (!text.includes("<!DOCTYPE html>") && !text.includes("<html"))) {
     return Response.json({ error: "Failed to generate game" }, { status: 500 })
