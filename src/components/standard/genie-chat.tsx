@@ -76,7 +76,7 @@ export function GenieChat({ standardDescription, onUnlock }: GenieChatProps) {
       <CriteriaProgress criteria={criteria} />
 
       <div className="flex items-center justify-between">
-        <p className="text-xs text-muted-foreground">
+        <p className="text-sm text-zinc-300">
           Exchange {exchangeCount}/5
         </p>
       </div>
@@ -114,7 +114,7 @@ export function GenieChat({ standardDescription, onUnlock }: GenieChatProps) {
         })}
 
         {status !== "ready" && (
-          <div className="self-start text-xs text-muted-foreground">
+          <div className="self-start text-sm text-zinc-300">
             Thinking...
           </div>
         )}
@@ -138,7 +138,7 @@ export function GenieChat({ standardDescription, onUnlock }: GenieChatProps) {
               onChange={(e) => setInput(e.target.value)}
               placeholder="Or keep refining your idea..."
               disabled={status !== "ready"}
-              className="flex-1 rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-zinc-600 focus:outline-none disabled:opacity-50"
+              className="flex-1 rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-400 focus:border-zinc-600 focus:outline-none disabled:opacity-50"
             />
             <button
               type="submit"
@@ -157,7 +157,7 @@ export function GenieChat({ standardDescription, onUnlock }: GenieChatProps) {
             onChange={(e) => setInput(e.target.value)}
             placeholder="Describe your game idea..."
             disabled={status !== "ready"}
-            className="flex-1 rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-zinc-600 focus:outline-none disabled:opacity-50"
+            className="flex-1 rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-400 focus:border-zinc-600 focus:outline-none disabled:opacity-50"
           />
           <button
             type="submit"

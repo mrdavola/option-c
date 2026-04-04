@@ -135,7 +135,7 @@ export function PlanetView({
         >
           <div className="text-center">
             <div className="text-white font-bold text-sm leading-tight">{planet.domainName}</div>
-            <div className="text-white/50 text-xs">Grade {planet.grade}</div>
+            <div className="text-white/70 text-xs">Grade {planet.grade}</div>
           </div>
         </div>
 
@@ -220,7 +220,7 @@ export function PlanetView({
               aria-label={`Bridge to ${targetName}`}
             >
               <div className="bg-zinc-800/80 backdrop-blur-sm border border-zinc-700/50 rounded-full px-2 py-1 text-center w-full group-hover:border-blue-500/50 group-hover:bg-zinc-700/80 transition-colors">
-                <div className="text-[10px] text-zinc-400 group-hover:text-blue-300 truncate">
+                <div className="text-xs text-zinc-300 group-hover:text-blue-300 truncate">
                   {targetName}
                 </div>
                 <svg

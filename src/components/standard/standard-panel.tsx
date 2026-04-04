@@ -92,7 +92,7 @@ export function StandardPanel({
           <SheetTitle className="text-lg">{getShortTitle(standard)}</SheetTitle>
           <SheetDescription>
             {standard.description}
-            <span className="block text-xs text-zinc-500 mt-1">{standard.id}</span>
+            <span className="block text-xs text-zinc-400 mt-1">{standard.id}</span>
           </SheetDescription>
         </SheetHeader>
 

@@ -74,7 +74,7 @@ function NameStep({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder="Your name..."
-          className="flex-1 bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-lg text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50"
+          className="flex-1 bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-lg text-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50"
         />
         <button
           type="submit"
@@ -184,7 +184,7 @@ function InterestsStep({
               className={`rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 ${
                 isSelected
                   ? "bg-blue-500/20 border-blue-500/50 text-blue-300 border"
-                  : "bg-zinc-800 border border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-zinc-300"
+                  : "bg-zinc-800 border border-zinc-700 text-zinc-300 hover:border-zinc-500 hover:text-zinc-200"
               }`}
             >
               {interest}
@@ -203,7 +203,7 @@ function InterestsStep({
         {!showCustom && (
           <button
             onClick={() => setShowCustom(true)}
-            className="rounded-full px-4 py-2 text-sm font-medium border border-dashed border-zinc-600 text-zinc-500 hover:text-zinc-300 hover:border-zinc-400 transition-all duration-200"
+            className="rounded-full px-4 py-2 text-sm font-medium border border-dashed border-zinc-600 text-zinc-400 hover:text-zinc-200 hover:border-zinc-400 transition-all duration-200"
           >
             + Other...
           </button>
@@ -219,7 +219,7 @@ function InterestsStep({
             value={customText}
             onChange={(e) => setCustomText(e.target.value)}
             placeholder="skateboarding, Roblox, dinosaurs..."
-            className="flex-1 bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+            className="flex-1 bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
           />
           <button
             type="submit"
@@ -256,7 +256,7 @@ function WelcomeStep({
       <h1 className="text-3xl font-bold text-white">
         Let&apos;s go, {name}!
       </h1>
-      <p className="text-zinc-400 leading-relaxed">
+      <p className="text-zinc-300 leading-relaxed">
         You&apos;re about to explore{" "}
         <span className="text-white font-semibold">{conceptCount}</span> math
         concepts. The glowing ones are ready for you — pick one, learn it, then

@@ -267,7 +267,7 @@ export function GraphPage({ data }: GraphPageProps) {
           <div className="flex items-center gap-3">
             <div className="text-sm">
               <span className="text-emerald-400 font-mono font-bold text-base">{counts.unlocked}</span>
-              <span className="text-zinc-500 ml-1.5 text-xs">
+              <span className="text-zinc-300 ml-1.5 text-sm">
                 {counts.unlocked === 1 ? "skill" : "skills"} demonstrated
               </span>
             </div>
@@ -285,20 +285,20 @@ export function GraphPage({ data }: GraphPageProps) {
           <div className="bg-zinc-900/80 backdrop-blur-sm rounded-lg border border-zinc-800 flex overflow-hidden">
             <button
               onClick={() => setColorMode("domain")}
-              className={`px-3 py-1.5 text-xs transition-colors ${
+              className={`px-3 py-1.5 text-sm transition-colors ${
                 colorMode === "domain"
                   ? "bg-zinc-700 text-white"
-                  : "text-zinc-500 hover:text-zinc-300"
+                  : "text-zinc-400 hover:text-zinc-200"
               }`}
             >
               By concept
             </button>
             <button
               onClick={() => setColorMode("mastery")}
-              className={`px-3 py-1.5 text-xs transition-colors ${
+              className={`px-3 py-1.5 text-sm transition-colors ${
                 colorMode === "mastery"
                   ? "bg-zinc-700 text-white"
-                  : "text-zinc-500 hover:text-zinc-300"
+                  : "text-zinc-400 hover:text-zinc-200"
               }`}
             >
               By progress
@@ -311,19 +311,19 @@ export function GraphPage({ data }: GraphPageProps) {
           <div className="bg-zinc-900/80 backdrop-blur-sm rounded-lg px-3 py-2 border border-zinc-800 flex gap-3">
             <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-emerald-500" />
-              <span className="text-[10px] text-zinc-400">Demonstrated</span>
+              <span className="text-xs text-zinc-300">Demonstrated</span>
             </div>
             <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-yellow-500" />
-              <span className="text-[10px] text-zinc-400">Progressing</span>
+              <span className="text-xs text-zinc-300">Progressing</span>
             </div>
             <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-blue-500" />
-              <span className="text-[10px] text-zinc-400">Ready to Explore</span>
+              <span className="text-xs text-zinc-300">Ready to Explore</span>
             </div>
             <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-zinc-500" />
-              <span className="text-[10px] text-zinc-400">Not Started</span>
+              <span className="text-xs text-zinc-300">Not Started</span>
             </div>
           </div>
         )}

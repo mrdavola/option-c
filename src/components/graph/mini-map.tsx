@@ -137,7 +137,7 @@ export function MiniMap({
 
         {/* Progress bar */}
         <div className="px-2 pb-2 pt-1">
-          <div className="flex items-center justify-between text-[10px] text-zinc-500 mb-1">
+          <div className="flex items-center justify-between text-xs text-zinc-300 mb-1">
             <span>{unlockedCount}/{totalStandards} unlocked</span>
             <span>{progressPct}%</span>
           </div>

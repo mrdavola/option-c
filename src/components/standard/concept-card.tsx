@@ -40,7 +40,7 @@ function ConceptIllustration({ description, grade }: { description: string; grad
     return (
       <div className="flex flex-col items-center justify-center py-6 gap-2 bg-zinc-800/30 rounded-lg">
         <div className="w-5 h-5 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
-        <p className="text-xs text-zinc-500">Drawing a picture...</p>
+        <p className="text-sm text-zinc-300">Drawing a picture...</p>
       </div>
     )
   }
@@ -64,14 +64,14 @@ function GameMechanics({ description, domainCode }: {
 
   return (
     <div className="space-y-2">
-      <p className="text-xs text-zinc-500 font-medium">Game mechanics that use this math</p>
+      <p className="text-sm text-zinc-300 font-medium">Game mechanics that use this math</p>
       <div className="grid grid-cols-3 gap-2">
         {matched.map((m) => (
           <div key={m.id} className="flex flex-col items-center gap-1">
             <div className="rounded-lg overflow-hidden border border-zinc-800 bg-zinc-900 w-full">
               {m.svg}
             </div>
-            <p className="text-[10px] text-zinc-500 text-center leading-tight">{m.title}</p>
+            <p className="text-xs text-zinc-400 text-center leading-tight">{m.title}</p>
           </div>
         ))}
       </div>
@@ -87,7 +87,7 @@ function InterestInput({ onSubmit }: { onSubmit: (interest: string) => void }) {
     return (
       <button
         onClick={() => setExpanded(true)}
-        className="px-4 py-2 text-xs rounded-full border border-dashed border-zinc-700 text-zinc-500 hover:text-zinc-300 hover:border-zinc-500 transition-colors"
+        className="px-4 py-2 text-sm rounded-full border border-dashed border-zinc-700 text-zinc-400 hover:text-zinc-200 hover:border-zinc-500 transition-colors"
       >
         Explain it using something I'm into...
       </button>
@@ -111,12 +111,12 @@ function InterestInput({ onSubmit }: { onSubmit: (interest: string) => void }) {
         value={value}
         onChange={(e) => setValue(e.target.value)}
         placeholder="basketball, Roblox, cooking..."
-        className="flex-1 bg-zinc-800 border border-zinc-700 rounded-full px-4 py-2 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-blue-500/50"
+        className="flex-1 bg-zinc-800 border border-zinc-700 rounded-full px-4 py-2 text-sm text-white placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-blue-500/50"
       />
       <button
         type="submit"
         disabled={!value.trim()}
-        className="px-3 py-2 text-xs rounded-full bg-blue-500/20 border border-blue-500/30 text-blue-400 hover:bg-blue-500/30 disabled:opacity-30 transition-colors"
+        className="px-3 py-2 text-sm rounded-full bg-blue-500/20 border border-blue-500/30 text-blue-400 hover:bg-blue-500/30 disabled:opacity-30 transition-colors"
       >
         Go
       </button>
@@ -259,7 +259,7 @@ export function ConceptCard({ standard, onReady, interests, readOnly }: ConceptC
         {readingLevel === "default" && (
           <button
             onClick={() => handleLevelChange("simpler")}
-            className="px-4 py-2 text-xs rounded-full border border-blue-500/30 text-blue-400 hover:bg-blue-500/10 transition-colors"
+            className="px-4 py-2 text-sm rounded-full border border-blue-500/30 text-blue-400 hover:bg-blue-500/10 transition-colors"
           >
             I don't get it — say it simpler
           </button>
@@ -268,7 +268,7 @@ export function ConceptCard({ standard, onReady, interests, readOnly }: ConceptC
           <div className="flex gap-2">
             <button
               onClick={() => handleLevelChange("default")}
-              className="px-4 py-2 text-xs rounded-full border border-zinc-700 text-zinc-500 hover:text-zinc-300 hover:border-zinc-500 transition-colors"
+              className="px-4 py-2 text-sm rounded-full border border-zinc-700 text-zinc-400 hover:text-zinc-200 hover:border-zinc-500 transition-colors"
             >
               OK I think I get it — show me the normal version
             </button>
@@ -286,7 +286,7 @@ export function ConceptCard({ standard, onReady, interests, readOnly }: ConceptC
           <div className="flex flex-col items-center gap-2">
             <button
               onClick={() => { setCustomInterest(null); handleLevelChange("default") }}
-              className="px-4 py-2 text-xs rounded-full border border-zinc-700 text-zinc-500 hover:text-zinc-300 hover:border-zinc-500 transition-colors"
+              className="px-4 py-2 text-sm rounded-full border border-zinc-700 text-zinc-400 hover:text-zinc-200 hover:border-zinc-500 transition-colors"
             >
               Show me the regular version
             </button>

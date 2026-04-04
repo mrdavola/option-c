@@ -34,7 +34,7 @@ export function CriteriaProgress({ criteria }: CriteriaProgressProps) {
                 "transition-all duration-500",
                 met
                   ? "border-emerald-500 bg-emerald-500/20 text-emerald-400"
-                  : "border-zinc-700 text-zinc-500"
+                  : "border-zinc-700 text-zinc-400"
               )}
             >
               {met ? (
@@ -47,7 +47,7 @@ export function CriteriaProgress({ criteria }: CriteriaProgressProps) {
           )
         })}
       </div>
-      <p className="text-xs text-muted-foreground">{metCount}/3 — {metCount === 3 ? "You did it!" : metCount === 0 ? "Tell me your game idea" : "Keep going!"}</p>
+      <p className="text-sm text-zinc-300">{metCount}/3 — {metCount === 3 ? "You did it!" : metCount === 0 ? "Tell me your game idea" : "Keep going!"}</p>
     </div>
   )
 }
