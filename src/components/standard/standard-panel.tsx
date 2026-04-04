@@ -61,6 +61,7 @@ interface StandardPanelProps {
   open: boolean
   onClose: () => void
   onUnlock: (standardId: string) => void
+  onBuildGame?: (designDoc: import("@/lib/game-types").GameDesignDoc, chatHistory: string) => void
   interests?: string[]
   nodeStatus?: "locked" | "available" | "in_progress" | "unlocked"
 }
@@ -70,6 +71,7 @@ export function StandardPanel({
   open,
   onClose,
   onUnlock,
+  onBuildGame,
   interests,
   nodeStatus,
 }: StandardPanelProps) {
@@ -146,10 +148,13 @@ export function StandardPanel({
               {step === "earn" && (
                 <GenieChat
                   standardDescription={standard.description}
+                  standardId={standard.id}
+                  planetId={`${standard.grade}.${standard.domainCode}`}
                   onUnlock={() => {
                     setStep("unlocked")
                     onUnlock(standard.id)
                   }}
+                  onBuildGame={onBuildGame}
                 />
               )}
             </>

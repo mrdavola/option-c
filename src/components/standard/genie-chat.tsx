@@ -5,14 +5,17 @@ import { useChat } from "@ai-sdk/react"
 import { DefaultChatTransport, isToolUIPart, getToolName } from "ai"
 import { CriteriaProgress } from "./criteria-progress"
 import { cn } from "@/lib/utils"
-import { Send } from "lucide-react"
+import { Send, Loader2 } from "lucide-react"
 
 interface GenieChatProps {
   standardDescription: string
+  standardId?: string
+  planetId?: string
   onUnlock: () => void
+  onBuildGame?: (designDoc: import("@/lib/game-types").GameDesignDoc, chatHistory: string) => void
 }
 
-export function GenieChat({ standardDescription, onUnlock }: GenieChatProps) {
+export function GenieChat({ standardDescription, standardId, planetId, onUnlock, onBuildGame }: GenieChatProps) {
   const [criteria, setCriteria] = useState({
     playable: false,
     authentic: false,
@@ -20,6 +23,7 @@ export function GenieChat({ standardDescription, onUnlock }: GenieChatProps) {
   })
   const [unlocked, setUnlocked] = useState(false)
   const [input, setInput] = useState("")
+  const [isExtracting, setIsExtracting] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   const transport = new DefaultChatTransport({
@@ -126,10 +130,54 @@ export function GenieChat({ standardDescription, onUnlock }: GenieChatProps) {
             All 3 criteria met. When you're ready, hit the button below.
           </div>
           <button
-            onClick={onUnlock}
-            className="w-full py-3 text-base font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition-colors"
+            onClick={async () => {
+              if (onBuildGame) {
+                setIsExtracting(true)
+                try {
+                  // Extract chat history as text
+                  const chatText = messages
+                    .map((m) => {
+                      const texts = m.parts
+                        .filter((p) => p.type === "text" && p.text.trim())
+                        .map((p) => (p.type === "text" ? p.text : ""))
+                      return `${m.role}: ${texts.join(" ")}`
+                    })
+                    .join("\n")
+
+                  // Call design-doc extraction API
+                  const res = await fetch("/api/game/design-doc", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      chatHistory: chatText,
+                      standardId: standardId || "",
+                      standardDescription,
+                      planetId: planetId || "",
+                    }),
+                  })
+                  const designDoc = await res.json()
+                  onBuildGame(designDoc, chatText)
+                } catch {
+                  // Fall back to unlock if extraction fails
+                  onUnlock()
+                } finally {
+                  setIsExtracting(false)
+                }
+              } else {
+                onUnlock()
+              }
+            }}
+            disabled={isExtracting}
+            className="w-full py-3 text-base font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition-colors disabled:opacity-70"
           >
-            Launch my game &rarr;
+            {isExtracting ? (
+              <span className="flex items-center justify-center gap-2">
+                <Loader2 className="size-4 animate-spin" />
+                Preparing...
+              </span>
+            ) : (
+              <>Build my Game &rarr;</>
+            )}
           </button>
           <form onSubmit={handleSubmit} className="flex gap-2">
             <input

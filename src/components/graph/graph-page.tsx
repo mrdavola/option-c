@@ -10,6 +10,9 @@ import { MiniMap } from "./mini-map"
 import { OnboardingFlow } from "@/components/onboarding/onboarding-flow"
 import type { OnboardingData } from "@/components/onboarding/onboarding-flow"
 import { StandardPanel } from "@/components/standard/standard-panel"
+import { BuildScreen } from "@/components/game/build-screen"
+import { Workshop } from "@/components/game/workshop"
+import type { GameDesignDoc } from "@/lib/game-types"
 
 interface GraphPageProps {
   data: StandardsGraph
@@ -65,6 +68,13 @@ export function GraphPage({ data }: GraphPageProps) {
   const [showWaveEffect, setShowWaveEffect] = useState(false)
   const [waveColor, setWaveColor] = useState("#22c55e")
   const [lockedMessage, setLockedMessage] = useState<string | null>(null)
+
+  // Game builder state
+  const [buildMode, setBuildMode] = useState<"idle" | "building" | "workshop">("idle")
+  const [currentDesignDoc, setCurrentDesignDoc] = useState<GameDesignDoc | null>(null)
+  const [currentGameHtml, setCurrentGameHtml] = useState<string>("")
+  const [currentGameId, setCurrentGameId] = useState<string | null>(null)
+  const [reviewResult, setReviewResult] = useState<{ pass: boolean; feedback: string } | null>(null)
 
   // Build planet/bridge data
   const planets = useMemo(() => buildPlanets(data), [data])
@@ -214,6 +224,102 @@ export function GraphPage({ data }: GraphPageProps) {
     if (tutorialStep < 3) setTutorialStep(3)
   }, [data, progressMap, tutorialStep, planets])
 
+  // Handle "Build my Game" from Genie chat
+  const handleBuildGame = useCallback((designDoc: GameDesignDoc) => {
+    setCurrentDesignDoc(designDoc)
+    setPanelOpen(false)
+    setBuildMode("building")
+  }, [])
+
+  // Handle build complete — move to workshop
+  const handleBuildComplete = useCallback((html: string, designChoices: Record<string, string>) => {
+    if (currentDesignDoc) {
+      setCurrentDesignDoc({ ...currentDesignDoc, designChoices })
+    }
+    setCurrentGameHtml(html)
+    setCurrentGameId(null)
+    setBuildMode("workshop")
+  }, [currentDesignDoc])
+
+  // Handle back to planet from workshop
+  const handleBackToPlanet = useCallback(async (html: string, gameId: string | null) => {
+    // Save draft
+    try {
+      await fetch("/api/game/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: gameId,
+          title: currentDesignDoc?.title || "Untitled",
+          designerName: "Student",
+          standardId: currentDesignDoc?.standardId || "",
+          planetId: currentDesignDoc?.planetId || "",
+          gameHtml: html,
+          designDoc: currentDesignDoc,
+          status: "draft",
+          playCount: 0,
+          ratingSum: 0,
+          ratingCount: 0,
+        }),
+      })
+    } catch {
+      // Silent fail
+    }
+    setBuildMode("idle")
+    setCurrentDesignDoc(null)
+    setCurrentGameHtml("")
+    setCurrentGameId(null)
+  }, [currentDesignDoc])
+
+  // Handle send for review
+  const handleSendForReview = useCallback(async (html: string, gameId: string | null) => {
+    // Save first
+    try {
+      const saveRes = await fetch("/api/game/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: gameId,
+          title: currentDesignDoc?.title || "Untitled",
+          designerName: "Student",
+          standardId: currentDesignDoc?.standardId || "",
+          planetId: currentDesignDoc?.planetId || "",
+          gameHtml: html,
+          designDoc: currentDesignDoc,
+          status: "in_review",
+          playCount: 0,
+          ratingSum: 0,
+          ratingCount: 0,
+        }),
+      })
+      const { id } = await saveRes.json()
+      const reviewGameId = gameId || id
+
+      // Run AI review
+      const reviewRes = await fetch(`/api/game/${reviewGameId}/review`, {
+        method: "POST",
+      })
+      const result = await reviewRes.json()
+
+      if (result.pass) {
+        setReviewResult(result)
+        setTimeout(() => {
+          setBuildMode("idle")
+          setCurrentDesignDoc(null)
+          setCurrentGameHtml("")
+          setCurrentGameId(null)
+          setReviewResult(null)
+        }, 3000)
+      } else {
+        setReviewResult(result)
+        setTimeout(() => setReviewResult(null), 5000)
+      }
+    } catch {
+      setReviewResult({ pass: false, feedback: "Review failed. Please try again." })
+      setTimeout(() => setReviewResult(null), 4000)
+    }
+  }, [currentDesignDoc])
+
   if (!onboardingComplete) {
     return (
       <OnboardingFlow
@@ -227,28 +333,68 @@ export function GraphPage({ data }: GraphPageProps) {
 
   return (
     <div className="h-screen w-screen relative">
-      {/* Main view */}
-      {viewMode === "galaxy" ? (
-        <GalaxyView
-          galaxyData={galaxyData}
-          onPlanetClick={handlePlanetClick}
-          onLockedPlanetClick={handleLockedPlanetClick}
-          currentPlanetId={currentPlanetId}
-          initialGrade={studentData?.grade ?? null}
+      {/* Game Builder: Build Screen */}
+      {buildMode === "building" && currentDesignDoc && (
+        <BuildScreen
+          designDoc={currentDesignDoc}
+          onComplete={handleBuildComplete}
         />
-      ) : currentPlanet ? (
-        <PlanetView
-          planet={currentPlanet}
-          moons={currentMoons}
-          onMoonClick={handleMoonClick}
-          onBridgeClick={handleBridgeClick}
-          bridges={currentBridges}
-          planetNames={planetNames}
-        />
-      ) : null}
+      )}
 
-      {/* Back to Galaxy button (planet view only) */}
-      {viewMode === "planet" && (
+      {/* Game Builder: Workshop */}
+      {buildMode === "workshop" && currentDesignDoc && (
+        <>
+          <Workshop
+            initialHtml={currentGameHtml}
+            designDoc={currentDesignDoc}
+            gameId={currentGameId}
+            onBackToPlanet={handleBackToPlanet}
+            onSendForReview={handleSendForReview}
+          />
+          {/* Review result overlay */}
+          {reviewResult && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60">
+              <div className={`max-w-md mx-4 p-6 rounded-xl border ${
+                reviewResult.pass
+                  ? "bg-emerald-950 border-emerald-500/30"
+                  : "bg-amber-950 border-amber-500/30"
+              }`}>
+                <h3 className={`text-lg font-bold mb-2 ${
+                  reviewResult.pass ? "text-emerald-400" : "text-amber-400"
+                }`}>
+                  {reviewResult.pass ? "Game Published!" : "Needs Work"}
+                </h3>
+                <p className="text-zinc-300 text-sm">{reviewResult.feedback}</p>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Main view (hidden when building) */}
+      {buildMode === "idle" && (
+        viewMode === "galaxy" ? (
+          <GalaxyView
+            galaxyData={galaxyData}
+            onPlanetClick={handlePlanetClick}
+            onLockedPlanetClick={handleLockedPlanetClick}
+            currentPlanetId={currentPlanetId}
+            initialGrade={studentData?.grade ?? null}
+          />
+        ) : currentPlanet ? (
+          <PlanetView
+            planet={currentPlanet}
+            moons={currentMoons}
+            onMoonClick={handleMoonClick}
+            onBridgeClick={handleBridgeClick}
+            bridges={currentBridges}
+            planetNames={planetNames}
+          />
+        ) : null
+      )}
+
+      {/* Back to Galaxy button (planet view only, hidden during build) */}
+      {buildMode === "idle" && viewMode === "planet" && (
         <button
           onClick={handleBackToGalaxy}
           className="absolute top-4 left-4 z-20 flex items-center gap-2 bg-zinc-900/80 backdrop-blur-sm border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-300 hover:text-white hover:border-zinc-600 transition-colors"
@@ -379,6 +525,7 @@ export function GraphPage({ data }: GraphPageProps) {
         open={panelOpen}
         onClose={() => setPanelOpen(false)}
         onUnlock={handleUnlock}
+        onBuildGame={handleBuildGame}
         interests={studentData?.interests}
         nodeStatus={selectedStandard ? progressMap.get(selectedStandard.id) : undefined}
       />
