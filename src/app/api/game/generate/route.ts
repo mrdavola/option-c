@@ -1,31 +1,24 @@
-import { GoogleGenAI } from "@google/genai"
+import { generateText } from "ai"
 
 export const maxDuration = 60
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! })
 
 export async function POST(req: Request) {
   const { designDoc, designChoices } = await req.json()
 
-  const vibeInstructions = designChoices?.vibe
-    ? `Visual theme: ${designChoices.vibe}.`
-    : ""
-  const colorInstructions = designChoices?.color
-    ? `Color scheme: ${designChoices.color}.`
-    : ""
-  const characterInstructions = designChoices?.characters
-    ? `Characters/style: ${designChoices.characters}.`
-    : ""
+  const vibeInstructions = designChoices?.vibe ? `Visual theme: ${designChoices.vibe}.` : ""
+  const colorInstructions = designChoices?.color ? `Color scheme: ${designChoices.color}.` : ""
+  const characterInstructions = designChoices?.characters ? `Characters/style: ${designChoices.characters}.` : ""
 
-  const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
-    contents: `Generate a complete, self-contained HTML file for a playable browser game.
+  const { text } = await generateText({
+    model: "anthropic/claude-sonnet-4.5",
+    system: `You generate complete, self-contained HTML files for playable browser games. Output ONLY the HTML. No markdown. No code fences. Start with <!DOCTYPE html>.`,
+    prompt: `Generate a complete, self-contained HTML file for a playable browser game.
 
 GAME DESIGN:
 - Title: ${designDoc.title}
 - Concept: ${designDoc.concept}
 - How it works: ${designDoc.howItWorks}
-- Rules: ${designDoc.rules.join(". ")}
+- Rules: ${(designDoc.rules || []).join(". ")}
 - Win condition: ${designDoc.winCondition}
 - Math role: ${designDoc.mathRole}
 ${vibeInstructions}
@@ -33,7 +26,6 @@ ${colorInstructions}
 ${characterInstructions}
 
 REQUIREMENTS:
-- Output ONLY a complete HTML file. No markdown. No code fences. Start with <!DOCTYPE html>.
 - All CSS and JavaScript must be inline (in <style> and <script> tags).
 - The game must be fully playable with mouse/touch input.
 - Use a dark background (#18181b) with light text (#e4e4e7).
@@ -41,18 +33,16 @@ REQUIREMENTS:
 - Include a title screen, gameplay, and a win/lose state.
 - The math concept must be essential to gameplay — not decorative.
 - Target audience: elementary/middle school students. Keep it simple and fun.
-- The game should work on both desktop and mobile (responsive).
+- Responsive — works on desktop and mobile.
 - Include clear instructions on how to play.
-- Maximum 500 lines of code. Keep it simple.`,
+- Maximum 500 lines of code. Keep it simple but polished.`,
   })
 
-  const html = response.text
-  if (!html || (!html.includes("<!DOCTYPE html>") && !html.includes("<html"))) {
+  if (!text || (!text.includes("<!DOCTYPE html>") && !text.includes("<html"))) {
     return Response.json({ error: "Failed to generate game" }, { status: 500 })
   }
 
-  // Clean up any markdown wrappers
-  let cleanHtml = html
+  let cleanHtml = text
   if (cleanHtml.startsWith("```")) {
     cleanHtml = cleanHtml.replace(/^```html?\n?/, "").replace(/\n?```$/, "")
   }
