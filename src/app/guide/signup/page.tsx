@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { createUserWithEmailAndPassword, getRedirectResult } from "firebase/auth"
+import { createUserWithEmailAndPassword } from "firebase/auth"
 import { doc, getDoc, setDoc, updateDoc, collection } from "firebase/firestore"
 import { auth, db } from "@/lib/firebase"
 import { useAuth } from "@/lib/auth"
@@ -13,7 +13,7 @@ export default function GuideSignupPage() {
   const router = useRouter()
   const inviteCode = searchParams.get("invite") || (typeof window !== "undefined" ? sessionStorage.getItem("pendingInvite") : null)
 
-  const { signInGuideWithGoogle } = useAuth()
+  const { signInGuideWithGoogle, user: authUser } = useAuth()
   const [valid, setValid] = useState<boolean | null>(null)
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
@@ -32,18 +32,16 @@ export default function GuideSignupPage() {
     setValid(true)
   }, [inviteCode])
 
-  // Check if returning from Google redirect
+  // Detect if user is signed in (from Google redirect or existing session)
   useEffect(() => {
-    console.log("[GuideSignup] Checking redirect result...")
-    getRedirectResult(auth).then(result => {
-      console.log("[GuideSignup] Redirect result:", result ? { uid: result.user.uid, name: result.user.displayName } : "null")
-      if (result?.user) {
-        setUid(result.user.uid)
-        setName(result.user.displayName || "Guide")
-        setStep("class")
-      }
-    }).catch((err) => { console.error("[GuideSignup] Redirect error:", err) })
-  }, [])
+    console.log("[GuideSignup] authUser changed:", authUser ? { uid: authUser.uid, name: authUser.displayName } : "null")
+    if (authUser && !uid && step === "account") {
+      // User just signed in via Google redirect — move to class step
+      setUid(authUser.uid)
+      setName(authUser.displayName || "Guide")
+      setStep("class")
+    }
+  }, [authUser, uid, step])
 
   const handleEmailSignup = async (e: React.FormEvent) => {
     e.preventDefault()
