@@ -4,19 +4,30 @@ import { useState } from "react"
 import { useAuth } from "@/lib/auth"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
+import { signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword } from "firebase/auth"
+import { doc, getDoc } from "firebase/firestore"
+import { auth, db } from "@/lib/firebase"
 
-export default function GuideLoginPage() {
-  const { signInGuide, signInGuideWithGoogle, profile, loading } = useAuth()
+export default function AdminLoginPage() {
+  const { profile, loading } = useAuth()
   const router = useRouter()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [signingIn, setSigningIn] = useState(false)
 
-  // Redirect if already logged in as guide
-  if (profile?.role === "guide") {
-    router.replace("/guide")
+  // Redirect if already logged in as admin
+  if (profile?.role === "admin") {
+    router.replace("/admin")
     return null
+  }
+
+  const verifyAdmin = async (uid: string): Promise<boolean> => {
+    const snap = await getDoc(doc(db, "users", uid))
+    if (!snap.exists() || snap.data().role !== "admin") {
+      return false
+    }
+    return true
   }
 
   const handleEmailLogin = async (e: React.FormEvent) => {
@@ -24,10 +35,16 @@ export default function GuideLoginPage() {
     setSigningIn(true)
     setError(null)
     try {
-      await signInGuide(email, password)
-      router.push("/guide")
+      const cred = await signInWithEmailAndPassword(auth, email, password)
+      const isAdmin = await verifyAdmin(cred.user.uid)
+      if (!isAdmin) {
+        await auth.signOut()
+        setError("This account does not have admin access.")
+        return
+      }
+      router.push("/admin")
     } catch (err: any) {
-      setError(err.message || "Login failed. Check your credentials.")
+      setError(err.message || "Login failed.")
     } finally {
       setSigningIn(false)
     }
@@ -37,8 +54,14 @@ export default function GuideLoginPage() {
     setSigningIn(true)
     setError(null)
     try {
-      await signInGuideWithGoogle()
-      router.push("/guide")
+      const cred = await signInWithPopup(auth, new GoogleAuthProvider())
+      const isAdmin = await verifyAdmin(cred.user.uid)
+      if (!isAdmin) {
+        await auth.signOut()
+        setError("This account does not have admin access. If this is your first time, call POST /api/admin/setup after signing in.")
+        return
+      }
+      router.push("/admin")
     } catch (err: any) {
       setError(err.message || "Google login failed.")
     } finally {
@@ -46,12 +69,20 @@ export default function GuideLoginPage() {
     }
   }
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-6">
       <div className="max-w-sm w-full space-y-6">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-white">Guide Login</h1>
-          <p className="text-zinc-400 text-sm mt-1">Sign in to view your class</p>
+          <h1 className="text-2xl font-bold text-white">Admin Login</h1>
+          <p className="text-zinc-400 text-sm mt-1">Sign in to manage Option C</p>
         </div>
 
         <form onSubmit={handleEmailLogin} className="space-y-4">
@@ -98,15 +129,8 @@ export default function GuideLoginPage() {
         {error && <p className="text-red-400 text-sm text-center">{error}</p>}
 
         <p className="text-zinc-500 text-xs text-center">
-          Guide accounts are invite-only. Contact your admin for access.
+          Admin access is restricted. Contact the system administrator.
         </p>
-
-        <a
-          href="/admin/login"
-          className="block text-center text-xs text-zinc-600 hover:text-zinc-400 transition-colors"
-        >
-          Admin login &rarr;
-        </a>
       </div>
     </div>
   )
