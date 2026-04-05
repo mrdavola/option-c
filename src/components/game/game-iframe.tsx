@@ -5,16 +5,21 @@ import { useEffect, useRef } from "react"
 interface GameIframeProps {
   html: string
   className?: string
+  onWin?: () => void
   onLose?: () => void
 }
 
-export function GameIframe({ html, className, onLose }: GameIframeProps) {
+export function GameIframe({ html, className, onWin, onLose }: GameIframeProps) {
+  const onWinRef = useRef(onWin)
+  onWinRef.current = onWin
   const onLoseRef = useRef(onLose)
   onLoseRef.current = onLose
 
   useEffect(() => {
-    if (!onLoseRef.current) return
     const handler = (e: MessageEvent) => {
+      if (e.data?.type === "game_win") {
+        onWinRef.current?.()
+      }
       if (e.data?.type === "game_lose") {
         onLoseRef.current?.()
       }

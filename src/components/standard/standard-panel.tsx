@@ -9,9 +9,10 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet"
-import { Lock, CheckCircle, ChevronLeft } from "lucide-react"
+import { Lock, CheckCircle, ChevronLeft, Trophy } from "lucide-react"
 import { ConceptCard } from "./concept-card"
 import { GenieChat } from "./genie-chat"
+import { MasteryPlay } from "./mastery-play"
 
 function getShortTitle(standard: StandardNode): string {
   const id = standard.id.toUpperCase()
@@ -54,16 +55,17 @@ function getShortTitle(standard: StandardNode): string {
   return words.slice(0, 4).join(" ")
 }
 
-type FlowStep = "learn" | "earn" | "unlocked"
+type FlowStep = "learn" | "earn" | "unlocked" | "master"
 
 interface StandardPanelProps {
   standard: StandardNode | null
   open: boolean
   onClose: () => void
   onUnlock: (standardId: string) => void
+  onMastered?: (standardId: string) => void
   onBuildGame?: (designDoc: import("@/lib/game-types").GameDesignDoc, chatHistory: string) => void
   interests?: string[]
-  nodeStatus?: "locked" | "available" | "in_progress" | "unlocked"
+  nodeStatus?: "locked" | "available" | "in_progress" | "unlocked" | "mastered"
 }
 
 export function StandardPanel({
@@ -71,6 +73,7 @@ export function StandardPanel({
   open,
   onClose,
   onUnlock,
+  onMastered,
   onBuildGame,
   interests,
   nodeStatus,
@@ -98,7 +101,7 @@ export function StandardPanel({
         </SheetHeader>
 
         <div className="px-4 pb-4">
-          {step === "earn" && nodeStatus !== "locked" && nodeStatus !== "unlocked" && (
+          {(step === "earn" || step === "master") && nodeStatus !== "locked" && nodeStatus !== "mastered" && (
             <button
               onClick={() => setStep("learn")}
               className="flex items-center gap-1 text-sm text-zinc-400 hover:text-zinc-200 mb-3 transition-colors"
@@ -122,10 +125,37 @@ export function StandardPanel({
               />
             </div>
           ) : nodeStatus === "unlocked" ? (
+            step === "master" ? (
+              <MasteryPlay
+                standardId={standard.id}
+                planetId={`${standard.grade}.${standard.domainCode}`}
+                onMastered={() => onMastered?.(standard.id)}
+              />
+            ) : (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 text-emerald-400 text-sm">
+                  <CheckCircle className="size-4 shrink-0" />
+                  <span>You've demonstrated this concept — nice work.</span>
+                </div>
+                <button
+                  onClick={() => setStep("master")}
+                  className="w-full py-3 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                >
+                  <Trophy className="size-4" /> Play to Master
+                </button>
+                <ConceptCard
+                  standard={standard}
+                  onReady={() => {}}
+                  interests={interests}
+                  readOnly
+                />
+              </div>
+            )
+          ) : nodeStatus === "mastered" ? (
             <div className="space-y-4">
-              <div className="flex items-center gap-2 text-emerald-400 text-sm">
-                <CheckCircle className="size-4 shrink-0" />
-                <span>You've demonstrated this concept — nice work.</span>
+              <div className="flex items-center gap-2 text-amber-400 text-sm">
+                <Trophy className="size-4 shrink-0" />
+                <span>You've mastered this skill!</span>
               </div>
               <ConceptCard
                 standard={standard}
