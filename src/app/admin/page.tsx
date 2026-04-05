@@ -3,8 +3,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { useAuth } from "@/lib/auth"
 import { collection, getDocs, query, where, doc, updateDoc, setDoc } from "firebase/firestore"
-import { db, auth as firebaseAuth } from "@/lib/firebase"
-import { createUserWithEmailAndPassword } from "firebase/auth"
+import { db } from "@/lib/firebase"
 import { Button } from "@/components/ui/button"
 import {
   LayoutDashboard,
@@ -184,57 +183,26 @@ export default function AdminDashboardPage() {
     setInviteError(null)
     setInviteResult(null)
     try {
-      // Generate class code
-      const code = Array.from({ length: 6 }, () =>
-        "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[Math.floor(Math.random() * 32)]
+      // Generate invite code
+      const inviteId = Array.from({ length: 12 }, () =>
+        "abcdefghjkmnpqrstuvwxyz23456789"[Math.floor(Math.random() * 32)]
       ).join("")
 
-      // Generate temp password
-      const tempPassword = Math.random().toString(36).slice(-10) + "A1!"
-
-      // Save current admin user (createUserWithEmailAndPassword will sign us out)
-      const adminUser = firebaseAuth.currentUser
-      const adminToken = adminUser ? await adminUser.getIdToken() : null
-
-      // Create the guide's Firebase Auth account
-      const cred = await createUserWithEmailAndPassword(firebaseAuth, inviteEmail, tempPassword)
-      const guideUid = cred.user.uid
-
-      // Create class doc
-      const classRef = doc(collection(db, "classes"))
-      await setDoc(classRef, {
-        name: inviteClassName,
-        code,
-        guideUid,
+      // Save invite to Firestore
+      await setDoc(doc(db, "invites", inviteId), {
         createdAt: Date.now(),
+        createdBy: profile?.uid || "",
+        used: false,
       })
 
-      // Create guide user doc
-      await setDoc(doc(db, "users", guideUid), {
-        uid: guideUid,
-        name: inviteName || inviteEmail.split("@")[0],
-        role: "guide",
-        grade: "",
-        interests: [],
-        classId: classRef.id,
-        tokens: 0,
-        createdAt: Date.now(),
-        lastLoginAt: Date.now(),
-      })
-
-      // Sign back in as admin (creating a user signs you in as them)
-      await firebaseAuth.signOut()
-      // Re-auth as admin — reload the page to restore admin session
+      const link = `${window.location.origin}/guide/signup?invite=${inviteId}`
       setInviteResult({
-        code,
-        message: `Guide created! Email: ${inviteEmail}, Temp password: ${tempPassword}, Class code: ${code}. Tell the guide to reset their password at /guide/login.`,
+        code: link,
+        message: `Send this link to the guide. They'll create their own account and class.`,
       })
       setInviteName("")
       setInviteEmail("")
       setInviteClassName("")
-
-      // Reload to restore admin session
-      setTimeout(() => window.location.reload(), 3000)
     } catch (err: any) {
       setInviteError(err.message)
     } finally {
@@ -366,56 +334,30 @@ export default function AdminDashboardPage() {
                 {/* Invite Form */}
                 {showInvite && (
                   <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 space-y-4">
-                    <h3 className="font-medium text-sm text-zinc-300">Invite a Guide</h3>
-                    <form onSubmit={handleInvite} className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                      <input
-                        type="text"
-                        value={inviteName}
-                        onChange={(e) => setInviteName(e.target.value)}
-                        placeholder="Guide name"
-                        required
-                        className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                      />
-                      <input
-                        type="email"
-                        value={inviteEmail}
-                        onChange={(e) => setInviteEmail(e.target.value)}
-                        placeholder="Guide email"
-                        required
-                        className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                      />
-                      <input
-                        type="text"
-                        value={inviteClassName}
-                        onChange={(e) => setInviteClassName(e.target.value)}
-                        placeholder="Class name"
-                        required
-                        className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                      />
-                      <div className="md:col-span-3">
-                        <Button type="submit" size="sm" disabled={inviting}>
-                          {inviting ? "Creating..." : "Create Guide + Class"}
-                        </Button>
-                      </div>
+                    <h3 className="font-medium text-sm text-zinc-300">Generate an invite link</h3>
+                    <p className="text-zinc-500 text-xs">The guide will use this link to create their own account and class.</p>
+                    <form onSubmit={handleInvite}>
+                      <Button type="submit" size="sm" disabled={inviting}>
+                        {inviting ? "Generating..." : "Generate Invite Link"}
+                      </Button>
                     </form>
                     {inviteResult && (
-                      <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-3 flex items-center justify-between">
-                        <div>
-                          <p className="text-emerald-400 text-sm font-medium">Guide created successfully</p>
-                          <p className="text-emerald-300/70 text-xs mt-0.5">
-                            Class code: <span className="font-mono font-bold text-emerald-300">{inviteResult.code}</span>
-                          </p>
+                      <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-3 space-y-2">
+                        <p className="text-emerald-400 text-sm font-medium">Invite link ready</p>
+                        <p className="text-emerald-300/70 text-xs">{inviteResult.message}</p>
+                        <div className="flex items-center gap-2 bg-zinc-800 rounded-lg px-3 py-2">
+                          <code className="text-xs text-white flex-1 break-all">{inviteResult.code}</code>
+                          <button
+                            onClick={() => copyCode(inviteResult.code)}
+                            className="text-emerald-400 hover:text-emerald-300 p-1 shrink-0"
+                          >
+                            {copiedCode === inviteResult.code ? (
+                              <Check className="size-4" />
+                            ) : (
+                              <Copy className="size-4" />
+                            )}
+                          </button>
                         </div>
-                        <button
-                          onClick={() => copyCode(inviteResult.code)}
-                          className="text-emerald-400 hover:text-emerald-300 p-1"
-                        >
-                          {copiedCode === inviteResult.code ? (
-                            <Check className="size-4" />
-                          ) : (
-                            <Copy className="size-4" />
-                          )}
-                        </button>
                       </div>
                     )}
                     {inviteError && (
