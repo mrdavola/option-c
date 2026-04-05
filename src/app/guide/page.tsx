@@ -5,7 +5,8 @@ import { useAuth } from "@/lib/auth"
 import { db } from "@/lib/firebase"
 import { collection, query, where, getDocs, doc, getDoc, setDoc, updateDoc, arrayUnion } from "firebase/firestore"
 import { Button } from "@/components/ui/button"
-import { Copy, Check, Users, GamepadIcon, Clock, Plus, ChevronDown } from "lucide-react"
+import { Copy, Check, Users, GamepadIcon, Clock, Plus, ChevronDown, Eye } from "lucide-react"
+import { useRouter } from "next/navigation"
 import type { Game } from "@/lib/game-types"
 
 interface StudentSummary {
@@ -24,7 +25,8 @@ interface ClassInfo {
 }
 
 export default function GuideDashboard() {
-  const { profile, signOut } = useAuth()
+  const { profile, signOut, startImpersonating } = useAuth()
+  const router = useRouter()
   const [tab, setTab] = useState<"students" | "reviews" | "games">("students")
   const [classData, setClassData] = useState<ClassInfo | null>(null)
   const [allClasses, setAllClasses] = useState<ClassInfo[]>([])
@@ -39,6 +41,28 @@ export default function GuideDashboard() {
   const [showNewClass, setShowNewClass] = useState(false)
   const [newClassName, setNewClassName] = useState("")
   const [creatingClass, setCreatingClass] = useState(false)
+
+  async function handleImpersonate(studentUid: string) {
+    await startImpersonating(studentUid)
+    router.push("/")
+  }
+
+  async function handleCreateDemoStudent() {
+    if (!profile?.classId) return
+    const demoRef = doc(collection(db, "users"))
+    await setDoc(demoRef, {
+      uid: demoRef.id,
+      role: "student",
+      name: "Demo Student",
+      grade: "",
+      interests: "",
+      classId: profile.classId,
+      tokens: 0,
+      createdAt: Date.now(),
+    })
+    await startImpersonating(demoRef.id)
+    router.push("/")
+  }
 
   // Load all classes the guide owns
   useEffect(() => {
@@ -322,6 +346,15 @@ export default function GuideDashboard() {
           </div>
         )}
 
+        {/* Create Demo Student */}
+        <button
+          onClick={handleCreateDemoStudent}
+          className="text-sm text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1"
+        >
+          <Plus className="size-4" />
+          Create Demo Student
+        </button>
+
         {/* Tabs */}
         <div className="flex gap-1 bg-zinc-900 rounded-lg p-1 border border-zinc-800">
           {([
@@ -361,6 +394,7 @@ export default function GuideDashboard() {
                       <th className="px-4 py-3 text-xs text-zinc-400 font-medium text-center">Tokens</th>
                       <th className="px-4 py-3 text-xs text-zinc-400 font-medium text-center">Unlocked</th>
                       <th className="px-4 py-3 text-xs text-zinc-400 font-medium text-center">Mastered</th>
+                      <th></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -375,11 +409,20 @@ export default function GuideDashboard() {
                         <td className="px-4 py-3 text-sm text-amber-400 text-center font-mono">{s.tokens}</td>
                         <td className="px-4 py-3 text-sm text-blue-400 text-center">{s.skillsUnlocked}</td>
                         <td className="px-4 py-3 text-sm text-emerald-400 text-center">{s.skillsMastered}</td>
+                        <td className="px-4 py-3 text-right">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleImpersonate(s.uid) }}
+                            title="View as this student"
+                            className="text-zinc-500 hover:text-white transition-colors p-1"
+                          >
+                            <Eye className="size-4" />
+                          </button>
+                        </td>
                       </tr>
                     ))}
                     {students.length === 0 && (
                       <tr>
-                        <td colSpan={5} className="px-4 py-8 text-center text-zinc-500 text-sm">
+                        <td colSpan={6} className="px-4 py-8 text-center text-zinc-500 text-sm">
                           No students yet. Share the class code to get started.
                         </td>
                       </tr>
