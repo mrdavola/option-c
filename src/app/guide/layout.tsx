@@ -17,7 +17,11 @@ export default function GuideLayout({ children }: { children: React.ReactNode })
     }
   }, [profile, loading, pathname, router])
 
-  if (loading) {
+  // Show spinner while loading OR while redirecting non-guides
+  const isGuide = profile?.role === "guide"
+  const isAuthPage = pathname === "/guide/login" || pathname.startsWith("/guide/signup")
+
+  if (loading || (!isGuide && !isAuthPage)) {
     return (
       <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
         <div className="w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />

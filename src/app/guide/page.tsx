@@ -42,7 +42,7 @@ export default function GuideDashboard() {
 
   // Load all classes the guide owns
   useEffect(() => {
-    if (!profile) return
+    if (!profile || profile.role !== "guide") return
     const classIds = profile.classIds || (profile.classId ? [profile.classId] : [])
     if (classIds.length === 0) return
     Promise.all(
@@ -60,9 +60,9 @@ export default function GuideDashboard() {
   }, [profile])
 
   useEffect(() => {
-    if (!profile?.classId) return
+    if (!profile?.classId || profile.role !== "guide") return
     loadDashboard(profile.classId)
-  }, [profile?.classId])
+  }, [profile?.classId, profile?.role])
 
   const switchClass = useCallback(async (classId: string) => {
     if (!profile) return
