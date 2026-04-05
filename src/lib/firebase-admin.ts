@@ -5,10 +5,11 @@ import { getFirestore, type Firestore } from "firebase-admin/firestore"
 function getServiceAccount(): ServiceAccount {
   const key = process.env.FIREBASE_SERVICE_ACCOUNT_KEY
   if (!key) throw new Error("FIREBASE_SERVICE_ACCOUNT_KEY not set")
+  // Try raw JSON first, then base64
   try {
-    return JSON.parse(Buffer.from(key, "base64").toString())
-  } catch {
     return JSON.parse(key)
+  } catch {
+    return JSON.parse(Buffer.from(key, "base64").toString())
   }
 }
 
