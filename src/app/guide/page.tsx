@@ -297,6 +297,31 @@ export default function GuideDashboard() {
           </div>
         </div>
 
+        {/* Share with students */}
+        {classData && (
+          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 flex flex-col sm:flex-row items-center gap-4">
+            <div className="flex-1 text-center sm:text-left">
+              <p className="text-sm text-zinc-400">Share this code with your students</p>
+              <p className="text-3xl font-mono font-bold text-white tracking-widest mt-1">{classData.code}</p>
+            </div>
+            <div className="flex flex-col gap-2 items-center sm:items-end">
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(`${window.location.origin}`)
+                  setCopied(true)
+                  setTimeout(() => setCopied(false), 2000)
+                }}
+                className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
+              >
+                {copied ? "Copied!" : "Copy student link"}
+              </button>
+              <p className="text-xs text-zinc-500 max-w-xs text-center sm:text-right">
+                Students enter this code at the app homepage to join your class
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Tabs */}
         <div className="flex gap-1 bg-zinc-900 rounded-lg p-1 border border-zinc-800">
           {([
