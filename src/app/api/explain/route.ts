@@ -1,6 +1,8 @@
-import { generateText } from "ai"
+import Anthropic from "@anthropic-ai/sdk"
 
 export const maxDuration = 30
+
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
 export async function POST(req: Request) {
   const { standardId, description, grade, readingLevel, interests } = await req.json() as {
@@ -22,22 +24,27 @@ export async function POST(req: Request) {
   }[readingLevel]
 
   try {
-    const { text } = await generateText({
-      model: "anthropic/claude-sonnet-4.5",
+    const message = await anthropic.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 600,
       system: `You explain math concepts to students. ${levelInstruction} Be warm and calm. Never use the word "standard". At most one exclamation mark total.
 
 You MUST respond with ONLY a valid JSON object — no markdown, no code fences, no extra text before or after.
 The JSON must have exactly these four keys:
 - "whatIsThis": string — 2-3 sentences explaining the concept at the right reading level
 - "commonMistakes": array of strings — 2-4 items, each a specific concrete mistake students make with THIS concept (one sentence each)
-- "realWorldUse": string — 2-3 sentences showing where this math shows up in real life (tie to student interests if any)
+- "realWorldUse": string — 2-3 sentences showing SPECIFICALLY where THIS math concept shows up in real life, not generic math. Be concrete and specific to the concept. Tie to student interests if any.
 - "formula": string — the key formula for this concept in plain text, or "" if none applies
 
 Example of correct format:
-{"whatIsThis":"Fractions show a part of a whole...","commonMistakes":["Students add the denominators instead of keeping them the same.","They forget to simplify at the end."],"realWorldUse":"You use fractions when splitting a pizza or measuring ingredients.","formula":"part/whole"}`,
-      prompt: `Explain this math concept: "${description}" (Standard ${standardId}, Grade ${grade})`,
+{"whatIsThis":"Fractions show a part of a whole...","commonMistakes":["Students add the denominators instead of keeping them the same.","They forget to simplify at the end."],"realWorldUse":"You use fractions when splitting a pizza into equal slices or measuring half a cup of flour in a recipe.","formula":"part/whole"}`,
+      messages: [{
+        role: "user",
+        content: `Explain this math concept: "${description}" (Standard ${standardId}, Grade ${grade})`,
+      }],
     })
 
+    const text = message.content[0].type === "text" ? message.content[0].text : ""
     const cleaned = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim()
     const start = cleaned.indexOf("{")
     const end = cleaned.lastIndexOf("}")
@@ -68,7 +75,7 @@ function fallback(description: string) {
       "Mixing up this concept with a similar one.",
       "Forgetting to apply the rule consistently.",
     ],
-    realWorldUse: "This math concept comes up in everyday situations like shopping, cooking, sports, and building things.",
+    realWorldUse: "You'll use this in real life more than you think!",
     formula: "",
   })
 }

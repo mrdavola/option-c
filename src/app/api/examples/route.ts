@@ -1,6 +1,8 @@
-import { generateText } from "ai"
+import Anthropic from "@anthropic-ai/sdk"
 
 export const maxDuration = 30
+
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
 export async function POST(req: Request) {
   const { standardId, description, grade, interests } = await req.json() as {
@@ -14,9 +16,11 @@ export async function POST(req: Request) {
     ? `The student likes: ${interests.join(", ")}. At least 1 idea should connect to their interests.`
     : ""
 
-  const { text } = await generateText({
-    model: "anthropic/claude-sonnet-4.5",
-    system: `You suggest game design ideas that use a specific math concept. Each idea is a game MECHANIC — not a full game, just a core loop a student could build on.
+  try {
+    const message = await anthropic.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 600,
+      system: `You suggest game design ideas that use a specific math concept. Each idea is a game MECHANIC — not a full game, just a core loop a student could build on.
 
 ${interestContext}
 
@@ -34,10 +38,13 @@ RULES:
 - The "example" should make it clear exactly how the math shows up
 - Mechanics should be things a student could actually build (simple, achievable)
 - Think: card games, board games, obstacle courses, cooking challenges, building competitions, races, treasure hunts`,
-    prompt: `Suggest 3 game mechanics that use this math concept: "${description}" (Standard ${standardId}, Grade ${grade})`,
-  })
+      messages: [{
+        role: "user",
+        content: `Suggest 3 game mechanics that use this math concept: "${description}" (Standard ${standardId}, Grade ${grade})`,
+      }],
+    })
 
-  try {
+    const text = message.content[0].type === "text" ? message.content[0].text : ""
     const cleaned = text.replace(/```json?\n?/g, "").replace(/```/g, "").trim()
     const parsed = JSON.parse(cleaned)
     return Response.json(parsed)
@@ -45,8 +52,8 @@ RULES:
     return Response.json({
       inspos: [
         { icon: "target", mechanic: "Target Challenge", hook: "Hit the right number to score!", example: `Use ${description.slice(0, 40).toLowerCase()} to aim for the perfect score.` },
-        { icon: "hammer", mechanic: "Build & Balance", hook: "Stack it up without falling!", example: `The math helps you figure out the right amounts to keep things balanced.` },
-        { icon: "puzzle", mechanic: "Puzzle Race", hook: "Solve it faster than your friends!", example: `Each puzzle uses this math concept — the faster you solve, the more you score.` },
+        { icon: "hammer", mechanic: "Build & Balance", hook: "Stack it up without falling!", example: "The math helps you figure out the right amounts to keep things balanced." },
+        { icon: "puzzle", mechanic: "Puzzle Race", hook: "Solve it faster than your friends!", example: "Each puzzle uses this math concept — the faster you solve, the more you score." },
       ]
     })
   }
