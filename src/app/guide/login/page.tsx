@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useAuth } from "@/lib/auth"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -8,18 +8,30 @@ import { sendPasswordResetEmail } from "firebase/auth"
 import { auth } from "@/lib/firebase"
 
 export default function GuideLoginPage() {
-  const { signInGuide, signInGuideWithGoogle, profile, loading } = useAuth()
+  const { signInGuide, signInGuideWithGoogle, user, profile, loading, signOut } = useAuth()
   const router = useRouter()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [signingIn, setSigningIn] = useState(false)
 
-  // Redirect if already logged in as guide
-  if (profile?.role === "guide") {
-    router.replace("/guide")
-    return null
-  }
+  // Handle post-login redirect
+  useEffect(() => {
+    if (loading) return
+    if (profile?.role === "guide") {
+      router.replace("/guide")
+    } else if (profile?.role === "admin") {
+      router.replace("/admin")
+    } else if (user && profile && !["guide", "admin"].includes(profile.role)) {
+      // Signed in but not a guide
+      setError("This account doesn't have guide access. Contact your admin for an invite link.")
+      signOut()
+    } else if (user && !profile) {
+      // Signed in with Google but no user doc at all
+      setError("No guide account found for this email. Ask your admin for an invite link to sign up.")
+      signOut()
+    }
+  }, [user, profile, loading, router, signOut])
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault()
