@@ -470,11 +470,27 @@ export function GraphPage({ data }: GraphPageProps) {
         ) : null
       )}
 
+      {/* Impersonation banner */}
+      {impersonating && buildMode === "idle" && (
+        <div className="fixed top-0 left-0 right-0 z-30 bg-amber-500/90 text-black px-4 py-2 flex items-center justify-between">
+          <span className="text-sm font-medium">Viewing as {activeProfile?.name ?? "student"}</span>
+          <button
+            onClick={() => {
+              stopImpersonating()
+              window.location.href = "/guide"
+            }}
+            className="text-sm font-semibold bg-black/20 hover:bg-black/30 rounded px-3 py-1 transition-colors"
+          >
+            Back to Dashboard
+          </button>
+        </div>
+      )}
+
       {/* Back to Galaxy button (planet view only, hidden during build) */}
       {buildMode === "idle" && viewMode === "planet" && (
         <button
           onClick={handleBackToGalaxy}
-          className="absolute top-4 left-4 z-20 flex items-center gap-2 bg-zinc-900/80 backdrop-blur-sm border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-300 hover:text-white hover:border-zinc-600 transition-colors"
+          className={`absolute ${impersonating ? "top-14" : "top-4"} left-4 z-20 flex items-center gap-2 bg-zinc-900/80 backdrop-blur-sm border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-300 hover:text-white hover:border-zinc-600 transition-colors`}
         >
           <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none">
             <path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
@@ -484,7 +500,7 @@ export function GraphPage({ data }: GraphPageProps) {
       )}
 
       {/* Top-right controls */}
-      <div className="absolute top-4 right-4 z-10 flex flex-col gap-2 items-end">
+      <div className={`absolute ${impersonating ? "top-14" : "top-4"} right-4 z-10 flex flex-col gap-2 items-end`}>
         {/* Progress + tokens */}
         <div className="bg-zinc-900/80 backdrop-blur-sm rounded-lg px-4 py-2.5 border border-zinc-800">
           <div className="flex items-center gap-3">
@@ -558,7 +574,7 @@ export function GraphPage({ data }: GraphPageProps) {
 
       {/* Tutorial hint */}
       {tutorialStep === 0 && viewMode === "galaxy" && (
-        <div className="absolute top-4 left-4 z-10">
+        <div className={`absolute ${impersonating ? "top-14" : "top-4"} left-4 z-10`}>
           <div className="bg-blue-500/20 backdrop-blur-sm border border-blue-500/30 rounded-xl px-4 py-2 text-sm text-blue-200 max-w-xs">
             Click a planet to explore its standards
           </div>
