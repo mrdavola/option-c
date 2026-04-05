@@ -37,6 +37,8 @@ interface AuthContextValue {
   user: User | null
   profile: UserProfile | null
   loading: boolean
+  impersonating: UserProfile | null
+  activeProfile: UserProfile | null
   signInStudent: (classCode: string, name: string) => Promise<void>
   signInGuide: (email: string, password: string) => Promise<void>
   signInGuideWithGoogle: () => Promise<void>
@@ -45,6 +47,8 @@ interface AuthContextValue {
   updateTokens: (delta: number) => Promise<number>
   saveProgress: (standardId: string, data: Partial<ProgressDoc>) => Promise<void>
   loadProgress: () => Promise<Map<string, ProgressDoc>>
+  startImpersonating: (studentUid: string) => Promise<void>
+  stopImpersonating: () => void
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -55,6 +59,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
+  const [impersonating, setImpersonating] = useState<UserProfile | null>(null)
+
+  const activeProfile = impersonating ?? profile
 
   // Load user profile from Firestore (with retry and error handling)
   const loadProfile = useCallback(async (uid: string) => {
@@ -163,45 +170,64 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfile(null)
   }, [])
 
+  const startImpersonating = useCallback(async (studentUid: string) => {
+    const snap = await getDoc(doc(db, "users", studentUid))
+    if (!snap.exists()) throw new Error("Student not found.")
+    setImpersonating(snap.data() as UserProfile)
+  }, [])
+
+  const stopImpersonating = useCallback(() => {
+    setImpersonating(null)
+  }, [])
+
   const updateTokens = useCallback(async (delta: number): Promise<number> => {
     if (!user) throw new Error("Must be signed in to update tokens.")
-    const userRef = doc(db, "users", user.uid)
+    const targetUid = impersonating?.uid ?? user.uid
+    const userRef = doc(db, "users", targetUid)
     await updateDoc(userRef, { tokens: increment(delta) })
     const snap = await getDoc(userRef)
     const newTotal = (snap.data() as UserProfile).tokens
-    setProfile((prev) => (prev ? { ...prev, tokens: newTotal } : prev))
+    if (impersonating) {
+      setImpersonating((prev) => (prev ? { ...prev, tokens: newTotal } : prev))
+    } else {
+      setProfile((prev) => (prev ? { ...prev, tokens: newTotal } : prev))
+    }
     return newTotal
-  }, [user])
+  }, [user, impersonating])
 
   const saveProgress = useCallback(
     async (standardId: string, data: Partial<ProgressDoc>) => {
       if (!user) throw new Error("Must be signed in to save progress.")
+      const targetUid = impersonating?.uid ?? user.uid
       await setDoc(
-        doc(db, "progress", user.uid, "standards", standardId),
+        doc(db, "progress", targetUid, "standards", standardId),
         data,
         { merge: true }
       )
     },
-    [user]
+    [user, impersonating]
   )
 
   const loadProgressFn = useCallback(async (): Promise<Map<string, ProgressDoc>> => {
     if (!user) throw new Error("Must be signed in to load progress.")
+    const targetUid = impersonating?.uid ?? user.uid
     const snap = await getDocs(
-      collection(db, "progress", user.uid, "standards")
+      collection(db, "progress", targetUid, "standards")
     )
     const result = new Map<string, ProgressDoc>()
     snap.forEach((d) => {
       result.set(d.id, d.data() as ProgressDoc)
     })
     return result
-  }, [user])
+  }, [user, impersonating])
 
   return (
     <AuthContext value={{
       user,
       profile,
       loading,
+      impersonating,
+      activeProfile,
       signInStudent,
       signInGuide,
       signInGuideWithGoogle,
@@ -210,6 +236,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       updateTokens,
       saveProgress,
       loadProgress: loadProgressFn,
+      startImpersonating,
+      stopImpersonating,
     }}>
       {children}
     </AuthContext>
