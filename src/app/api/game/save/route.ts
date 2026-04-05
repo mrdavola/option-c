@@ -9,6 +9,7 @@ export async function POST(req: Request) {
   await setDoc(doc(db, "games", gameId), {
     ...game,
     id: gameId,
+    reviews: game.reviews || [],
     updatedAt: Date.now(),
     createdAt: game.createdAt || Date.now(),
   })

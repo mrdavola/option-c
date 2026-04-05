@@ -317,7 +317,9 @@ export function GraphPage({ data }: GraphPageProps) {
         body: JSON.stringify({
           id: gameId,
           title: currentDesignDoc?.title || "Untitled",
-          designerName: "Student",
+          designerName: profile?.name || "Student",
+          authorUid: profile?.uid || "",
+          classId: profile?.classId || "",
           standardId: currentDesignDoc?.standardId || "",
           planetId: currentDesignDoc?.planetId || "",
           gameHtml: html,
@@ -335,63 +337,45 @@ export function GraphPage({ data }: GraphPageProps) {
     setCurrentDesignDoc(null)
     setCurrentGameHtml("")
     setCurrentGameId(null)
-  }, [currentDesignDoc])
+  }, [currentDesignDoc, profile])
 
   // Handle send for review
   const handleSendForReview = useCallback(async (html: string, gameId: string | null) => {
-    // Save first
+    // Save with pending_review status
     try {
-      const saveRes = await fetch("/api/game/save", {
+      await fetch("/api/game/save", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           id: gameId,
           title: currentDesignDoc?.title || "Untitled",
-          designerName: "Student",
+          designerName: profile?.name || "Student",
+          authorUid: profile?.uid || "",
+          classId: profile?.classId || "",
           standardId: currentDesignDoc?.standardId || "",
           planetId: currentDesignDoc?.planetId || "",
           gameHtml: html,
           designDoc: currentDesignDoc,
-          status: "in_review",
+          status: "pending_review",
           playCount: 0,
           ratingSum: 0,
           ratingCount: 0,
         }),
       })
-      const { id } = await saveRes.json()
-      const reviewGameId = gameId || id
 
-      // Run AI review
-      const reviewRes = await fetch(`/api/game/${reviewGameId}/review`, {
-        method: "POST",
-      })
-      const result = await reviewRes.json()
-
-      if (result.pass) {
-        // Award +1 token for published game
-        updateTokens(1).then((newTotal) => setTokens(newTotal)).catch(() => {
-          setTokens(t => t + 1)
-        })
-        setTokenNotify("+1 token — game published!")
-        setTimeout(() => setTokenNotify(null), 3000)
-
-        setReviewResult(result)
-        setTimeout(() => {
-          setBuildMode("idle")
-          setCurrentDesignDoc(null)
-          setCurrentGameHtml("")
-          setCurrentGameId(null)
-          setReviewResult(null)
-        }, 3000)
-      } else {
-        setReviewResult(result)
-        setTimeout(() => setReviewResult(null), 5000)
-      }
+      setReviewResult({ pass: true, feedback: "Sent for review! Your classmates will check it out." })
+      setTimeout(() => {
+        setBuildMode("idle")
+        setCurrentDesignDoc(null)
+        setCurrentGameHtml("")
+        setCurrentGameId(null)
+        setReviewResult(null)
+      }, 2000)
     } catch {
-      setReviewResult({ pass: false, feedback: "Review failed. Please try again." })
+      setReviewResult({ pass: false, feedback: "Failed to submit. Please try again." })
       setTimeout(() => setReviewResult(null), 4000)
     }
-  }, [currentDesignDoc])
+  }, [currentDesignDoc, profile])
 
   // Show loading while auth is initializing
   if (authLoading) {

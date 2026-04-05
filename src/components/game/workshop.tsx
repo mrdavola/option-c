@@ -5,6 +5,7 @@ import type { GameDesignDoc } from "@/lib/game-types"
 import { GameIframe } from "./game-iframe"
 import { MathMomentOverlay } from "./math-moment-overlay"
 import { Send, ArrowLeft, MessageCircle, X } from "lucide-react"
+import { useAuth } from "@/lib/auth"
 
 interface WorkshopProps {
   initialHtml: string
@@ -26,6 +27,7 @@ export function Workshop({
   onBackToPlanet,
   onSendForReview,
 }: WorkshopProps) {
+  const { profile } = useAuth()
   const [html, setHtml] = useState(initialHtml)
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
     {
@@ -58,7 +60,9 @@ export function Workshop({
         body: JSON.stringify({
           id: currentGameId,
           title: designDoc.title,
-          designerName: "Student",
+          designerName: profile?.name || "Student",
+          authorUid: profile?.uid || "",
+          classId: profile?.classId || "",
           standardId: designDoc.standardId,
           planetId: designDoc.planetId,
           gameHtml,
