@@ -96,7 +96,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [loadProfile])
 
   const signInStudent = useCallback(async (classCode: string, name: string) => {
-    // 1. Find the class by code
+    // 1. Sign in anonymously first (needed for Firestore access)
+    let currentUser = auth.currentUser
+    if (!currentUser) {
+      const cred = await signInAnonymously(auth)
+      currentUser = cred.user
+    }
+
+    // 2. Find the class by code
     const classQuery = query(
       collection(db, "classes"),
       where("code", "==", classCode.toUpperCase())
@@ -105,13 +112,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (classSnap.empty) throw new Error("Class not found. Check your code.")
     const classDoc = classSnap.docs[0]
     const classId = classDoc.id
-
-    // 2. Sign in anonymously (or already signed in)
-    let currentUser = auth.currentUser
-    if (!currentUser) {
-      const cred = await signInAnonymously(auth)
-      currentUser = cred.user
-    }
 
     // 3. Check if this student already exists in this class
     const studentsQuery = query(
