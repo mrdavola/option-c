@@ -27,14 +27,12 @@ export default function GuideSignupPage() {
 
   // If there's an invite code, assume valid — we'll verify when they submit
   useEffect(() => {
-    console.log("[GuideSignup] inviteCode:", inviteCode)
     if (!inviteCode) { setValid(false); return }
     setValid(true)
   }, [inviteCode])
 
   // Detect if user is signed in (from Google redirect or existing session)
   useEffect(() => {
-    console.log("[GuideSignup] authUser changed:", authUser ? { uid: authUser.uid, name: authUser.displayName } : "null")
     if (authUser && !uid && step === "account") {
       // User just signed in via Google redirect — move to class step
       setUid(authUser.uid)
@@ -64,12 +62,10 @@ export default function GuideSignupPage() {
   }
 
   const handleGoogleSignup = async () => {
-    console.log("[GuideSignup] Starting Google signup, inviteCode:", inviteCode)
     // Store invite code in sessionStorage so we can recover it after redirect
     if (inviteCode) sessionStorage.setItem("pendingInvite", inviteCode)
     try {
       await signInGuideWithGoogle()
-      console.log("[GuideSignup] signInGuideWithGoogle returned (should redirect)")
     } catch (err) {
       console.error("[GuideSignup] Google signup error:", err)
       setError(String(err))

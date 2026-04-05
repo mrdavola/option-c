@@ -73,20 +73,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Handle Google redirect result on page load
   useEffect(() => {
-    console.log("[Auth] Checking redirect result...")
-    getRedirectResult(auth).then(result => {
-      console.log("[Auth] Redirect result:", result ? { uid: result.user.uid, email: result.user.email } : "null")
-    }).catch((err) => { console.error("[Auth] Redirect error:", err) })
+    getRedirectResult(auth).catch((err) => { console.error("[Auth] Redirect error:", err) })
   }, [])
 
   // Listen for auth state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      console.log("[Auth] onAuthStateChanged:", firebaseUser ? { uid: firebaseUser.uid, email: firebaseUser.email } : "null")
       setUser(firebaseUser)
       if (firebaseUser) {
         await loadProfile(firebaseUser.uid)
-        console.log("[Auth] Profile loaded")
       } else {
         setProfile(null)
       }
