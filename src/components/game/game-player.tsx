@@ -2,17 +2,20 @@
 
 import { useState, useEffect, useRef } from "react"
 import { GameIframe } from "./game-iframe"
+import { MathMomentOverlay } from "./math-moment-overlay"
 import { X } from "lucide-react"
 
 interface GamePlayerProps {
   gameId: string
   title: string
   html: string
+  concept?: string
   onClose: () => void
 }
 
-export function GamePlayer({ gameId, title, html, onClose }: GamePlayerProps) {
+export function GamePlayer({ gameId, title, html, concept, onClose }: GamePlayerProps) {
   const [showRating, setShowRating] = useState(false)
+  const [showMathMoment, setShowMathMoment] = useState(false)
   const [selectedRating, setSelectedRating] = useState(0)
   const [hasRated, setHasRated] = useState(false)
   const timerRef = useRef<ReturnType<typeof setTimeout>>(null)
@@ -56,7 +59,10 @@ export function GamePlayer({ gameId, title, html, onClose }: GamePlayerProps) {
 
       {/* Game */}
       <div className="flex-1 relative">
-        <GameIframe html={html} className="w-full h-full" />
+        <GameIframe html={html} className="w-full h-full" onLose={concept ? () => setShowMathMoment(true) : undefined} />
+        {showMathMoment && concept && (
+          <MathMomentOverlay concept={concept} onDismiss={() => setShowMathMoment(false)} />
+        )}
 
         {/* Rating prompt */}
         {showRating && !hasRated && (

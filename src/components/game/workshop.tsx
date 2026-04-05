@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react"
 import type { GameDesignDoc } from "@/lib/game-types"
 import { GameIframe } from "./game-iframe"
+import { MathMomentOverlay } from "./math-moment-overlay"
 import { Send, ArrowLeft, MessageCircle, X } from "lucide-react"
 
 interface WorkshopProps {
@@ -36,6 +37,7 @@ export function Workshop({
   const [isRefining, setIsRefining] = useState(false)
   const [currentGameId, setCurrentGameId] = useState(gameId)
   const [mobileChat, setMobileChat] = useState(false)
+  const [showMathMoment, setShowMathMoment] = useState(false)
   const chatScrollRef = useRef<HTMLDivElement>(null)
   const hasInteracted = useRef(false)
 
@@ -158,7 +160,13 @@ export function Workshop({
       <div className="flex-1 flex overflow-hidden">
         {/* Game iframe — 65% on desktop, full on mobile */}
         <div className="flex-1 md:w-[65%] md:flex-none relative">
-          <GameIframe html={html} className="w-full h-full" />
+          <GameIframe html={html} className="w-full h-full" onLose={() => setShowMathMoment(true)} />
+          {showMathMoment && (
+            <MathMomentOverlay
+              concept={designDoc.concept}
+              onDismiss={() => setShowMathMoment(false)}
+            />
+          )}
 
           {/* Mobile chat toggle */}
           <button

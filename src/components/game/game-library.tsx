@@ -14,6 +14,7 @@ export function GameLibrary({ games }: GameLibraryProps) {
     id: string
     title: string
     html: string
+    concept?: string
   } | null>(null)
   const [gradeFilter, setGradeFilter] = useState<string>("all")
   const [loading, setLoading] = useState<string | null>(null)
@@ -39,6 +40,7 @@ export function GameLibrary({ games }: GameLibraryProps) {
         id: gameId,
         title: game?.title || "Game",
         html,
+        concept: game?.designDoc?.concept,
       })
     } catch {
       // Silent fail
@@ -102,6 +104,7 @@ export function GameLibrary({ games }: GameLibraryProps) {
           gameId={playingGame.id}
           title={playingGame.title}
           html={playingGame.html}
+          concept={playingGame.concept}
           onClose={() => setPlayingGame(null)}
         />
       )}

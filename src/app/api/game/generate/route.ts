@@ -40,7 +40,8 @@ REQUIREMENTS:
 - Target audience: elementary/middle school students. Keep it simple and fun.
 - Responsive — works on desktop and mobile.
 - Include clear instructions on how to play.
-- Maximum 500 lines of code. Keep it simple but polished.`,
+- Maximum 500 lines of code. Keep it simple but polished.
+- IMPORTANT: When the player loses (game over / lose state), you MUST call window.parent.postMessage({type:'game_lose'}, '*') exactly once before showing the lose screen. This is required.`,
     }],
   })
 
