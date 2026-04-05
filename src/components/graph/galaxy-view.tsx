@@ -20,10 +20,15 @@ function getGradeBandForGrade(grade: string | null): string | null {
   return "HS"
 }
 
+const ZOOM_MIN_DIST = 80
+const ZOOM_MAX_DIST = 600
+
 export function GalaxyView({ galaxyData, onPlanetClick, onLockedPlanetClick, currentPlanetId, initialGrade, recommendedPlanetId }: GalaxyViewProps) {
   const fgRef = useRef<any>(null)
   const [ForceGraph3D, setForceGraph3D] = useState<any>(null)
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
+  const [zoomLevel, setZoomLevel] = useState(50)
+  const [showPinchHint, setShowPinchHint] = useState(false)
   const recommendedPlanetIdRef = useRef(recommendedPlanetId)
   useEffect(() => { recommendedPlanetIdRef.current = recommendedPlanetId }, [recommendedPlanetId])
 
@@ -34,10 +39,16 @@ export function GalaxyView({ galaxyData, onPlanetClick, onLockedPlanetClick, cur
     })
   }, [])
 
-  // Track window dimensions
+  // Track window dimensions + show mobile pinch hint
   useEffect(() => {
     const update = () => setDimensions({ width: window.innerWidth, height: window.innerHeight })
     update()
+    if (window.innerWidth < 768) {
+      setShowPinchHint(true)
+      const timer = setTimeout(() => setShowPinchHint(false), 3000)
+      window.addEventListener("resize", update)
+      return () => { window.removeEventListener("resize", update); clearTimeout(timer) }
+    }
     window.addEventListener("resize", update)
     return () => window.removeEventListener("resize", update)
   }, [])
@@ -326,13 +337,37 @@ export function GalaxyView({ galaxyData, onPlanetClick, onLockedPlanetClick, cur
     return group
   }, [])
 
-  // Animate pulse rings
+  // Zoom slider handler
+  const handleZoomSlider = useCallback((value: number) => {
+    setZoomLevel(value)
+    orbitingRef.current = false
+    if (!fgRef.current) return
+    const { x, y, z } = fgRef.current.cameraPosition()
+    const currentDist = Math.sqrt(x * x + y * y + z * z)
+    if (currentDist < 0.001) return
+    const targetDist = ZOOM_MIN_DIST + ((100 - value) / 100) * (ZOOM_MAX_DIST - ZOOM_MIN_DIST)
+    const scale = targetDist / currentDist
+    fgRef.current.cameraPosition({
+      x: x * scale,
+      y: y * scale,
+      z: z * scale,
+    })
+  }, [])
+
+  // Animate pulse rings + sync zoom slider from camera
   useEffect(() => {
     if (!fgRef.current || !ForceGraph3D) return
     let frame: number
     const animate = () => {
       const fg = fgRef.current
       if (fg && fg.scene) {
+        // Sync zoom slider from current camera distance
+        const pos = fg.cameraPosition()
+        const dist = Math.sqrt(pos.x * pos.x + pos.y * pos.y + pos.z * pos.z)
+        const clamped = Math.max(ZOOM_MIN_DIST, Math.min(ZOOM_MAX_DIST, dist))
+        const level = 100 - ((clamped - ZOOM_MIN_DIST) / (ZOOM_MAX_DIST - ZOOM_MIN_DIST)) * 100
+        setZoomLevel(Math.round(level))
+
         const time = Date.now() * 0.001
         fg.scene.traverse((obj: any) => {
           if (obj.userData?.isPulse) {
@@ -372,6 +407,44 @@ export function GalaxyView({ galaxyData, onPlanetClick, onLockedPlanetClick, cur
       onTouchStart={handleInteraction}
       onWheel={handleInteraction}
     >
+      {/* Zoom slider */}
+      <div className="absolute bottom-20 right-4 z-10 flex flex-col items-center gap-1">
+        <button
+          type="button"
+          onClick={() => handleZoomSlider(Math.min(100, zoomLevel + 10))}
+          className="w-8 h-8 rounded-md bg-zinc-800 border border-zinc-700 text-zinc-300 text-lg font-bold flex items-center justify-center hover:bg-zinc-700 active:bg-zinc-600 transition-colors"
+          aria-label="Zoom in"
+        >
+          +
+        </button>
+        <div className="relative h-[120px] w-8 flex items-center justify-center">
+          <input
+            type="range"
+            min={0}
+            max={100}
+            value={zoomLevel}
+            onChange={(e) => handleZoomSlider(Number(e.target.value))}
+            className="absolute h-8 w-[120px] -rotate-90 origin-center appearance-none bg-transparent cursor-pointer [&::-webkit-slider-runnable-track]:h-1 [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:bg-zinc-700 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-500 [&::-webkit-slider-thumb]:mt-[-6px] [&::-moz-range-track]:h-1 [&::-moz-range-track]:rounded-full [&::-moz-range-track]:bg-zinc-700 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-blue-500 [&::-moz-range-thumb]:border-0"
+            aria-label="Zoom level"
+          />
+        </div>
+        <button
+          type="button"
+          onClick={() => handleZoomSlider(Math.max(0, zoomLevel - 10))}
+          className="w-8 h-8 rounded-md bg-zinc-800 border border-zinc-700 text-zinc-300 text-lg font-bold flex items-center justify-center hover:bg-zinc-700 active:bg-zinc-600 transition-colors"
+          aria-label="Zoom out"
+        >
+          −
+        </button>
+      </div>
+
+      {/* Mobile pinch hint */}
+      {showPinchHint && (
+        <div className="absolute bottom-20 right-16 z-10 bg-zinc-900/80 backdrop-blur-sm border border-zinc-700 rounded-lg px-3 py-1.5 animate-fade-in">
+          <span className="text-xs text-zinc-300">Pinch to zoom</span>
+        </div>
+      )}
+
 {/* Legend */}
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 bg-zinc-900/75 backdrop-blur-sm border border-zinc-800 rounded-lg px-4 py-1.5">
         <span className="text-xs text-zinc-400">
