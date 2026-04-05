@@ -41,6 +41,9 @@ REQUIREMENTS:
 - Target audience: elementary/middle school students. Keep it simple and fun.
 - Responsive — works on desktop and mobile.
 - Include clear instructions on how to play.
+- The game MUST end after 3-5 rounds with a clear win/lose screen showing the final score.
+- NEVER use overflow:hidden on the body or main container. The game must be scrollable if content exceeds viewport height.
+- Each round must use different numbers/values so the player can't memorize answers.
 - Maximum 500 lines of code. Keep it simple but polished.`,
     }],
   })
