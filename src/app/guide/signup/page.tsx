@@ -3,17 +3,17 @@
 import { useState, useEffect } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth"
+import { createUserWithEmailAndPassword, getRedirectResult } from "firebase/auth"
 import { doc, getDoc, setDoc, updateDoc, collection } from "firebase/firestore"
 import { auth, db } from "@/lib/firebase"
-
-const googleProvider = new GoogleAuthProvider()
+import { useAuth } from "@/lib/auth"
 
 export default function GuideSignupPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const inviteCode = searchParams.get("invite")
+  const inviteCode = searchParams.get("invite") || (typeof window !== "undefined" ? sessionStorage.getItem("pendingInvite") : null)
 
+  const { signInGuideWithGoogle } = useAuth()
   const [valid, setValid] = useState<boolean | null>(null)
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
@@ -32,6 +32,17 @@ export default function GuideSignupPage() {
       setValid(snap.exists() && !snap.data()?.used)
     }).catch(() => setValid(false))
   }, [inviteCode])
+
+  // Check if returning from Google redirect
+  useEffect(() => {
+    getRedirectResult(auth).then(result => {
+      if (result?.user) {
+        setUid(result.user.uid)
+        setName(result.user.displayName || "Guide")
+        setStep("class")
+      }
+    }).catch(() => {})
+  }, [])
 
   const handleEmailSignup = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -54,18 +65,10 @@ export default function GuideSignupPage() {
   }
 
   const handleGoogleSignup = async () => {
-    setCreating(true)
-    setError(null)
-    try {
-      const cred = await signInWithPopup(auth, googleProvider)
-      setUid(cred.user.uid)
-      setName(cred.user.displayName || "Guide")
-      setStep("class")
-    } catch (err: any) {
-      setError(err.message || "Google sign-in failed.")
-    } finally {
-      setCreating(false)
-    }
+    // Store invite code in sessionStorage so we can recover it after redirect
+    if (inviteCode) sessionStorage.setItem("pendingInvite", inviteCode)
+    await signInGuideWithGoogle()
+    // Page will redirect to Google, then back here
   }
 
   const handleCreateClass = async (e: React.FormEvent) => {
