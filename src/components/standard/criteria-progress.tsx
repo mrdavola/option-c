@@ -14,7 +14,7 @@ interface CriteriaProgressProps {
 
 const criteriaLabels = [
   { key: "playable" as const, label: "Your game makes sense" },
-  { key: "authentic" as const, label: "The math is real" },
+  { key: "authentic" as const, label: "The math is applied like in real life" },
   { key: "essential" as const, label: "You need math to win" },
 ]
 

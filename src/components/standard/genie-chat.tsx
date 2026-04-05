@@ -91,7 +91,7 @@ export function GenieChat({ standardDescription, standardId, planetId, onUnlock,
       >
         {/* Initial prompt */}
         <div className="max-w-[85%] self-start rounded-lg bg-zinc-900 px-3 py-2 text-sm">
-          What&apos;s your game idea? How does {standardDescription.toLowerCase()} show up in it?
+          What&apos;s your game idea? How does this math concept show up in it? (Math concept: {standardDescription})
         </div>
 
         {messages.map((message) => {

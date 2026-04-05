@@ -64,7 +64,7 @@ export function GraphPage({ data }: GraphPageProps) {
   // Galaxy navigation state
   const [viewMode, setViewMode] = useState<"galaxy" | "planet">("galaxy")
   const [currentPlanetId, setCurrentPlanetId] = useState<string | null>(null)
-  const [colorMode, setColorMode] = useState<ColorMode>("domain")
+  const [colorMode, setColorMode] = useState<ColorMode>("mastery")
   const [showWaveEffect, setShowWaveEffect] = useState(false)
   const [waveColor, setWaveColor] = useState("#22c55e")
   const [lockedMessage, setLockedMessage] = useState<string | null>(null)
@@ -133,8 +133,23 @@ export function GraphPage({ data }: GraphPageProps) {
         if (status === "unlocked") unlocked++
       })
     }
-    return { total, available, unlocked }
+    return { total, available, unlocked, mastered: unlocked }
   }, [progressMap, data.nodes, studentData?.grade])
+
+  // Recommended next planet — available planet on student's grade with most ready moons
+  const recommendedPlanetId = useMemo(() => {
+    const grade = studentData?.grade
+    const candidates = galaxyData.nodes.filter(n =>
+      n.access !== "locked" &&
+      !n.isCompleted &&
+      n.availableCount > 0 &&
+      (!grade || n.grade === grade)
+    )
+    if (candidates.length === 0) return null
+    // Prefer the one with the most available (ready) moons
+    candidates.sort((a, b) => b.availableCount - a.availableCount)
+    return candidates[0].id
+  }, [galaxyData.nodes, studentData?.grade])
 
   // Galaxy view: click planet -> enter planet view
   const handlePlanetClick = useCallback((planetId: string) => {
@@ -380,6 +395,7 @@ export function GraphPage({ data }: GraphPageProps) {
             onLockedPlanetClick={handleLockedPlanetClick}
             currentPlanetId={currentPlanetId}
             initialGrade={studentData?.grade ?? null}
+            recommendedPlanetId={recommendedPlanetId}
           />
         ) : currentPlanet ? (
           <PlanetView
@@ -497,7 +513,8 @@ export function GraphPage({ data }: GraphPageProps) {
         currentPlanetId={currentPlanetId}
         onPlanetClick={handleMiniMapClick}
         totalStandards={counts.total}
-        unlockedCount={counts.unlocked}
+        unlockedCount={counts.available}
+        masteredCount={counts.mastered}
       />
 
       {/* Locked planet message */}

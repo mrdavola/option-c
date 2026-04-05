@@ -9,6 +9,7 @@ interface GalaxyViewProps {
   onLockedPlanetClick?: (planetId: string) => void
   currentPlanetId: string | null
   initialGrade: string | null
+  recommendedPlanetId?: string | null
 }
 
 function getGradeBandForGrade(grade: string | null): string | null {
@@ -19,7 +20,7 @@ function getGradeBandForGrade(grade: string | null): string | null {
   return "HS"
 }
 
-export function GalaxyView({ galaxyData, onPlanetClick, onLockedPlanetClick, currentPlanetId, initialGrade }: GalaxyViewProps) {
+export function GalaxyView({ galaxyData, onPlanetClick, onLockedPlanetClick, currentPlanetId, initialGrade, recommendedPlanetId }: GalaxyViewProps) {
   const fgRef = useRef<any>(null)
   const [ForceGraph3D, setForceGraph3D] = useState<any>(null)
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
@@ -87,6 +88,7 @@ export function GalaxyView({ galaxyData, onPlanetClick, onLockedPlanetClick, cur
     const timer = setTimeout(() => {
       if (fgRef.current && !hasZoomedRef.current) {
         hasZoomedRef.current = true
+        orbitingRef.current = false  // stop orbit before zooming to avoid camera fighting
         const band = getGradeBandForGrade(initialGrade)
         const targets = band
           ? galaxyData.nodes.filter(n => n.gradeBand === band)
@@ -190,22 +192,37 @@ export function GalaxyView({ galaxyData, onPlanetClick, onLockedPlanetClick, cur
 
   // Custom node rendering for pulse effect on completed planets
   const nodeThreeObject = useCallback((node: GalaxyNode) => {
+    const isRecommended = node.id === recommendedPlanetId
     if (typeof window === "undefined") return undefined
     const THREE = require("three")
 
     const group = new THREE.Group()
 
     // Main planet sphere
-    const geometry = new THREE.SphereGeometry(Math.sqrt(node.val) * 1.2, 16, 12)
+    const radius = Math.sqrt(node.val) * 1.2
+    const geometry = new THREE.SphereGeometry(radius, 16, 12)
+    const isLocked = node.access === "locked"
     const material = new THREE.MeshLambertMaterial({
-      color: node.color,
-      emissive: node.color,
-      emissiveIntensity: node.isCompleted ? 0.6 : 0.2,
-      transparent: true,
-      opacity: 0.9,
+      color: isLocked ? "#1a1a1a" : node.color,
+      emissive: isLocked ? "#000000" : node.color,
+      emissiveIntensity: node.isCompleted ? 0.8 : isLocked ? 0 : 0.45,
+      transparent: false,
+      opacity: 1,
     })
     const sphere = new THREE.Mesh(geometry, material)
     group.add(sphere)
+
+    // Wireframe outline for locked planets so they're visible
+    if (isLocked) {
+      const wireGeom = new THREE.SphereGeometry(radius * 1.05, 10, 8)
+      const wireMat = new THREE.MeshBasicMaterial({
+        color: "#555555",
+        wireframe: true,
+        transparent: true,
+        opacity: 0.5,
+      })
+      group.add(new THREE.Mesh(wireGeom, wireMat))
+    }
 
     // Pulse ring for completed planets
     if (node.isCompleted) {
@@ -223,6 +240,24 @@ export function GalaxyView({ galaxyData, onPlanetClick, onLockedPlanetClick, cur
       const ring = new THREE.Mesh(ringGeom, ringMat)
       ring.userData = { isPulse: true }
       group.add(ring)
+    }
+
+    // "Start here" indicator for recommended planet
+    if (isRecommended) {
+      const recRingGeom = new THREE.RingGeometry(
+        Math.sqrt(node.val) * 2.0,
+        Math.sqrt(node.val) * 2.4,
+        32
+      )
+      const recRingMat = new THREE.MeshBasicMaterial({
+        color: "#ffffff",
+        transparent: true,
+        opacity: 0.6,
+        side: THREE.DoubleSide,
+      })
+      const recRing = new THREE.Mesh(recRingGeom, recRingMat)
+      recRing.userData = { isRecommendedRing: true }
+      group.add(recRing)
     }
 
     // Text label — truncate long names
@@ -256,6 +291,11 @@ export function GalaxyView({ galaxyData, onPlanetClick, onLockedPlanetClick, cur
     ctx.font = "18px sans-serif"
     ctx.fillStyle = "rgba(255,255,255,0.5)"
     ctx.fillText(`Grade ${node.grade}`, 256, 58)
+    if (isRecommended) {
+      ctx.font = "bold 16px sans-serif"
+      ctx.fillStyle = "#ffffff"
+      ctx.fillText("★ Start here", 256, 76)
+    }
 
     const texture = new THREE.CanvasTexture(canvas)
     const spriteMat = new THREE.SpriteMaterial({ map: texture, transparent: true })
@@ -265,7 +305,7 @@ export function GalaxyView({ galaxyData, onPlanetClick, onLockedPlanetClick, cur
     group.add(sprite)
 
     return group
-  }, [])
+  }, [recommendedPlanetId])
 
   // Animate pulse rings
   useEffect(() => {
@@ -280,6 +320,11 @@ export function GalaxyView({ galaxyData, onPlanetClick, onLockedPlanetClick, cur
             obj.scale.setScalar(1 + Math.sin(time * 2) * 0.15)
             obj.material.opacity = 0.2 + Math.sin(time * 2) * 0.1
           }
+          if (obj.userData?.isRecommendedRing) {
+            obj.scale.setScalar(1 + Math.sin(time * 3) * 0.2)
+            obj.material.opacity = 0.4 + Math.sin(time * 3) * 0.3
+            obj.rotation.z = time * 0.5
+          }
         })
       }
       frame = requestAnimationFrame(animate)
@@ -287,6 +332,7 @@ export function GalaxyView({ galaxyData, onPlanetClick, onLockedPlanetClick, cur
     frame = requestAnimationFrame(animate)
     return () => cancelAnimationFrame(frame)
   }, [ForceGraph3D])
+
 
   if (!ForceGraph3D) {
     return (
@@ -303,6 +349,13 @@ export function GalaxyView({ galaxyData, onPlanetClick, onLockedPlanetClick, cur
       onTouchStart={handleInteraction}
       onWheel={handleInteraction}
     >
+{/* Legend */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 bg-zinc-900/75 backdrop-blur-sm border border-zinc-800 rounded-lg px-4 py-1.5">
+        <span className="text-xs text-zinc-400">
+          <span className="text-zinc-200 font-medium">Planets</span> = math concepts &nbsp;·&nbsp; <span className="text-zinc-200 font-medium">Moons</span> = math skills
+        </span>
+      </div>
+
       <ForceGraph3D
         ref={fgRef}
         width={dimensions.width}

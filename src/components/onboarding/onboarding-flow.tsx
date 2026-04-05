@@ -99,6 +99,42 @@ function NameStep({
   )
 }
 
+function IntroStep({
+  name,
+  onNext,
+}: {
+  name: string
+  onNext: () => void
+}) {
+  return (
+    <div className="flex flex-col items-center gap-6">
+      <h1 className="text-3xl font-bold text-white text-center">
+        Hey {name}, here&apos;s how this works.
+      </h1>
+      <p className="text-zinc-300 text-base text-center -mt-2">
+        You&apos;re going to master math by building games.
+      </p>
+      <div className="w-full flex flex-col gap-2">
+        {[
+          "Explore math concepts on your galaxy map",
+          "Design a game for a concept you want to master",
+          "Other learners play and rate your game",
+          "Get approved → earn tokens → unlock more",
+        ].map((item, i) => (
+          <div key={i} className="flex items-start gap-3 px-2 py-1">
+            <span className="text-blue-400 font-bold text-sm mt-0.5 shrink-0">{i + 1}.</span>
+            <span className="text-zinc-300 text-sm leading-relaxed">{item}</span>
+          </div>
+        ))}
+      </div>
+      <p className="text-zinc-500 text-sm text-center">Master a concept. Light up your galaxy.</p>
+      <Button onClick={onNext} size="lg" className="w-full text-base">
+        Let&apos;s go &rarr;
+      </Button>
+    </div>
+  )
+}
+
 function GradeStep({
   name,
   onSelect,
@@ -174,6 +210,9 @@ function InterestsStep({
       <h1 className="text-3xl font-bold text-white text-center">
         What are you into? Pick a few.
       </h1>
+      <p className="text-zinc-400 text-sm text-center -mt-3">
+        We&apos;ll use this to give you examples and explanations related to what you actually care about.
+      </p>
       <div className="flex flex-wrap justify-center gap-2 w-full">
         {INTERESTS.map((interest) => {
           const isSelected = selected.includes(interest)
@@ -308,6 +347,9 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
           />
         </StepWrapper>
         <StepWrapper visible={step === 2}>
+          <IntroStep name={data.name} onNext={() => setStep(3)} />
+        </StepWrapper>
+        <StepWrapper visible={step === 3}>
           <InterestsStep
             selected={data.interests}
             onToggle={toggleInterest}

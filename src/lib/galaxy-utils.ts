@@ -57,6 +57,7 @@ export interface GalaxyData {
 export interface MoonData {
   id: string
   description: string
+  shortTitle: string
   status: NodeStatus
   orbitRadius: number
   orbitSpeed: number
@@ -294,6 +295,19 @@ export function buildGalaxyData(
   return { nodes, links }
 }
 
+// Generate a short title from a standard description
+function makeShortTitle(description: string): string {
+  // Strip leading code patterns like "5.NBT.A.1 " or "(5.NBT.A.1)"
+  const cleaned = description.replace(/^\(?\d*\.?[A-Z]+\.?[A-Z]*\.?\d*\.?\d*\)?\s*/i, "").trim()
+  // Take first meaningful clause (up to first period, semicolon, or colon, max 50 chars)
+  const first = cleaned.split(/[.;:]/)[0].trim()
+  if (first.length <= 50) return first
+  // Break at last word boundary before 47 chars
+  const cut = first.slice(0, 47)
+  const lastSpace = cut.lastIndexOf(" ")
+  return (lastSpace > 20 ? cut.slice(0, lastSpace) : cut) + "..."
+}
+
 // Build moon data for a specific planet
 export function buildMoonData(
   planet: Planet,
@@ -332,6 +346,7 @@ export function buildMoonData(
     return {
       id: std.id,
       description: std.description,
+      shortTitle: makeShortTitle(std.description),
       status,
       orbitRadius,
       orbitSpeed,

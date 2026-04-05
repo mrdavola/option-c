@@ -6,7 +6,7 @@ import { matchMechanics } from "@/lib/mechanic-animations"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Pencil } from "lucide-react"
+import { Pencil, Volume2, VolumeX } from "lucide-react"
 
 type ReadingLevel = "simpler" | "default" | "challenge"
 
@@ -14,6 +14,7 @@ interface Explanation {
   whatIsThis: string
   commonMistakes: string
   realWorldUse: string
+  formula?: string
 }
 
 function ConceptIllustration({ description, grade }: { description: string; grade: string }) {
@@ -137,6 +138,8 @@ export function ConceptCard({ standard, onReady, interests, readOnly }: ConceptC
   const [explanation, setExplanation] = useState<Explanation | null>(null)
   const [loading, setLoading] = useState(true)
   const [customInterest, setCustomInterest] = useState<string | null>(null)
+  const [labelFlipped, setLabelFlipped] = useState(false)
+  const [speaking, setSpeaking] = useState(false)
 
   const fetchExplanation = useCallback(async (level: ReadingLevel) => {
     setLoading(true)
@@ -176,11 +179,57 @@ export function ConceptCard({ standard, onReady, interests, readOnly }: ConceptC
     }
   }
 
+  const handleReadAloud = () => {
+    if (!explanation) return
+    if (speaking) {
+      window.speechSynthesis.cancel()
+      setSpeaking(false)
+      return
+    }
+    const text = [
+      explanation.whatIsThis,
+      explanation.formula ? `Formula: ${explanation.formula}` : "",
+      explanation.commonMistakes.replace(/•/g, ""),
+      explanation.realWorldUse,
+    ].filter(Boolean).join(". ")
+    const utterance = new SpeechSynthesisUtterance(text)
+    utterance.onend = () => setSpeaking(false)
+    utterance.onerror = () => setSpeaking(false)
+    setSpeaking(true)
+    window.speechSynthesis.speak(utterance)
+  }
+
   return (
     <div className="flex flex-col gap-4">
-      <Badge variant="secondary" className="w-fit text-xs">
-        {standard.domain}
-      </Badge>
+      {/* Header: domain badge + standard ID label + read aloud */}
+      <div className="flex items-center justify-between gap-2">
+        <Badge variant="secondary" className="text-xs">
+          {standard.domain}
+        </Badge>
+        <div className="flex items-center gap-2">
+          {/* Peelable standard ID label */}
+          <button
+            onClick={() => setLabelFlipped(f => !f)}
+            className="group relative px-2 py-1 rounded text-xs border border-dashed border-zinc-600 text-zinc-400 hover:border-zinc-400 hover:text-zinc-200 transition-colors"
+            title="Show standard code"
+          >
+            {labelFlipped ? standard.id : "📋 Standard"}
+          </button>
+          {/* Read aloud button */}
+          <button
+            onClick={handleReadAloud}
+            disabled={loading}
+            className={`p-1.5 rounded border transition-colors ${
+              speaking
+                ? "border-blue-500/50 text-blue-400 bg-blue-500/10"
+                : "border-zinc-700 text-zinc-400 hover:text-zinc-200 hover:border-zinc-500"
+            } disabled:opacity-30`}
+            title={speaking ? "Stop reading" : "Read aloud"}
+          >
+            {speaking ? <VolumeX className="size-4" /> : <Volume2 className="size-4" />}
+          </button>
+        </div>
+      </div>
 
       {loading ? (
         <div className="space-y-3">
@@ -207,14 +256,33 @@ export function ConceptCard({ standard, onReady, interests, readOnly }: ConceptC
             </CardContent>
           </Card>
 
+          {explanation.formula && (
+            <Card className="border-amber-500/20 bg-amber-500/5">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm text-amber-400">Formula</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm font-mono text-amber-200">{explanation.formula}</p>
+              </CardContent>
+            </Card>
+          )}
+
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm">Watch out for</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {explanation.commonMistakes}
-              </p>
+              <div className="flex flex-col gap-1">
+                {explanation.commonMistakes
+                  .split("\n")
+                  .map(line => line.trim())
+                  .filter(line => line.length > 0)
+                  .map((line, i) => (
+                    <p key={i} className="text-sm text-muted-foreground leading-relaxed">
+                      {line.startsWith("•") ? line : `• ${line}`}
+                    </p>
+                  ))}
+              </div>
             </CardContent>
           </Card>
 
@@ -231,7 +299,7 @@ export function ConceptCard({ standard, onReady, interests, readOnly }: ConceptC
         </div>
       ) : null}
 
-      {/* Show me — stick figure illustration */}
+      {/* Stick figure illustration */}
       {!showIllustration ? (
         <button
           onClick={() => setShowIllustration(true)}
@@ -243,7 +311,7 @@ export function ConceptCard({ standard, onReady, interests, readOnly }: ConceptC
         <ConceptIllustration description={standard.description} grade={standard.grade} />
       )}
 
-      {/* Game mechanics that use this math */}
+      {/* Game mechanics */}
       {!readOnly && (
         <GameMechanics
           standardId={standard.id}
@@ -254,7 +322,7 @@ export function ConceptCard({ standard, onReady, interests, readOnly }: ConceptC
         />
       )}
 
-      {/* Reading level adjustment — contextual buttons */}
+      {/* Reading level adjustment */}
       <div className="flex flex-col items-center gap-2">
         {readingLevel === "default" && (
           <button
@@ -265,14 +333,12 @@ export function ConceptCard({ standard, onReady, interests, readOnly }: ConceptC
           </button>
         )}
         {readingLevel === "simpler" && (
-          <div className="flex gap-2">
-            <button
-              onClick={() => handleLevelChange("default")}
-              className="px-4 py-2 text-sm rounded-full border border-zinc-700 text-zinc-400 hover:text-zinc-200 hover:border-zinc-500 transition-colors"
-            >
-              OK I think I get it — show me the normal version
-            </button>
-          </div>
+          <button
+            onClick={() => handleLevelChange("default")}
+            className="px-4 py-2 text-sm rounded-full border border-zinc-700 text-zinc-400 hover:text-zinc-200 hover:border-zinc-500 transition-colors"
+          >
+            OK I think I get it — show me the normal version
+          </button>
         )}
         {readingLevel !== "challenge" && (
           <InterestInput
@@ -293,7 +359,6 @@ export function ConceptCard({ standard, onReady, interests, readOnly }: ConceptC
             <InterestInput
               onSubmit={(interest) => {
                 setCustomInterest(interest)
-                // Re-trigger fetch by toggling level
                 setReadingLevel("default")
                 setTimeout(() => setReadingLevel("challenge"), 50)
               }}

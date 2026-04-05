@@ -12,28 +12,29 @@ export async function POST(req: Request) {
     interests?: string[]
   }
 
+  const interestPhrase = interests && interests.length > 0
+    ? `The student is into: ${interests.join(", ")}.`
+    : ""
+
   const levelInstruction = {
     simpler: `Explain at a 2nd-grade reading level. Use very short sentences. Simple words only. Use "you" a lot. Give a concrete everyday example a young kid would understand.`,
-    default: `Explain at a ${grade === "K" ? "kindergarten" : `grade ${grade}`} reading level. Use age-appropriate language. Be clear and direct. Give a relatable real-world example.`,
-    challenge: `Explain at a ${grade === "K" ? "kindergarten" : `grade ${grade}`} reading level. The student wants this explained through their personal interests. Make EVERY example and explanation connect directly to their interests. Make it feel personal — like this concept was made for them.`,
+    default: `Explain at a ${grade === "K" ? "kindergarten" : `grade ${grade}`} reading level. Use age-appropriate language. Be clear and direct. ${interestPhrase ? `The student is into ${interests!.join(", ")} — weave their interests into EVERY example naturally.` : "Give a relatable real-world example."}`,
+    challenge: `Explain at a ${grade === "K" ? "kindergarten" : `grade ${grade}`} reading level. ${interestPhrase} Make EVERY example and explanation connect directly to their interests. Make it feel personal — like this concept was made for them.`,
   }[readingLevel]
-
-  const interestInstruction =
-    interests && interests.length > 0
-      ? readingLevel === "challenge"
-        ? `The student is into ${interests.join(", ")}. EVERY example must use one of these interests. For "What is this?" — explain through their interests. For "Common mistakes" — frame it in terms of their interests. For "Where you'll use this" — show how it appears in ${interests[0]} specifically.`
-        : `If the student is interested in ${interests.join(", ")}, relate the explanation to those interests when possible.`
-      : ""
 
   const { text } = await generateText({
     model: "anthropic/claude-sonnet-4.5",
     system: `You explain math concepts to students. ${levelInstruction}
-${interestInstruction}
 
 Respond in EXACTLY this JSON format, no markdown, no code fences:
-{"whatIsThis":"...","commonMistakes":"...","realWorldUse":"..."}
+{"whatIsThis":"...","commonMistakes":"...","realWorldUse":"...","formula":"..."}
 
-Each field should be 1-3 sentences. Be warm and encouraging. Never use the word "standard" — just explain the concept. Use exclamation marks sparingly — at most one per response. Be warm and encouraging but calm, not over-the-top enthusiastic.`,
+Rules:
+- "whatIsThis": 1-3 sentences explaining the concept clearly.
+- "commonMistakes": 2-4 bullet points of common mistakes, each starting with "• ". No paragraph text.
+- "realWorldUse": 1-2 sentences showing where this math appears in real life. If the student has interests, tie it to those.
+- "formula": If this concept has a specific formula (e.g. Area = l × w, a² + b² = c²), write it here. Use plain text math notation. If there is no specific formula for this concept, return an empty string "".
+Be warm and calm. Never use the word "standard". At most one exclamation mark per response.`,
     prompt: `Explain this math concept: "${description}" (Standard ${standardId}, Grade ${grade})`,
   })
 

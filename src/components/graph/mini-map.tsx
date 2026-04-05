@@ -9,6 +9,7 @@ interface MiniMapProps {
   onPlanetClick: (planetId: string) => void
   totalStandards: number
   unlockedCount: number
+  masteredCount: number
 }
 
 // Layout planets by grade band columns
@@ -25,6 +26,7 @@ export function MiniMap({
   onPlanetClick,
   totalStandards,
   unlockedCount,
+  masteredCount,
 }: MiniMapProps) {
   const width = 200
   const height = 140
@@ -136,12 +138,14 @@ export function MiniMap({
         </svg>
 
         {/* Progress bar */}
-        <div className="px-2 pb-2 pt-1">
-          <div className="flex items-center justify-between text-xs text-zinc-300 mb-1">
-            <span>{unlockedCount}/{totalStandards} unlocked</span>
-            <span>{progressPct}%</span>
+        <div className="px-2 pb-2 pt-1 flex flex-col gap-1">
+          <div className="flex items-center justify-between text-xs text-zinc-400">
+            <span><span className="text-blue-400 font-medium">{unlockedCount}</span>/{totalStandards} skills available</span>
           </div>
-          <div className="h-1 bg-zinc-800 rounded-full overflow-hidden">
+          <div className="flex items-center justify-between text-xs text-zinc-400">
+            <span><span className="text-emerald-400 font-medium">{masteredCount}</span>/{totalStandards} skills mastered</span>
+          </div>
+          <div className="h-1 bg-zinc-800 rounded-full overflow-hidden mt-0.5">
             <div
               className="h-full bg-gradient-to-r from-emerald-500 to-blue-500 rounded-full transition-all duration-1000"
               style={{ width: `${Math.max(progressPct, 1)}%` }}

@@ -214,9 +214,7 @@ export function PlanetView({
                 >
                   <div className="bg-zinc-900/95 backdrop-blur-sm border border-zinc-700 rounded-lg px-3 py-2 text-center">
                     <div className="text-xs text-white font-medium leading-tight">
-                      {moon.description.length > 80
-                        ? moon.description.slice(0, 80) + "..."
-                        : moon.description}
+                      {moon.shortTitle}
                     </div>
                     <div className="text-xs text-zinc-400 mt-1">{statusLabel(moon.status)}</div>
                   </div>
