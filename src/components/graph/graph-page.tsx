@@ -55,7 +55,7 @@ function computeNewlyAvailable(
 }
 
 export function GraphPage({ data }: GraphPageProps) {
-  const { user, profile, loading: authLoading, updateTokens, saveProgress, loadProgress } = useAuth()
+  const { user, profile, activeProfile, impersonating, stopImpersonating, loading: authLoading, updateTokens, saveProgress, loadProgress } = useAuth()
   const initialProgress = useMemo(() => computeInitialProgress(data), [data])
   const [progressMap, setProgressMap] = useState<Map<string, NodeStatus>>(initialProgress)
   const [selectedStandard, setSelectedStandard] = useState<StandardNode | null>(null)
@@ -77,12 +77,12 @@ export function GraphPage({ data }: GraphPageProps) {
 
   // Load from auth profile on mount / when profile changes
   useEffect(() => {
-    if (profile) {
-      setStudentData({ name: profile.name, grade: profile.grade, interests: profile.interests })
-      setTokens(profile.tokens)
+    if (activeProfile) {
+      setStudentData({ name: activeProfile.name, grade: activeProfile.grade, interests: activeProfile.interests })
+      setTokens(activeProfile.tokens)
 
       // Only skip onboarding if profile is complete (has grade and interests)
-      const profileComplete = profile.grade && profile.interests.length > 0
+      const profileComplete = activeProfile.grade && activeProfile.interests.length > 0
       if (profileComplete) {
         setOnboardingComplete(true)
       }
@@ -98,7 +98,7 @@ export function GraphPage({ data }: GraphPageProps) {
         // Fall back to initial progress
       })
     }
-  }, [profile, loadProgress, initialProgress])
+  }, [activeProfile, loadProgress, initialProgress])
 
   // Mastery animation
   const [masteryEvent, setMasteryEvent] = useState<{ planetName: string; planetColor: string; tokenGain: number } | null>(null)
@@ -323,9 +323,9 @@ export function GraphPage({ data }: GraphPageProps) {
         body: JSON.stringify({
           id: gameId,
           title: currentDesignDoc?.title || "Untitled",
-          designerName: profile?.name || "Student",
-          authorUid: profile?.uid || "",
-          classId: profile?.classId || "",
+          designerName: activeProfile?.name || "Student",
+          authorUid: activeProfile?.uid || "",
+          classId: activeProfile?.classId || "",
           standardId: currentDesignDoc?.standardId || "",
           planetId: currentDesignDoc?.planetId || "",
           gameHtml: html,
@@ -343,7 +343,7 @@ export function GraphPage({ data }: GraphPageProps) {
     setCurrentDesignDoc(null)
     setCurrentGameHtml("")
     setCurrentGameId(null)
-  }, [currentDesignDoc, profile])
+  }, [currentDesignDoc, activeProfile])
 
   // Handle send for review
   const handleSendForReview = useCallback(async (html: string, gameId: string | null) => {
@@ -355,9 +355,9 @@ export function GraphPage({ data }: GraphPageProps) {
         body: JSON.stringify({
           id: gameId,
           title: currentDesignDoc?.title || "Untitled",
-          designerName: profile?.name || "Student",
-          authorUid: profile?.uid || "",
-          classId: profile?.classId || "",
+          designerName: activeProfile?.name || "Student",
+          authorUid: activeProfile?.uid || "",
+          classId: activeProfile?.classId || "",
           standardId: currentDesignDoc?.standardId || "",
           planetId: currentDesignDoc?.planetId || "",
           gameHtml: html,
@@ -381,7 +381,7 @@ export function GraphPage({ data }: GraphPageProps) {
       setReviewResult({ pass: false, feedback: "Failed to submit. Please try again." })
       setTimeout(() => setReviewResult(null), 4000)
     }
-  }, [currentDesignDoc, profile])
+  }, [currentDesignDoc, activeProfile])
 
   // Show loading while auth is initializing
   if (authLoading) {

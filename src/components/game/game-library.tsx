@@ -11,7 +11,7 @@ interface GameLibraryProps {
 }
 
 export function GameLibrary({ games }: GameLibraryProps) {
-  const { user, profile } = useAuth()
+  const { user, profile, activeProfile } = useAuth()
   const [playingGame, setPlayingGame] = useState<{
     id: string
     title: string
@@ -25,9 +25,9 @@ export function GameLibrary({ games }: GameLibraryProps) {
   const [pendingGames, setPendingGames] = useState<Omit<Game, "gameHtml">[]>([])
 
   const fetchPendingGames = useCallback(async () => {
-    if (!profile?.classId) return
+    if (!activeProfile?.classId) return
     try {
-      const res = await fetch(`/api/games?classId=${profile.classId}&status=pending_review`)
+      const res = await fetch(`/api/games?classId=${activeProfile.classId}&status=pending_review`)
       if (!res.ok) return
       const data = await res.json()
       // Filter out user's own games
@@ -35,7 +35,7 @@ export function GameLibrary({ games }: GameLibraryProps) {
     } catch {
       // Silent fail
     }
-  }, [profile?.classId, user?.uid])
+  }, [activeProfile?.classId, user?.uid])
 
   useEffect(() => {
     fetchPendingGames()
@@ -168,7 +168,7 @@ export function GameLibrary({ games }: GameLibraryProps) {
           isPendingReview={playingGame.isPendingReview}
           authorName={playingGame.authorName}
           reviewerUid={user?.uid}
-          reviewerName={profile?.name}
+          reviewerName={activeProfile?.name}
           onReviewComplete={playingGame.isPendingReview ? handleReviewComplete : undefined}
         />
       )}

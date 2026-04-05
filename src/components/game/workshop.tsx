@@ -27,7 +27,7 @@ export function Workshop({
   onBackToPlanet,
   onSendForReview,
 }: WorkshopProps) {
-  const { profile } = useAuth()
+  const { activeProfile } = useAuth()
   const [html, setHtml] = useState(initialHtml)
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
     {
@@ -60,9 +60,9 @@ export function Workshop({
         body: JSON.stringify({
           id: currentGameId,
           title: designDoc.title,
-          designerName: profile?.name || "Student",
-          authorUid: profile?.uid || "",
-          classId: profile?.classId || "",
+          designerName: activeProfile?.name || "Student",
+          authorUid: activeProfile?.uid || "",
+          classId: activeProfile?.classId || "",
           standardId: designDoc.standardId,
           planetId: designDoc.planetId,
           gameHtml,

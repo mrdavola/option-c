@@ -13,7 +13,7 @@ interface MasteryPlayProps {
 }
 
 export function MasteryPlay({ standardId, planetId, onMastered }: MasteryPlayProps) {
-  const { profile, saveProgress, updateTokens } = useAuth()
+  const { activeProfile, saveProgress, updateTokens } = useAuth()
   const [games, setGames] = useState<Game[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedGame, setSelectedGame] = useState<Game | null>(null)
@@ -22,8 +22,8 @@ export function MasteryPlay({ standardId, planetId, onMastered }: MasteryPlayPro
 
   // Load approved games for this skill
   useEffect(() => {
-    if (!profile?.classId) return
-    fetch(`/api/games?classId=${profile.classId}&status=published`)
+    if (!activeProfile?.classId) return
+    fetch(`/api/games?classId=${activeProfile.classId}&status=published`)
       .then(res => res.json())
       .then(data => {
         // Filter to games for this planet/standard
@@ -34,7 +34,7 @@ export function MasteryPlay({ standardId, planetId, onMastered }: MasteryPlayPro
       })
       .catch(() => {})
       .finally(() => setLoading(false))
-  }, [profile?.classId, planetId, standardId])
+  }, [activeProfile?.classId, planetId, standardId])
 
   const handleWin = async () => {
     const newWins = wins + 1
