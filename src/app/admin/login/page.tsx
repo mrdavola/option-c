@@ -44,9 +44,13 @@ export default function AdminLoginPage() {
   }
 
   const handleGoogleLogin = async () => {
-    // This will redirect to Google, then back to this page
-    // The AuthProvider handles the redirect result and loads the profile
-    await signInGuideWithGoogle()
+    setError(null)
+    try {
+      await signInGuideWithGoogle()
+      router.push("/admin")
+    } catch (err: any) {
+      setError(err.message || "Google login failed.")
+    }
   }
 
   if (loading) {
