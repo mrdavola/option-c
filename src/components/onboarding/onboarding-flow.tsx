@@ -105,6 +105,12 @@ function ClassCodeStep({
         </button>
       </form>
       {error && <p className="text-red-400 text-sm text-center">{error}</p>}
+      <a
+        href="/guide/login"
+        className="text-zinc-500 text-xs hover:text-zinc-300 transition-colors mt-2"
+      >
+        I&apos;m a guide →
+      </a>
     </div>
   )
 }
