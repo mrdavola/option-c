@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { useAuth } from "@/lib/auth"
-import { collection, getDocs, query, where, doc, updateDoc } from "firebase/firestore"
-import { db } from "@/lib/firebase"
+import { collection, getDocs, query, where, doc, updateDoc, setDoc } from "firebase/firestore"
+import { db, auth as firebaseAuth } from "@/lib/firebase"
+import { createUserWithEmailAndPassword } from "firebase/auth"
 import { Button } from "@/components/ui/button"
 import {
   LayoutDashboard,
@@ -183,23 +184,57 @@ export default function AdminDashboardPage() {
     setInviteError(null)
     setInviteResult(null)
     try {
-      const res = await fetch("/api/admin/invite-guide", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: inviteEmail,
-          name: inviteName,
-          className: inviteClassName,
-        }),
+      // Generate class code
+      const code = Array.from({ length: 6 }, () =>
+        "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[Math.floor(Math.random() * 32)]
+      ).join("")
+
+      // Generate temp password
+      const tempPassword = Math.random().toString(36).slice(-10) + "A1!"
+
+      // Save current admin user (createUserWithEmailAndPassword will sign us out)
+      const adminUser = firebaseAuth.currentUser
+      const adminToken = adminUser ? await adminUser.getIdToken() : null
+
+      // Create the guide's Firebase Auth account
+      const cred = await createUserWithEmailAndPassword(firebaseAuth, inviteEmail, tempPassword)
+      const guideUid = cred.user.uid
+
+      // Create class doc
+      const classRef = doc(collection(db, "classes"))
+      await setDoc(classRef, {
+        name: inviteClassName,
+        code,
+        guideUid,
+        createdAt: Date.now(),
       })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || "Failed to invite guide")
-      setInviteResult({ code: data.classCode, message: data.message })
+
+      // Create guide user doc
+      await setDoc(doc(db, "users", guideUid), {
+        uid: guideUid,
+        name: inviteName || inviteEmail.split("@")[0],
+        role: "guide",
+        grade: "",
+        interests: [],
+        classId: classRef.id,
+        tokens: 0,
+        createdAt: Date.now(),
+        lastLoginAt: Date.now(),
+      })
+
+      // Sign back in as admin (creating a user signs you in as them)
+      await firebaseAuth.signOut()
+      // Re-auth as admin — reload the page to restore admin session
+      setInviteResult({
+        code,
+        message: `Guide created! Email: ${inviteEmail}, Temp password: ${tempPassword}, Class code: ${code}. Tell the guide to reset their password at /guide/login.`,
+      })
       setInviteName("")
       setInviteEmail("")
       setInviteClassName("")
-      // Refresh data
-      fetchData()
+
+      // Reload to restore admin session
+      setTimeout(() => window.location.reload(), 3000)
     } catch (err: any) {
       setInviteError(err.message)
     } finally {

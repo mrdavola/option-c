@@ -4,6 +4,8 @@ import { useState } from "react"
 import { useAuth } from "@/lib/auth"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
+import { sendPasswordResetEmail } from "firebase/auth"
+import { auth } from "@/lib/firebase"
 
 export default function GuideLoginPage() {
   const { signInGuide, signInGuideWithGoogle, profile, loading } = useAuth()
@@ -106,6 +108,19 @@ export default function GuideLoginPage() {
         >
           Admin login &rarr;
         </a>
+        <button
+          onClick={async () => {
+            const guideEmail = (document.querySelector('input[type="email"]') as HTMLInputElement)?.value
+            if (!guideEmail) { alert("Enter your email first"); return }
+            try {
+              await sendPasswordResetEmail(auth, guideEmail)
+              alert("Password reset email sent! Check your inbox.")
+            } catch { alert("Could not send reset email. Check your email address.") }
+          }}
+          className="block text-center text-xs text-zinc-600 hover:text-zinc-400 transition-colors"
+        >
+          Forgot password?
+        </button>
       </div>
     </div>
   )
