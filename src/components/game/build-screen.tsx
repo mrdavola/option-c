@@ -19,36 +19,39 @@ interface NarrationItem {
   choiceKey?: string
 }
 
-const narrationSequence: NarrationItem[] = [
-  { type: "narration", text: "Reading your game design..." },
-  {
-    type: "question",
-    text: "What vibe should your game have?",
-    options: ["Jungle", "Outer Space"],
-    choiceKey: "vibe",
-  },
-  { type: "narration", text: "Setting up the game board..." },
-  {
-    type: "question",
-    text: "What colors feel right?",
-    options: ["Bright and fun", "Dark and mysterious"],
-    choiceKey: "color",
-  },
-  { type: "narration", text: "Adding your scoring rules..." },
-  {
-    type: "question",
-    text: "Who are the characters?",
-    options: ["Stick figures", "Animals"],
-    choiceKey: "characters",
-  },
-  { type: "narration", text: "Creating the win condition..." },
-  { type: "narration", text: "Making it look good..." },
-  { type: "narration", text: "Testing the math mechanics..." },
-  { type: "narration", text: "Polishing the game..." },
-  { type: "narration", text: "Almost done..." },
-]
+function buildNarrationSequence(designDoc: GameDesignDoc): NarrationItem[] {
+  return [
+    { type: "narration", text: `Reading your idea for "${designDoc.title}"...` },
+    {
+      type: "question",
+      text: `Where does "${designDoc.title}" take place?`,
+      options: ["Indoors", "Outdoors"],
+      choiceKey: "setting",
+    },
+    { type: "narration", text: "Setting up the game board..." },
+    {
+      type: "question",
+      text: "What's the overall feel of the game?",
+      options: ["Bright and fun", "Dark and mysterious"],
+      choiceKey: "color",
+    },
+    { type: "narration", text: "Adding the math mechanics..." },
+    {
+      type: "question",
+      text: "How should players move through the game?",
+      options: ["Turn by turn", "All at once"],
+      choiceKey: "pacing",
+    },
+    { type: "narration", text: "Building the win condition..." },
+    { type: "narration", text: "Making it look good..." },
+    { type: "narration", text: "Testing the math..." },
+    { type: "narration", text: "Polishing..." },
+    { type: "narration", text: "Almost ready..." },
+  ]
+}
 
 export function BuildScreen({ designDoc, onComplete }: BuildScreenProps) {
+  const narrationSequence = buildNarrationSequence(designDoc)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [progress, setProgress] = useState(0)
   const [designChoices, setDesignChoices] = useState<Record<string, string>>({})
@@ -172,6 +175,11 @@ export function BuildScreen({ designDoc, onComplete }: BuildScreenProps) {
             </h2>
             <p className="text-zinc-400 text-sm">{designDoc.title}</p>
           </div>
+
+          {/* Change later message */}
+          <p className="text-center text-xs text-zinc-500">
+            Don't worry — you can always change anything once the game is built.
+          </p>
 
           {/* Current narration/question */}
           <div className="min-h-[140px] flex flex-col items-center justify-center">

@@ -24,6 +24,8 @@ export function GalaxyView({ galaxyData, onPlanetClick, onLockedPlanetClick, cur
   const fgRef = useRef<any>(null)
   const [ForceGraph3D, setForceGraph3D] = useState<any>(null)
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
+  const recommendedPlanetIdRef = useRef(recommendedPlanetId)
+  useEffect(() => { recommendedPlanetIdRef.current = recommendedPlanetId }, [recommendedPlanetId])
 
   // Dynamic import of ForceGraph3D (browser-only)
   useEffect(() => {
@@ -192,7 +194,7 @@ export function GalaxyView({ galaxyData, onPlanetClick, onLockedPlanetClick, cur
 
   // Custom node rendering for pulse effect on completed planets
   const nodeThreeObject = useCallback((node: GalaxyNode) => {
-    const isRecommended = node.id === recommendedPlanetId
+    const isRecommended = node.id === recommendedPlanetIdRef.current
     if (typeof window === "undefined") return undefined
     const THREE = require("three")
 
@@ -305,7 +307,7 @@ export function GalaxyView({ galaxyData, onPlanetClick, onLockedPlanetClick, cur
     group.add(sprite)
 
     return group
-  }, [recommendedPlanetId])
+  }, [])
 
   // Animate pulse rings
   useEffect(() => {

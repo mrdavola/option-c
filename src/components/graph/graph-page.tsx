@@ -493,8 +493,8 @@ export function GraphPage({ data }: GraphPageProps) {
 
       {/* Tutorial hint */}
       {tutorialStep === 0 && viewMode === "galaxy" && (
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 z-10">
-          <div className="bg-blue-500/20 backdrop-blur-sm border border-blue-500/30 rounded-xl px-5 py-3 text-sm text-blue-200 animate-bounce-slow max-w-xs text-center">
+        <div className="absolute top-4 left-4 z-10">
+          <div className="bg-blue-500/20 backdrop-blur-sm border border-blue-500/30 rounded-xl px-4 py-2 text-sm text-blue-200 max-w-xs">
             Click a planet to explore its standards
           </div>
         </div>

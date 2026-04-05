@@ -102,17 +102,16 @@ export function Workshop({
         setHtml(data.html)
         setChatMessages((prev) => [
           ...prev,
-          { role: "assistant", text: "Done! I updated the game. Take a look." },
+          { role: "assistant", text: data.reply || "Done! I updated the game. Take a look." },
         ])
-        // Auto-save draft
         saveDraft(data.html)
+      } else if (data.reply) {
+        // AI answered a question without changing the game
+        setChatMessages((prev) => [...prev, { role: "assistant", text: data.reply }])
       } else {
         setChatMessages((prev) => [
           ...prev,
-          {
-            role: "assistant",
-            text: "Something went wrong. Try describing the change differently.",
-          },
+          { role: "assistant", text: "Something went wrong. Try describing the change differently." },
         ])
       }
     } catch {
@@ -147,9 +146,12 @@ export function Workshop({
         <h2 className="text-sm font-medium text-white truncate max-w-[200px]">
           {designDoc.title}
         </h2>
-        <span className="px-2 py-0.5 rounded-full text-xs bg-amber-500/10 border border-amber-500/30 text-amber-400">
-          Draft
-        </span>
+        <button
+          onClick={() => onSendForReview(html, currentGameId)}
+          className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium transition-colors"
+        >
+          Send for Review
+        </button>
       </div>
 
       {/* Main content */}
@@ -206,7 +208,7 @@ export function Workshop({
               </div>
             ))}
             {isRefining && (
-              <div className="text-sm text-zinc-400">Updating game...</div>
+              <div className="text-sm text-zinc-400 animate-pulse">Thinking...</div>
             )}
           </div>
 
@@ -234,15 +236,6 @@ export function Workshop({
             </div>
           </form>
 
-          {/* Send for Review */}
-          <div className="p-3 border-t border-zinc-800">
-            <button
-              onClick={() => onSendForReview(html, currentGameId)}
-              className="w-full py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Send for Review
-            </button>
-          </div>
         </div>
       </div>
     </div>

@@ -12,7 +12,7 @@ type ReadingLevel = "simpler" | "default" | "challenge"
 
 interface Explanation {
   whatIsThis: string
-  commonMistakes: string
+  commonMistakes: string | string[]
   realWorldUse: string
   formula?: string
 }
@@ -186,10 +186,13 @@ export function ConceptCard({ standard, onReady, interests, readOnly }: ConceptC
       setSpeaking(false)
       return
     }
+    const mistakes = Array.isArray(explanation.commonMistakes)
+      ? explanation.commonMistakes.join(". ")
+      : explanation.commonMistakes.replace(/[•|]/g, "")
     const text = [
       explanation.whatIsThis,
       explanation.formula ? `Formula: ${explanation.formula}` : "",
-      explanation.commonMistakes.replace(/•/g, ""),
+      mistakes,
       explanation.realWorldUse,
     ].filter(Boolean).join(". ")
     const utterance = new SpeechSynthesisUtterance(text)
@@ -272,16 +275,16 @@ export function ConceptCard({ standard, onReady, interests, readOnly }: ConceptC
               <CardTitle className="text-sm">Watch out for</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-col gap-1">
-                {explanation.commonMistakes
-                  .split("\n")
-                  .map(line => line.trim())
-                  .filter(line => line.length > 0)
-                  .map((line, i) => (
-                    <p key={i} className="text-sm text-muted-foreground leading-relaxed">
-                      {line.startsWith("•") ? line : `• ${line}`}
-                    </p>
-                  ))}
+              <div className="flex flex-col gap-2">
+                {(Array.isArray(explanation.commonMistakes)
+                  ? explanation.commonMistakes
+                  : explanation.commonMistakes.split("|").map(s => s.trim())
+                ).filter(s => s.length > 0).map((item, i) => (
+                  <div key={i} className="flex items-start gap-2">
+                    <span className="text-amber-400 mt-0.5 shrink-0">•</span>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{item}</p>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
