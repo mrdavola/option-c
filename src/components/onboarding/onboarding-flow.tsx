@@ -2,6 +2,9 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { useAuth } from "@/lib/auth"
+import { doc, updateDoc } from "firebase/firestore"
+import { db } from "@/lib/firebase"
 
 interface OnboardingData {
   name: string
@@ -43,6 +46,65 @@ function StepWrapper({
       }`}
     >
       {children}
+    </div>
+  )
+}
+
+function ClassCodeStep({
+  value,
+  onChange,
+  onNext,
+  error,
+}: {
+  value: string
+  onChange: (v: string) => void
+  onNext: () => void
+  error: string | null
+}) {
+  return (
+    <div className="flex flex-col items-center gap-6">
+      <h1 className="text-3xl font-bold text-white text-center">
+        Enter your class code
+      </h1>
+      <p className="text-zinc-400 text-sm text-center">
+        Your teacher will give you this code to join the class.
+      </p>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault()
+          if (value.trim()) onNext()
+        }}
+        className="w-full flex gap-3"
+      >
+        <input
+          autoFocus
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value.toUpperCase())}
+          placeholder="e.g. MATH7B"
+          className="flex-1 bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-lg text-white text-center tracking-widest font-mono placeholder:text-zinc-500 placeholder:tracking-normal placeholder:font-sans focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50"
+          maxLength={10}
+        />
+        <button
+          type="submit"
+          disabled={!value.trim()}
+          className="bg-blue-500 hover:bg-blue-600 disabled:opacity-30 disabled:cursor-not-allowed text-white rounded-xl px-4 py-3 transition-colors"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 20 20"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M5 10h10M11 6l4 4-4 4" />
+          </svg>
+        </button>
+      </form>
+      {error && <p className="text-red-400 text-sm text-center">{error}</p>}
     </div>
   )
 }
@@ -311,12 +373,16 @@ function WelcomeStep({
 export type { OnboardingData }
 
 export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
+  const { user, signInStudent } = useAuth()
   const [step, setStep] = useState(0)
+  const [classCode, setClassCode] = useState("")
   const [data, setData] = useState<OnboardingData>({
     name: "",
     grade: "",
     interests: [],
   })
+  const [authError, setAuthError] = useState<string | null>(null)
+  const [authLoading, setAuthLoading] = useState(false)
 
   const toggleInterest = (interest: string) => {
     setData((prev) => ({
@@ -327,29 +393,85 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     }))
   }
 
+  const handleNameNext = async () => {
+    setAuthLoading(true)
+    setAuthError(null)
+    try {
+      await signInStudent(classCode, data.name)
+      setStep(2) // advance to grade
+    } catch (err: any) {
+      setAuthError(err.message || "Could not join class. Try again.")
+    } finally {
+      setAuthLoading(false)
+    }
+  }
+
+  const handleInterestsComplete = async () => {
+    if (user) {
+      try {
+        await updateDoc(doc(db, "users", user.uid), {
+          grade: data.grade,
+          interests: data.interests,
+        })
+      } catch {
+        // Silent fail — profile will be updated on next login
+      }
+    }
+    onComplete(data)
+  }
+
   return (
     <div className="fixed inset-0 z-50 bg-zinc-950 flex items-center justify-center">
       <div className="max-w-md w-full px-6 relative">
+        {/* Step 0: Class Code */}
         <StepWrapper visible={step === 0}>
-          <NameStep
-            value={data.name}
-            onChange={(name) => setData((prev) => ({ ...prev, name }))}
+          <ClassCodeStep
+            value={classCode}
+            onChange={setClassCode}
             onNext={() => setStep(1)}
+            error={null}
           />
         </StepWrapper>
+
+        {/* Step 1: Name + auth */}
         <StepWrapper visible={step === 1}>
+          {authLoading ? (
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+              <p className="text-zinc-300 text-sm">Joining class...</p>
+            </div>
+          ) : (
+            <>
+              <NameStep
+                value={data.name}
+                onChange={(name) => setData((prev) => ({ ...prev, name }))}
+                onNext={handleNameNext}
+              />
+              {authError && (
+                <p className="text-red-400 text-sm text-center mt-4">{authError}</p>
+              )}
+            </>
+          )}
+        </StepWrapper>
+
+        {/* Step 2: Grade */}
+        <StepWrapper visible={step === 2}>
           <GradeStep
             name={data.name}
             onSelect={(grade) => {
               setData((prev) => ({ ...prev, grade }))
-              setStep(2)
+              setStep(3)
             }}
           />
         </StepWrapper>
-        <StepWrapper visible={step === 2}>
-          <IntroStep name={data.name} onNext={() => setStep(3)} />
-        </StepWrapper>
+
+        {/* Step 3: Intro */}
         <StepWrapper visible={step === 3}>
+          <IntroStep name={data.name} onNext={() => setStep(4)} />
+        </StepWrapper>
+
+        {/* Step 4: Interests */}
+        <StepWrapper visible={step === 4}>
           <InterestsStep
             selected={data.interests}
             onToggle={toggleInterest}
@@ -359,7 +481,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                 interests: [...prev.interests, ...newInterests.filter(i => !prev.interests.includes(i))],
               }))
             }}
-            onNext={() => onComplete(data)}
+            onNext={handleInterestsComplete}
           />
         </StepWrapper>
       </div>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useMemo } from "react"
+import { useState, useCallback, useMemo, useEffect } from "react"
 import type { StandardsGraph, StandardNode, NodeStatus } from "@/lib/graph-types"
 import { buildPlanets, buildBridges, buildGalaxyData, buildMoonData } from "@/lib/galaxy-utils"
 import type { Planet, Bridge, ColorMode } from "@/lib/galaxy-utils"
@@ -14,7 +14,7 @@ import { BuildScreen } from "@/components/game/build-screen"
 import { Workshop } from "@/components/game/workshop"
 import { MasteryAnimation } from "./mastery-animation"
 import type { GameDesignDoc } from "@/lib/game-types"
-import { getTokens, addTokens } from "@/lib/tokens"
+import { useAuth } from "@/lib/auth"
 
 interface GraphPageProps {
   data: StandardsGraph
@@ -55,6 +55,7 @@ function computeNewlyAvailable(
 }
 
 export function GraphPage({ data }: GraphPageProps) {
+  const { user, profile, loading: authLoading, updateTokens, saveProgress, loadProgress } = useAuth()
   const initialProgress = useMemo(() => computeInitialProgress(data), [data])
   const [progressMap, setProgressMap] = useState<Map<string, NodeStatus>>(initialProgress)
   const [selectedStandard, setSelectedStandard] = useState<StandardNode | null>(null)
@@ -73,8 +74,25 @@ export function GraphPage({ data }: GraphPageProps) {
 
   // Tokens
   const [tokens, setTokens] = useState(0)
-  // Sync from localStorage on mount (client only)
-  useState(() => { if (typeof window !== "undefined") setTokens(getTokens()) })
+
+  // Load from auth profile on mount / when profile changes
+  useEffect(() => {
+    if (profile) {
+      setStudentData({ name: profile.name, grade: profile.grade, interests: profile.interests })
+      setOnboardingComplete(true)
+      setTokens(profile.tokens)
+      // Load progress from Firestore
+      loadProgress().then((progressDocs) => {
+        const map = new Map(initialProgress)
+        for (const [id, progressDoc] of progressDocs) {
+          map.set(id, progressDoc.status as NodeStatus)
+        }
+        setProgressMap(map)
+      }).catch(() => {
+        // Fall back to initial progress
+      })
+    }
+  }, [profile, loadProgress, initialProgress])
 
   // Mastery animation
   const [masteryEvent, setMasteryEvent] = useState<{ planetName: string; planetColor: string; tokenGain: number } | null>(null)
@@ -240,9 +258,11 @@ export function GraphPage({ data }: GraphPageProps) {
         next.set(id, "available")
       }
 
-      // Award +5 tokens per skill
-      const newTotal = addTokens(5)
-      setTokens(newTotal)
+      // Award +5 tokens per skill (update local state immediately, persist to Firestore)
+      updateTokens(5).then((newTotal) => setTokens(newTotal)).catch(() => {
+        // Optimistic: keep local +5
+        setTokens(t => t + 5)
+      })
 
       // Detect planet mastery: all moons on this planet now unlocked
       if (planet) {
@@ -260,15 +280,15 @@ export function GraphPage({ data }: GraphPageProps) {
       return next
     })
 
-    // Fire-and-forget API call
-    fetch("/api/progress/unlock", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ standardId }),
-    }).catch(() => {})
+    // Save progress to Firestore
+    saveProgress(standardId, { status: "unlocked", unlockedAt: Date.now() }).catch(() => {})
+    // Also mark newly available standards
+    for (const id of newlyAvailable) {
+      saveProgress(id, { status: "available" }).catch(() => {})
+    }
 
     if (tutorialStep < 3) setTutorialStep(3)
-  }, [data, progressMap, tutorialStep, planets])
+  }, [data, progressMap, tutorialStep, planets, saveProgress, updateTokens])
 
   // Handle "Build my Game" from Genie chat
   const handleBuildGame = useCallback((designDoc: GameDesignDoc) => {
@@ -349,8 +369,9 @@ export function GraphPage({ data }: GraphPageProps) {
 
       if (result.pass) {
         // Award +1 token for published game
-        const newTotal = addTokens(1)
-        setTokens(newTotal)
+        updateTokens(1).then((newTotal) => setTokens(newTotal)).catch(() => {
+          setTokens(t => t + 1)
+        })
         setTokenNotify("+1 token — game published!")
         setTimeout(() => setTokenNotify(null), 3000)
 
@@ -371,6 +392,18 @@ export function GraphPage({ data }: GraphPageProps) {
       setTimeout(() => setReviewResult(null), 4000)
     }
   }, [currentDesignDoc])
+
+  // Show loading while auth is initializing
+  if (authLoading) {
+    return (
+      <div className="h-screen w-screen flex items-center justify-center bg-zinc-950">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-10 h-10 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <p className="text-zinc-400 text-sm">Loading...</p>
+        </div>
+      </div>
+    )
+  }
 
   if (!onboardingComplete) {
     return (
