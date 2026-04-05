@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useAuth } from "@/lib/auth"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { signInWithEmailAndPassword } from "firebase/auth"
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth"
 import { auth } from "@/lib/firebase"
 
 export default function AdminLoginPage() {
@@ -102,6 +102,22 @@ export default function AdminLoginPage() {
         </form>
 
         {error && <p className="text-red-400 text-sm text-center">{error}</p>}
+
+        <button
+          onClick={async () => {
+            if (!email) { setError("Enter your email first"); return }
+            try {
+              await sendPasswordResetEmail(auth, email)
+              setError(null)
+              alert("Password reset email sent! Check your inbox.")
+            } catch (err: any) {
+              setError(err.message || "Failed to send reset email.")
+            }
+          }}
+          className="w-full text-zinc-400 text-sm hover:text-zinc-200 transition-colors"
+        >
+          Forgot password? Send reset email
+        </button>
       </div>
     </div>
   )
