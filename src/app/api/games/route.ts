@@ -1,13 +1,26 @@
 import { db } from "@/lib/firebase"
 import { collection, query, where, orderBy, getDocs } from "firebase/firestore"
 
-export async function GET() {
-  const gamesRef = collection(db, "games")
-  const q = query(
-    gamesRef,
-    where("status", "==", "published"),
-    orderBy("createdAt", "desc")
-  )
+export async function GET(req: Request) {
+  const url = new URL(req.url)
+  const classId = url.searchParams.get("classId")
+  const status = url.searchParams.get("status") || "published"
+
+  let q
+  if (classId) {
+    q = query(
+      collection(db, "games"),
+      where("status", "==", status),
+      where("classId", "==", classId),
+      orderBy("createdAt", "desc")
+    )
+  } else {
+    q = query(
+      collection(db, "games"),
+      where("status", "==", status),
+      orderBy("createdAt", "desc")
+    )
+  }
 
   const snap = await getDocs(q)
   const games = snap.docs.map((d) => {

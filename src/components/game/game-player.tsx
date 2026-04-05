@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { GameIframe } from "./game-iframe"
 import { MathMomentOverlay } from "./math-moment-overlay"
+import { ReviewPanel } from "./review-panel"
 import { X } from "lucide-react"
 
 interface GamePlayerProps {
@@ -11,9 +12,14 @@ interface GamePlayerProps {
   html: string
   concept?: string
   onClose: () => void
+  isPendingReview?: boolean
+  authorName?: string
+  reviewerUid?: string
+  reviewerName?: string
+  onReviewComplete?: (approved: boolean) => void
 }
 
-export function GamePlayer({ gameId, title, html, concept, onClose }: GamePlayerProps) {
+export function GamePlayer({ gameId, title, html, concept, onClose, isPendingReview, authorName, reviewerUid, reviewerName, onReviewComplete }: GamePlayerProps) {
   const [showRating, setShowRating] = useState(false)
   const [showMathMoment, setShowMathMoment] = useState(false)
   const [selectedRating, setSelectedRating] = useState(0)
@@ -94,6 +100,20 @@ export function GamePlayer({ gameId, title, html, concept, onClose }: GamePlayer
         {hasRated && (
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-emerald-900/90 border border-emerald-500/30 rounded-xl px-5 py-2 text-sm text-emerald-300">
             Thanks! You rated {selectedRating}/5
+          </div>
+        )}
+
+        {/* Peer review panel */}
+        {isPendingReview && reviewerUid && reviewerName && onReviewComplete && (
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full max-w-md px-4">
+            <ReviewPanel
+              gameId={gameId}
+              gameName={title}
+              authorName={authorName || "Unknown"}
+              reviewerUid={reviewerUid}
+              reviewerName={reviewerName}
+              onReviewComplete={onReviewComplete}
+            />
           </div>
         )}
       </div>
