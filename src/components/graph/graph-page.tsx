@@ -17,6 +17,7 @@ import type { GameDesignDoc } from "@/lib/game-types"
 import { doc, setDoc, collection } from "firebase/firestore"
 import { db } from "@/lib/firebase"
 import { useAuth } from "@/lib/auth"
+import { StudentNav } from "@/components/student-nav"
 
 interface GraphPageProps {
   data: StandardsGraph
@@ -472,6 +473,9 @@ export function GraphPage({ data }: GraphPageProps) {
         </>
       )}
 
+      {/* Student navigation */}
+      {buildMode === "idle" && <StudentNav />}
+
       {/* Main view (hidden when building) */}
       {buildMode === "idle" && (
         viewMode === "galaxy" ? (
@@ -600,7 +604,7 @@ export function GraphPage({ data }: GraphPageProps) {
 
       {/* Tutorial hint */}
       {tutorialStep === 0 && viewMode === "galaxy" && (
-        <div className={`absolute ${impersonating ? "top-14" : "top-4"} left-4 z-10`}>
+        <div className={`absolute ${impersonating ? "top-14" : "top-4"} left-52 z-10`}>
           <div className="bg-blue-500/20 backdrop-blur-sm border border-blue-500/30 rounded-xl px-4 py-2 text-sm text-blue-200 max-w-xs">
             Click a planet to explore its standards
           </div>
