@@ -14,6 +14,8 @@ import { BuildScreen } from "@/components/game/build-screen"
 import { Workshop } from "@/components/game/workshop"
 import { MasteryAnimation } from "./mastery-animation"
 import type { GameDesignDoc } from "@/lib/game-types"
+import { doc, setDoc, collection } from "firebase/firestore"
+import { db } from "@/lib/firebase"
 import { useAuth } from "@/lib/auth"
 
 interface GraphPageProps {
@@ -327,27 +329,28 @@ export function GraphPage({ data }: GraphPageProps) {
 
   // Handle back to planet from workshop
   const handleBackToPlanet = useCallback(async (html: string, gameId: string | null) => {
-    // Save draft
+    // Save draft directly to Firestore
     try {
-      await fetch("/api/game/save", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: gameId,
-          title: currentDesignDoc?.title || "Untitled",
-          designerName: activeProfile?.name || "Student",
-          authorUid: activeProfile?.uid || "",
-          classId: activeProfile?.classId || "",
-          standardId: currentDesignDoc?.standardId || "",
-          planetId: currentDesignDoc?.planetId || "",
-          gameHtml: html,
-          designDoc: currentDesignDoc,
-          status: "draft",
-          playCount: 0,
-          ratingSum: 0,
-          ratingCount: 0,
-        }),
-      })
+      const gamesRef = collection(db, "games")
+      const id = gameId || doc(gamesRef).id
+      await setDoc(doc(db, "games", id), {
+        id,
+        title: currentDesignDoc?.title || "Untitled",
+        designerName: activeProfile?.name || "Student",
+        authorUid: activeProfile?.uid || "",
+        classId: activeProfile?.classId || "",
+        standardId: currentDesignDoc?.standardId || "",
+        planetId: currentDesignDoc?.planetId || "",
+        gameHtml: html,
+        designDoc: currentDesignDoc,
+        status: "draft",
+        playCount: 0,
+        ratingSum: 0,
+        ratingCount: 0,
+        reviews: [],
+        updatedAt: Date.now(),
+        createdAt: Date.now(),
+      }, { merge: true })
     } catch {
       // Silent fail
     }
@@ -359,27 +362,38 @@ export function GraphPage({ data }: GraphPageProps) {
 
   // Handle send for review
   const handleSendForReview = useCallback(async (html: string, gameId: string | null) => {
-    // Save with pending_review status
+    // Save with pending_review status directly to Firestore
     try {
-      await fetch("/api/game/save", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: gameId,
-          title: currentDesignDoc?.title || "Untitled",
-          designerName: activeProfile?.name || "Student",
-          authorUid: activeProfile?.uid || "",
-          classId: activeProfile?.classId || "",
-          standardId: currentDesignDoc?.standardId || "",
-          planetId: currentDesignDoc?.planetId || "",
-          gameHtml: html,
-          designDoc: currentDesignDoc,
-          status: "pending_review",
-          playCount: 0,
-          ratingSum: 0,
-          ratingCount: 0,
-        }),
-      })
+      const gamesRef = collection(db, "games")
+      const id = gameId || doc(gamesRef).id
+      await setDoc(doc(db, "games", id), {
+        id,
+        title: currentDesignDoc?.title || "Untitled",
+        designerName: activeProfile?.name || "Student",
+        authorUid: activeProfile?.uid || "",
+        classId: activeProfile?.classId || "",
+        standardId: currentDesignDoc?.standardId || "",
+        planetId: currentDesignDoc?.planetId || "",
+        gameHtml: html,
+        designDoc: currentDesignDoc,
+        status: "pending_review",
+        playCount: 0,
+        ratingSum: 0,
+        ratingCount: 0,
+        reviews: [],
+        updatedAt: Date.now(),
+        createdAt: Date.now(),
+      }, { merge: true })
+
+      // Mark standard as in_review
+      if (currentDesignDoc?.standardId) {
+        await saveProgress(currentDesignDoc.standardId, { status: "in_review" })
+        setProgressMap(prev => {
+          const next = new Map(prev)
+          next.set(currentDesignDoc.standardId, "in_review")
+          return next
+        })
+      }
 
       setReviewResult({ pass: true, feedback: "Sent for review! Your classmates will check it out." })
       setTimeout(() => {
@@ -393,7 +407,7 @@ export function GraphPage({ data }: GraphPageProps) {
       setReviewResult({ pass: false, feedback: "Failed to submit. Please try again." })
       setTimeout(() => setReviewResult(null), 4000)
     }
-  }, [currentDesignDoc, activeProfile])
+  }, [currentDesignDoc, activeProfile, saveProgress])
 
   // Show loading while auth is initializing
   if (authLoading) {

@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect } from "react"
 import type { GameDesignDoc } from "@/lib/game-types"
+import { doc, setDoc, collection } from "firebase/firestore"
+import { db } from "@/lib/firebase"
 import { GameIframe } from "./game-iframe"
 import { MathMomentOverlay } from "./math-moment-overlay"
 import { Send, ArrowLeft, MessageCircle, X } from "lucide-react"
@@ -51,31 +53,31 @@ export function Workshop({
     })
   }, [chatMessages])
 
-  // Auto-save draft to Firebase
+  // Auto-save draft to Firebase (client-side Firestore)
   const saveDraft = async (gameHtml: string) => {
     try {
-      const res = await fetch("/api/game/save", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: currentGameId,
-          title: designDoc.title,
-          designerName: activeProfile?.name || "Student",
-          authorUid: activeProfile?.uid || "",
-          classId: activeProfile?.classId || "",
-          standardId: designDoc.standardId,
-          planetId: designDoc.planetId,
-          gameHtml,
-          designDoc,
-          status: "draft",
-          playCount: 0,
-          ratingSum: 0,
-          ratingCount: 0,
-        }),
-      })
-      const data = await res.json()
-      if (data.id && !currentGameId) {
-        setCurrentGameId(data.id)
+      const gamesRef = collection(db, "games")
+      const id = currentGameId || doc(gamesRef).id
+      await setDoc(doc(db, "games", id), {
+        id,
+        title: designDoc.title,
+        designerName: activeProfile?.name || "Student",
+        authorUid: activeProfile?.uid || "",
+        classId: activeProfile?.classId || "",
+        standardId: designDoc.standardId,
+        planetId: designDoc.planetId,
+        gameHtml,
+        designDoc,
+        status: "draft",
+        playCount: 0,
+        ratingSum: 0,
+        ratingCount: 0,
+        reviews: [],
+        updatedAt: Date.now(),
+        createdAt: Date.now(),
+      }, { merge: true })
+      if (!currentGameId) {
+        setCurrentGameId(id)
       }
     } catch {
       // Silent fail — draft saving is best-effort
