@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { useAuth } from "@/lib/auth"
+import { db } from "@/lib/firebase"
+import { collection, query, where, getDocs } from "firebase/firestore"
 import { GameIframe } from "@/components/game/game-iframe"
 import { Trophy, Play, Star } from "lucide-react"
 import type { Game } from "@/lib/game-types"
@@ -23,13 +25,15 @@ export function MasteryPlay({ standardId, planetId, onMastered }: MasteryPlayPro
   // Load approved games for this skill
   useEffect(() => {
     if (!activeProfile?.classId) return
-    fetch(`/api/games?classId=${activeProfile.classId}&status=published`)
-      .then(res => res.json())
-      .then(data => {
-        // Filter to games for this planet/standard
-        const relevant = (data.games || data || []).filter((g: Game) =>
-          g.planetId === planetId || g.standardId === standardId
-        )
+    const q = query(
+      collection(db, "games"),
+      where("classId", "==", activeProfile.classId),
+      where("status", "==", "published")
+    )
+    getDocs(q)
+      .then(snap => {
+        const all = snap.docs.map(d => ({ ...d.data(), id: d.id }) as Game)
+        const relevant = all.filter(g => g.planetId === planetId || g.standardId === standardId)
         setGames(relevant)
       })
       .catch(() => {})

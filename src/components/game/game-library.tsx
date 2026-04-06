@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from "react"
 import type { Game } from "@/lib/game-types"
 import { useAuth } from "@/lib/auth"
+import { db } from "@/lib/firebase"
+import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore"
 import { GameCard } from "./game-card"
 import { GamePlayer } from "./game-player"
 
@@ -27,11 +29,18 @@ export function GameLibrary({ games }: GameLibraryProps) {
   const fetchPendingGames = useCallback(async () => {
     if (!activeProfile?.classId) return
     try {
-      const res = await fetch(`/api/games?classId=${activeProfile.classId}&status=pending_review`)
-      if (!res.ok) return
-      const data = await res.json()
-      // Filter out user's own games
-      setPendingGames(data.filter((g: Omit<Game, "gameHtml">) => g.authorUid !== user?.uid))
+      const q = query(
+        collection(db, "games"),
+        where("classId", "==", activeProfile.classId),
+        where("status", "==", "pending_review")
+      )
+      const snap = await getDocs(q)
+      const all = snap.docs.map(d => {
+        const data = d.data()
+        const { gameHtml: _, ...meta } = data
+        return { ...meta, id: d.id } as Omit<Game, "gameHtml">
+      })
+      setPendingGames(all.filter(g => g.authorUid !== user?.uid))
     } catch {
       // Silent fail
     }
@@ -54,9 +63,9 @@ export function GameLibrary({ games }: GameLibraryProps) {
   const handlePlay = async (gameId: string, isPending = false) => {
     setLoading(gameId)
     try {
-      const res = await fetch(`/api/game/${gameId}/html`)
-      if (!res.ok) throw new Error("Failed to load game")
-      const html = await res.text()
+      const snap = await getDoc(doc(db, "games", gameId))
+      if (!snap.exists()) throw new Error("Game not found")
+      const html = snap.data().gameHtml
       const allGames = isPending ? pendingGames : games
       const game = allGames.find((g) => g.id === gameId)
       setPlayingGame({
