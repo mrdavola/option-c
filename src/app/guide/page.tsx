@@ -41,6 +41,8 @@ export default function GuideDashboard() {
   const [showClassPicker, setShowClassPicker] = useState(false)
   const [showNewClass, setShowNewClass] = useState(false)
   const [previewGame, setPreviewGame] = useState<Game | null>(null)
+  const [feedbackGameId, setFeedbackGameId] = useState<string | null>(null)
+  const [feedbackText, setFeedbackText] = useState("")
   const [newClassName, setNewClassName] = useState("")
   const [creatingClass, setCreatingClass] = useState(false)
 
@@ -236,6 +238,28 @@ export default function GuideDashboard() {
       loadDashboard(classData?.id)
     } catch (err) {
       console.error("Approve error:", err)
+    }
+  }
+
+  async function handleRejectGame(gameId: string) {
+    if (!profile || !feedbackText.trim()) return
+    try {
+      const gameRef = doc(db, "games", gameId)
+      await updateDoc(gameRef, {
+        status: "needs_work",
+        reviews: arrayUnion({
+          reviewerUid: profile.uid,
+          reviewerName: profile.name,
+          approved: false,
+          comment: feedbackText.trim(),
+          createdAt: Date.now(),
+        }),
+      })
+      setFeedbackGameId(null)
+      setFeedbackText("")
+      loadDashboard(classData?.id)
+    } catch (err) {
+      console.error("Reject error:", err)
     }
   }
 
@@ -512,28 +536,67 @@ export default function GuideDashboard() {
                   </div>
                 ) : (
                   pendingGames.map(g => (
-                    <div key={g.id} className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-white font-medium">{g.title}</p>
-                        <p className="text-xs text-zinc-400">by {g.designerName} · {g.standardId}</p>
+                    <div key={g.id} className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+                      <div className="p-4 flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-white font-medium">{g.title}</p>
+                          <p className="text-xs text-zinc-400">by {g.designerName} · {g.standardId}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setPreviewGame(g)}
+                          >
+                            <Play className="size-3 mr-1" />
+                            Play
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-amber-400 border-amber-500/30 hover:bg-amber-500/10"
+                            onClick={() => setFeedbackGameId(feedbackGameId === g.id ? null : g.id)}
+                          >
+                            Needs Work
+                          </Button>
+                          <Button
+                            size="sm"
+                            className="bg-emerald-600 hover:bg-emerald-500"
+                            onClick={() => handleApproveGame(g.id)}
+                          >
+                            Approve
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => setPreviewGame(g)}
-                        >
-                          <Play className="size-3 mr-1" />
-                          Play
-                        </Button>
-                        <Button
-                          size="sm"
-                          className="bg-emerald-600 hover:bg-emerald-500"
-                          onClick={() => handleApproveGame(g.id)}
-                        >
-                          Approve
-                        </Button>
-                      </div>
+                      {feedbackGameId === g.id && (
+                        <div className="px-4 pb-4 border-t border-zinc-800 pt-3">
+                          <textarea
+                            autoFocus
+                            value={feedbackText}
+                            onChange={(e) => setFeedbackText(e.target.value)}
+                            placeholder="What should the student improve?"
+                            className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 resize-none"
+                            rows={2}
+                          />
+                          <div className="flex justify-end gap-2 mt-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => { setFeedbackGameId(null); setFeedbackText("") }}
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="bg-amber-600 hover:bg-amber-500"
+                              disabled={!feedbackText.trim()}
+                              onClick={() => handleRejectGame(g.id)}
+                            >
+                              Send Feedback
+                            </Button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))
                 )}
@@ -582,13 +645,23 @@ export default function GuideDashboard() {
               </div>
               <div className="flex items-center gap-2">
                 {previewGame.status === "pending_review" && (
-                  <Button
-                    size="sm"
-                    className="bg-emerald-600 hover:bg-emerald-500"
-                    onClick={() => { handleApproveGame(previewGame.id); setPreviewGame(null) }}
-                  >
-                    Approve
-                  </Button>
+                  <>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-amber-400 border-amber-500/30 hover:bg-amber-500/10"
+                      onClick={() => { setPreviewGame(null); setFeedbackGameId(previewGame.id) }}
+                    >
+                      Needs Work
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="bg-emerald-600 hover:bg-emerald-500"
+                      onClick={() => { handleApproveGame(previewGame.id); setPreviewGame(null) }}
+                    >
+                      Approve
+                    </Button>
+                  </>
                 )}
                 <button
                   onClick={() => setPreviewGame(null)}

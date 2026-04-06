@@ -33,7 +33,7 @@ export interface Game {
   title: string
   gameHtml: string
   designDoc: GameDesignDoc
-  status: "draft" | "pending_review" | "published"
+  status: "draft" | "pending_review" | "published" | "needs_work"
   playCount: number
   ratingSum: number
   ratingCount: number

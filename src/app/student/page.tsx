@@ -68,6 +68,7 @@ export default function StudentDashboard() {
       case "draft": return { text: "Draft", className: "bg-zinc-700 text-zinc-300" }
       case "pending_review": return { text: "Pending Review", className: "bg-amber-500/20 text-amber-400" }
       case "published": return { text: "Approved", className: "bg-emerald-500/20 text-emerald-400" }
+      case "needs_work": return { text: "Needs Work", className: "bg-red-500/20 text-red-400" }
       default: return { text: status, className: "bg-zinc-700 text-zinc-300" }
     }
   }
@@ -131,22 +132,31 @@ export default function StudentDashboard() {
             {games.map(g => {
               const badge = statusLabel(g.status)
               return (
-                <button
-                  key={g.id}
-                  onClick={() => setPreviewGame(g)}
-                  className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex items-center justify-between hover:border-zinc-700 transition-colors text-left"
-                >
-                  <div className="flex items-center gap-3">
-                    <Play className="size-4 text-zinc-500 shrink-0" />
-                    <div>
-                      <p className="text-sm text-white font-medium">{g.title}</p>
-                      <p className="text-xs text-zinc-500 mt-0.5">{g.standardId}</p>
+                <div key={g.id} className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+                  <button
+                    onClick={() => setPreviewGame(g)}
+                    className="w-full p-4 flex items-center justify-between hover:bg-zinc-800/50 transition-colors text-left"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Play className="size-4 text-zinc-500 shrink-0" />
+                      <div>
+                        <p className="text-sm text-white font-medium">{g.title}</p>
+                        <p className="text-xs text-zinc-500 mt-0.5">{g.standardId}</p>
+                      </div>
                     </div>
-                  </div>
-                  <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${badge.className}`}>
-                    {badge.text}
-                  </span>
-                </button>
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${badge.className}`}>
+                      {badge.text}
+                    </span>
+                  </button>
+                  {g.status === "needs_work" && g.reviews?.length > 0 && (
+                    <div className="px-4 pb-3 border-t border-zinc-800 pt-3">
+                      <p className="text-xs text-zinc-400 mb-1">Feedback from your guide:</p>
+                      <p className="text-sm text-red-300 bg-red-500/10 rounded-lg px-3 py-2">
+                        {g.reviews[g.reviews.length - 1].comment || "Needs improvement"}
+                      </p>
+                    </div>
+                  )}
+                </div>
               )
             })}
           </div>
