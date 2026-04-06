@@ -65,7 +65,7 @@ interface StandardPanelProps {
   onMastered?: (standardId: string) => void
   onBuildGame?: (designDoc: import("@/lib/game-types").GameDesignDoc, chatHistory: string) => void
   interests?: string[]
-  nodeStatus?: "locked" | "available" | "in_progress" | "unlocked" | "mastered"
+  nodeStatus?: "locked" | "available" | "in_progress" | "unlocked" | "mastered" | "in_review"
 }
 
 export function StandardPanel({
@@ -163,6 +163,17 @@ export function StandardPanel({
                 interests={interests}
                 readOnly
               />
+            </div>
+          ) : nodeStatus === "in_review" ? (
+            <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 text-center">
+              <p className="text-amber-300 font-medium">Your game is being reviewed</p>
+              <p className="text-zinc-400 text-sm mt-1">You'll unlock this skill when your game is approved.</p>
+              <a
+                href="/student"
+                className="text-sm text-blue-400 hover:text-blue-300 mt-2 inline-block"
+              >
+                Check status in My Stuff →
+              </a>
             </div>
           ) : (
             <>
