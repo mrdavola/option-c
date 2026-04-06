@@ -9,7 +9,10 @@ export function StudentNav() {
   const { activeProfile, impersonating } = useAuth()
   const pathname = usePathname()
 
-  if (!activeProfile || activeProfile.role !== "student") return null
+  // Show for students, impersonating guides, or when on /student page
+  const isStudentPage = pathname.startsWith("/student")
+  const isStudent = activeProfile?.role === "student"
+  if (!activeProfile || (!isStudent && !impersonating && !isStudentPage)) return null
   if (pathname.startsWith("/guide") || pathname.startsWith("/admin")) return null
 
   const isExplore = pathname === "/"

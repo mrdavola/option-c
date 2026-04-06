@@ -5,9 +5,10 @@ import { useAuth } from "@/lib/auth"
 import { db } from "@/lib/firebase"
 import { collection, query, where, getDocs, doc, getDoc, setDoc, updateDoc, arrayUnion, increment } from "firebase/firestore"
 import { Button } from "@/components/ui/button"
-import { Copy, Check, Users, GamepadIcon, Clock, Plus, ChevronDown, Eye } from "lucide-react"
+import { Copy, Check, Users, GamepadIcon, Clock, Plus, ChevronDown, Eye, Play, X } from "lucide-react"
 import { useRouter } from "next/navigation"
 import type { Game } from "@/lib/game-types"
+import { GameIframe } from "@/components/game/game-iframe"
 
 interface StudentSummary {
   uid: string
@@ -39,6 +40,7 @@ export default function GuideDashboard() {
   const [studentGames, setStudentGames] = useState<Game[]>([])
   const [showClassPicker, setShowClassPicker] = useState(false)
   const [showNewClass, setShowNewClass] = useState(false)
+  const [previewGame, setPreviewGame] = useState<Game | null>(null)
   const [newClassName, setNewClassName] = useState("")
   const [creatingClass, setCreatingClass] = useState(false)
 
@@ -515,13 +517,23 @@ export default function GuideDashboard() {
                         <p className="text-sm text-white font-medium">{g.title}</p>
                         <p className="text-xs text-zinc-400">by {g.designerName} · {g.standardId}</p>
                       </div>
-                      <Button
-                        size="sm"
-                        className="bg-emerald-600 hover:bg-emerald-500"
-                        onClick={() => handleApproveGame(g.id)}
-                      >
-                        Approve
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setPreviewGame(g)}
+                        >
+                          <Play className="size-3 mr-1" />
+                          Play
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="bg-emerald-600 hover:bg-emerald-500"
+                          onClick={() => handleApproveGame(g.id)}
+                        >
+                          Approve
+                        </Button>
+                      </div>
                     </div>
                   ))
                 )}
@@ -558,6 +570,40 @@ export default function GuideDashboard() {
           </>
         )}
       </div>
+
+      {/* Game preview modal */}
+      {previewGame && (
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-xl w-full max-w-3xl max-h-[90vh] flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b border-zinc-800">
+              <div>
+                <h3 className="text-white font-medium">{previewGame.title}</h3>
+                <p className="text-xs text-zinc-400">by {previewGame.designerName} · {previewGame.standardId}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                {previewGame.status === "pending_review" && (
+                  <Button
+                    size="sm"
+                    className="bg-emerald-600 hover:bg-emerald-500"
+                    onClick={() => { handleApproveGame(previewGame.id); setPreviewGame(null) }}
+                  >
+                    Approve
+                  </Button>
+                )}
+                <button
+                  onClick={() => setPreviewGame(null)}
+                  className="text-zinc-400 hover:text-white transition-colors p-1"
+                >
+                  <X className="size-5" />
+                </button>
+              </div>
+            </div>
+            <div className="flex-1 min-h-0 h-[70vh]">
+              <GameIframe html={previewGame.gameHtml} className="w-full h-full" />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -5,13 +5,15 @@ import { useAuth } from "@/lib/auth"
 import { db } from "@/lib/firebase"
 import { collection, query, where, getDocs } from "firebase/firestore"
 import type { Game } from "@/lib/game-types"
-import { Gamepad2, Bell } from "lucide-react"
+import { Gamepad2, Bell, Play, X } from "lucide-react"
+import { GameIframe } from "@/components/game/game-iframe"
 
 export default function StudentDashboard() {
   const { activeProfile, loadProgress } = useAuth()
   const [games, setGames] = useState<Game[]>([])
   const [loading, setLoading] = useState(true)
   const [progressStats, setProgressStats] = useState({ unlocked: 0, mastered: 0, inReview: 0 })
+  const [previewGame, setPreviewGame] = useState<Game | null>(null)
 
   useEffect(() => {
     if (!activeProfile?.uid) return
@@ -129,20 +131,49 @@ export default function StudentDashboard() {
             {games.map(g => {
               const badge = statusLabel(g.status)
               return (
-                <div key={g.id} className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-white font-medium">{g.title}</p>
-                    <p className="text-xs text-zinc-500 mt-0.5">{g.standardId}</p>
+                <button
+                  key={g.id}
+                  onClick={() => setPreviewGame(g)}
+                  className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex items-center justify-between hover:border-zinc-700 transition-colors text-left"
+                >
+                  <div className="flex items-center gap-3">
+                    <Play className="size-4 text-zinc-500 shrink-0" />
+                    <div>
+                      <p className="text-sm text-white font-medium">{g.title}</p>
+                      <p className="text-xs text-zinc-500 mt-0.5">{g.standardId}</p>
+                    </div>
                   </div>
                   <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${badge.className}`}>
                     {badge.text}
                   </span>
-                </div>
+                </button>
               )
             })}
           </div>
         )}
       </div>
+      {/* Game preview modal */}
+      {previewGame && (
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-xl w-full max-w-3xl max-h-[90vh] flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b border-zinc-800">
+              <div>
+                <h3 className="text-white font-medium">{previewGame.title}</h3>
+                <p className="text-xs text-zinc-400">{previewGame.standardId}</p>
+              </div>
+              <button
+                onClick={() => setPreviewGame(null)}
+                className="text-zinc-400 hover:text-white transition-colors p-1"
+              >
+                <X className="size-5" />
+              </button>
+            </div>
+            <div className="flex-1 min-h-0 h-[70vh]">
+              <GameIframe html={previewGame.gameHtml} className="w-full h-full" />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
