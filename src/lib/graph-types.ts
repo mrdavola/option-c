@@ -20,4 +20,4 @@ export interface StandardsGraph {
   edges: StandardEdge[]
 }
 
-export type NodeStatus = "locked" | "available" | "in_progress" | "unlocked" | "mastered"
+export type NodeStatus = "locked" | "available" | "in_progress" | "in_review" | "unlocked" | "mastered"

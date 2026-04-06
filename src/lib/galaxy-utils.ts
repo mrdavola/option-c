@@ -337,6 +337,10 @@ export function buildMoonData(
         size = 3.5
         color = baseColor
         break
+      case "in_review":
+        size = 3.5
+        color = "#f59e0b"
+        break
       case "unlocked":
         size = 2.5
         color = baseColor

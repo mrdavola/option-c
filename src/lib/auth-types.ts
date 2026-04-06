@@ -20,7 +20,7 @@ export interface ClassDoc {
 }
 
 export interface ProgressDoc {
-  status: "locked" | "available" | "in_progress" | "unlocked" | "mastered"
+  status: "locked" | "available" | "in_progress" | "in_review" | "unlocked" | "mastered"
   unlockedAt?: number
   masteredAt?: number
   masteryWins?: number
