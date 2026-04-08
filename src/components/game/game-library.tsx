@@ -20,7 +20,10 @@ export function GameLibrary({ games }: GameLibraryProps) {
     html: string
     concept?: string
     isPendingReview?: boolean
+    isPublished?: boolean
+    standardId?: string
     authorName?: string
+    authorUid?: string
   } | null>(null)
   const [gradeFilter, setGradeFilter] = useState<string>("all")
   const [loading, setLoading] = useState<string | null>(null)
@@ -74,7 +77,10 @@ export function GameLibrary({ games }: GameLibraryProps) {
         html,
         concept: game?.designDoc?.concept,
         isPendingReview: isPending,
+        isPublished: !isPending && game?.status === "published",
+        standardId: game?.standardId,
         authorName: game?.designerName,
+        authorUid: game?.authorUid,
       })
     } catch {
       // Silent fail
@@ -175,10 +181,14 @@ export function GameLibrary({ games }: GameLibraryProps) {
           concept={playingGame.concept}
           onClose={() => setPlayingGame(null)}
           isPendingReview={playingGame.isPendingReview}
+          isPublished={playingGame.isPublished}
+          standardId={playingGame.standardId}
+          authorUid={playingGame.authorUid}
           authorName={playingGame.authorName}
           reviewerUid={user?.uid}
           reviewerName={activeProfile?.name}
           onReviewComplete={playingGame.isPendingReview ? handleReviewComplete : undefined}
+          onUnapproved={() => setPlayingGame(null)}
         />
       )}
     </div>

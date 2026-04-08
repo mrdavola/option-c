@@ -53,7 +53,8 @@ export function MasteryPlay({ standardId, planetId, onMastered }: MasteryPlayPro
         masteredAt: Date.now(),
         masteryWins: 3,
       })
-      await updateTokens(5)
+      // +100 tokens for mastering a skill by playing 3 games
+      await updateTokens(100)
       // Delay then notify parent
       setTimeout(() => onMastered(), 2000)
     } else {
@@ -67,7 +68,7 @@ export function MasteryPlay({ standardId, planetId, onMastered }: MasteryPlayPro
       <div className="flex flex-col items-center gap-4 py-8">
         <Trophy className="size-12 text-amber-400" />
         <h3 className="text-xl font-bold text-white">Mastered!</h3>
-        <p className="text-zinc-400 text-sm">+5 tokens earned</p>
+        <p className="text-amber-300 text-sm font-semibold">+100 tokens earned</p>
       </div>
     )
   }

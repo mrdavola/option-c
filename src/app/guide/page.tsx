@@ -9,6 +9,7 @@ import { Copy, Check, Users, GamepadIcon, Clock, Plus, ChevronDown, Eye, Play, X
 import { useRouter } from "next/navigation"
 import type { Game } from "@/lib/game-types"
 import { GameIframe } from "@/components/game/game-iframe"
+import { UserMenu } from "@/components/user-menu"
 
 interface StudentSummary {
   uid: string
@@ -26,7 +27,7 @@ interface ClassInfo {
 }
 
 export default function GuideDashboard() {
-  const { profile, signOut, startImpersonating } = useAuth()
+  const { profile, startImpersonating } = useAuth()
   const router = useRouter()
   const [tab, setTab] = useState<"students" | "reviews" | "games">("students")
   const [classData, setClassData] = useState<ClassInfo | null>(null)
@@ -229,9 +230,9 @@ export default function GuideDashboard() {
         { merge: true }
       )
 
-      // Award +5 tokens to the author
+      // Award +2000 tokens to the author for an approved game
       await updateDoc(doc(db, "users", game.authorUid), {
-        tokens: increment(5),
+        tokens: increment(2000),
       })
 
       // Reload
@@ -359,9 +360,14 @@ export default function GuideDashboard() {
                 {copied ? <Check className="size-4 text-emerald-400" /> : <Copy className="size-4" />}
               </button>
             )}
-            <Button variant="outline" size="sm" onClick={() => signOut()}>
-              Sign Out
-            </Button>
+            <a
+              href="/library"
+              className="flex items-center gap-2 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-300 hover:text-white hover:border-zinc-600 transition-colors"
+            >
+              <GamepadIcon className="size-4" />
+              Game Library
+            </a>
+            <UserMenu />
           </div>
         </div>
 
@@ -634,46 +640,43 @@ export default function GuideDashboard() {
         )}
       </div>
 
-      {/* Game preview modal */}
+      {/* Game preview — full-screen so the guide can actually play */}
       {previewGame && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl w-full max-w-3xl max-h-[90vh] flex flex-col">
-            <div className="flex items-center justify-between p-4 border-b border-zinc-800">
-              <div>
-                <h3 className="text-white font-medium">{previewGame.title}</h3>
-                <p className="text-xs text-zinc-400">by {previewGame.designerName} · {previewGame.standardId}</p>
-              </div>
-              <div className="flex items-center gap-2">
-                {previewGame.status === "pending_review" && (
-                  <>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="text-amber-400 border-amber-500/30 hover:bg-amber-500/10"
-                      onClick={() => { setPreviewGame(null); setFeedbackGameId(previewGame.id) }}
-                    >
-                      Needs Work
-                    </Button>
-                    <Button
-                      size="sm"
-                      className="bg-emerald-600 hover:bg-emerald-500"
-                      onClick={() => { handleApproveGame(previewGame.id); setPreviewGame(null) }}
-                    >
-                      Approve
-                    </Button>
-                  </>
-                )}
-                <button
-                  onClick={() => setPreviewGame(null)}
-                  className="text-zinc-400 hover:text-white transition-colors p-1"
-                >
-                  <X className="size-5" />
-                </button>
-              </div>
+        <div className="fixed inset-0 z-50 bg-zinc-950 flex flex-col">
+          <div className="flex items-center justify-between px-6 py-3 border-b border-zinc-800 bg-zinc-900">
+            <div>
+              <h3 className="text-white font-semibold">{previewGame.title}</h3>
+              <p className="text-xs text-zinc-400">by {previewGame.designerName} · {previewGame.standardId}</p>
             </div>
-            <div className="flex-1 min-h-0 h-[70vh]">
-              <GameIframe html={previewGame.gameHtml} className="w-full h-full" />
+            <div className="flex items-center gap-2">
+              {previewGame.status === "pending_review" && (
+                <>
+                  <Button
+                    variant="outline"
+                    className="text-amber-400 border-amber-500/30 hover:bg-amber-500/10"
+                    onClick={() => { setPreviewGame(null); setFeedbackGameId(previewGame.id) }}
+                  >
+                    Needs Work
+                  </Button>
+                  <Button
+                    className="bg-emerald-600 hover:bg-emerald-500"
+                    onClick={() => { handleApproveGame(previewGame.id); setPreviewGame(null) }}
+                  >
+                    Approve
+                  </Button>
+                </>
+              )}
+              <button
+                onClick={() => setPreviewGame(null)}
+                className="text-zinc-400 hover:text-white transition-colors p-2 ml-2"
+                aria-label="Close"
+              >
+                <X className="size-6" />
+              </button>
             </div>
+          </div>
+          <div className="flex-1 min-h-0">
+            <GameIframe html={previewGame.gameHtml} className="w-full h-full" />
           </div>
         </div>
       )}

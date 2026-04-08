@@ -42,10 +42,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
     await updateDoc(gameRef, updates)
 
-    // If approved, add +1 token to the author
+    // If approved, award +2000 tokens to the author for an approved game
     if (approved && game.authorUid) {
       const authorRef = doc(db, "users", game.authorUid)
-      await updateDoc(authorRef, { tokens: increment(1) })
+      await updateDoc(authorRef, { tokens: increment(2000) })
     }
 
     return Response.json({

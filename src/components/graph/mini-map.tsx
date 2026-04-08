@@ -10,6 +10,7 @@ interface MiniMapProps {
   totalStandards: number
   unlockedCount: number
   masteredCount: number
+  scopeLabel?: string
 }
 
 // Layout planets by grade band columns
@@ -27,12 +28,14 @@ export function MiniMap({
   totalStandards,
   unlockedCount,
   masteredCount,
+  scopeLabel,
 }: MiniMapProps) {
   const [expanded, setExpanded] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
-  const width = 200
-  const height = 140
+  // Expanded mini-map dimensions — large enough to actually read
+  const width = 480
+  const height = 340
 
   // Close on click outside (mobile)
   useEffect(() => {
@@ -52,7 +55,11 @@ export function MiniMap({
     }
   }, [expanded])
 
-  // Compute positions for each planet
+  // Compute positions for each planet — grouped into 4 grade-band columns,
+  // stacked vertically within each column. Leave room at the top for column
+  // labels.
+  const TOP_LABEL = 32
+  const BOTTOM_PAD = 10
   const positions = useMemo(() => {
     const bandGroups: Record<string, GalaxyNode[]> = {
       "K-2": [],
@@ -69,17 +76,15 @@ export function MiniMap({
     }
 
     const posMap = new Map<string, { x: number; y: number }>()
-    const padding = 12
+    const usableHeight = height - TOP_LABEL - BOTTOM_PAD
 
     for (const [band, nodes] of Object.entries(bandGroups)) {
       const cx = BAND_X[band] * width
-      const totalHeight = height - padding * 2
-      const step = nodes.length > 1 ? totalHeight / (nodes.length - 1) : 0
-
+      const step = nodes.length > 1 ? usableHeight / (nodes.length - 1) : 0
       nodes.forEach((node, i) => {
         const y = nodes.length === 1
-          ? height / 2
-          : padding + step * i
+          ? TOP_LABEL + usableHeight / 2
+          : TOP_LABEL + step * i
         posMap.set(node.id, { x: cx, y })
       })
     }
@@ -102,10 +107,10 @@ export function MiniMap({
   return (
     <div className="absolute bottom-4 left-4 z-20" ref={containerRef}>
       <div
-        className="transition-all duration-300 ease-in-out overflow-hidden bg-zinc-900/85 backdrop-blur-sm border border-zinc-800 rounded-lg"
+        className="transition-all duration-300 ease-in-out overflow-hidden bg-zinc-900/95 backdrop-blur-sm border-2 border-zinc-600 rounded-xl shadow-lg"
         style={{
-          width: expanded ? width : 40,
-          height: expanded ? height + 44 : 40,
+          width: expanded ? width : 64,
+          height: expanded ? height + 100 : 64,
         }}
         onMouseEnter={() => setExpanded(true)}
         onMouseLeave={() => setExpanded(false)}
@@ -120,21 +125,33 @@ export function MiniMap({
             position: expanded ? "absolute" : "relative",
           }}
         >
-          <svg width={40} height={40} viewBox="0 0 40 40" className="block">
+          <svg width={64} height={64} viewBox="0 0 64 64" className="block">
+            {/* Label so it's obvious this is a map */}
+            <text
+              x={32}
+              y={12}
+              fontSize={9}
+              fontWeight={700}
+              fill="#e4e4e7"
+              textAnchor="middle"
+              fontFamily="sans-serif"
+            >
+              MAP
+            </text>
             {sampleNodes.map((node, i) => {
-              // Spread sample dots in a small grid pattern
+              // 3-col grid of sample dots underneath the label
               const col = i % 3
               const row = Math.floor(i / 3)
-              const cx = 10 + col * 10
-              const cy = 10 + row * 10
+              const cx = 18 + col * 14
+              const cy = 26 + row * 14
               return (
                 <circle
                   key={node.id}
                   cx={cx}
                   cy={cy}
-                  r={2}
+                  r={3.5}
                   fill={node.color}
-                  opacity={0.85}
+                  opacity={1}
                 />
               )
             })}
@@ -149,6 +166,14 @@ export function MiniMap({
             pointerEvents: expanded ? "auto" : "none",
           }}
         >
+          {/* Legend header */}
+          <div className="px-3 pt-3 pb-2">
+            <p className="text-base text-white font-semibold">Map of all planets</p>
+            <p className="text-xs text-zinc-300 leading-snug mt-0.5">
+              Each dot is a planet (one math topic at one grade). Columns are grouped by grade level.
+            </p>
+          </div>
+
           <svg
             width={width}
             height={height}
@@ -156,6 +181,22 @@ export function MiniMap({
             className="block"
           >
             <rect width={width} height={height} fill="transparent" />
+
+            {/* Column header labels */}
+            {Object.entries(BAND_X).map(([band, bx]) => (
+              <text
+                key={band}
+                x={bx * width}
+                y={20}
+                fontSize={13}
+                fontWeight={700}
+                fill="#e4e4e7"
+                textAnchor="middle"
+                fontFamily="sans-serif"
+              >
+                {band === "HS" ? "High School" : `Grade ${band}`}
+              </text>
+            ))}
 
             {/* Bridges as lines */}
             {galaxyData.links.map((link, i) => {
@@ -182,18 +223,18 @@ export function MiniMap({
               const pos = positions.get(node.id)
               if (!pos) return null
               const isCurrent = node.id === currentPlanetId
-              const r = Math.max(Math.sqrt(node.val) * 0.8, 1.5)
+              const r = Math.max(Math.sqrt(node.val) * 1.6, 4)
               return (
                 <g key={node.id}>
                   {isCurrent && (
                     <circle
                       cx={pos.x}
                       cy={pos.y}
-                      r={r + 3}
+                      r={r + 4}
                       fill="none"
                       stroke="white"
-                      strokeWidth={1}
-                      opacity={0.8}
+                      strokeWidth={1.5}
+                      opacity={0.9}
                     />
                   )}
                   <circle
@@ -201,25 +242,36 @@ export function MiniMap({
                     cy={pos.y}
                     r={r}
                     fill={node.color}
-                    opacity={0.9}
+                    opacity={0.95}
                     className="cursor-pointer"
                     onClick={(e) => {
                       e.stopPropagation()
                       onPlanetClick(node.id)
                     }}
-                  />
+                  >
+                    <title>{node.name} · Grade {node.grade}</title>
+                  </circle>
                 </g>
               )
             })}
           </svg>
 
-          {/* Stats (no progress bar) */}
-          <div className="px-2 pb-2 pt-1 flex flex-col gap-1">
-            <div className="flex items-center justify-between text-xs text-zinc-400">
-              <span><span className="text-blue-400 font-medium">{unlockedCount}</span>/{totalStandards} skills available</span>
+          {/* Stats — high-contrast, larger so they're actually readable */}
+          <div className="px-3 pb-3 pt-1 flex flex-col gap-1">
+            {scopeLabel && (
+              <p className="text-[10px] text-zinc-500 uppercase tracking-wide font-medium">
+                Counting {scopeLabel}
+              </p>
+            )}
+            <div className="text-sm text-zinc-200">
+              <span className="text-blue-400 font-bold">{unlockedCount}</span>
+              <span className="text-zinc-400">/{totalStandards}</span>{" "}
+              <span className="text-zinc-200">skills ready to explore</span>
             </div>
-            <div className="flex items-center justify-between text-xs text-zinc-400">
-              <span><span className="text-emerald-400 font-medium">{masteredCount}</span>/{totalStandards} skills mastered</span>
+            <div className="text-sm text-zinc-200">
+              <span className="text-emerald-400 font-bold">{masteredCount}</span>
+              <span className="text-zinc-400">/{totalStandards}</span>{" "}
+              <span className="text-zinc-200">skills mastered</span>
             </div>
           </div>
         </div>

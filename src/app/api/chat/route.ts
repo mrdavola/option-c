@@ -1,4 +1,5 @@
 import { convertToModelMessages, streamText, UIMessage } from "ai"
+import { anthropic } from "@ai-sdk/anthropic"
 import { z } from "zod"
 
 export const maxDuration = 30
@@ -10,7 +11,7 @@ export async function POST(req: Request) {
   }: { messages: UIMessage[]; standardDescription: string } = await req.json()
 
   const result = streamText({
-    model: "anthropic/claude-sonnet-4.5",
+    model: anthropic("claude-sonnet-4-5"),
     system: `You are a game design mentor evaluating whether a student's game idea meaningfully applies this math concept: "${standardDescription}"
 
 CRITERIA (evaluate each independently):

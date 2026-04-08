@@ -70,7 +70,7 @@ export function PlanetView({
 
   // Community games
   const [communityGames, setCommunityGames] = useState<Omit<Game, "gameHtml">[]>([])
-  const [playingGame, setPlayingGame] = useState<{ id: string; title: string; html: string; concept?: string } | null>(null)
+  const [playingGame, setPlayingGame] = useState<{ id: string; title: string; html: string; concept?: string; authorUid?: string; standardId?: string; isPublished?: boolean } | null>(null)
 
   useEffect(() => {
     fetch(`/api/games/planet/${planet.id}`)
@@ -85,7 +85,15 @@ export function PlanetView({
       if (!res.ok) return
       const html = await res.text()
       const game = communityGames.find((g) => g.id === gameId)
-      setPlayingGame({ id: gameId, title: game?.title || "Game", html, concept: game?.designDoc?.concept })
+      setPlayingGame({
+        id: gameId,
+        title: game?.title || "Game",
+        html,
+        concept: game?.designDoc?.concept,
+        authorUid: game?.authorUid,
+        standardId: game?.standardId,
+        isPublished: game?.status === "published",
+      })
     } catch {
       // Silent fail
     }
@@ -125,9 +133,8 @@ export function PlanetView({
   const viewSize = 600
   const center = viewSize / 2
 
-  // Bridge indicator positions around the edge
-  const bridgeAngleStep = bridges.length > 0 ? (2 * Math.PI) / bridges.length : 0
-  const bridgeRadius = (viewSize / 2) - 30
+  // Suppress unused-warning for bridges/onBridgeClick/planetNames (kept in API for compat)
+  void bridges; void onBridgeClick; void planetNames;
 
   return (
     <div className="w-full h-full bg-zinc-950 flex items-center justify-center overflow-hidden">
@@ -218,13 +225,13 @@ export function PlanetView({
                 <div
                   className="absolute z-20 pointer-events-none"
                   style={{
-                    left: x - 100,
-                    top: y - moonSize / 2 - 50,
-                    width: 200,
+                    left: x - 130,
+                    top: y - moonSize / 2 - 56,
+                    width: 260,
                   }}
                 >
                   <div className="bg-zinc-900/95 backdrop-blur-sm border border-zinc-700 rounded-lg px-3 py-2 text-center">
-                    <div className="text-xs text-white font-medium leading-tight">
+                    <div className="text-sm text-white font-medium leading-snug whitespace-normal">
                       {moon.shortTitle}
                     </div>
                     <div className="text-xs text-zinc-400 mt-1">{statusLabel(moon.status)}</div>
@@ -235,46 +242,7 @@ export function PlanetView({
           )
         })}
 
-        {/* Bridge indicators around the edge */}
-        {bridges.map((bridge, i) => {
-          const angle = bridgeAngleStep * i - Math.PI / 2
-          const bx = center + Math.cos(angle) * bridgeRadius
-          const by = center + Math.sin(angle) * bridgeRadius
-          const targetName = planetNames.get(bridge.targetPlanetId) ?? bridge.targetPlanetId
-
-          return (
-            <button
-              key={bridge.targetPlanetId}
-              className="absolute flex items-center gap-1 cursor-pointer group"
-              style={{
-                left: bx - 40,
-                top: by - 12,
-                width: 80,
-              }}
-              onClick={() => onBridgeClick(bridge.targetPlanetId)}
-              aria-label={`Bridge to ${targetName}`}
-            >
-              <div className="bg-zinc-800/80 backdrop-blur-sm border border-zinc-700/50 rounded-full px-2 py-1 text-center w-full group-hover:border-blue-500/50 group-hover:bg-zinc-700/80 transition-colors">
-                <div className="text-xs text-zinc-300 group-hover:text-blue-300 truncate">
-                  {targetName}
-                </div>
-                <svg
-                  className="w-3 h-3 mx-auto text-zinc-600 group-hover:text-blue-400"
-                  viewBox="0 0 12 12"
-                  fill="none"
-                >
-                  <path
-                    d="M2 6h8M7 3l3 3-3 3"
-                    stroke="currentColor"
-                    strokeWidth={1.5}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
-            </button>
-          )
-        })}
+        {/* Bridge navigation bubbles removed */}
       </div>
 
       {/* Community Games section */}
@@ -311,7 +279,11 @@ export function PlanetView({
           title={playingGame.title}
           html={playingGame.html}
           concept={playingGame.concept}
+          authorUid={playingGame.authorUid}
+          isPublished={playingGame.isPublished}
+          standardId={playingGame.standardId}
           onClose={() => setPlayingGame(null)}
+          onUnapproved={() => setPlayingGame(null)}
         />
       )}
     </div>

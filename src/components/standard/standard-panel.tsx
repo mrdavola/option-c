@@ -10,6 +10,7 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet"
 import { Lock, CheckCircle, ChevronLeft, Trophy, Play } from "lucide-react"
+import Link from "next/link"
 import { ConceptCard } from "./concept-card"
 import { GenieChat } from "./genie-chat"
 import { MasteryPlay } from "./mastery-play"
@@ -18,6 +19,9 @@ import { useAuth } from "@/lib/auth"
 import { db } from "@/lib/firebase"
 import { collection, query, where, getDocs } from "firebase/firestore"
 import type { Game } from "@/lib/game-types"
+import moonNames from "@/data/moon-names.json"
+
+const MOON_NAMES = moonNames as Record<string, string>
 
 function InReviewGamePreview({ standardId }: { standardId: string }) {
   const { activeProfile } = useAuth()
@@ -68,45 +72,27 @@ function InReviewGamePreview({ standardId }: { standardId: string }) {
   )
 }
 
-function getShortTitle(standard: StandardNode): string {
-  const id = standard.id.toUpperCase()
-  const domain = standard.domainCode?.toUpperCase() ?? ""
-
-  // Map domain codes and ID patterns to short descriptors
-  if (domain === "CC") return "Counting"
-  if (domain === "OA") {
-    if (/ADD|SUM|PLUS/i.test(standard.description)) return "Addition"
-    if (/SUBTRACT|MINUS|DIFFER/i.test(standard.description)) return "Subtraction"
-    if (/MULTIPLY|FACTOR|PRODUCT/i.test(standard.description)) return "Multiplication"
-    if (/DIVIDE|DIVISOR|QUOTIENT/i.test(standard.description)) return "Division"
-    return "Algebra"
+// Pretty planet name for the panel header (e.g. "Geometry · Grade 2")
+function getPlanetLabel(standard: StandardNode): string {
+  const shortNames: Record<string, string> = {
+    "Operations & Algebraic Thinking": "Algebra",
+    "Number & Operations In Base Ten": "Base Ten",
+    "Number & Operations-Fractions": "Fractions",
+    "Number & Operations - Fractions": "Fractions",
+    "Counting & Cardinality": "Counting",
+    "Measurement & Data": "Measurement",
+    "Ratios & Proportional Relationships": "Ratios",
+    "The Number System": "Numbers",
+    "Expressions & Equations": "Equations",
+    "Statistics & Probability": "Statistics",
   }
-  if (domain === "NBT") return "Base Ten"
-  if (domain === "NF") return "Fractions"
-  if (domain === "MD") {
-    if (/AREA/i.test(standard.description)) return "Area"
-    if (/VOLUME/i.test(standard.description)) return "Volume"
-    if (/TIME|CLOCK|HOUR/i.test(standard.description)) return "Time"
-    if (/MEASURE|LENGTH|INCH|METER/i.test(standard.description)) return "Measurement"
-    return "Measurement"
-  }
-  if (domain === "G") return "Geometry"
-  if (domain === "RP") return "Ratios"
-  if (domain === "NS") return "Numbers"
-  if (domain === "EE") return "Equations"
-  if (domain === "SP") return "Statistics"
-  if (domain === "F") return "Functions"
+  const planet = shortNames[standard.domain] ?? standard.domain
+  return `${planet} · Grade ${standard.grade}`
+}
 
-  // HS domains
-  if (id.includes("A-")) return "Algebra"
-  if (id.includes("F-")) return "Functions"
-  if (id.includes("G-")) return "Geometry"
-  if (id.includes("N-")) return "Numbers"
-  if (id.includes("S-")) return "Statistics"
-
-  // Fallback: first 4 words of description
-  const words = standard.description.split(/\s+/)
-  return words.slice(0, 4).join(" ")
+// AI-generated moon name with description fallback
+function getMoonName(standard: StandardNode): string {
+  return MOON_NAMES[standard.id] ?? standard.description
 }
 
 type FlowStep = "learn" | "earn" | "unlocked" | "master"
@@ -133,13 +119,42 @@ export function StandardPanel({
   nodeStatus,
 }: StandardPanelProps) {
   const [step, setStep] = useState<FlowStep>("learn")
+  const [approvedGameCount, setApprovedGameCount] = useState(0)
 
   // Reset step when standard changes
   useEffect(() => {
     setStep("learn")
   }, [standard?.id])
 
+  // Count published games for this exact skill (across all classes), so we
+  // know whether to show the "Play to Master" button.
+  useEffect(() => {
+    if (!standard?.id) return
+    let cancelled = false
+    const q = query(
+      collection(db, "games"),
+      where("standardId", "==", standard.id),
+      where("status", "==", "published")
+    )
+    getDocs(q)
+      .then((snap) => { if (!cancelled) setApprovedGameCount(snap.size) })
+      .catch(() => { if (!cancelled) setApprovedGameCount(0) })
+    return () => { cancelled = true }
+  }, [standard?.id])
+
   if (!standard) return null
+
+  // Inline component: orange "Play to Master" button → filtered library
+  const playToMasterButton = approvedGameCount > 0 ? (
+    <Link
+      href={`/library?skill=${encodeURIComponent(standard.id)}`}
+      onClick={() => onClose()}
+      className="w-full py-3 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-sm font-medium transition-colors flex items-center justify-center gap-2"
+    >
+      <Trophy className="size-4" />
+      Play to Master ({approvedGameCount} {approvedGameCount === 1 ? "game" : "games"})
+    </Link>
+  ) : null
 
   return (
     <Sheet open={open} onOpenChange={(isOpen) => { if (!isOpen) onClose() }}>
@@ -148,7 +163,10 @@ export function StandardPanel({
         className="w-full sm:w-[75vw] lg:w-[60vw] overflow-y-auto"
       >
         <SheetHeader>
-          <SheetTitle className="text-lg">{getShortTitle(standard)}</SheetTitle>
+          <p className="text-xs text-blue-400 font-medium uppercase tracking-wide">
+            {getPlanetLabel(standard)}
+          </p>
+          <SheetTitle className="text-xl leading-tight">{getMoonName(standard)}</SheetTitle>
           <SheetDescription>
             {standard.description}
           </SheetDescription>
@@ -169,8 +187,9 @@ export function StandardPanel({
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-amber-400 text-sm">
                 <Lock className="size-4 shrink-0" />
-                <span>You haven't started this one yet — complete its prerequisites first.</span>
+                <span>You haven&apos;t started this one yet — complete its prerequisites first.</span>
               </div>
+              {playToMasterButton}
               <ConceptCard
                 standard={standard}
                 onReady={() => {}}
@@ -189,14 +208,9 @@ export function StandardPanel({
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-emerald-400 text-sm">
                   <CheckCircle className="size-4 shrink-0" />
-                  <span>You've demonstrated this concept — nice work.</span>
+                  <span>You&apos;ve demonstrated this concept — nice work.</span>
                 </div>
-                <button
-                  onClick={() => setStep("master")}
-                  className="w-full py-3 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-sm font-medium transition-colors flex items-center justify-center gap-2"
-                >
-                  <Trophy className="size-4" /> Play to Master
-                </button>
+                {playToMasterButton}
                 <ConceptCard
                   standard={standard}
                   onReady={() => {}}
@@ -209,8 +223,9 @@ export function StandardPanel({
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-amber-400 text-sm">
                 <Trophy className="size-4 shrink-0" />
-                <span>You've mastered this skill!</span>
+                <span>You&apos;ve mastered this skill!</span>
               </div>
+              {playToMasterButton}
               <ConceptCard
                 standard={standard}
                 onReady={() => {}}
@@ -222,7 +237,7 @@ export function StandardPanel({
             <div className="space-y-4">
               <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 text-center">
                 <p className="text-amber-300 font-medium">Your game is being reviewed</p>
-                <p className="text-zinc-400 text-sm mt-1">You'll unlock this skill when your game is approved.</p>
+                <p className="text-zinc-400 text-sm mt-1">You&apos;ll unlock this skill when your game is approved.</p>
                 <a
                   href="/student"
                   className="text-sm text-blue-400 hover:text-blue-300 mt-2 inline-block"
@@ -230,16 +245,20 @@ export function StandardPanel({
                   Check status in My Stuff →
                 </a>
               </div>
+              {playToMasterButton}
               <InReviewGamePreview standardId={standard.id} />
             </div>
           ) : (
             <>
               {step === "learn" && (
-                <ConceptCard
-                  standard={standard}
-                  onReady={() => setStep("earn")}
-                  interests={interests}
-                />
+                <div className="space-y-4">
+                  {playToMasterButton}
+                  <ConceptCard
+                    standard={standard}
+                    onReady={() => setStep("earn")}
+                    interests={interests}
+                  />
+                </div>
               )}
 
               {step === "earn" && (

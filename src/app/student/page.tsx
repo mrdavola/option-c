@@ -5,8 +5,10 @@ import { useAuth } from "@/lib/auth"
 import { db } from "@/lib/firebase"
 import { collection, query, where, getDocs } from "firebase/firestore"
 import type { Game } from "@/lib/game-types"
-import { Gamepad2, Bell, Play, X } from "lucide-react"
+import { Gamepad2, Bell, Play, X, MessageCircle } from "lucide-react"
 import { GameIframe } from "@/components/game/game-iframe"
+import { FeedbackInbox } from "@/components/feedback/feedback-inbox"
+import { UserMenu } from "@/components/user-menu"
 
 export default function StudentDashboard() {
   const { activeProfile, loadProgress } = useAuth()
@@ -75,7 +77,25 @@ export default function StudentDashboard() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold text-white">Hey {activeProfile.name}</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-white">Hey {activeProfile.name}</h1>
+        <UserMenu />
+      </div>
+
+      {/* Personal code — so the student can write it down if they forgot */}
+      {activeProfile.personalCode && (
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4">
+          <p className="text-xs text-amber-300 font-medium uppercase tracking-wide">
+            Your personal code
+          </p>
+          <p className="text-2xl font-mono font-bold text-white tracking-widest mt-1">
+            {activeProfile.personalCode}
+          </p>
+          <p className="text-xs text-zinc-400 mt-2">
+            Write this down. Next time you sign in, use your name + this code to come back to your progress.
+          </p>
+        </div>
+      )}
 
       {/* Progress Stats */}
       <div className="grid grid-cols-3 gap-3">
@@ -162,6 +182,22 @@ export default function StudentDashboard() {
           </div>
         )}
       </div>
+      {/* Inbox: messages from other players, plus replies to my own feedback */}
+      <div className="space-y-2">
+        <h2 className="text-sm font-medium text-zinc-300 flex items-center gap-2">
+          <MessageCircle className="size-4" /> Inbox
+        </h2>
+        <FeedbackInbox mode="received" />
+      </div>
+
+      {/* Sent messages (with admin/peer replies) */}
+      <div className="space-y-2">
+        <h2 className="text-sm font-medium text-zinc-300 flex items-center gap-2">
+          <MessageCircle className="size-4" /> Sent
+        </h2>
+        <FeedbackInbox mode="sent" />
+      </div>
+
       {/* Game preview modal */}
       {previewGame && (
         <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">

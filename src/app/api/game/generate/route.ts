@@ -6,16 +6,38 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
 export async function POST(req: Request) {
   try {
-  const { designDoc, designChoices } = await req.json()
+  const { designDoc, designChoices, visualConcept } = await req.json()
 
   const vibeInstructions = designChoices?.vibe ? `Visual theme: ${designChoices.vibe}.` : ""
   const colorInstructions = designChoices?.color ? `Color scheme: ${designChoices.color}.` : ""
   const characterInstructions = designChoices?.characters ? `Characters/style: ${designChoices.characters}.` : ""
+  const visualConceptBlock = visualConcept
+    ? `\n\nVISUAL CONCEPT (the student already approved this — match it):\n${visualConcept}\n`
+    : ""
 
   const message = await anthropic.messages.create({
-    model: "claude-sonnet-4-5-20250929",
+    model: "claude-sonnet-4-5",
     max_tokens: 8000,
-    system: "You generate complete, self-contained HTML files for playable browser games. Output ONLY the HTML. No markdown. No code fences. Start with <!DOCTYPE html>.",
+    system: `You generate complete, self-contained HTML files for playable browser games for kids.
+Output ONLY the HTML. No markdown. No code fences. Start with <!DOCTYPE html>.
+
+CRITICAL VISUAL RULES — read these twice:
+- Every moving entity (player, enemy, item, obstacle) MUST be a recognizable real thing.
+- NEVER use a plain colored circle or rectangle as a character or item. Forbidden.
+- Use big emoji as game characters: 🐉 dragon, 🪨 boulder, 🏰 castle, 🦊 fox, 🌲 tree, 🐱 cat, 🐶 dog, ⚔️ sword, 🛡️ shield, 🍎 apple, 🐟 fish, 🐝 bee, 🪐 planet, ⭐ star, 🔥 fire, 💧 water, 🎈 balloon, 🚀 rocket, 🍕 pizza, 🎯 target, etc.
+- Render emoji at LARGE font sizes (60px+ for main characters, 40px+ for items).
+- Use CSS transforms (translate, rotate, scale) to animate them — don't just have them sit still.
+- The background can be a gradient, simple shapes, or another emoji scene.
+- Score and HUD text are exempt from the no-primitives rule (use plain text/numbers).
+
+CRITICAL GAMEPLAY RULES:
+- The math concept must be ESSENTIAL — the player cannot win without using it.
+- Every round must use different numbers so memorizing doesn't work.
+- The game must end after 3-5 rounds with a clear win/lose screen.
+- Use mouse/touch input. Include keyboard as a bonus.
+- Include a brief 1-sentence "how to play" before the game starts.
+- When the player loses, post a message via window.parent.postMessage({type:'game_lose'}, '*').
+- When the player wins a round, post a message via window.parent.postMessage({type:'game_win'}, '*').`,
     messages: [{
       role: "user",
       content: `Generate a complete, self-contained HTML file for a playable browser game.
@@ -29,22 +51,17 @@ GAME DESIGN:
 - Math role: ${designDoc.mathRole}
 ${vibeInstructions}
 ${colorInstructions}
-${characterInstructions}
+${characterInstructions}${visualConceptBlock}
 
 REQUIREMENTS:
 - All CSS and JavaScript must be inline (in <style> and <script> tags).
-- The game must be fully playable with mouse/touch input.
-- Use a dark background (#18181b) with light text (#e4e4e7).
-- Make it visually appealing with colors, animations, and clear UI.
-- Include a title screen, gameplay, and a win/lose state.
-- The math concept must be essential to gameplay — not decorative.
-- Target audience: elementary/middle school students. Keep it simple and fun.
+- Use a dark background (#0f1117 or a themed gradient) with light text (#e4e4e7).
+- Make it visually appealing with motion, colors, particles, glow effects.
 - Responsive — works on desktop and mobile.
-- Include clear instructions on how to play.
-- The game MUST end after 3-5 rounds with a clear win/lose screen showing the final score.
-- NEVER use overflow:hidden on the body or main container. The game must be scrollable if content exceeds viewport height.
-- Each round must use different numbers/values so the player can't memorize answers.
-- Maximum 500 lines of code. Keep it simple but polished.`,
+- NEVER use overflow:hidden on the body. Game must be scrollable if needed.
+- Maximum 500 lines of code. Polished, not bloated.
+
+REMEMBER: every character/item is a recognizable EMOJI rendered LARGE, never a plain shape. If the design says "dragon," use 🐉 — do not draw a circle and call it a dragon.`,
     }],
   })
 

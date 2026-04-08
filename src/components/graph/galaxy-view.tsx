@@ -94,7 +94,9 @@ export function GalaxyView({ galaxyData, onPlanetClick, onLockedPlanetClick, cur
     }
   }, [currentPlanetId, galaxyData.nodes])
 
-  // Zoom to student's grade band on first load
+  // Zoom to student's grade band on first load. If no grade is picked,
+  // center on Fractions Grade 5 (planet id "5.NF") so the initial view
+  // isn't off-center.
   const hasZoomedRef = useRef(false)
   useEffect(() => {
     if (!fgRef.current || hasZoomedRef.current || !ForceGraph3D) return
@@ -102,10 +104,15 @@ export function GalaxyView({ galaxyData, onPlanetClick, onLockedPlanetClick, cur
       if (fgRef.current && !hasZoomedRef.current) {
         hasZoomedRef.current = true
         orbitingRef.current = false  // stop orbit before zooming to avoid camera fighting
-        const band = getGradeBandForGrade(initialGrade)
-        const targets = band
-          ? galaxyData.nodes.filter(n => n.gradeBand === band)
-          : galaxyData.nodes
+        let targets: any[]
+        if (initialGrade) {
+          const band = getGradeBandForGrade(initialGrade)
+          targets = galaxyData.nodes.filter(n => n.gradeBand === band)
+        } else {
+          // No grade selected → center on Fractions Grade 5 if it exists
+          const fractions5 = galaxyData.nodes.find(n => n.id === "5.NF")
+          targets = fractions5 ? [fractions5] : galaxyData.nodes
+        }
         const withPos = targets.filter((n: any) => n.x !== undefined)
         if (withPos.length > 0) {
           const cx = withPos.reduce((s: number, n: any) => s + n.x, 0) / withPos.length
@@ -128,7 +135,19 @@ export function GalaxyView({ galaxyData, onPlanetClick, onLockedPlanetClick, cur
     const speed = 4
     const keys = new Set<string>()
 
+    // Skip camera controls when the user is typing in any text field
+    // (otherwise WASD/QE/arrows are eaten by preventDefault and you can't
+    // type those letters into a textarea or input).
+    const isTyping = (target: EventTarget | null) => {
+      if (!(target instanceof HTMLElement)) return false
+      const tag = target.tagName
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return true
+      if (target.isContentEditable) return true
+      return false
+    }
+
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (isTyping(e.target)) return
       const key = e.key.toLowerCase()
       if (["w", "a", "s", "d", "arrowup", "arrowdown", "arrowleft", "arrowright", "q", "e"].includes(key)) {
         e.preventDefault()
@@ -137,6 +156,7 @@ export function GalaxyView({ galaxyData, onPlanetClick, onLockedPlanetClick, cur
       }
     }
     const handleKeyUp = (e: KeyboardEvent) => {
+      if (isTyping(e.target)) return
       keys.delete(e.key.toLowerCase())
     }
 
@@ -444,13 +464,6 @@ export function GalaxyView({ galaxyData, onPlanetClick, onLockedPlanetClick, cur
           <span className="text-xs text-zinc-300">Pinch to zoom</span>
         </div>
       )}
-
-{/* Legend */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 bg-zinc-900/75 backdrop-blur-sm border border-zinc-800 rounded-lg px-4 py-1.5">
-        <span className="text-xs text-zinc-400">
-          <span className="text-zinc-200 font-medium">Planets</span> = math concepts &nbsp;·&nbsp; <span className="text-zinc-200 font-medium">Moons</span> = math skills
-        </span>
-      </div>
 
       <ForceGraph3D
         ref={fgRef}

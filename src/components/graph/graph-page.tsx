@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useCallback, useMemo, useEffect } from "react"
+import { useState, useCallback, useMemo, useEffect, useRef } from "react"
 import type { StandardsGraph, StandardNode, NodeStatus } from "@/lib/graph-types"
-import { buildPlanets, buildBridges, buildGalaxyData, buildMoonData } from "@/lib/galaxy-utils"
+import { buildPlanets, buildBridges, buildGalaxyData, buildMoonData, isClusterNode } from "@/lib/galaxy-utils"
 import type { Planet, Bridge, ColorMode } from "@/lib/galaxy-utils"
 import { GalaxyView } from "./galaxy-view"
 import { PlanetView } from "./planet-view"
@@ -14,10 +14,13 @@ import { BuildScreen } from "@/components/game/build-screen"
 import { Workshop } from "@/components/game/workshop"
 import { MasteryAnimation } from "./mastery-animation"
 import type { GameDesignDoc } from "@/lib/game-types"
-import { doc, setDoc, collection } from "firebase/firestore"
+import { doc, setDoc, getDoc, collection } from "firebase/firestore"
 import { db } from "@/lib/firebase"
 import { useAuth } from "@/lib/auth"
 import { StudentNav } from "@/components/student-nav"
+import { FeedbackButton } from "@/components/feedback/feedback-button"
+import { UserMenu } from "@/components/user-menu"
+import { GalaxySettingsPopover } from "./galaxy-settings-popover"
 
 interface GraphPageProps {
   data: StandardsGraph
@@ -32,6 +35,7 @@ function computeInitialProgress(data: StandardsGraph): Map<string, NodeStatus> {
   }
   const progressMap = new Map<string, NodeStatus>()
   for (const node of data.nodes) {
+    if (isClusterNode(node.id)) continue
     progressMap.set(node.id, incomingPrereqs.has(node.id) ? "locked" : "available")
   }
   return progressMap
@@ -57,8 +61,46 @@ function computeNewlyAvailable(
   return newlyAvailable
 }
 
+// Walk every "locked" standard. If all of its prerequisites are now
+// "unlocked" or "mastered", upgrade it to "available". This catches the
+// cascade after a guide approves a game on a different device — the
+// approved standard arrives via Firestore as "unlocked", but its
+// dependents would still be "locked" without this pass.
+function recomputeAvailable(
+  data: StandardsGraph,
+  progressMap: Map<string, NodeStatus>
+): Map<string, NodeStatus> {
+  const next = new Map(progressMap)
+  // Build target → prereq sources lookup once
+  const prereqsOf = new Map<string, string[]>()
+  for (const edge of data.edges) {
+    if (edge.type !== "prerequisite") continue
+    const arr = prereqsOf.get(edge.target) ?? []
+    arr.push(edge.source)
+    prereqsOf.set(edge.target, arr)
+  }
+  // Iterate to a fixed point in case of chained unlocks
+  let changed = true
+  while (changed) {
+    changed = false
+    for (const [id, status] of next) {
+      if (status !== "locked") continue
+      const prereqs = prereqsOf.get(id) ?? []
+      const allMet = prereqs.every((p) => {
+        const s = next.get(p)
+        return s === "unlocked" || s === "mastered"
+      })
+      if (allMet) {
+        next.set(id, "available")
+        changed = true
+      }
+    }
+  }
+  return next
+}
+
 export function GraphPage({ data }: GraphPageProps) {
-  const { user, profile, activeProfile, impersonating, stopImpersonating, loading: authLoading, updateTokens, saveProgress, loadProgress } = useAuth()
+  const { user, profile, activeProfile, impersonating, stopImpersonating, loading: authLoading, saveProgress, loadProgress } = useAuth()
   const initialProgress = useMemo(() => computeInitialProgress(data), [data])
   const [progressMap, setProgressMap] = useState<Map<string, NodeStatus>>(initialProgress)
   const [selectedStandard, setSelectedStandard] = useState<StandardNode | null>(null)
@@ -71,6 +113,10 @@ export function GraphPage({ data }: GraphPageProps) {
   const [viewMode, setViewMode] = useState<"galaxy" | "planet">("galaxy")
   const [currentPlanetId, setCurrentPlanetId] = useState<string | null>(null)
   const [colorMode, setColorMode] = useState<ColorMode>("mastery")
+  // Grade filter — controls whether the galaxy view dims everything outside
+  // the student's grade. Default is "myGrade" so a brand-new student walks
+  // in to a focused view. Hidden entirely if the student hasn't picked a grade.
+  const [gradeFilter, setGradeFilter] = useState<"all" | "myGrade">("myGrade")
   const [showWaveEffect, setShowWaveEffect] = useState(false)
   const [waveColor, setWaveColor] = useState("#22c55e")
   const [lockedMessage, setLockedMessage] = useState<string | null>(null)
@@ -78,8 +124,33 @@ export function GraphPage({ data }: GraphPageProps) {
   // Tokens
   const [tokens, setTokens] = useState(0)
 
-  // Reset galaxy state when switching profiles (impersonation)
+  // Rotate hint — show once, then dismiss forever via localStorage
+  const [showRotateHint, setShowRotateHint] = useState(false)
   useEffect(() => {
+    if (typeof window === "undefined") return
+    const dismissed = localStorage.getItem("option_c_rotate_hint_dismissed")
+    if (!dismissed) setShowRotateHint(true)
+  }, [])
+  const dismissRotateHint = useCallback(() => {
+    setShowRotateHint(false)
+    if (typeof window !== "undefined") {
+      localStorage.setItem("option_c_rotate_hint_dismissed", "1")
+    }
+  }, [])
+
+  // Reset galaxy state ONLY when actually switching profiles, not on mount.
+  // (Resetting on mount would knock the student back to onboarding every
+  // time they navigated to /, even though they're already signed in.)
+  const lastProfileUidRef = useRef<string | null>(null)
+  useEffect(() => {
+    const currentUid = activeProfile?.uid ?? null
+    if (lastProfileUidRef.current === null) {
+      lastProfileUidRef.current = currentUid
+      return
+    }
+    if (lastProfileUidRef.current === currentUid) return
+    // Profile actually changed (impersonation start/stop) → reset
+    lastProfileUidRef.current = currentUid
     setOnboardingComplete(false)
     setProgressMap(initialProgress)
     setTokens(0)
@@ -89,6 +160,22 @@ export function GraphPage({ data }: GraphPageProps) {
     setPanelOpen(false)
     setBuildMode("idle")
   }, [activeProfile?.uid, initialProgress])
+
+  // Refreshable progress loader. Pulls from Firestore, merges with the
+  // local "what's locked vs available" baseline, then runs the cascade
+  // pass so newly approved standards bubble out to their dependents.
+  const refreshProgress = useCallback(() => {
+    if (!activeProfile) return
+    loadProgress().then((progressDocs) => {
+      const map = new Map(initialProgress)
+      for (const [id, progressDoc] of progressDocs) {
+        map.set(id, progressDoc.status as NodeStatus)
+      }
+      setProgressMap(recomputeAvailable(data, map))
+    }).catch(() => {
+      // Fall back to initial progress
+    })
+  }, [activeProfile, loadProgress, initialProgress, data])
 
   // Load from auth profile on mount / when profile changes
   useEffect(() => {
@@ -102,18 +189,37 @@ export function GraphPage({ data }: GraphPageProps) {
         setOnboardingComplete(true)
       }
 
-      // Load progress from Firestore
-      loadProgress().then((progressDocs) => {
-        const map = new Map(initialProgress)
-        for (const [id, progressDoc] of progressDocs) {
-          map.set(id, progressDoc.status as NodeStatus)
-        }
-        setProgressMap(map)
-      }).catch(() => {
-        // Fall back to initial progress
-      })
+      refreshProgress()
     }
-  }, [activeProfile, loadProgress, initialProgress])
+  }, [activeProfile, refreshProgress])
+
+  // Refresh progress + token count when the user returns to the tab. This
+  // is how the student sees a game approval (which happens on the guide's
+  // device) without having to reload the page.
+  useEffect(() => {
+    if (!activeProfile) return
+    const onFocus = async () => {
+      refreshProgress()
+      try {
+        const snap = await getDoc(doc(db, "users", activeProfile.uid))
+        if (snap.exists()) {
+          const data = snap.data() as { tokens?: number }
+          if (typeof data.tokens === "number") setTokens(data.tokens)
+        }
+      } catch {
+        // ignore — token refresh is best-effort
+      }
+    }
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") onFocus()
+    }
+    window.addEventListener("focus", onFocus)
+    document.addEventListener("visibilitychange", onVisibility)
+    return () => {
+      window.removeEventListener("focus", onFocus)
+      document.removeEventListener("visibilitychange", onVisibility)
+    }
+  }, [activeProfile, refreshProgress])
 
   // Mastery animation
   const [masteryEvent, setMasteryEvent] = useState<{ planetName: string; planetColor: string; tokenGain: number } | null>(null)
@@ -134,8 +240,8 @@ export function GraphPage({ data }: GraphPageProps) {
 
   // Build galaxy-level graph data
   const galaxyData = useMemo(
-    () => buildGalaxyData(planets, bridges, progressMap, colorMode, studentData?.grade ?? null),
-    [planets, bridges, progressMap, colorMode, studentData?.grade]
+    () => buildGalaxyData(planets, bridges, progressMap, colorMode, studentData?.grade ?? null, gradeFilter),
+    [planets, bridges, progressMap, colorMode, studentData?.grade, gradeFilter]
   )
 
   // Planet name lookup
@@ -165,11 +271,12 @@ export function GraphPage({ data }: GraphPageProps) {
     [bridges, currentPlanetId]
   )
 
-  // Counts for progress — filtered to student's grade
+  // Counts for progress — filtered to student's grade, exclude cluster nodes
   const counts = useMemo(() => {
     const grade = studentData?.grade
     let total = 0, available = 0, unlocked = 0
     for (const node of data.nodes) {
+      if (isClusterNode(node.id)) continue
       // If student picked a grade, only count that grade's standards
       if (grade && node.grade !== grade) continue
       total++
@@ -188,20 +295,30 @@ export function GraphPage({ data }: GraphPageProps) {
     return { total, available, unlocked, mastered: unlocked }
   }, [progressMap, data.nodes, studentData?.grade])
 
-  // Recommended next planet — available planet on student's grade with most ready moons
+  // Recommended next planet — "closest to finishing" rule:
+  // among accessible, not-yet-fully-mastered planets, pick the one with the
+  // highest unlocked-percentage. Tiebreaker: most available moons.
+  // If a grade filter is on, scope to that grade.
   const recommendedPlanetId = useMemo(() => {
     const grade = studentData?.grade
-    const candidates = galaxyData.nodes.filter(n =>
-      n.access !== "locked" &&
-      !n.isCompleted &&
-      n.availableCount > 0 &&
-      (!grade || n.grade === grade)
-    )
+    const candidates = galaxyData.nodes.filter(n => {
+      if (n.access === "locked") return false
+      if (n.isCompleted) return false
+      if (n.moonCount === 0) return false
+      if (gradeFilter === "myGrade" && grade && n.grade !== grade) return false
+      // Must have *something* the student can do — otherwise don't push them there
+      if (n.availableCount === 0 && n.unlockedCount === 0) return false
+      return true
+    })
     if (candidates.length === 0) return null
-    // Prefer the one with the most available (ready) moons
-    candidates.sort((a, b) => b.availableCount - a.availableCount)
+    candidates.sort((a, b) => {
+      const aPct = a.unlockedCount / a.moonCount
+      const bPct = b.unlockedCount / b.moonCount
+      if (Math.abs(aPct - bPct) > 0.001) return bPct - aPct
+      return b.availableCount - a.availableCount
+    })
     return candidates[0].id
-  }, [galaxyData.nodes, studentData?.grade])
+  }, [galaxyData.nodes, studentData?.grade, gradeFilter])
 
   // Galaxy view: click planet -> enter planet view
   const handlePlanetClick = useCallback((planetId: string) => {
@@ -289,11 +406,9 @@ export function GraphPage({ data }: GraphPageProps) {
         next.set(id, "available")
       }
 
-      // Award +5 tokens per skill (update local state immediately, persist to Firestore)
-      updateTokens(5).then((newTotal) => setTokens(newTotal)).catch(() => {
-        // Optimistic: keep local +5
-        setTokens(t => t + 5)
-      })
+      // No tokens awarded here. Tokens come from:
+      //   - Guide approving a submitted game: +2000
+      //   - Mastering a skill by playing 3 times: +100
 
       // Detect planet mastery: all moons on this planet now unlocked
       if (planet) {
@@ -319,7 +434,7 @@ export function GraphPage({ data }: GraphPageProps) {
     }
 
     if (tutorialStep < 3) setTutorialStep(3)
-  }, [data, progressMap, tutorialStep, planets, saveProgress, updateTokens])
+  }, [data, progressMap, tutorialStep, planets, saveProgress])
 
   // Handle "Build my Game" from Genie chat
   const handleBuildGame = useCallback((designDoc: GameDesignDoc) => {
@@ -406,10 +521,9 @@ export function GraphPage({ data }: GraphPageProps) {
         })
       }
 
-      // Award +1 token for submitting
-      updateTokens(1).then(newTotal => setTokens(newTotal)).catch(() => setTokens(t => t + 1))
+      // No tokens for submitting — only on guide approval (+2000)
 
-      setReviewResult({ pass: true, feedback: "Sent for review! +1 token earned." })
+      setReviewResult({ pass: true, feedback: "Sent for review! You'll earn 2000 tokens when your guide approves it." })
       setTimeout(() => {
         setBuildMode("idle")
         setCurrentDesignDoc(null)
@@ -542,83 +656,66 @@ export function GraphPage({ data }: GraphPageProps) {
         </button>
       )}
 
-      {/* Top-right controls */}
-      <div className={`absolute ${impersonating ? "top-14" : "top-4"} right-4 z-10 flex flex-col gap-2 items-end`}>
-        {/* Progress + tokens */}
-        <div className="bg-zinc-900/80 backdrop-blur-sm rounded-lg px-4 py-2.5 border border-zinc-800">
-          <div className="flex items-center gap-3">
-            <div className="text-sm">
-              <span className="text-emerald-400 font-mono font-bold text-base">{counts.unlocked}</span>
-              <span className="text-zinc-300 ml-1.5 text-sm">
-                {counts.unlocked === 1 ? "skill" : "skills"} demonstrated
-              </span>
-            </div>
-            <div className="w-20 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-emerald-500 to-blue-500 rounded-full transition-all duration-1000"
-                style={{ width: `${Math.max((counts.unlocked / counts.total) * 100, 2)}%` }}
-              />
-            </div>
-            <div className="flex items-center gap-1 border-l border-zinc-700 pl-3">
-              <span className="text-amber-400 text-sm">⬡</span>
-              <span className="text-amber-300 font-mono font-bold text-sm">{tokens}</span>
-            </div>
-          </div>
+      {/* Top-right toolbar — single horizontal strip */}
+      <div className={`absolute ${impersonating ? "top-14" : "top-4"} right-4 z-10 flex items-center gap-2`}>
+        {/* Compact status strip — plain text, no boxes */}
+        <div className="hidden md:flex items-center gap-3 bg-zinc-900/85 backdrop-blur-sm border border-zinc-700 rounded-lg px-4 py-2 text-sm">
+          <span className="flex items-center gap-1.5">
+            <span className="text-emerald-400 font-mono font-bold">{counts.unlocked}</span>
+            <span className="text-zinc-300">demonstrated</span>
+          </span>
+          <span className="text-zinc-700">·</span>
+          <span className="flex items-center gap-1">
+            <span className="text-amber-400">⬡</span>
+            <span className="text-amber-300 font-mono font-bold">{tokens}</span>
+          </span>
+          {studentData?.grade && (
+            <>
+              <span className="text-zinc-700">·</span>
+              <span className="text-zinc-400 text-xs">Grade {studentData.grade}</span>
+            </>
+          )}
         </div>
 
-        {/* Color mode toggle */}
+        {/* Settings popover — toggles + legend live in here */}
         {viewMode === "galaxy" && (
-          <div className="bg-zinc-900/80 backdrop-blur-sm rounded-lg border border-zinc-800 flex overflow-hidden">
-            <button
-              onClick={() => setColorMode("domain")}
-              className={`px-3 py-1.5 text-sm transition-colors ${
-                colorMode === "domain"
-                  ? "bg-zinc-700 text-white"
-                  : "text-zinc-400 hover:text-zinc-200"
-              }`}
-            >
-              By concept
-            </button>
-            <button
-              onClick={() => setColorMode("mastery")}
-              className={`px-3 py-1.5 text-sm transition-colors ${
-                colorMode === "mastery"
-                  ? "bg-zinc-700 text-white"
-                  : "text-zinc-400 hover:text-zinc-200"
-              }`}
-            >
-              By progress
-            </button>
-          </div>
+          <GalaxySettingsPopover
+            colorMode={colorMode}
+            onColorModeChange={setColorMode}
+            gradeFilter={gradeFilter}
+            onGradeFilterChange={setGradeFilter}
+            showGradeFilter={!!studentData?.grade}
+            showOtherGradeSwatch={!!studentData?.grade && gradeFilter === "myGrade"}
+          />
         )}
 
-        {/* Mastery legend */}
-        {viewMode === "galaxy" && colorMode === "mastery" && (
-          <div className="bg-zinc-900/80 backdrop-blur-sm rounded-lg px-3 py-2 border border-zinc-800 flex gap-3">
-            <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-emerald-500" />
-              <span className="text-xs text-zinc-300">Demonstrated</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-yellow-500" />
-              <span className="text-xs text-zinc-300">Progressing</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-blue-500" />
-              <span className="text-xs text-zinc-300">Ready to Explore</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-zinc-500" />
-              <span className="text-xs text-zinc-300">Not Started</span>
-            </div>
-          </div>
-        )}
+        {/* User menu (name + sign out) */}
+        <UserMenu />
       </div>
 
-      {/* Tutorial hint */}
+      {/* Rotate hint — show once, dismissable */}
+      {viewMode === "galaxy" && showRotateHint && (
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10">
+          <div className="bg-zinc-900/85 backdrop-blur-sm border border-zinc-700 rounded-lg pl-5 pr-2 py-2 text-center flex items-center gap-3">
+            <p className="text-sm text-white font-medium">You can rotate your galaxy in 3D motion. Figure out how.</p>
+            <button
+              onClick={dismissRotateHint}
+              className="text-zinc-400 hover:text-white p-1 rounded transition-colors"
+              aria-label="Dismiss"
+              title="Got it"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none">
+                <path d="M3 3l10 10M13 3L3 13" stroke="currentColor" strokeWidth={2} strokeLinecap="round" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Tutorial hint — sits BELOW the nav, not next to it */}
       {tutorialStep === 0 && viewMode === "galaxy" && (
-        <div className={`absolute ${impersonating ? "top-14" : "top-4"} left-52 z-10`}>
-          <div className="bg-blue-500/20 backdrop-blur-sm border border-blue-500/30 rounded-xl px-4 py-2 text-sm text-blue-200 max-w-xs">
+        <div className={`absolute ${impersonating ? "top-28" : "top-16"} left-4 z-10 max-w-[260px]`}>
+          <div className="bg-blue-500/20 backdrop-blur-sm border border-blue-500/30 rounded-xl px-4 py-2 text-sm text-blue-200">
             Click a planet to explore its standards
           </div>
         </div>
@@ -639,6 +736,7 @@ export function GraphPage({ data }: GraphPageProps) {
         totalStandards={counts.total}
         unlockedCount={counts.available}
         masteredCount={counts.mastered}
+        scopeLabel={studentData?.grade && gradeFilter === "myGrade" ? `Grade ${studentData.grade}` : "All grades"}
       />
 
       {/* Locked planet message */}
@@ -687,6 +785,9 @@ export function GraphPage({ data }: GraphPageProps) {
           {tokenNotify}
         </div>
       )}
+
+      {/* Help us make this better — feedback button */}
+      {buildMode === "idle" && <FeedbackButton />}
     </div>
   )
 }

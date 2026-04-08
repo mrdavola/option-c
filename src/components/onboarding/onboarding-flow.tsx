@@ -3,8 +3,8 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/lib/auth"
-import { doc, updateDoc } from "firebase/firestore"
-import { db } from "@/lib/firebase"
+import { doc, updateDoc, getDoc } from "firebase/firestore"
+import { db, auth } from "@/lib/firebase"
 
 interface OnboardingData {
   name: string
@@ -46,6 +46,158 @@ function StepWrapper({
       }`}
     >
       {children}
+    </div>
+  )
+}
+
+function WelcomeChoiceStep({
+  onNew,
+  onReturning,
+}: {
+  onNew: () => void
+  onReturning: () => void
+}) {
+  return (
+    <div className="flex flex-col items-center gap-6">
+      <h1 className="text-3xl font-bold text-white text-center">Welcome to Option C</h1>
+      <p className="text-zinc-400 text-sm text-center">
+        Are you new here, or coming back?
+      </p>
+      <div className="w-full flex flex-col gap-3">
+        <button
+          onClick={onNew}
+          className="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-xl px-5 py-4 text-base font-semibold transition-colors text-left"
+        >
+          I&apos;m new — I have a class code
+          <p className="text-xs text-blue-200 font-normal mt-0.5">
+            Your teacher gave you a class code to join
+          </p>
+        </button>
+        <button
+          onClick={onReturning}
+          className="w-full bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl px-5 py-4 text-base font-semibold transition-colors border border-zinc-700 text-left"
+        >
+          I&apos;m coming back — I have my personal code
+          <p className="text-xs text-zinc-400 font-normal mt-0.5">
+            The code you saved last time (like STAR-742)
+          </p>
+        </button>
+      </div>
+      <a
+        href="/guide/login"
+        className="text-zinc-500 text-xs hover:text-zinc-300 transition-colors mt-2"
+      >
+        I&apos;m a guide →
+      </a>
+    </div>
+  )
+}
+
+function ReturningStep({
+  name,
+  code,
+  onNameChange,
+  onCodeChange,
+  onSubmit,
+  onBack,
+  loading,
+  error,
+}: {
+  name: string
+  code: string
+  onNameChange: (v: string) => void
+  onCodeChange: (v: string) => void
+  onSubmit: () => void
+  onBack: () => void
+  loading: boolean
+  error: string | null
+}) {
+  return (
+    <div className="flex flex-col items-center gap-5">
+      <h1 className="text-3xl font-bold text-white text-center">Welcome back!</h1>
+      <p className="text-zinc-400 text-sm text-center">
+        Enter your name and personal code.
+      </p>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault()
+          if (name.trim() && code.trim() && !loading) onSubmit()
+        }}
+        className="w-full flex flex-col gap-3"
+      >
+        <input
+          autoFocus
+          type="text"
+          value={name}
+          onChange={(e) => onNameChange(e.target.value)}
+          placeholder="Your name"
+          className="bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-lg text-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50"
+          disabled={loading}
+        />
+        <input
+          type="text"
+          value={code}
+          onChange={(e) => onCodeChange(e.target.value.toUpperCase())}
+          placeholder="STAR-742"
+          className="bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-lg text-white text-center tracking-widest font-mono placeholder:text-zinc-500 placeholder:tracking-normal focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50"
+          disabled={loading}
+          maxLength={12}
+        />
+        <Button type="submit" size="lg" className="w-full" disabled={!name.trim() || !code.trim() || loading}>
+          {loading ? "Signing you in..." : "Continue →"}
+        </Button>
+      </form>
+      {error && <p className="text-red-400 text-sm text-center">{error}</p>}
+      <button
+        onClick={onBack}
+        className="text-zinc-500 text-xs hover:text-zinc-300 transition-colors"
+      >
+        ← Back
+      </button>
+    </div>
+  )
+}
+
+function CodeRevealStep({
+  name,
+  code,
+  onContinue,
+}: {
+  name: string
+  code: string
+  onContinue: () => void
+}) {
+  const [copied, setCopied] = useState(false)
+  const handleCopy = () => {
+    navigator.clipboard.writeText(code)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+  return (
+    <div className="flex flex-col items-center gap-5">
+      <h1 className="text-2xl font-bold text-white text-center">
+        You&apos;re in, {name}!
+      </h1>
+      <div className="w-full bg-amber-500/10 border-2 border-amber-500/40 rounded-2xl p-5 text-center">
+        <p className="text-amber-300 text-sm font-medium mb-2">
+          📌 Save this — it&apos;s your personal code
+        </p>
+        <p className="text-4xl font-mono font-bold text-white tracking-widest my-3">
+          {code}
+        </p>
+        <p className="text-zinc-400 text-xs leading-relaxed">
+          Next time you come back, sign in with your name + this code so your progress is waiting for you.
+        </p>
+        <button
+          onClick={handleCopy}
+          className="mt-3 text-xs text-amber-300 hover:text-amber-200 underline"
+        >
+          {copied ? "Copied!" : "Copy code"}
+        </button>
+      </div>
+      <Button onClick={onContinue} size="lg" className="w-full text-base">
+        Got it, let&apos;s go →
+      </Button>
     </div>
   )
 }
@@ -378,16 +530,29 @@ function WelcomeStep({
 
 export type { OnboardingData }
 
-export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
-  const { user, profile, activeProfile, impersonating, signInStudent } = useAuth()
+type Step =
+  | "welcome"        // new vs returning picker
+  | "classCode"      // new student: class code
+  | "name"           // new student: name entry
+  | "codeReveal"     // new student: show their fresh personal code
+  | "returning"      // returning student: name + personal code
+  | "grade"          // grade
+  | "intro"          // how-it-works intro
+  | "interests"      // interests picker
 
-  // When impersonating, skip class code (step 0) and name (step 1) — demo student already has those
+export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
+  const { user, profile, activeProfile, impersonating, signInStudent, signInReturning } = useAuth()
+
+  // When impersonating or returning from a partial sign-in, skip steps
+  // that are already filled in.
   const source = impersonating ?? activeProfile
-  const initialStep = source
-    ? (!source.grade ? 2 : source.interests.length === 0 ? 4 : 0)
-    : 0
-  const [step, setStep] = useState(initialStep)
+  const initialStep: Step = source
+    ? (!source.grade ? "grade" : source.interests.length === 0 ? "interests" : "welcome")
+    : "welcome"
+  const [step, setStep] = useState<Step>(initialStep)
   const [classCode, setClassCode] = useState("")
+  const [returningCode, setReturningCode] = useState("")
+  const [newPersonalCode, setNewPersonalCode] = useState("")
   const [data, setData] = useState<OnboardingData>({
     name: (impersonating ?? activeProfile)?.name || "",
     grade: (impersonating ?? activeProfile)?.grade || "",
@@ -410,9 +575,46 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     setAuthError(null)
     try {
       await signInStudent(classCode, data.name)
-      setStep(2) // advance to grade
-    } catch (err: any) {
-      setAuthError(err.message || "Could not join class. Try again.")
+      // Fetch the freshly-generated personal code from Firestore
+      // (signInStudent just wrote it to users/{uid})
+      const currentUid = auth.currentUser?.uid
+      if (currentUid) {
+        const userSnap = await getDoc(doc(db, "users", currentUid))
+        if (userSnap.exists()) {
+          const code = (userSnap.data() as { personalCode?: string }).personalCode
+          if (code) setNewPersonalCode(code)
+        }
+      }
+      setStep("codeReveal")
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Could not join class. Try again."
+      setAuthError(msg)
+    } finally {
+      setAuthLoading(false)
+    }
+  }
+
+  const handleReturningSubmit = async () => {
+    setAuthLoading(true)
+    setAuthError(null)
+    try {
+      await signInReturning(data.name, returningCode)
+      // Returning students already have grade + interests — go straight to galaxy
+      // via onComplete with their existing data
+      const signedInUid = auth.currentUser?.uid
+      if (signedInUid) {
+        const userSnap = await getDoc(doc(db, "users", signedInUid))
+        if (userSnap.exists()) {
+          const d = userSnap.data() as { grade: string; interests: string[]; name: string }
+          onComplete({ name: d.name, grade: d.grade, interests: d.interests ?? [] })
+          return
+        }
+      }
+      // Fallback if the doc read fails
+      onComplete(data)
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Could not sign you in."
+      setAuthError(msg)
     } finally {
       setAuthLoading(false)
     }
@@ -436,18 +638,26 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   return (
     <div className="fixed inset-0 z-50 bg-zinc-950 flex items-center justify-center">
       <div className="max-w-md w-full px-6 relative">
-        {/* Step 0: Class Code */}
-        <StepWrapper visible={step === 0}>
+        {/* Welcome: new vs returning */}
+        <StepWrapper visible={step === "welcome"}>
+          <WelcomeChoiceStep
+            onNew={() => setStep("classCode")}
+            onReturning={() => setStep("returning")}
+          />
+        </StepWrapper>
+
+        {/* New student: Class Code */}
+        <StepWrapper visible={step === "classCode"}>
           <ClassCodeStep
             value={classCode}
             onChange={setClassCode}
-            onNext={() => setStep(1)}
+            onNext={() => setStep("name")}
             error={null}
           />
         </StepWrapper>
 
-        {/* Step 1: Name + auth */}
-        <StepWrapper visible={step === 1}>
+        {/* New student: Name + auth */}
+        <StepWrapper visible={step === "name"}>
           {authLoading ? (
             <div className="flex flex-col items-center gap-4">
               <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
@@ -467,24 +677,47 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
           )}
         </StepWrapper>
 
-        {/* Step 2: Grade */}
-        <StepWrapper visible={step === 2}>
+        {/* New student: Show their personal code */}
+        <StepWrapper visible={step === "codeReveal"}>
+          <CodeRevealStep
+            name={data.name}
+            code={newPersonalCode}
+            onContinue={() => setStep("grade")}
+          />
+        </StepWrapper>
+
+        {/* Returning student: Name + code */}
+        <StepWrapper visible={step === "returning"}>
+          <ReturningStep
+            name={data.name}
+            code={returningCode}
+            onNameChange={(name) => setData((prev) => ({ ...prev, name }))}
+            onCodeChange={setReturningCode}
+            onSubmit={handleReturningSubmit}
+            onBack={() => { setStep("welcome"); setAuthError(null) }}
+            loading={authLoading}
+            error={authError}
+          />
+        </StepWrapper>
+
+        {/* Grade */}
+        <StepWrapper visible={step === "grade"}>
           <GradeStep
             name={data.name}
             onSelect={(grade) => {
               setData((prev) => ({ ...prev, grade }))
-              setStep(3)
+              setStep("intro")
             }}
           />
         </StepWrapper>
 
-        {/* Step 3: Intro */}
-        <StepWrapper visible={step === 3}>
-          <IntroStep name={data.name} onNext={() => setStep(4)} />
+        {/* Intro */}
+        <StepWrapper visible={step === "intro"}>
+          <IntroStep name={data.name} onNext={() => setStep("interests")} />
         </StepWrapper>
 
-        {/* Step 4: Interests */}
-        <StepWrapper visible={step === 4}>
+        {/* Interests */}
+        <StepWrapper visible={step === "interests"}>
           <InterestsStep
             selected={data.interests}
             onToggle={toggleInterest}

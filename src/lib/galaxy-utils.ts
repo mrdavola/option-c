@@ -1,4 +1,7 @@
 import type { StandardsGraph, StandardNode, StandardEdge, NodeStatus } from "./graph-types"
+import moonNames from "@/data/moon-names.json"
+
+const NAMES = moonNames as Record<string, string>
 
 // A Planet = one domain at one grade level
 export interface Planet {
@@ -104,11 +107,21 @@ function getGradeBand(grade: string): "K-2" | "3-5" | "6-8" | "HS" {
   return "HS"
 }
 
+// A node is a "cluster header" (not a real moon) if its id is exactly 3 parts
+// where the last part is a single capital letter — e.g. "K.G.A", "K.CC.B".
+// These are headers for groups of standards, not standards themselves, so we
+// hide them from the galaxy view.
+export function isClusterNode(nodeId: string): boolean {
+  const parts = nodeId.split(".")
+  return parts.length === 3 && /^[A-Z]$/.test(parts[2])
+}
+
 // Group standards into planets
 export function buildPlanets(data: StandardsGraph): Planet[] {
   const planetMap = new Map<string, Planet>()
 
   for (const node of data.nodes) {
+    if (isClusterNode(node.id)) continue
     const planetId = `${node.grade}.${node.domainCode}`
     if (!planetMap.has(planetId)) {
       planetMap.set(planetId, {
@@ -161,12 +174,14 @@ export type ColorMode = "domain" | "mastery"
 
 // Mastery colors — Montessori terminology:
 // locked = "Not Started" (grey), available = "Ready to Explore" (blue),
-// working = "Progressing" (yellow), mastered = "Demonstrated" (green)
+// working = "Progressing" (yellow), mastered = "Demonstrated" (green),
+// otherGrade = "Available but not your grade" (purple)
 const MASTERY_COLORS = {
   locked: "#555555",     // grey — Not Started
   available: "#3b82f6",  // blue — Ready to Explore
   working: "#eab308",    // yellow — Progressing
   mastered: "#22c55e",   // green — Demonstrated
+  otherGrade: "#9333ea", // purple — Available but not your grade
 }
 
 function getMasteryColor(planet: { unlockedCount: number; availableCount: number; moonCount: number; isCompleted: boolean }): string {
@@ -218,7 +233,8 @@ export function buildGalaxyData(
   bridges: Bridge[],
   progressMap: Map<string, NodeStatus>,
   colorMode: ColorMode = "domain",
-  studentGrade: string | null = null
+  studentGrade: string | null = null,
+  gradeFilter: "all" | "myGrade" = "all"
 ): GalaxyData {
   // Pre-compute which planets have unlocked standards
   const planetHasUnlocked = new Map<string, boolean>()
@@ -226,6 +242,9 @@ export function buildGalaxyData(
     const hasUnlocked = planet.standards.some(s => progressMap.get(s.id) === "unlocked")
     planetHasUnlocked.set(planet.id, hasUnlocked)
   }
+
+  const isOutOfGradeFilter = (planet: Planet): boolean =>
+    gradeFilter === "myGrade" && !!studentGrade && planet.grade !== studentGrade
 
   const nodes: GalaxyNode[] = planets.map(planet => {
     let unlockedCount = 0
@@ -237,22 +256,29 @@ export function buildGalaxyData(
     }
     const isCompleted = unlockedCount === planet.standards.length && planet.standards.length > 0
     const access = computePlanetAccess(planet, studentGrade, bridges, planetHasUnlocked)
+    const outOfGrade = isOutOfGradeFilter(planet)
 
     let color: string
     if (colorMode === "mastery") {
-      color = getMasteryColor({ unlockedCount, availableCount, moonCount: planet.standards.length, isCompleted })
-      // Dim locked planets in mastery mode too
-      if (access === "locked") color = "#333333"
+      // Out-of-grade but accessible → purple. Out-of-grade & locked → very dim grey.
+      if (outOfGrade) {
+        color = access === "locked" ? "#262626" : MASTERY_COLORS.otherGrade
+      } else {
+        color = getMasteryColor({ unlockedCount, availableCount, moonCount: planet.standards.length, isCompleted })
+        if (access === "locked") color = "#333333"
+      }
     } else {
       // Domain color with brightness based on progress + access
       let brightness = 0.2
       if (access === "locked") {
-        brightness = 0.08 // very dim for inaccessible planets
+        brightness = 0.08
       } else if (access === "explorable" || access === "earned" || access === "home") {
         if (availableCount > 0) brightness = 0.5
         if (unlockedCount > 0) brightness = 0.6 + (unlockedCount / planet.standards.length) * 0.4
         if (isCompleted) brightness = 1.0
       }
+      // Dim out-of-grade planets even further when filtered
+      if (outOfGrade) brightness *= 0.4
 
       const baseColor = planet.color
       const r = parseInt(baseColor.slice(1, 3), 16)
@@ -261,8 +287,8 @@ export function buildGalaxyData(
       color = `rgb(${Math.round(r * brightness)}, ${Math.round(g * brightness)}, ${Math.round(b * brightness)})`
     }
 
-    // Locked planets are smaller
-    const sizeMultiplier = access === "locked" ? 0.5 : 1
+    // Locked or filtered-out planets are smaller
+    const sizeMultiplier = access === "locked" ? 0.5 : (outOfGrade ? 0.55 : 1)
 
     return {
       id: planet.id,
@@ -295,15 +321,20 @@ export function buildGalaxyData(
   return { nodes, links }
 }
 
-// Generate a short title from a standard description
-function makeShortTitle(description: string): string {
+// Generate a short title from a standard description.
+// Prefer the AI-generated name from moon-names.json if available; fall back
+// to a heuristic that capitalises the first clause of the description.
+function makeShortTitle(id: string, description: string): string {
+  const aiName = NAMES[id]
+  if (aiName) return aiName
   // Strip leading code patterns like "5.NBT.A.1 " or "(5.NBT.A.1)"
   const cleaned = description.replace(/^\(?\d*\.?[A-Z]+\.?[A-Z]*\.?\d*\.?\d*\)?\s*/i, "").trim()
-  // Take first meaningful clause (up to first period, semicolon, or colon, max 50 chars)
+  // Take first meaningful clause (up to first period, semicolon, or colon, max 40 chars)
   const first = cleaned.split(/[.;:]/)[0].trim()
-  if (first.length <= 50) return first
-  // Break at last word boundary before 47 chars
-  const cut = first.slice(0, 47)
+  // Capitalise first letter
+  const capitalised = first.charAt(0).toUpperCase() + first.slice(1)
+  if (capitalised.length <= 40) return capitalised
+  const cut = capitalised.slice(0, 37)
   const lastSpace = cut.lastIndexOf(" ")
   return (lastSpace > 20 ? cut.slice(0, lastSpace) : cut) + "..."
 }
@@ -313,12 +344,32 @@ export function buildMoonData(
   planet: Planet,
   progressMap: Map<string, NodeStatus>
 ): MoonData[] {
+  // Distribute moons across 3 orbit rings, then within each ring
+  // give them an even angular spread AND a single shared rotation speed,
+  // so two moons on the same ring never collide.
+  const ringRadii = [25, 37, 49]
+  const ringSpeeds = [0.30, 0.22, 0.16] // outer rings move slower (looks more realistic)
+  const ringMembers: number[][] = [[], [], []]
+  planet.standards.forEach((_, idx) => {
+    ringMembers[idx % 3].push(idx)
+  })
+
+  // Build a per-index lookup of (ringIndex, positionInRing, ringSize)
+  const placement = new Map<number, { ring: number; pos: number; size: number }>()
+  ringMembers.forEach((members, ring) => {
+    members.forEach((idx, pos) => {
+      placement.set(idx, { ring, pos, size: members.length })
+    })
+  })
+
   return planet.standards.map((std, i) => {
     const status = progressMap.get(std.id) ?? "locked"
-    const total = planet.standards.length
-    const orbitRadius = 25 + (i % 3) * 12  // 3 orbit rings
-    const orbitSpeed = 0.2 + Math.random() * 0.3  // slightly different speeds
-    const orbitOffset = (i / total) * Math.PI * 2  // spread evenly
+    const place = placement.get(i)!
+    const orbitRadius = ringRadii[place.ring]
+    const orbitSpeed = ringSpeeds[place.ring]
+    // Even angular spacing within the ring; offset alternate rings so they
+    // don't all start at angle 0.
+    const orbitOffset = (place.pos / Math.max(place.size, 1)) * Math.PI * 2 + place.ring * 0.5
 
     let size: number
     let color: string
@@ -354,7 +405,7 @@ export function buildMoonData(
     return {
       id: std.id,
       description: std.description,
-      shortTitle: makeShortTitle(std.description),
+      shortTitle: makeShortTitle(std.id, std.description),
       status,
       orbitRadius,
       orbitSpeed,

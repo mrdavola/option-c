@@ -2,35 +2,45 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Compass, LayoutDashboard } from "lucide-react"
+import { Compass, LayoutDashboard, Gamepad2 } from "lucide-react"
 import { useAuth } from "@/lib/auth"
 
 export function StudentNav() {
   const { activeProfile, impersonating } = useAuth()
   const pathname = usePathname()
 
-  // Hide on guide/admin pages — show everywhere else (galaxy, student dashboard)
+  // Hide on guide/admin pages — show everywhere else (galaxy, student dashboard, library)
   if (!activeProfile) return null
   if (pathname.startsWith("/guide") || pathname.startsWith("/admin")) return null
 
   const isExplore = pathname === "/"
   const isDashboard = pathname === "/student"
+  const isLibrary = pathname.startsWith("/library")
 
   return (
-    <nav className={`absolute left-4 z-20 flex gap-1 bg-zinc-900/80 backdrop-blur-sm rounded-lg border border-zinc-800 p-1 ${impersonating ? "top-14" : "top-4"}`}>
+    <nav className={`absolute left-4 z-20 flex gap-1 bg-zinc-900/85 backdrop-blur-sm rounded-lg border border-zinc-700 p-1 ${impersonating ? "top-14" : "top-4"}`}>
       <Link
         href="/"
         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm transition-colors ${
-          isExplore ? "bg-zinc-700 text-white" : "text-zinc-400 hover:text-zinc-200"
+          isExplore ? "bg-zinc-700 text-white" : "text-zinc-300 hover:text-white"
         }`}
       >
         <Compass className="size-3.5" />
         Explore
       </Link>
       <Link
+        href="/library"
+        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm transition-colors ${
+          isLibrary ? "bg-zinc-700 text-white" : "text-zinc-300 hover:text-white"
+        }`}
+      >
+        <Gamepad2 className="size-3.5" />
+        Library
+      </Link>
+      <Link
         href="/student"
         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm transition-colors ${
-          isDashboard ? "bg-zinc-700 text-white" : "text-zinc-400 hover:text-zinc-200"
+          isDashboard ? "bg-zinc-700 text-white" : "text-zinc-300 hover:text-white"
         }`}
       >
         <LayoutDashboard className="size-3.5" />

@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Pencil, Volume2, VolumeX } from "lucide-react"
+import type { ReactNode } from "react"
 
 type ReadingLevel = "simpler" | "default" | "challenge"
 
@@ -17,42 +18,14 @@ interface Explanation {
   formula?: string
 }
 
-function ConceptIllustration({ description, grade }: { description: string; grade: string }) {
-  const [svg, setSvg] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    setLoading(true)
-    fetch("/api/illustrate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ description, grade }),
-    })
-      .then(res => res.text())
-      .then(text => {
-        if (text.includes("<svg")) setSvg(text)
-        else setSvg(null)
-      })
-      .catch(() => setSvg(null))
-      .finally(() => setLoading(false))
-  }, [description, grade])
-
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center py-6 gap-2 bg-zinc-800/30 rounded-lg">
-        <div className="w-5 h-5 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
-        <p className="text-sm text-zinc-300">Drawing a picture...</p>
-      </div>
-    )
-  }
-
-  if (!svg) return null
-
+function ConceptIllustration({ mechanicSvg, mechanicTitle }: { mechanicSvg: ReactNode; mechanicTitle: string }) {
   return (
-    <div
-      className="rounded-lg overflow-hidden border border-zinc-800"
-      dangerouslySetInnerHTML={{ __html: svg }}
-    />
+    <div className="rounded-lg overflow-hidden border border-zinc-800 bg-zinc-900">
+      <div className="w-full">{mechanicSvg}</div>
+      <p className="text-xs text-zinc-400 text-center py-2 border-t border-zinc-800">
+        Example: {mechanicTitle}
+      </p>
+    </div>
   )
 }
 
@@ -65,7 +38,7 @@ function GameMechanics({ description, domainCode }: {
 
   return (
     <div className="space-y-2">
-      <p className="text-sm text-zinc-300 font-medium">Game mechanics that use this math</p>
+      <p className="text-sm text-zinc-300 font-medium">Possible player actions for your game</p>
       <div className="grid grid-cols-3 gap-2">
         {matched.map((m) => (
           <div key={m.id} className="flex flex-col items-center gap-1">
@@ -80,51 +53,6 @@ function GameMechanics({ description, domainCode }: {
   )
 }
 
-function InterestInput({ onSubmit }: { onSubmit: (interest: string) => void }) {
-  const [value, setValue] = useState("")
-  const [expanded, setExpanded] = useState(false)
-
-  if (!expanded) {
-    return (
-      <button
-        onClick={() => setExpanded(true)}
-        className="px-4 py-2 text-sm rounded-full border border-dashed border-zinc-700 text-zinc-400 hover:text-zinc-200 hover:border-zinc-500 transition-colors"
-      >
-        Explain it using something I'm into...
-      </button>
-    )
-  }
-
-  return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault()
-        if (value.trim()) {
-          onSubmit(value.trim())
-          setValue("")
-          setExpanded(false)
-        }
-      }}
-      className="flex gap-2 w-full"
-    >
-      <input
-        autoFocus
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        placeholder="basketball, Roblox, cooking..."
-        className="flex-1 bg-zinc-800 border border-zinc-700 rounded-full px-4 py-2 text-sm text-white placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-blue-500/50"
-      />
-      <button
-        type="submit"
-        disabled={!value.trim()}
-        className="px-3 py-2 text-sm rounded-full bg-blue-500/20 border border-blue-500/30 text-blue-400 hover:bg-blue-500/30 disabled:opacity-30 transition-colors"
-      >
-        Go
-      </button>
-    </form>
-  )
-}
-
 interface ConceptCardProps {
   standard: StandardNode
   onReady: () => void
@@ -133,17 +61,18 @@ interface ConceptCardProps {
 }
 
 export function ConceptCard({ standard, onReady, interests, readOnly }: ConceptCardProps) {
-  const [readingLevel, setReadingLevel] = useState<ReadingLevel>(
-    interests && interests.length > 0 ? "challenge" : "default"
-  )
+  const [readingLevel, setReadingLevel] = useState<ReadingLevel>("default")
   const [showIllustration, setShowIllustration] = useState(false)
   const [explanation, setExplanation] = useState<Explanation | null>(null)
   const [loading, setLoading] = useState(true)
-  const [customInterest, setCustomInterest] = useState<string | null>(
-    interests && interests.length > 0 ? interests[0] : null
-  )
   const [labelFlipped, setLabelFlipped] = useState(false)
   const [speaking, setSpeaking] = useState(false)
+
+  // Top-matched mechanic for "Show me what this looks like"
+  const topMechanic = useMemo(() => {
+    const matched = matchMechanics(standard.description, standard.domainCode)
+    return matched[0] ?? null
+  }, [standard.description, standard.domainCode])
 
   const fetchExplanation = useCallback(async (level: ReadingLevel) => {
     setLoading(true)
@@ -156,7 +85,7 @@ export function ConceptCard({ standard, onReady, interests, readOnly }: ConceptC
           description: standard.description,
           grade: standard.grade,
           readingLevel: level,
-          interests: customInterest ? [customInterest] : (interests ?? []),
+          interests: interests ?? [],
         }),
       })
       const data = await res.json()
@@ -170,7 +99,7 @@ export function ConceptCard({ standard, onReady, interests, readOnly }: ConceptC
     } finally {
       setLoading(false)
     }
-  }, [standard.id, standard.description, standard.grade, interests, customInterest])
+  }, [standard.id, standard.description, standard.grade, interests])
 
   // Fetch on mount and when level changes
   useEffect(() => {
@@ -295,7 +224,7 @@ export function ConceptCard({ standard, onReady, interests, readOnly }: ConceptC
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Where you'll use this</CardTitle>
+              <CardTitle className="text-sm">Where you&apos;ll use this</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground leading-relaxed">
@@ -306,37 +235,14 @@ export function ConceptCard({ standard, onReady, interests, readOnly }: ConceptC
         </div>
       ) : null}
 
-      {/* Stick figure illustration */}
-      {!showIllustration ? (
-        <button
-          onClick={() => setShowIllustration(true)}
-          className="w-full py-3 text-sm rounded-lg border border-dashed border-zinc-700 text-zinc-400 hover:text-zinc-200 hover:border-zinc-500 transition-colors flex items-center justify-center gap-2"
-        >
-          <Pencil className="size-4" /> Show me what this looks like
-        </button>
-      ) : (
-        <ConceptIllustration description={standard.description} grade={standard.grade} />
-      )}
-
-      {/* Game mechanics */}
-      {!readOnly && (
-        <GameMechanics
-          standardId={standard.id}
-          description={standard.description}
-          grade={standard.grade}
-          interests={customInterest ? [customInterest] : interests}
-          domainCode={standard.domainCode}
-        />
-      )}
-
-      {/* Reading level adjustment */}
+      {/* Reading level adjustment — appears right after the explanation */}
       <div className="flex flex-col items-center gap-2">
         {readingLevel === "default" && (
           <button
             onClick={() => handleLevelChange("simpler")}
             className="px-4 py-2 text-sm rounded-full border border-blue-500/30 text-blue-400 hover:bg-blue-500/10 transition-colors"
           >
-            I don't get it — say it simpler
+            I don&apos;t get it — say it simpler
           </button>
         )}
         {readingLevel === "simpler" && (
@@ -347,32 +253,30 @@ export function ConceptCard({ standard, onReady, interests, readOnly }: ConceptC
             OK I think I get it — show me the normal version
           </button>
         )}
-        {readingLevel !== "challenge" && (
-          <InterestInput
-            onSubmit={(interest) => {
-              setCustomInterest(interest)
-              handleLevelChange("challenge")
-            }}
-          />
-        )}
-        {readingLevel === "challenge" && (
-          <div className="flex flex-col items-center gap-2">
-            <button
-              onClick={() => { setCustomInterest(null); handleLevelChange("default") }}
-              className="px-4 py-2 text-sm rounded-full border border-zinc-700 text-zinc-400 hover:text-zinc-200 hover:border-zinc-500 transition-colors"
-            >
-              Show me the regular version
-            </button>
-            <InterestInput
-              onSubmit={(interest) => {
-                setCustomInterest(interest)
-                setReadingLevel("default")
-                setTimeout(() => setReadingLevel("challenge"), 50)
-              }}
-            />
-          </div>
-        )}
       </div>
+
+      {/* Stick figure illustration — top matched mechanic */}
+      {topMechanic && !showIllustration ? (
+        <button
+          onClick={() => setShowIllustration(true)}
+          className="w-full py-3 text-sm rounded-lg border border-dashed border-zinc-700 text-zinc-400 hover:text-zinc-200 hover:border-zinc-500 transition-colors flex items-center justify-center gap-2"
+        >
+          <Pencil className="size-4" /> Show me what this looks like
+        </button>
+      ) : topMechanic && showIllustration ? (
+        <ConceptIllustration mechanicSvg={topMechanic.svg} mechanicTitle={topMechanic.title} />
+      ) : null}
+
+      {/* Possible player actions for your game */}
+      {!readOnly && (
+        <GameMechanics
+          standardId={standard.id}
+          description={standard.description}
+          grade={standard.grade}
+          interests={interests}
+          domainCode={standard.domainCode}
+        />
+      )}
 
       {!readOnly && (
         <Button onClick={onReady} size="lg" className="w-full">
