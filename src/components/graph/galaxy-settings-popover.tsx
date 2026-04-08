@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react"
 import { Settings } from "lucide-react"
 import type { ColorMode } from "@/lib/galaxy-utils"
+import { CONCEPT_LEGEND } from "@/lib/galaxy-utils"
 
 interface GalaxySettingsPopoverProps {
   colorMode: ColorMode
@@ -90,8 +91,10 @@ export function GalaxySettingsPopover({
             </div>
           </div>
 
-          {/* Grade filter */}
-          {showGradeFilter && (
+          {/* Grade filter — only meaningful in "By progress" mode.
+              In "By concept" mode the colors aren't grade-aware, so the
+              toggle would be confusing. */}
+          {showGradeFilter && colorMode === "mastery" && (
             <div className="p-4 border-b border-zinc-800 space-y-2">
               <p className="text-[11px] text-zinc-500 font-semibold uppercase tracking-wide">
                 Show
@@ -105,7 +108,7 @@ export function GalaxySettingsPopover({
                       : "text-zinc-300 hover:text-white"
                   }`}
                 >
-                  My grade only
+                  My grade
                 </button>
                 <button
                   onClick={() => onGradeFilterChange("all")}
@@ -121,20 +124,41 @@ export function GalaxySettingsPopover({
             </div>
           )}
 
-          {/* Legend (only meaningful when colored by progress) */}
+          {/* Legend — by progress */}
           {colorMode === "mastery" && (
             <div className="p-4 space-y-2">
               <p className="text-[11px] text-zinc-500 font-semibold uppercase tracking-wide">
                 What the colors mean
               </p>
               <div className="grid grid-cols-1 gap-1.5">
-                <LegendRow color="bg-blue-500" label="Ready to explore" />
+                <LegendRow color="bg-blue-500" label="My grade level" />
                 <LegendRow color="bg-yellow-500" label="Progressing" />
                 <LegendRow color="bg-emerald-500" label="Demonstrated" />
+                <LegendRow color="bg-amber-500" label="Mastered" />
                 {showOtherGradeSwatch && (
                   <LegendRow color="bg-purple-600" label="Available, not your grade" />
                 )}
                 <LegendRow color="bg-zinc-500" label="Locked" />
+              </div>
+            </div>
+          )}
+
+          {/* Legend — by concept (math domain colors) */}
+          {colorMode === "domain" && (
+            <div className="p-4 space-y-2 max-h-64 overflow-y-auto">
+              <p className="text-[11px] text-zinc-500 font-semibold uppercase tracking-wide">
+                What the colors mean
+              </p>
+              <div className="grid grid-cols-2 gap-y-1.5 gap-x-3">
+                {CONCEPT_LEGEND.map((c) => (
+                  <div key={c.name} className="flex items-center gap-2">
+                    <div
+                      className="w-2.5 h-2.5 rounded-full shrink-0"
+                      style={{ backgroundColor: c.color }}
+                    />
+                    <span className="text-xs text-zinc-200">{c.name}</span>
+                  </div>
+                ))}
               </div>
             </div>
           )}

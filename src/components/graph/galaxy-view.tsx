@@ -257,9 +257,8 @@ export function GalaxyView({ galaxyData, onPlanetClick, onLockedPlanetClick, cur
       group.add(new THREE.Mesh(wireGeom, wireMat))
     }
 
-    // Mastery ring for completed planets — spinning golden outer ring + inner pulsing ring
+    // Inner pulse ring — every "completed" planet (all moons green or gold)
     if (node.isCompleted) {
-      // Inner pulse ring (same color as planet)
       const innerGeom = new THREE.RingGeometry(
         Math.sqrt(node.val) * 1.6,
         Math.sqrt(node.val) * 1.9,
@@ -274,8 +273,11 @@ export function GalaxyView({ galaxyData, onPlanetClick, onLockedPlanetClick, cur
       const innerRing = new THREE.Mesh(innerGeom, innerMat)
       innerRing.userData = { isPulse: true }
       group.add(innerRing)
+    }
 
-      // Outer spinning golden ring
+    // Outer spinning gold ring — ONLY when every moon is mastered (gold).
+    // Reserved for the "fully mastered" tier per the Z model.
+    if (node.isFullyMastered) {
       const outerGeom = new THREE.RingGeometry(
         Math.sqrt(node.val) * 2.1,
         Math.sqrt(node.val) * 2.35,
@@ -284,7 +286,7 @@ export function GalaxyView({ galaxyData, onPlanetClick, onLockedPlanetClick, cur
       const outerMat = new THREE.MeshBasicMaterial({
         color: "#f59e0b",
         transparent: true,
-        opacity: 0.55,
+        opacity: 0.65,
         side: THREE.DoubleSide,
       })
       const outerRing = new THREE.Mesh(outerGeom, outerMat)

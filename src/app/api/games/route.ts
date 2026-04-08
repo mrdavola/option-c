@@ -1,34 +1,52 @@
 import { db } from "@/lib/firebase"
-import { collection, query, where, orderBy, getDocs } from "firebase/firestore"
+import { collection, query, where, getDocs } from "firebase/firestore"
+
+// NOTE: deliberately no orderBy in the Firestore query — combining
+// where(...) + orderBy(...) requires a Firestore composite index, and
+// if the index hasn't been deployed for a project the query silently
+// returns nothing. We sort client-side instead. Costs nothing for
+// list sizes < a few hundred.
 
 export async function GET(req: Request) {
-  const url = new URL(req.url)
-  const classId = url.searchParams.get("classId")
-  const status = url.searchParams.get("status") || "published"
+  try {
+    const url = new URL(req.url)
+    const classId = url.searchParams.get("classId")
+    const status = url.searchParams.get("status") || "published"
 
-  let q
-  if (classId) {
-    q = query(
-      collection(db, "games"),
-      where("status", "==", status),
-      where("classId", "==", classId),
-      orderBy("createdAt", "desc")
-    )
-  } else {
-    q = query(
-      collection(db, "games"),
-      where("status", "==", status),
-      orderBy("createdAt", "desc")
+    let q
+    if (classId) {
+      q = query(
+        collection(db, "games"),
+        where("status", "==", status),
+        where("classId", "==", classId)
+      )
+    } else {
+      q = query(
+        collection(db, "games"),
+        where("status", "==", status)
+      )
+    }
+
+    const snap = await getDocs(q)
+    const games = snap.docs.map((d) => {
+      const data = d.data()
+      const { gameHtml: _gameHtml, ...meta } = data
+      return meta as Record<string, unknown>
+    })
+
+    // Sort newest first by createdAt
+    games.sort((a, b) => {
+      const ta = typeof a.createdAt === "number" ? a.createdAt : 0
+      const tb = typeof b.createdAt === "number" ? b.createdAt : 0
+      return tb - ta
+    })
+
+    return Response.json(games)
+  } catch (err) {
+    console.error("[/api/games] failed:", err)
+    return Response.json(
+      { error: err instanceof Error ? err.message : String(err) },
+      { status: 500 }
     )
   }
-
-  const snap = await getDocs(q)
-  const games = snap.docs.map((d) => {
-    const data = d.data()
-    // Don't send full HTML in list response
-    const { gameHtml: _, ...meta } = data
-    return meta
-  })
-
-  return Response.json(games)
 }

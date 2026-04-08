@@ -13,6 +13,9 @@ export interface GameDesignDoc {
     characters?: string
     [key: string]: string | undefined
   }
+  // Approved visual concept (3-5 short bulleted lines, each starting with an emoji).
+  // Saved during the build flow so it can be shown on game cards.
+  visualConcept?: string[]
 }
 
 export interface GameReview {

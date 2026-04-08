@@ -1,9 +1,9 @@
 "use client"
 
 import { useAuth } from "@/lib/auth"
-import { StudentNav } from "@/components/student-nav"
+import { LearnerNav } from "@/components/learner-nav"
 
-export default function StudentLayout({ children }: { children: React.ReactNode }) {
+export default function LearnerLayout({ children }: { children: React.ReactNode }) {
   const { loading, impersonating, stopImpersonating } = useAuth()
 
   if (loading) {
@@ -28,7 +28,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
         </div>
       )}
       <div className="p-4 md:p-6 relative">
-        <StudentNav />
+        <LearnerNav />
         <div className="pt-14">
           {children}
         </div>

@@ -26,7 +26,6 @@ export async function POST(
   await updateDoc(doc(db, "games", id), {
     ratingSum: increment(rating),
     ratingCount: increment(1),
-    playCount: increment(1),
     // Store the rating-with-comment privately so guides + admins + the
     // author can see it. Visible only to those parties (enforced in UI).
     privateReviews: arrayUnion({

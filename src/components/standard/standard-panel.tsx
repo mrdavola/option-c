@@ -95,17 +95,17 @@ function getMoonName(standard: StandardNode): string {
   return MOON_NAMES[standard.id] ?? standard.description
 }
 
-type FlowStep = "learn" | "earn" | "unlocked" | "master"
+type FlowStep = "learn" | "earn" | "unlocked" | "demonstrate"
 
 interface StandardPanelProps {
   standard: StandardNode | null
   open: boolean
   onClose: () => void
   onUnlock: (standardId: string) => void
-  onMastered?: (standardId: string) => void
+  onDemonstrated?: (standardId: string) => void
   onBuildGame?: (designDoc: import("@/lib/game-types").GameDesignDoc, chatHistory: string) => void
   interests?: string[]
-  nodeStatus?: "locked" | "available" | "in_progress" | "unlocked" | "mastered" | "in_review"
+  nodeStatus?: "locked" | "available" | "in_progress" | "in_review" | "approved_unplayed" | "unlocked" | "mastered"
 }
 
 export function StandardPanel({
@@ -113,7 +113,7 @@ export function StandardPanel({
   open,
   onClose,
   onUnlock,
-  onMastered,
+  onDemonstrated,
   onBuildGame,
   interests,
   nodeStatus,
@@ -173,7 +173,7 @@ export function StandardPanel({
         </SheetHeader>
 
         <div className="px-4 pb-4">
-          {(step === "earn" || step === "master") && nodeStatus !== "locked" && nodeStatus !== "mastered" && (
+          {(step === "earn" || step === "demonstrate") && nodeStatus !== "locked" && nodeStatus !== "mastered" && (
             <button
               onClick={() => setStep("learn")}
               className="flex items-center gap-1 text-sm text-zinc-400 hover:text-zinc-200 mb-3 transition-colors"
@@ -197,20 +197,28 @@ export function StandardPanel({
                 readOnly
               />
             </div>
-          ) : nodeStatus === "unlocked" ? (
-            step === "master" ? (
+          ) : nodeStatus === "approved_unplayed" ? (
+            // Guide approved the game; student must win their own game
+            // 3 in a row to flip the moon to green.
+            step === "demonstrate" ? (
               <MasteryPlay
                 standardId={standard.id}
-                planetId={`${standard.grade}.${standard.domainCode}`}
-                onMastered={() => onMastered?.(standard.id)}
+                onDemonstrated={() => onDemonstrated?.(standard.id)}
               />
             ) : (
               <div className="space-y-4">
-                <div className="flex items-center gap-2 text-emerald-400 text-sm">
-                  <CheckCircle className="size-4 shrink-0" />
-                  <span>You&apos;ve demonstrated this concept — nice work.</span>
+                <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 space-y-1">
+                  <p className="text-sm text-emerald-300 font-medium">Your game was approved! +2000 tokens earned.</p>
+                  <p className="text-xs text-zinc-300">
+                    Now win your own game <span className="text-amber-300 font-semibold">3 times in a row</span> to turn this moon green.
+                  </p>
                 </div>
-                {playToMasterButton}
+                <button
+                  onClick={() => setStep("demonstrate")}
+                  className="w-full py-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold transition-colors"
+                >
+                  Play your game →
+                </button>
                 <ConceptCard
                   standard={standard}
                   onReady={() => {}}
@@ -219,11 +227,15 @@ export function StandardPanel({
                 />
               </div>
             )
-          ) : nodeStatus === "mastered" ? (
+          ) : nodeStatus === "unlocked" || nodeStatus === "mastered" ? (
             <div className="space-y-4">
-              <div className="flex items-center gap-2 text-amber-400 text-sm">
-                <Trophy className="size-4 shrink-0" />
-                <span>You&apos;ve mastered this skill!</span>
+              <div className={`flex items-center gap-2 text-sm ${nodeStatus === "mastered" ? "text-amber-400" : "text-emerald-400"}`}>
+                {nodeStatus === "mastered" ? <Trophy className="size-4 shrink-0" /> : <CheckCircle className="size-4 shrink-0" />}
+                <span>
+                  {nodeStatus === "mastered"
+                    ? "You've mastered this skill — gold star!"
+                    : "Demonstrated! Play other learners' games on this skill 3 times to earn the gold star."}
+                </span>
               </div>
               {playToMasterButton}
               <ConceptCard
@@ -237,7 +249,7 @@ export function StandardPanel({
             <div className="space-y-4">
               <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 text-center">
                 <p className="text-amber-300 font-medium">Your game is being reviewed</p>
-                <p className="text-zinc-400 text-sm mt-1">You&apos;ll unlock this skill when your game is approved.</p>
+                <p className="text-zinc-400 text-sm mt-1">You&apos;ll get +2000 tokens when your guide approves it.</p>
                 <a
                   href="/student"
                   className="text-sm text-blue-400 hover:text-blue-300 mt-2 inline-block"

@@ -41,6 +41,8 @@ interface AuthContextValue {
   loading: boolean
   impersonating: UserProfile | null
   activeProfile: UserProfile | null
+  signInLearner: (classCode: string, name: string) => Promise<void>
+  // Legacy alias — same as signInLearner. Kept until callers are migrated.
   signInStudent: (classCode: string, name: string) => Promise<void>
   signInReturning: (name: string, personalCode: string) => Promise<void>
   signInGuide: (email: string, password: string) => Promise<void>
@@ -169,7 +171,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const signInStudent = useCallback(async (classCode: string, name: string) => {
+  const signInLearner = useCallback(async (classCode: string, name: string) => {
     // 1. Sign in anonymously first (needed for Firestore access)
     let currentUser = auth.currentUser
     if (!currentUser) {
@@ -293,7 +295,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const startImpersonating = useCallback(async (studentUid: string) => {
     const snap = await getDoc(doc(db, "users", studentUid))
-    if (!snap.exists()) throw new Error("Student not found.")
+    if (!snap.exists()) throw new Error("Learner not found.")
     setImpersonating(snap.data() as UserProfile)
   }, [])
 
@@ -349,7 +351,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loading,
       impersonating,
       activeProfile,
-      signInStudent,
+      signInLearner,
+      signInStudent: signInLearner, // legacy alias
       signInReturning,
       signInGuide,
       signInGuideWithGoogle,

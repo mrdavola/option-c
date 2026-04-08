@@ -2,7 +2,7 @@ import { GameLibrary } from "@/components/game/game-library"
 import type { Game } from "@/lib/game-types"
 import Link from "next/link"
 import moonNames from "@/data/moon-names.json"
-import { StudentNav } from "@/components/student-nav"
+import { LearnerNav } from "@/components/learner-nav"
 import { UserMenu } from "@/components/user-menu"
 
 const MOON_NAMES = moonNames as Record<string, string>
@@ -32,7 +32,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white relative">
-      <StudentNav />
+      <LearnerNav />
       <div className="absolute top-4 right-4 z-20">
         <UserMenu />
       </div>
@@ -54,7 +54,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
               <>
                 <h1 className="text-2xl font-bold">Game Library</h1>
                 <p className="text-zinc-400 text-sm mt-1">
-                  Games built by students, for students
+                  Games built by learners, for learners
                 </p>
               </>
             )}

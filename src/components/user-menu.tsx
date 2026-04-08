@@ -39,7 +39,7 @@ export function UserMenu({ className }: UserMenuProps) {
     ? "Admin"
     : activeProfile.role === "guide"
       ? "Guide"
-      : "Student"
+      : "Learner"
 
   return (
     <div className={`relative ${className ?? ""}`} ref={ref}>

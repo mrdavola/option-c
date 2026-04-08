@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import type { Planet, Bridge, MoonData } from "@/lib/galaxy-utils"
 import type { NodeStatus } from "@/lib/graph-types"
 import type { Game } from "@/lib/game-types"
@@ -24,7 +24,8 @@ function statusGlow(status: NodeStatus): string {
     case "available": return "rgba(96,165,250,0.5)"
     case "in_progress": return "rgba(251,191,36,0.6)"
     case "in_review": return "rgba(245,158,11,0.6)"
-    case "unlocked": return "rgba(52,211,153,0.5)"
+    case "approved_unplayed": return "rgba(245,158,11,0.7)"
+    case "unlocked": return "rgba(52,211,153,0.6)"
     case "mastered": return "rgba(251,191,36,0.7)"
   }
 }
@@ -35,6 +36,7 @@ function statusBorder(status: NodeStatus): string {
     case "available": return "border-blue-400/60"
     case "in_progress": return "border-amber-400/60"
     case "in_review": return "border-amber-500/60"
+    case "approved_unplayed": return "border-amber-500/70"
     case "unlocked": return "border-emerald-400/60"
     case "mastered": return "border-amber-400/60"
   }
@@ -43,9 +45,10 @@ function statusBorder(status: NodeStatus): string {
 function statusLabel(status: NodeStatus): string {
   switch (status) {
     case "locked": return "Not Started"
-    case "available": return "Ready to Explore"
+    case "available": return "My grade level"
     case "in_progress": return "Progressing"
     case "in_review": return "Pending Review"
+    case "approved_unplayed": return "Approved — play to demo"
     case "unlocked": return "Demonstrated"
     case "mastered": return "Mastered"
   }
@@ -78,6 +81,17 @@ export function PlanetView({
       .then((games) => setCommunityGames(games))
       .catch(() => {})
   }, [planet.id])
+
+  // Map of standardId → published game count, used to mark moons that
+  // have games available with a small icon and a tooltip count.
+  const gamesByStandard = useMemo(() => {
+    const map = new Map<string, number>()
+    for (const g of communityGames) {
+      if (g.status !== "published") continue
+      map.set(g.standardId, (map.get(g.standardId) ?? 0) + 1)
+    }
+    return map
+  }, [communityGames])
 
   const handlePlayGame = useCallback(async (gameId: string) => {
     try {
@@ -192,6 +206,7 @@ export function PlanetView({
           const moonSize = moon.size * 5
           const hitSize = Math.max(moonSize, 24) // minimum 24px hit target
           const isHovered = hoveredMoon === moon.id
+          const gameCount = gamesByStandard.get(moon.id) ?? 0
 
           return (
             <div key={moon.id}>
@@ -220,13 +235,29 @@ export function PlanetView({
                 aria-label={`${moon.description} - ${statusLabel(moon.status)}`}
               />
 
+              {/* "Has games" indicator — small 🎮 next to the moon */}
+              {gameCount > 0 && (
+                <div
+                  className="absolute z-10 pointer-events-none text-base"
+                  style={{
+                    left: x + hitSize / 2 - 4,
+                    top: y - hitSize / 2 - 8,
+                    lineHeight: 1,
+                    filter: "drop-shadow(0 0 4px rgba(96,165,250,0.6))",
+                  }}
+                  title={`${gameCount} game${gameCount === 1 ? "" : "s"} available`}
+                >
+                  🎮
+                </div>
+              )}
+
               {/* Tooltip on hover */}
               {isHovered && (
                 <div
                   className="absolute z-20 pointer-events-none"
                   style={{
                     left: x - 130,
-                    top: y - moonSize / 2 - 56,
+                    top: y - moonSize / 2 - 64,
                     width: 260,
                   }}
                 >
@@ -235,6 +266,11 @@ export function PlanetView({
                       {moon.shortTitle}
                     </div>
                     <div className="text-xs text-zinc-400 mt-1">{statusLabel(moon.status)}</div>
+                    {gameCount > 0 && (
+                      <div className="text-xs text-blue-400 mt-1">
+                        🎮 {gameCount} game{gameCount === 1 ? "" : "s"} available
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

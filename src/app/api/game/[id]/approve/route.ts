@@ -1,5 +1,5 @@
 import { db } from "@/lib/firebase"
-import { doc, getDoc, updateDoc, arrayUnion, increment } from "firebase/firestore"
+import { doc, getDoc, updateDoc, setDoc, arrayUnion, increment } from "firebase/firestore"
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -42,10 +42,17 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
     await updateDoc(gameRef, updates)
 
-    // If approved, award +2000 tokens to the author for an approved game
-    if (approved && game.authorUid) {
+    // If approved, award +2000 tokens AND move the standard to
+    // "approved_unplayed" — student still needs to win 3 in a row on
+    // their own game to flip it to fully unlocked (green).
+    if (approved && game.authorUid && game.standardId) {
       const authorRef = doc(db, "users", game.authorUid)
       await updateDoc(authorRef, { tokens: increment(2000) })
+      await setDoc(
+        doc(db, "progress", game.authorUid, "standards", game.standardId),
+        { status: "approved_unplayed", approvedAt: Date.now() },
+        { merge: true }
+      )
     }
 
     return Response.json({

@@ -33,9 +33,29 @@ export function GameCard({ game, onPlay }: GameCardProps) {
 
   return (
     <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 flex flex-col gap-3 hover:border-zinc-700 transition-colors">
-      {/* Preview placeholder */}
-      <div className="h-32 rounded-lg bg-zinc-800/50 flex items-center justify-center">
-        <span className="text-3xl">🎮</span>
+      {/* Live game preview — small non-interactive iframe pointing at the
+          game's HTML endpoint. The pointer-events:none + overlay ensures
+          clicks go to the Play button below, not into the iframe. */}
+      <div
+        className="relative h-32 rounded-lg overflow-hidden border border-zinc-800 bg-black cursor-pointer"
+        onClick={() => onPlay(game.id)}
+      >
+        <iframe
+          src={`/api/game/${game.id}/html`}
+          sandbox="allow-scripts"
+          className="absolute inset-0 w-full h-full"
+          style={{
+            border: "none",
+            transform: "scale(0.5)",
+            transformOrigin: "top left",
+            width: "200%",
+            height: "200%",
+            pointerEvents: "none",
+          }}
+          title={game.title}
+          loading="lazy"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
       </div>
 
       <div className="flex-1">

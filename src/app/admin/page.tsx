@@ -267,7 +267,7 @@ export default function AdminDashboardPage() {
     { key: "overview", label: "Overview", icon: <LayoutDashboard className="size-4" /> },
     { key: "guides", label: "Guides", icon: <Users className="size-4" /> },
     { key: "classes", label: "Classes", icon: <School className="size-4" /> },
-    { key: "students", label: "Students", icon: <GraduationCap className="size-4" /> },
+    { key: "students", label: "Learners", icon: <GraduationCap className="size-4" /> },
     { key: "games", label: "Games", icon: <Gamepad2 className="size-4" /> },
     { key: "feedback", label: "Feedback", icon: <MessageCircle className="size-4" /> },
   ]
@@ -323,7 +323,7 @@ export default function AdminDashboardPage() {
             {tab === "overview" && (
               <div className="space-y-6">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <StatCard label="Students" value={students.length} icon={<GraduationCap className="size-5" />} />
+                  <StatCard label="Learners" value={students.length} icon={<GraduationCap className="size-5" />} />
                   <StatCard label="Guides" value={guides.length} icon={<Users className="size-5" />} />
                   <StatCard label="Classes" value={classes.length} icon={<School className="size-5" />} />
                   <StatCard label="Games" value={games.length} icon={<Gamepad2 className="size-5" />} />
@@ -403,7 +403,7 @@ export default function AdminDashboardPage() {
                         <th className="text-left px-4 py-3 font-medium">Email</th>
                         <th className="text-left px-4 py-3 font-medium">Class</th>
                         <th className="text-left px-4 py-3 font-medium">Code</th>
-                        <th className="text-right px-4 py-3 font-medium">Students</th>
+                        <th className="text-right px-4 py-3 font-medium">Learners</th>
                         <th className="text-right px-4 py-3 font-medium"></th>
                       </tr>
                     </thead>
@@ -463,7 +463,7 @@ export default function AdminDashboardPage() {
                         <th className="text-left px-4 py-3 font-medium">Name</th>
                         <th className="text-left px-4 py-3 font-medium">Code</th>
                         <th className="text-left px-4 py-3 font-medium">Guide</th>
-                        <th className="text-right px-4 py-3 font-medium">Students</th>
+                        <th className="text-right px-4 py-3 font-medium">Learners</th>
                         <th className="text-right px-4 py-3 font-medium">Games</th>
                       </tr>
                     </thead>
@@ -506,7 +506,7 @@ export default function AdminDashboardPage() {
             {/* Students Tab */}
             {tab === "students" && (
               <div className="space-y-4">
-                <h2 className="text-lg font-semibold">Students ({students.length})</h2>
+                <h2 className="text-lg font-semibold">Learners ({students.length})</h2>
                 <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
                   <table className="w-full text-sm">
                     <thead>
@@ -522,7 +522,7 @@ export default function AdminDashboardPage() {
                       {students.length === 0 ? (
                         <tr>
                           <td colSpan={5} className="px-4 py-8 text-center text-zinc-500">
-                            No students yet.
+                            No learners yet.
                           </td>
                         </tr>
                       ) : (
@@ -717,12 +717,12 @@ function TokenTopupCard() {
         <span className="text-amber-300">+100</span> per mastered skill.
       </p>
       <p className="text-xs text-zinc-500 mt-2">
-        Run this once to retroactively credit existing students for games they&apos;ve already had approved
+        Run this once to retroactively credit existing learners for games they&apos;ve already had approved
         and skills they&apos;ve already mastered. Idempotent — safe to run multiple times.
       </p>
       <div className="mt-3">
         <Button onClick={handleRun} disabled={running} size="sm">
-          {running ? "Running..." : "Top up existing students"}
+          {running ? "Running..." : "Top up existing learners"}
         </Button>
       </div>
       {result && (

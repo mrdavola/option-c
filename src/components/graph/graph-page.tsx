@@ -17,10 +17,11 @@ import type { GameDesignDoc } from "@/lib/game-types"
 import { doc, setDoc, getDoc, collection } from "firebase/firestore"
 import { db } from "@/lib/firebase"
 import { useAuth } from "@/lib/auth"
-import { StudentNav } from "@/components/student-nav"
+import { LearnerNav } from "@/components/learner-nav"
 import { FeedbackButton } from "@/components/feedback/feedback-button"
 import { UserMenu } from "@/components/user-menu"
 import { GalaxySettingsPopover } from "./galaxy-settings-popover"
+import { RulesPopover } from "@/components/rules-popover"
 
 interface GraphPageProps {
   data: StandardsGraph
@@ -274,7 +275,7 @@ export function GraphPage({ data }: GraphPageProps) {
   // Counts for progress — filtered to student's grade, exclude cluster nodes
   const counts = useMemo(() => {
     const grade = studentData?.grade
-    let total = 0, available = 0, unlocked = 0
+    let total = 0, available = 0, demonstrated = 0, mastered = 0
     for (const node of data.nodes) {
       if (isClusterNode(node.id)) continue
       // If student picked a grade, only count that grade's standards
@@ -282,17 +283,22 @@ export function GraphPage({ data }: GraphPageProps) {
       total++
       const status = progressMap.get(node.id)
       if (status === "available") available++
-      if (status === "unlocked") unlocked++
+      // "Demonstrated" = green moon. Both "unlocked" and "mastered" count.
+      if (status === "unlocked" || status === "mastered") demonstrated++
+      if (status === "mastered") mastered++
     }
     // Fall back to all if no grade selected or no standards match
     if (total === 0) {
       total = data.nodes.length
       progressMap.forEach(status => {
         if (status === "available") available++
-        if (status === "unlocked") unlocked++
+        if (status === "unlocked" || status === "mastered") demonstrated++
+        if (status === "mastered") mastered++
       })
     }
-    return { total, available, unlocked, mastered: unlocked }
+    // We expose `unlocked` (the green count) under that name for back-compat
+    // with components that already consume it.
+    return { total, available, unlocked: demonstrated, mastered }
   }, [progressMap, data.nodes, studentData?.grade])
 
   // Recommended next planet — "closest to finishing" rule:
@@ -436,6 +442,41 @@ export function GraphPage({ data }: GraphPageProps) {
     if (tutorialStep < 3) setTutorialStep(3)
   }, [data, progressMap, tutorialStep, planets, saveProgress])
 
+  // Standard panel: student demonstrated a skill (won their own game 3 in
+  // a row). Flip the local moon to "unlocked" and detect planet completion.
+  const handleDemonstrated = useCallback((standardId: string) => {
+    const node = data.nodes.find(n => n.id === standardId)
+    const planet = node ? planets.find(p => p.id === `${node.grade}.${node.domainCode}`) : null
+
+    if (planet) setWaveColor(planet.color)
+    setShowWaveEffect(true)
+    setTimeout(() => setShowWaveEffect(false), 1500)
+
+    setProgressMap(prev => {
+      const next = new Map(prev)
+      next.set(standardId, "unlocked")
+
+      // Did this fill the planet? (every moon now unlocked or mastered)
+      if (planet) {
+        const allDone = planet.standards.every(s => {
+          if (s.id === standardId) return true
+          const st = next.get(s.id)
+          return st === "unlocked" || st === "mastered"
+        })
+        if (allDone) {
+          setTimeout(() => {
+            setMasteryEvent({ planetName: planet.domainName, planetColor: planet.color, tokenGain: 0 })
+          }, 800)
+        }
+      }
+      return next
+    })
+
+    // Persist (mastery-play already saved the status to "unlocked",
+    // but this guarantees it lands)
+    saveProgress(standardId, { status: "unlocked", unlockedAt: Date.now() }).catch(() => {})
+  }, [data, planets, saveProgress])
+
   // Handle "Build my Game" from Genie chat
   const handleBuildGame = useCallback((designDoc: GameDesignDoc) => {
     setCurrentDesignDoc(designDoc)
@@ -443,10 +484,11 @@ export function GraphPage({ data }: GraphPageProps) {
     setBuildMode("building")
   }, [])
 
-  // Handle build complete — move to workshop
-  const handleBuildComplete = useCallback((html: string, designChoices: Record<string, string>) => {
+  // Handle build complete — move to workshop. Stash the visual concept
+  // bullets on the design doc so they get saved with the game.
+  const handleBuildComplete = useCallback((html: string, designChoices: Record<string, string>, visualConcept: string[]) => {
     if (currentDesignDoc) {
-      setCurrentDesignDoc({ ...currentDesignDoc, designChoices })
+      setCurrentDesignDoc({ ...currentDesignDoc, designChoices, visualConcept })
     }
     setCurrentGameHtml(html)
     setCurrentGameId(null)
@@ -455,28 +497,41 @@ export function GraphPage({ data }: GraphPageProps) {
 
   // Handle back to planet from workshop
   const handleBackToPlanet = useCallback(async (html: string, gameId: string | null) => {
-    // Save draft directly to Firestore
+    // Save draft. If the workshop already created a doc, REUSE its id.
+    // Don't reset counters or createdAt on existing docs.
     try {
       const gamesRef = collection(db, "games")
       const id = gameId || doc(gamesRef).id
-      await setDoc(doc(db, "games", id), {
+      const ref = doc(db, "games", id)
+      const existing = await getDoc(ref)
+      const isNew = !existing.exists()
+
+      const update: Record<string, unknown> = {
         id,
         title: currentDesignDoc?.title || "Untitled",
-        designerName: activeProfile?.name || "Student",
+        designerName: activeProfile?.name || "Learner",
         authorUid: activeProfile?.uid || "",
         classId: activeProfile?.classId || "",
         standardId: currentDesignDoc?.standardId || "",
         planetId: currentDesignDoc?.planetId || "",
         gameHtml: html,
         designDoc: currentDesignDoc,
-        status: "draft",
-        playCount: 0,
-        ratingSum: 0,
-        ratingCount: 0,
-        reviews: [],
         updatedAt: Date.now(),
-        createdAt: Date.now(),
-      }, { merge: true })
+      }
+      if (isNew) {
+        update.status = "draft"
+        update.playCount = 0
+        update.ratingSum = 0
+        update.ratingCount = 0
+        update.reviews = []
+        update.createdAt = Date.now()
+      } else {
+        const data = existing.data() as { status?: string }
+        if (data.status === "draft" || data.status === undefined) {
+          update.status = "draft"
+        }
+      }
+      await setDoc(ref, update, { merge: true })
     } catch {
       // Silent fail
     }
@@ -488,28 +543,37 @@ export function GraphPage({ data }: GraphPageProps) {
 
   // Handle send for review
   const handleSendForReview = useCallback(async (html: string, gameId: string | null) => {
-    // Save with pending_review status directly to Firestore
+    // Save with pending_review status. Reuse the workshop's existing doc id
+    // and don't reset counters/createdAt on the existing draft.
     try {
       const gamesRef = collection(db, "games")
       const id = gameId || doc(gamesRef).id
-      await setDoc(doc(db, "games", id), {
+      const ref = doc(db, "games", id)
+      const existing = await getDoc(ref)
+      const isNew = !existing.exists()
+
+      const update: Record<string, unknown> = {
         id,
         title: currentDesignDoc?.title || "Untitled",
-        designerName: activeProfile?.name || "Student",
+        designerName: activeProfile?.name || "Learner",
         authorUid: activeProfile?.uid || "",
         classId: activeProfile?.classId || "",
         standardId: currentDesignDoc?.standardId || "",
         planetId: currentDesignDoc?.planetId || "",
         gameHtml: html,
         designDoc: currentDesignDoc,
+        // Always set status here — the whole point of this call is to flip it
         status: "pending_review",
-        playCount: 0,
-        ratingSum: 0,
-        ratingCount: 0,
-        reviews: [],
         updatedAt: Date.now(),
-        createdAt: Date.now(),
-      }, { merge: true })
+      }
+      if (isNew) {
+        update.playCount = 0
+        update.ratingSum = 0
+        update.ratingCount = 0
+        update.reviews = []
+        update.createdAt = Date.now()
+      }
+      await setDoc(ref, update, { merge: true })
 
       // Mark standard as in_review
       if (currentDesignDoc?.standardId) {
@@ -591,7 +655,7 @@ export function GraphPage({ data }: GraphPageProps) {
                 <h3 className={`text-lg font-bold mb-2 ${
                   reviewResult.pass ? "text-emerald-400" : "text-amber-400"
                 }`}>
-                  {reviewResult.pass ? "Game Published!" : "Needs Work"}
+                  {reviewResult.pass ? "Sent for review!" : "Needs Work"}
                 </h3>
                 <p className="text-zinc-300 text-sm">{reviewResult.feedback}</p>
               </div>
@@ -601,7 +665,7 @@ export function GraphPage({ data }: GraphPageProps) {
       )}
 
       {/* Student navigation — galaxy view only (planet view has Back to Galaxy) */}
-      {buildMode === "idle" && viewMode === "galaxy" && <StudentNav />}
+      {buildMode === "idle" && viewMode === "galaxy" && <LearnerNav />}
 
       {/* Main view (hidden when building) */}
       {buildMode === "idle" && (
@@ -630,7 +694,7 @@ export function GraphPage({ data }: GraphPageProps) {
       {/* Impersonation banner */}
       {impersonating && buildMode === "idle" && (
         <div className="fixed top-0 left-0 right-0 z-30 bg-amber-500/90 text-black px-4 py-2 flex items-center justify-between">
-          <span className="text-sm font-medium">Viewing as {activeProfile?.name ?? "student"}</span>
+          <span className="text-sm font-medium">Viewing as {activeProfile?.name ?? "learner"}</span>
           <button
             onClick={() => {
               stopImpersonating()
@@ -688,6 +752,9 @@ export function GraphPage({ data }: GraphPageProps) {
             showOtherGradeSwatch={!!studentData?.grade && gradeFilter === "myGrade"}
           />
         )}
+
+        {/* Rules / help */}
+        <RulesPopover />
 
         {/* User menu (name + sign out) */}
         <UserMenu />
@@ -764,6 +831,7 @@ export function GraphPage({ data }: GraphPageProps) {
         open={panelOpen}
         onClose={() => setPanelOpen(false)}
         onUnlock={handleUnlock}
+        onDemonstrated={handleDemonstrated}
         onBuildGame={handleBuildGame}
         interests={studentData?.interests}
         nodeStatus={selectedStandard ? progressMap.get(selectedStandard.id) : undefined}

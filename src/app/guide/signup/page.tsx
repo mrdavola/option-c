@@ -137,7 +137,7 @@ export default function GuideSignupPage() {
           <div className="bg-zinc-800 border border-zinc-700 rounded-xl px-6 py-4">
             <span className="text-3xl font-mono font-bold text-white tracking-widest">{done.classCode}</span>
           </div>
-          <p className="text-zinc-400 text-sm">Share this code with your students so they can join your class.</p>
+          <p className="text-zinc-400 text-sm">Share this code with your learners so they can join your class.</p>
           <Button onClick={() => router.push("/guide")} className="w-full" size="lg">
             Go to Dashboard
           </Button>
@@ -188,7 +188,7 @@ export default function GuideSignupPage() {
           <>
             <div className="text-center">
               <h1 className="text-2xl font-bold text-white">Name Your Class</h1>
-              <p className="text-zinc-400 text-sm mt-1">Students will see this when they join.</p>
+              <p className="text-zinc-400 text-sm mt-1">Learners will see this when they join.</p>
             </div>
 
             <form onSubmit={handleCreateClass} className="space-y-4">

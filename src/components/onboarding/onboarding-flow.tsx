@@ -541,7 +541,7 @@ type Step =
   | "interests"      // interests picker
 
 export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
-  const { user, profile, activeProfile, impersonating, signInStudent, signInReturning } = useAuth()
+  const { user, profile, activeProfile, impersonating, signInLearner, signInReturning } = useAuth()
 
   // When impersonating or returning from a partial sign-in, skip steps
   // that are already filled in.
@@ -574,9 +574,9 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     setAuthLoading(true)
     setAuthError(null)
     try {
-      await signInStudent(classCode, data.name)
+      await signInLearner(classCode, data.name)
       // Fetch the freshly-generated personal code from Firestore
-      // (signInStudent just wrote it to users/{uid})
+      // (signInLearner just wrote it to users/{uid})
       const currentUid = auth.currentUser?.uid
       if (currentUid) {
         const userSnap = await getDoc(doc(db, "users", currentUid))

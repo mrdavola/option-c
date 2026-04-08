@@ -10,9 +10,33 @@ export async function POST(req: Request) {
     standardDescription,
   }: { messages: UIMessage[]; standardDescription: string } = await req.json()
 
+  // Count how many turns the learner has sent so far. If they're past
+  // exchange 5 and the idea still isn't all-three-criteria-met, the system
+  // prompt below will tell the AI to give the learner 2 concrete options
+  // so they can pick one instead of being asked for more details.
+  const userMessageCount = messages.filter((m) => m.role === "user").length
+  const stuckMode = userMessageCount >= 5
+
+  const stuckInstructions = stuckMode
+    ? `
+
+🚨 STUCK MODE — the learner is on exchange ${userMessageCount} and hasn't nailed all 3 criteria yet. They're stuck. Stop asking them for more details. Instead, in your NEXT response:
+- Acknowledge briefly that we've been going back and forth.
+- Offer them TWO concrete, ready-to-build game options inspired by what they've told you so far. Each option should be a full mini-pitch that meets all 3 criteria.
+- Format the two options EXACTLY like this so the UI can parse them:
+
+Here are two ways we could go from here. Pick one or describe your own:
+
+A) <option A — one paragraph, includes who the player is, what they do, how the math is essential, and how they win>
+
+B) <option B — same format, different game>
+
+- Don't add anything after option B except a single short closing sentence inviting them to reply with "A", "B", or their own idea.`
+    : ""
+
   const result = streamText({
     model: anthropic("claude-sonnet-4-5"),
-    system: `You are a game design mentor evaluating whether a student's game idea meaningfully applies this math concept: "${standardDescription}"
+    system: `You are a game design mentor evaluating whether a learner's game idea meaningfully applies this math concept: "${standardDescription}"
 
 CRITERIA (evaluate each independently):
 1. Playable: Can others understand and play it?
@@ -24,18 +48,17 @@ RULES:
 - Don't ask Socratic questions. Give specific, actionable feedback.
 - If an idea meets a criterion, say so explicitly.
 - If it doesn't, tell them exactly what's missing and suggest one concrete fix.
-- After 5 exchanges, make a final pass/fail decision with clear reasoning.
 - Be encouraging but honest.
-- Match your language to the student's writing level. If they write simply, respond simply. If they use advanced vocabulary, you can too.
+- Match your language to the learner's writing level. If they write simply, respond simply. If they use advanced vocabulary, you can too.
 - Use exclamation marks sparingly — at most one per response. Be warm and encouraging but calm, not over-the-top enthusiastic.
-- When all 3 criteria are met, congratulate the student calmly and tell them they can launch their game when ready. Do NOT end the conversation — let them keep refining if they want.
+- When all 3 criteria are met, congratulate the learner calmly and tell them they can launch their game when ready. Do NOT end the conversation — let them keep refining if they want.${stuckInstructions}
 
 After EVERY response, you MUST call the evaluate_criteria tool to report which criteria are currently met.`,
     messages: await convertToModelMessages(messages),
     tools: {
       evaluate_criteria: {
         description:
-          "Evaluate which criteria the student's game idea currently meets. Call this after every response.",
+          "Evaluate which criteria the learner's game idea currently meets. Call this after every response.",
         inputSchema: z.object({
           playable: z
             .boolean()

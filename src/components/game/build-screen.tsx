@@ -8,38 +8,23 @@ interface BuildScreenProps {
   designDoc: GameDesignDoc
   onComplete: (
     html: string,
-    designChoices: Record<string, string>
+    designChoices: Record<string, string>,
+    visualConcept: string[]
   ) => void
 }
 
 interface NarrationItem {
-  type: "narration" | "question"
+  type: "narration"
   text: string
-  options?: [string, string]
-  choiceKey?: string
 }
 
+// We dropped the multiple-choice questions — they didn't actually
+// influence the generated game and were always the same. The build flow
+// now goes: brief narration → visual-concept preview → generation.
 function buildNarrationSequence(designDoc: GameDesignDoc): NarrationItem[] {
   return [
     { type: "narration", text: `Reading your idea for "${designDoc.title}"...` },
-    {
-      type: "question",
-      text: `Where does "${designDoc.title}" take place?`,
-      options: ["Indoors", "Outdoors"],
-      choiceKey: "setting",
-    },
-    {
-      type: "question",
-      text: "What's the overall feel of the game?",
-      options: ["Bright and fun", "Dark and mysterious"],
-      choiceKey: "color",
-    },
-    {
-      type: "question",
-      text: "How should players move through the game?",
-      options: ["Turn by turn", "All at once"],
-      choiceKey: "pacing",
-    },
+    { type: "narration", text: "Sketching the visuals..." },
   ]
 }
 
@@ -49,20 +34,18 @@ export function BuildScreen({ designDoc, onComplete }: BuildScreenProps) {
   const narrationSequence = buildNarrationSequence(designDoc)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [progress, setProgress] = useState(0)
-  const [designChoices, setDesignChoices] = useState<Record<string, string>>({})
-  const [waitingForChoice, setWaitingForChoice] = useState(false)
   const [phase, setPhase] = useState<Phase>("narration")
-  const [visualConcept, setVisualConcept] = useState<string | null>(null)
+  const [visualBullets, setVisualBullets] = useState<string[]>([])
   const [conceptLoading, setConceptLoading] = useState(false)
   const [conceptError, setConceptError] = useState<string | null>(null)
   const [generatedHtml, setGeneratedHtml] = useState<string | null>(null)
+  const visualBulletsRef = useRef<string[]>([])
   const designChoicesRef = useRef<Record<string, string>>({})
   const startGenTimeRef = useRef<number>(0)
 
   const currentItem = narrationSequence[currentIndex] ?? null
 
-  // After all narration questions are answered, fetch the visual concept
-  // for the student to approve.
+  // Fetch the visual concept bullets for the learner to approve.
   const fetchVisualConcept = useCallback(async () => {
     setConceptLoading(true)
     setConceptError(null)
@@ -73,8 +56,9 @@ export function BuildScreen({ designDoc, onComplete }: BuildScreenProps) {
         body: JSON.stringify({ designDoc }),
       })
       const data = await res.json()
-      if (data.concept) {
-        setVisualConcept(data.concept)
+      if (Array.isArray(data.bullets) && data.bullets.length > 0) {
+        setVisualBullets(data.bullets)
+        visualBulletsRef.current = data.bullets
       } else {
         setConceptError("Couldn't draft the visual concept. Building anyway.")
         setPhase("generating")
@@ -87,8 +71,8 @@ export function BuildScreen({ designDoc, onComplete }: BuildScreenProps) {
     }
   }, [designDoc])
 
-  // Kick off code generation. Uses the approved visual concept.
-  const startGeneration = useCallback(async (approvedConcept: string | null) => {
+  // Kick off code generation. Uses the approved visual bullets.
+  const startGeneration = useCallback(async (approvedBullets: string[]) => {
     startGenTimeRef.current = Date.now()
     try {
       const res = await fetch("/api/game/generate", {
@@ -97,7 +81,7 @@ export function BuildScreen({ designDoc, onComplete }: BuildScreenProps) {
         body: JSON.stringify({
           designDoc,
           designChoices: designChoicesRef.current,
-          visualConcept: approvedConcept,
+          visualConcept: approvedBullets.join("\n"),
         }),
       })
       const data = await res.json()
@@ -115,30 +99,22 @@ export function BuildScreen({ designDoc, onComplete }: BuildScreenProps) {
     }
   }, [designDoc])
 
-  // Auto-advance narration items (but not questions)
+  // Auto-advance narration → after the last narration item, fetch the
+  // visual concept and move to the approval phase.
   useEffect(() => {
     if (phase !== "narration") return
     if (!currentItem) return
-    if (currentItem.type === "question") {
-      setWaitingForChoice(true)
-      return
-    }
+    const isLast = currentIndex >= narrationSequence.length - 1
     const timer = setTimeout(() => {
-      setCurrentIndex((i) => Math.min(i + 1, narrationSequence.length - 1))
+      if (isLast) {
+        setPhase("visualConcept")
+        fetchVisualConcept()
+      } else {
+        setCurrentIndex((i) => i + 1)
+      }
     }, 1500)
     return () => clearTimeout(timer)
-  }, [currentIndex, currentItem, phase, narrationSequence.length])
-
-  // When the last question is answered, advance to visual concept phase
-  useEffect(() => {
-    if (phase !== "narration") return
-    const totalQuestions = narrationSequence.filter(n => n.type === "question").length
-    const answered = Object.keys(designChoices).length
-    if (answered >= totalQuestions) {
-      setPhase("visualConcept")
-      fetchVisualConcept()
-    }
-  }, [designChoices, phase, narrationSequence, fetchVisualConcept])
+  }, [currentIndex, currentItem, phase, narrationSequence.length, fetchVisualConcept])
 
   // Progress bar fills during generation phase
   useEffect(() => {
@@ -154,23 +130,17 @@ export function BuildScreen({ designDoc, onComplete }: BuildScreenProps) {
   // When phase becomes "done", call the parent onComplete handler
   useEffect(() => {
     if (phase !== "done") return
-    onComplete(generatedHtml || "", designChoicesRef.current)
+    onComplete(generatedHtml || "", designChoicesRef.current, visualBulletsRef.current)
   }, [phase, generatedHtml, onComplete])
-
-  const handleChoice = (key: string, value: string) => {
-    setDesignChoices((prev) => ({ ...prev, [key]: value }))
-    designChoicesRef.current[key] = value
-    setWaitingForChoice(false)
-    setCurrentIndex((i) => Math.min(i + 1, narrationSequence.length - 1))
-  }
 
   const handleConceptApprove = () => {
     setPhase("generating")
-    startGeneration(visualConcept)
+    startGeneration(visualBullets)
   }
 
   const handleConceptRetry = () => {
-    setVisualConcept(null)
+    setVisualBullets([])
+    visualBulletsRef.current = []
     fetchVisualConcept()
   }
 
@@ -200,61 +170,18 @@ export function BuildScreen({ designDoc, onComplete }: BuildScreenProps) {
             <p className="text-zinc-400 text-sm">{designDoc.title}</p>
           </div>
 
-          {/* Phase: narration / questions */}
+          {/* Phase: narration */}
           {phase === "narration" && (
-            <>
-              <p className="text-center text-xs text-zinc-500">
-                Don&apos;t worry — you can always change anything once the game is built.
-              </p>
-
-              <div className="min-h-[140px] flex flex-col items-center justify-center">
-                {currentItem && currentItem.type === "narration" && (
-                  <div className="text-center animate-fade-in">
-                    <p className="text-lg text-emerald-400">{currentItem.text}</p>
-                  </div>
-                )}
-
-                {currentItem &&
-                  currentItem.type === "question" &&
-                  waitingForChoice && (
-                    <div className="text-center space-y-4 animate-fade-in">
-                      <p className="text-lg text-white">{currentItem.text}</p>
-                      <div className="flex gap-3 justify-center">
-                        {currentItem.options?.map((option) => (
-                          <button
-                            key={option}
-                            onClick={() =>
-                              handleChoice(
-                                currentItem.choiceKey!,
-                                option.toLowerCase()
-                              )
-                            }
-                            className="px-5 py-2.5 rounded-lg border border-zinc-700 bg-zinc-900 text-zinc-200 hover:border-emerald-500 hover:text-emerald-400 transition-colors"
-                          >
-                            {option}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-              </div>
-
-              {Object.keys(designChoices).length > 0 && (
-                <div className="flex flex-wrap gap-2 justify-center">
-                  {Object.entries(designChoices).map(([key, value]) => (
-                    <span
-                      key={key}
-                      className="px-2 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-400"
-                    >
-                      {value}
-                    </span>
-                  ))}
+            <div className="min-h-[140px] flex flex-col items-center justify-center">
+              {currentItem && (
+                <div className="text-center animate-fade-in">
+                  <p className="text-lg text-emerald-400">{currentItem.text}</p>
                 </div>
               )}
-            </>
+            </div>
           )}
 
-          {/* Phase: visual concept preview */}
+          {/* Phase: visual concept preview — bullets */}
           {phase === "visualConcept" && (
             <div className="space-y-4">
               {conceptLoading && (
@@ -263,12 +190,14 @@ export function BuildScreen({ designDoc, onComplete }: BuildScreenProps) {
                   <p className="text-sm text-zinc-300">Sketching the visuals...</p>
                 </div>
               )}
-              {visualConcept && !conceptLoading && (
+              {visualBullets.length > 0 && !conceptLoading && (
                 <>
-                  <div className="bg-zinc-900 border-2 border-emerald-500/30 rounded-xl p-5">
-                    <p className="text-base text-zinc-100 leading-relaxed whitespace-pre-wrap">
-                      {visualConcept}
-                    </p>
+                  <div className="bg-zinc-900 border-2 border-emerald-500/30 rounded-xl p-5 space-y-2">
+                    {visualBullets.map((b, i) => (
+                      <p key={i} className="text-base text-zinc-100 leading-relaxed">
+                        {b}
+                      </p>
+                    ))}
                   </div>
                   <div className="flex gap-2">
                     <button
@@ -295,9 +224,11 @@ export function BuildScreen({ designDoc, onComplete }: BuildScreenProps) {
           {/* Phase: generating */}
           {phase === "generating" && (
             <div className="space-y-4">
-              <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+              <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 space-y-1.5">
                 <p className="text-xs text-zinc-500 uppercase tracking-wide mb-2">Building this:</p>
-                <p className="text-sm text-zinc-200 whitespace-pre-wrap">{visualConcept}</p>
+                {visualBullets.map((b, i) => (
+                  <p key={i} className="text-sm text-zinc-200">{b}</p>
+                ))}
               </div>
               <div className="text-center space-y-2 py-2">
                 <div className="w-6 h-6 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin mx-auto" />

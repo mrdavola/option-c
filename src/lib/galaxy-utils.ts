@@ -39,7 +39,10 @@ export interface GalaxyNode {
   moonCount: number
   unlockedCount: number
   availableCount: number
+  // True when every moon is unlocked or mastered (planet turns green)
   isCompleted: boolean
+  // True when every moon is mastered (planet earns the gold ring)
+  isFullyMastered: boolean
   access: PlanetAccess
 }
 
@@ -69,25 +72,43 @@ export interface MoonData {
   color: string
 }
 
-// Domain color palette
+// Domain color palette — high-contrast, distinct colors for each major group.
+// Friendly grouped names share the same color across grades/HS subdomains
+// so the legend stays small and consistent.
 const DOMAIN_COLORS: Record<string, string> = {
-  "CC": "#f59e0b",
-  "OA": "#f59e0b",
-  "NBT": "#14b8a6",
-  "NF": "#2dd4bf",
-  "G": "#60a5fa",
-  "MD": "#a78bfa",
-  "RP": "#fb7185",
-  "NS": "#14b8a6",
-  "EE": "#fbbf24",
-  "SP": "#86efac",
-  "F": "#22d3ee",
-  "A-SSE": "#eab308", "A-APR": "#eab308", "A-CED": "#eab308", "A-REI": "#eab308",
+  "CC": "#f59e0b",   // Counting — orange
+  "OA": "#f97316",   // Algebra — bright orange
+  "NBT": "#14b8a6",  // Base Ten — teal
+  "NF": "#06b6d4",   // Fractions — cyan
+  "G": "#3b82f6",    // Geometry — blue
+  "MD": "#a855f7",   // Measurement — purple
+  "RP": "#ec4899",   // Ratios — pink
+  "NS": "#10b981",   // Numbers — emerald
+  "EE": "#eab308",   // Equations — yellow
+  "SP": "#84cc16",   // Statistics — lime
+  "F": "#22d3ee",    // Functions — sky cyan
+  // HS subdomains share their parent color
+  "A-SSE": "#f97316", "A-APR": "#f97316", "A-CED": "#f97316", "A-REI": "#f97316",
   "F-IF": "#22d3ee", "F-BF": "#22d3ee", "F-LE": "#22d3ee", "F-TF": "#22d3ee",
-  "G-CO": "#60a5fa", "G-SRT": "#60a5fa", "G-C": "#60a5fa", "G-GPE": "#60a5fa", "G-GMD": "#60a5fa", "G-MG": "#60a5fa",
-  "N-RN": "#14b8a6", "N-Q": "#14b8a6", "N-CN": "#14b8a6", "N-VM": "#14b8a6",
-  "S-ID": "#86efac", "S-IC": "#86efac", "S-CP": "#86efac", "S-MD": "#86efac",
+  "G-CO": "#3b82f6", "G-SRT": "#3b82f6", "G-C": "#3b82f6", "G-GPE": "#3b82f6", "G-GMD": "#3b82f6", "G-MG": "#3b82f6",
+  "N-RN": "#10b981", "N-Q": "#10b981", "N-CN": "#10b981", "N-VM": "#10b981",
+  "S-ID": "#84cc16", "S-IC": "#84cc16", "S-CP": "#84cc16", "S-MD": "#84cc16",
 }
+
+// Friendly name + color for the "By concept" legend. Order = display order.
+export const CONCEPT_LEGEND: { name: string; color: string }[] = [
+  { name: "Counting",    color: "#f59e0b" },
+  { name: "Algebra",     color: "#f97316" },
+  { name: "Base Ten",    color: "#14b8a6" },
+  { name: "Fractions",   color: "#06b6d4" },
+  { name: "Geometry",    color: "#3b82f6" },
+  { name: "Measurement", color: "#a855f7" },
+  { name: "Ratios",      color: "#ec4899" },
+  { name: "Numbers",     color: "#10b981" },
+  { name: "Equations",   color: "#eab308" },
+  { name: "Statistics",  color: "#84cc16" },
+  { name: "Functions",   color: "#22d3ee" },
+]
 
 function getDomainColor(domainCode: string): string {
   return DOMAIN_COLORS[domainCode] || DOMAIN_COLORS[domainCode.split("-")[0]] || "#888888"
@@ -184,9 +205,12 @@ const MASTERY_COLORS = {
   otherGrade: "#9333ea", // purple — Available but not your grade
 }
 
-function getMasteryColor(planet: { unlockedCount: number; availableCount: number; moonCount: number; isCompleted: boolean }): string {
+function getMasteryColor(planet: { unlockedCount: number; availableCount: number; inProgressCount: number; moonCount: number; isCompleted: boolean }): string {
   if (planet.isCompleted) return MASTERY_COLORS.mastered
-  if (planet.unlockedCount > 0) return MASTERY_COLORS.working
+  // Yellow if any moon is unlocked OR in_progress OR in_review.
+  // (Even before the first guide-approved unlock, the planet should look
+  // alive once the student has started a game on it.)
+  if (planet.unlockedCount > 0 || planet.inProgressCount > 0) return MASTERY_COLORS.working
   if (planet.availableCount > 0) return MASTERY_COLORS.available
   return MASTERY_COLORS.locked
 }
@@ -249,12 +273,20 @@ export function buildGalaxyData(
   const nodes: GalaxyNode[] = planets.map(planet => {
     let unlockedCount = 0
     let availableCount = 0
+    let inProgressCount = 0
+    let masteredCount = 0
     for (const std of planet.standards) {
       const status = progressMap.get(std.id) ?? "locked"
-      if (status === "unlocked") unlockedCount++
+      if (status === "unlocked" || status === "mastered") unlockedCount++
+      if (status === "mastered") masteredCount++
       if (status === "available") availableCount++
+      if (status === "in_progress" || status === "in_review" || status === "approved_unplayed") inProgressCount++
     }
+    // "Completed" planet = every moon green or gold (not just yellow).
+    // Triggers the supernova when the last yellow flips to green.
     const isCompleted = unlockedCount === planet.standards.length && planet.standards.length > 0
+    // "Fully mastered" planet = every moon gold. Adds the gold ring.
+    const isFullyMastered = masteredCount === planet.standards.length && planet.standards.length > 0
     const access = computePlanetAccess(planet, studentGrade, bridges, planetHasUnlocked)
     const outOfGrade = isOutOfGradeFilter(planet)
 
@@ -264,21 +296,21 @@ export function buildGalaxyData(
       if (outOfGrade) {
         color = access === "locked" ? "#262626" : MASTERY_COLORS.otherGrade
       } else {
-        color = getMasteryColor({ unlockedCount, availableCount, moonCount: planet.standards.length, isCompleted })
+        color = getMasteryColor({ unlockedCount, availableCount, inProgressCount, moonCount: planet.standards.length, isCompleted })
         if (access === "locked") color = "#333333"
       }
     } else {
-      // Domain color with brightness based on progress + access
-      let brightness = 0.2
+      // Domain color, brighter baseline so planets are actually visible.
+      // Locked planets are dim; everything else stays at full saturation
+      // and only varies in glow when progress changes (handled elsewhere).
+      let brightness = 0.95
       if (access === "locked") {
-        brightness = 0.08
-      } else if (access === "explorable" || access === "earned" || access === "home") {
-        if (availableCount > 0) brightness = 0.5
-        if (unlockedCount > 0) brightness = 0.6 + (unlockedCount / planet.standards.length) * 0.4
-        if (isCompleted) brightness = 1.0
+        brightness = 0.18
+      } else if (isCompleted) {
+        brightness = 1.0
       }
-      // Dim out-of-grade planets even further when filtered
-      if (outOfGrade) brightness *= 0.4
+      // Dim out-of-grade planets when the grade filter is on
+      if (outOfGrade) brightness *= 0.5
 
       const baseColor = planet.color
       const r = parseInt(baseColor.slice(1, 3), 16)
@@ -302,6 +334,7 @@ export function buildGalaxyData(
       unlockedCount,
       availableCount,
       isCompleted,
+      isFullyMastered,
       access,
     }
   })
@@ -371,34 +404,46 @@ export function buildMoonData(
     // don't all start at angle 0.
     const orbitOffset = (place.pos / Math.max(place.size, 1)) * Math.PI * 2 + place.ring * 0.5
 
+    // Moon colors mirror the "By progress" semantics so the student
+    // gets the same visual language at the planet and moon level:
+    //   locked            → grey
+    //   available         → blue
+    //   in_progress       → yellow
+    //   in_review         → yellow (game submitted, waiting for guide)
+    //   approved_unplayed → yellow (guide approved, win 3 in a row to demo)
+    //   unlocked          → green (guide approved AND demonstrated)
+    //   mastered          → gold
     let size: number
     let color: string
-    const baseColor = planet.color
 
     switch (status) {
       case "locked":
         size = 1.5
-        color = "rgba(100,100,100,0.3)"
+        color = "rgba(120,120,120,0.35)"
         break
       case "available":
         size = 3
-        color = baseColor
+        color = "#3b82f6" // blue
         break
       case "in_progress":
         size = 3.5
-        color = baseColor
+        color = "#eab308" // yellow
         break
       case "in_review":
         size = 3.5
-        color = "#f59e0b"
+        color = "#eab308" // yellow
+        break
+      case "approved_unplayed":
+        size = 3.5
+        color = "#eab308" // yellow
         break
       case "unlocked":
-        size = 2.5
-        color = baseColor
+        size = 3.5
+        color = "#22c55e" // green
         break
       case "mastered":
-        size = 3
-        color = "#f59e0b"
+        size = 4
+        color = "#f59e0b" // gold
         break
     }
 

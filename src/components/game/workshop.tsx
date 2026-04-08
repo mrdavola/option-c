@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react"
 import type { GameDesignDoc } from "@/lib/game-types"
-import { doc, setDoc, collection } from "firebase/firestore"
+import { doc, setDoc, collection, getDoc } from "firebase/firestore"
 import { db } from "@/lib/firebase"
 import { GameIframe } from "./game-iframe"
 import { MathMomentOverlay } from "./math-moment-overlay"
@@ -39,7 +39,11 @@ export function Workshop({
   ])
   const [input, setInput] = useState("")
   const [isRefining, setIsRefining] = useState(false)
-  const [currentGameId, setCurrentGameId] = useState(gameId)
+  // Lock in a stable game id immediately on mount so every save (auto, back,
+  // submit-for-review) refers to the SAME Firestore doc — preventing the
+  // "draft + approved" duplicate that used to happen when the user clicked
+  // back/submit before the first auto-save resolved.
+  const [currentGameId] = useState<string>(() => gameId ?? doc(collection(db, "games")).id)
   const [mobileChat, setMobileChat] = useState(false)
   const [showMathMoment, setShowMathMoment] = useState(false)
   const chatScrollRef = useRef<HTMLDivElement>(null)
@@ -53,32 +57,48 @@ export function Workshop({
     })
   }, [chatMessages])
 
-  // Auto-save draft to Firebase (client-side Firestore)
+  // Auto-save draft to Firebase. Uses the stable currentGameId (locked
+  // in on mount) so every save targets the same Firestore doc. createdAt
+  // and the play/rating counters are only set the FIRST time the doc is
+  // created — subsequent saves just merge the editable fields.
   const saveDraft = async (gameHtml: string) => {
     try {
-      const gamesRef = collection(db, "games")
-      const id = currentGameId || doc(gamesRef).id
-      await setDoc(doc(db, "games", id), {
-        id,
+      const ref = doc(db, "games", currentGameId)
+      const existing = await getDoc(ref)
+      const isNew = !existing.exists()
+
+      // Editable fields written on every save
+      const update: Record<string, unknown> = {
+        id: currentGameId,
         title: designDoc.title,
-        designerName: activeProfile?.name || "Student",
+        designerName: activeProfile?.name || "Learner",
         authorUid: activeProfile?.uid || "",
         classId: activeProfile?.classId || "",
         standardId: designDoc.standardId,
         planetId: designDoc.planetId,
         gameHtml,
         designDoc,
-        status: "draft",
-        playCount: 0,
-        ratingSum: 0,
-        ratingCount: 0,
-        reviews: [],
         updatedAt: Date.now(),
-        createdAt: Date.now(),
-      }, { merge: true })
-      if (!currentGameId) {
-        setCurrentGameId(id)
       }
+
+      if (isNew) {
+        // First save — initialise counters and timestamps
+        update.status = "draft"
+        update.playCount = 0
+        update.ratingSum = 0
+        update.ratingCount = 0
+        update.reviews = []
+        update.createdAt = Date.now()
+      } else {
+        // Existing doc — only flip status back to "draft" if it was already
+        // a draft. Don't blow away pending_review / published / needs_work.
+        const data = existing.data() as { status?: string }
+        if (data.status === "draft" || data.status === undefined) {
+          update.status = "draft"
+        }
+      }
+
+      await setDoc(ref, update, { merge: true })
     } catch {
       // Silent fail — draft saving is best-effort
     }

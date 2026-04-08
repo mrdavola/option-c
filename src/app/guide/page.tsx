@@ -58,7 +58,7 @@ export default function GuideDashboard() {
     await setDoc(demoRef, {
       uid: demoRef.id,
       role: "student",
-      name: "Demo Student",
+      name: "Demo Learner",
       grade: "",
       interests: "",
       classId: profile.classId,
@@ -223,10 +223,12 @@ export default function GuideDashboard() {
         reviews: [{ reviewerUid: profile.uid, reviewerName: profile.name, approved: true, createdAt: Date.now() }],
       })
 
-      // Unlock the concept for the student
+      // Move the standard into "approved_unplayed" — guide-approved but
+      // the student still needs to win their own game 3 in a row to flip
+      // it to "unlocked" (green).
       await setDoc(
         doc(db, "progress", game.authorUid, "standards", game.standardId),
-        { status: "unlocked", unlockedAt: Date.now() },
+        { status: "approved_unplayed", approvedAt: Date.now() },
         { merge: true }
       )
 
@@ -234,6 +236,32 @@ export default function GuideDashboard() {
       await updateDoc(doc(db, "users", game.authorUid), {
         tokens: increment(2000),
       })
+
+      // Drop a message into the student's inbox so they know what to do next
+      try {
+        const fbId = doc(collection(db, "feedback")).id
+        const now = Date.now()
+        await setDoc(doc(db, "feedback", fbId), {
+          id: fbId,
+          fromUid: profile.uid,
+          fromName: profile.name,
+          fromRole: "guide",
+          target: "game",
+          gameId,
+          gameTitle: game.title,
+          toUid: game.authorUid,
+          type: "improvement",
+          message: `🎉 Your game "${game.title}" was approved! +2000 tokens earned.\n\nNext step: open the moon for this skill and win your own game 3 times in a row to turn the moon green and demonstrate the skill.`,
+          status: "open",
+          replies: [],
+          unreadForRecipient: true,
+          unreadForSender: false,
+          createdAt: now,
+          updatedAt: now,
+        })
+      } catch (inboxErr) {
+        console.warn("inbox message failed:", inboxErr)
+      }
 
       // Reload
       loadDashboard(classData?.id)
@@ -246,6 +274,10 @@ export default function GuideDashboard() {
     if (!profile || !feedbackText.trim()) return
     try {
       const gameRef = doc(db, "games", gameId)
+      const gameSnap = await getDoc(gameRef)
+      if (!gameSnap.exists()) return
+      const game = gameSnap.data()
+
       await updateDoc(gameRef, {
         status: "needs_work",
         reviews: arrayUnion({
@@ -256,6 +288,18 @@ export default function GuideDashboard() {
           createdAt: Date.now(),
         }),
       })
+
+      // Revert the student's progress for that standard back to "available"
+      // (blue moon) so they know they need to try again. They keep any
+      // tokens earned previously.
+      if (game.authorUid && game.standardId) {
+        await setDoc(
+          doc(db, "progress", game.authorUid, "standards", game.standardId),
+          { status: "available" },
+          { merge: true }
+        )
+      }
+
       setFeedbackGameId(null)
       setFeedbackText("")
       loadDashboard(classData?.id)
@@ -402,13 +446,13 @@ export default function GuideDashboard() {
           className="text-sm text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1"
         >
           <Plus className="size-4" />
-          Create Demo Student
+          Create Demo Learner
         </button>
 
         {/* Tabs */}
         <div className="flex gap-1 bg-zinc-900 rounded-lg p-1 border border-zinc-800">
           {([
-            { key: "students", label: "Students", icon: Users },
+            { key: "students", label: "Learners", icon: Users },
             { key: "reviews", label: `Reviews${pendingGames.length > 0 ? ` (${pendingGames.length})` : ""}`, icon: Clock },
             { key: "games", label: "Games", icon: GamepadIcon },
           ] as const).map(({ key, label, icon: Icon }) => (
