@@ -90,10 +90,10 @@ export function FeedbackButton({ targetGame }: FeedbackButtonProps) {
         <button
           onClick={() => setOpen(true)}
           className="fixed bottom-6 right-6 z-40 flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white rounded-full shadow-lg shadow-blue-900/40 px-4 py-3 text-sm font-medium transition-colors"
-          aria-label={isGameMessage ? "Message the game creator" : "Help us make this better"}
+          aria-label={isGameMessage ? "Message the game creator" : "Suggest a fix or idea"}
         >
           <MessageSquarePlus className="size-4" />
-          {isGameMessage ? "Message creator" : "Help us make this better"}
+          {isGameMessage ? "Message creator" : "Suggest a fix or idea"}
         </button>
       )}
 
@@ -102,7 +102,7 @@ export function FeedbackButton({ targetGame }: FeedbackButtonProps) {
         <div className="fixed bottom-6 right-6 z-40 w-[360px] max-w-[calc(100vw-3rem)] bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl">
           <div className="flex items-center justify-between p-4 border-b border-zinc-800">
             <h3 className="text-sm font-semibold text-white">
-              {isGameMessage ? `Message ${targetGame?.title}` : "Help us make this better"}
+              {isGameMessage ? `Message ${targetGame?.title}` : "Suggest a fix or idea"}
             </h3>
             <button
               onClick={() => setOpen(false)}

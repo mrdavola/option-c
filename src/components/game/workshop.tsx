@@ -39,6 +39,10 @@ export function Workshop({
   ])
   const [input, setInput] = useState("")
   const [isRefining, setIsRefining] = useState(false)
+  // Track whether the learner has won their own game at least once.
+  // The "Send for Review" button stays disabled until they have, so we
+  // know they actually understood what they built.
+  const [hasWon, setHasWon] = useState(false)
   // Lock in a stable game id immediately on mount so every save (auto, back,
   // submit-for-review) refers to the SAME Firestore doc — preventing the
   // "draft + approved" duplicate that used to happen when the user clicked
@@ -180,7 +184,12 @@ export function Workshop({
       <div className="flex-1 flex overflow-hidden">
         {/* Game iframe — 65% on desktop, full on mobile */}
         <div className="flex-1 md:w-[65%] md:flex-none relative">
-          <GameIframe html={html} className="w-full h-full" onLose={() => setShowMathMoment(true)} />
+          <GameIframe
+            html={html}
+            className="w-full h-full"
+            onLose={() => setShowMathMoment(true)}
+            onWin={() => setHasWon(true)}
+          />
           {showMathMoment && (
             <MathMomentOverlay
               concept={designDoc.concept}
@@ -264,16 +273,20 @@ export function Workshop({
             </div>
           </form>
 
-          {/* Send for Review */}
+          {/* Send for Review — gated until the learner wins their own game */}
           <div className="p-3 border-t border-zinc-700">
             <p className="text-xs text-zinc-400 text-center mb-2">
-              Ready? Submit for your classmates to review.
+              {hasWon
+                ? "Nice — you won! Submit for your guide to review."
+                : "Play your game and win at least once before submitting."}
             </p>
             <button
               onClick={() => onSendForReview(html, currentGameId)}
-              className="w-full py-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium transition-colors"
+              disabled={!hasWon}
+              className="w-full py-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:bg-zinc-800 disabled:text-zinc-500 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
+              title={!hasWon ? "Win your own game first" : undefined}
             >
-              Send for Review
+              {hasWon ? "Send for Review" : "🔒 Win your game first"}
             </button>
           </div>
 

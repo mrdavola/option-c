@@ -15,6 +15,9 @@ interface PlanetViewProps {
   onBridgeClick: (targetPlanetId: string) => void
   bridges: Bridge[]
   planetNames: Map<string, string>
+  // The color the galaxy view is currently showing for this planet.
+  // We pass it through so the central orb matches what the learner saw.
+  progressColor?: string
 }
 
 // Status colors for the glow/ring
@@ -62,7 +65,14 @@ export function PlanetView({
   onBridgeClick,
   bridges,
   planetNames,
+  progressColor,
 }: PlanetViewProps) {
+  // Use the progress color the galaxy view is showing if provided,
+  // otherwise fall back to the planet's domain base color so we never
+  // render a black planet.
+  const orbColor = progressColor && progressColor !== "#333333" && progressColor !== "#262626"
+    ? progressColor
+    : planet.color
   const [angles, setAngles] = useState<number[]>(() =>
     moons.map(m => m.orbitOffset)
   )
@@ -176,7 +186,7 @@ export function PlanetView({
           ))}
         </svg>
 
-        {/* Central planet orb */}
+        {/* Central planet orb — uses the same color the galaxy view shows */}
         <div
           className="absolute rounded-full flex items-center justify-center"
           style={{
@@ -184,8 +194,8 @@ export function PlanetView({
             top: center - 45,
             width: 90,
             height: 90,
-            background: `radial-gradient(circle at 35% 35%, ${planet.color}, ${planet.color}88, ${planet.color}22)`,
-            boxShadow: `0 0 40px ${planet.color}44, 0 0 80px ${planet.color}22`,
+            background: `radial-gradient(circle at 35% 35%, ${orbColor}, ${orbColor}88, ${orbColor}22)`,
+            boxShadow: `0 0 40px ${orbColor}44, 0 0 80px ${orbColor}22`,
           }}
         >
           <div className="text-center">

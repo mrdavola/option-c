@@ -1,14 +1,37 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
+import Link from "next/link"
 import { useAuth } from "@/lib/auth"
 import { db } from "@/lib/firebase"
 import { collection, query, where, getDocs } from "firebase/firestore"
 import type { Game } from "@/lib/game-types"
-import { Gamepad2, Bell, Play, X, MessageCircle } from "lucide-react"
-import { GameIframe } from "@/components/game/game-iframe"
+import { Bell, Play, MessageCircle, Hammer, Trophy, Lock, CheckCircle, Star, Clock } from "lucide-react"
+import { GamePlayer } from "@/components/game/game-player"
 import { FeedbackInbox } from "@/components/feedback/feedback-inbox"
 import { UserMenu } from "@/components/user-menu"
+import standardsData from "@/data/standards.json"
+import moonNames from "@/data/moon-names.json"
+import type { StandardsGraph } from "@/lib/graph-types"
+import { isClusterNode } from "@/lib/galaxy-utils"
+
+const MOON_NAMES = moonNames as Record<string, string>
+const STANDARDS = standardsData as StandardsGraph
+
+// Friendly short names per domain code
+const SHORT_DOMAIN: Record<string, string> = {
+  "CC": "Counting",
+  "OA": "Algebra",
+  "NBT": "Base Ten",
+  "NF": "Fractions",
+  "G": "Geometry",
+  "MD": "Measurement",
+  "RP": "Ratios",
+  "NS": "Numbers",
+  "EE": "Equations",
+  "SP": "Statistics",
+  "F": "Functions",
+}
 
 export default function LearnerDashboard() {
   const { activeProfile, loadProgress } = useAuth()
@@ -84,6 +107,66 @@ export default function LearnerDashboard() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // Build the planet → moons overview for the learner's grade. Each
+  // moon shows a status + the appropriate action button.
+  type MoonRow = {
+    id: string
+    title: string // friendly short name
+    status: string // available | in_progress | in_review | approved_unplayed | unlocked | mastered | locked
+    game: Game | null // the learner's own game for this moon, if any
+  }
+  type PlanetGroup = {
+    planetId: string
+    planetName: string
+    moons: MoonRow[]
+  }
+
+  const planetGroups: PlanetGroup[] = useMemo(() => {
+    const grade = activeProfile?.grade
+    if (!grade) return []
+
+    const gameByStandard = new Map(games.map((g) => [g.standardId, g]))
+    const groupMap = new Map<string, PlanetGroup>()
+
+    for (const node of STANDARDS.nodes) {
+      if (isClusterNode(node.id)) continue
+      if (node.grade !== grade) continue
+
+      const planetId = `${node.grade}.${node.domainCode}`
+      const planetName = SHORT_DOMAIN[node.domainCode] ?? node.domain
+
+      let group = groupMap.get(planetId)
+      if (!group) {
+        group = { planetId, planetName, moons: [] }
+        groupMap.set(planetId, group)
+      }
+
+      const status = progressByStandard.get(node.id) ?? "available"
+      group.moons.push({
+        id: node.id,
+        title: MOON_NAMES[node.id] ?? node.description,
+        status,
+        game: gameByStandard.get(node.id) ?? null,
+      })
+    }
+    return Array.from(groupMap.values()).sort((a, b) =>
+      a.planetName.localeCompare(b.planetName)
+    )
+  }, [activeProfile?.grade, games, progressByStandard])
+
+  // Sort moons inside each planet by priority: need to demonstrate first,
+  // then in review, then approved_unplayed, then demonstrated, then mastered,
+  // then locked.
+  const STATUS_PRIORITY: Record<string, number> = {
+    available: 1,
+    in_progress: 2,
+    in_review: 3,
+    approved_unplayed: 4,
+    unlocked: 5,
+    mastered: 6,
+    locked: 99,
   }
 
   if (!activeProfile) return null
@@ -170,69 +253,57 @@ export default function LearnerDashboard() {
         </div>
       )}
 
-      {/* My Games */}
-      <div className="space-y-2">
+      {/* Grade overview — every planet on your grade with all its moons */}
+      <div className="space-y-3">
         <h2 className="text-sm font-medium text-zinc-300 flex items-center gap-2">
-          <Gamepad2 className="size-4" /> My Games ({games.length})
+          <Trophy className="size-4" /> Grade {activeProfile.grade}
+          <span className="text-zinc-500 text-xs font-normal">
+            · Every planet and moon on your grade
+          </span>
         </h2>
         {loading ? (
           <div className="flex justify-center py-8">
             <div className="w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
           </div>
-        ) : games.length === 0 ? (
+        ) : !activeProfile.grade ? (
           <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-8 text-center">
-            <p className="text-zinc-400 text-sm">No games yet. Go explore a concept and build one!</p>
+            <p className="text-zinc-400 text-sm">Pick a grade to see your planets.</p>
+          </div>
+        ) : planetGroups.length === 0 ? (
+          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-8 text-center">
+            <p className="text-zinc-400 text-sm">No planets found for your grade.</p>
           </div>
         ) : (
-          <div className="space-y-2">
-            {games.map(g => {
-              const badge = statusLabel(g.status)
-              const bullets = g.designDoc?.visualConcept ?? []
-              const standardStatus = progressByStandard.get(g.standardId)
-              const needsDemonstration = g.status === "published" && standardStatus === "approved_unplayed"
-              return (
-                <div key={g.id} className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
-                  <button
-                    onClick={() => setPreviewGame(g)}
-                    className="w-full p-4 flex items-center justify-between hover:bg-zinc-800/50 transition-colors text-left"
-                  >
-                    <div className="flex items-start gap-3 flex-1 min-w-0">
-                      <Play className="size-4 text-zinc-500 shrink-0 mt-0.5" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-white font-medium">{g.title}</p>
-                        <p className="text-xs text-zinc-500 mt-0.5">{g.standardId}</p>
-                        {bullets.length > 0 && (
-                          <div className="mt-2 space-y-0.5">
-                            {bullets.slice(0, 4).map((b, i) => (
-                              <p key={i} className="text-xs text-zinc-400 leading-snug">{b}</p>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium shrink-0 ${badge.className}`}>
-                      {badge.text}
-                    </span>
-                  </button>
-                  {needsDemonstration && (
-                    <div className="px-4 pb-3 border-t border-zinc-800 pt-3">
-                      <p className="text-xs text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-2">
-                        ⭐ Next step: open this skill from the galaxy and win your own game <strong>3 times in a row</strong> to turn the moon green.
-                      </p>
-                    </div>
-                  )}
-                  {g.status === "needs_work" && g.reviews?.length > 0 && (
-                    <div className="px-4 pb-3 border-t border-zinc-800 pt-3">
-                      <p className="text-xs text-zinc-400 mb-1">Feedback from your guide:</p>
-                      <p className="text-sm text-red-300 bg-red-500/10 rounded-lg px-3 py-2">
-                        {g.reviews[g.reviews.length - 1].comment || "Needs improvement"}
-                      </p>
-                    </div>
-                  )}
+          planetGroups.map((group) => {
+            const sortedMoons = [...group.moons].sort(
+              (a, b) => (STATUS_PRIORITY[a.status] ?? 99) - (STATUS_PRIORITY[b.status] ?? 99)
+            )
+            const greenCount = group.moons.filter(
+              (m) => m.status === "unlocked" || m.status === "mastered"
+            ).length
+            return (
+              <div
+                key={group.planetId}
+                className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden"
+              >
+                <div className="px-4 py-3 border-b border-zinc-800 flex items-center justify-between bg-zinc-900/50">
+                  <h3 className="text-sm font-bold text-white">{group.planetName}</h3>
+                  <span className="text-xs text-zinc-400">
+                    {greenCount}/{group.moons.length} demonstrated
+                  </span>
                 </div>
-              )
-            })}
-          </div>
+                <div className="divide-y divide-zinc-800">
+                  {sortedMoons.map((moon) => (
+                    <MoonRow
+                      key={moon.id}
+                      moon={moon}
+                      onPlayGame={(g) => setPreviewGame(g)}
+                    />
+                  ))}
+                </div>
+              </div>
+            )
+          })
         )}
       </div>
       {/* Inbox: messages from other players, plus replies to my own feedback */}
@@ -251,27 +322,150 @@ export default function LearnerDashboard() {
         <FeedbackInbox mode="sent" />
       </div>
 
-      {/* Game preview — full screen so the whole game is playable */}
+      {/* Full GamePlayer — same controls as the library/galaxy: Play again,
+          Rate, Back, mandatory rating modal, etc. The learner can play
+          their own game (own plays don't trigger rating). */}
       {previewGame && (
-        <div className="fixed inset-0 z-50 bg-zinc-950 flex flex-col">
-          <div className="flex items-center justify-between px-6 py-3 border-b border-zinc-800 bg-zinc-900">
-            <div>
-              <h3 className="text-white font-semibold">{previewGame.title}</h3>
-              <p className="text-xs text-zinc-400">{previewGame.standardId}</p>
-            </div>
-            <button
-              onClick={() => setPreviewGame(null)}
-              className="text-zinc-400 hover:text-white transition-colors p-2"
-              aria-label="Close"
-            >
-              <X className="size-6" />
-            </button>
-          </div>
-          <div className="flex-1 min-h-0">
-            <GameIframe html={previewGame.gameHtml} className="w-full h-full" />
-          </div>
-        </div>
+        <GamePlayer
+          gameId={previewGame.id}
+          title={previewGame.title}
+          html={previewGame.gameHtml}
+          concept={previewGame.designDoc?.concept}
+          authorUid={previewGame.authorUid}
+          standardId={previewGame.standardId}
+          isPublished={previewGame.status === "published"}
+          onClose={() => setPreviewGame(null)}
+        />
       )}
+    </div>
+  )
+}
+
+// One row per moon. Shows the moon name + status badge + the action
+// button matching the current state.
+function MoonRow({
+  moon,
+  onPlayGame,
+}: {
+  moon: {
+    id: string
+    title: string
+    status: string
+    game: Game | null
+  }
+  onPlayGame: (g: Game) => void
+}) {
+  const status = moon.status
+
+  // Pick the right icon, dot color, and badge label per status
+  const meta = (() => {
+    switch (status) {
+      case "available":
+        return { dot: "bg-blue-500", label: "Need to demonstrate", labelClass: "text-blue-300" }
+      case "in_progress":
+        return { dot: "bg-yellow-500", label: "In progress", labelClass: "text-yellow-300" }
+      case "in_review":
+        return { dot: "bg-yellow-500", label: "In review by guide", labelClass: "text-yellow-300" }
+      case "approved_unplayed":
+        return { dot: "bg-yellow-500", label: "Approved · play 3 in a row to demonstrate", labelClass: "text-yellow-300" }
+      case "unlocked":
+        return { dot: "bg-emerald-500", label: "Demonstrated · play to master", labelClass: "text-emerald-300" }
+      case "mastered":
+        return { dot: "bg-amber-500", label: "Mastered", labelClass: "text-amber-300" }
+      case "locked":
+        return { dot: "bg-zinc-700", label: "Locked", labelClass: "text-zinc-500" }
+      default:
+        return { dot: "bg-zinc-700", label: status, labelClass: "text-zinc-400" }
+    }
+  })()
+
+  // Pick the right action button per status
+  const action = (() => {
+    if (status === "locked") {
+      return (
+        <span className="flex items-center gap-1 text-xs text-zinc-600">
+          <Lock className="size-3.5" />
+          Locked
+        </span>
+      )
+    }
+    if (status === "available") {
+      // No game yet → build one
+      return (
+        <Link
+          href={`/?moon=${encodeURIComponent(moon.id)}`}
+          className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-md px-3 py-1.5 transition-colors"
+        >
+          <Hammer className="size-3.5" />
+          Build game
+        </Link>
+      )
+    }
+    if (status === "in_progress" || status === "in_review") {
+      if (moon.game) {
+        return (
+          <button
+            onClick={() => onPlayGame(moon.game!)}
+            className="flex items-center gap-1.5 bg-yellow-600 hover:bg-yellow-500 text-white text-xs font-semibold rounded-md px-3 py-1.5 transition-colors"
+          >
+            <Clock className="size-3.5" />
+            View game
+          </button>
+        )
+      }
+      return (
+        <Link
+          href={`/?moon=${encodeURIComponent(moon.id)}`}
+          className="flex items-center gap-1.5 bg-yellow-600 hover:bg-yellow-500 text-white text-xs font-semibold rounded-md px-3 py-1.5 transition-colors"
+        >
+          <Hammer className="size-3.5" />
+          Continue
+        </Link>
+      )
+    }
+    if (status === "approved_unplayed" && moon.game) {
+      return (
+        <button
+          onClick={() => onPlayGame(moon.game!)}
+          className="flex items-center gap-1.5 bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold rounded-md px-3 py-1.5 transition-colors"
+        >
+          <Play className="size-3.5" />
+          Play game
+        </button>
+      )
+    }
+    if (status === "unlocked") {
+      return (
+        <Link
+          href={`/library?skill=${encodeURIComponent(moon.id)}`}
+          className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-md px-3 py-1.5 transition-colors"
+        >
+          <Star className="size-3.5" />
+          Play to master
+        </Link>
+      )
+    }
+    if (status === "mastered") {
+      return (
+        <span className="flex items-center gap-1.5 text-amber-300 text-xs font-semibold">
+          <CheckCircle className="size-3.5" />
+          Mastered
+        </span>
+      )
+    }
+    return null
+  })()
+
+  return (
+    <div className={`flex items-center justify-between gap-3 px-4 py-3 ${status === "locked" ? "opacity-50" : ""}`}>
+      <div className="flex items-start gap-3 flex-1 min-w-0">
+        <div className={`w-2.5 h-2.5 rounded-full mt-1.5 shrink-0 ${meta.dot}`} />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm text-white font-medium truncate">{moon.title}</p>
+          <p className={`text-xs mt-0.5 ${meta.labelClass}`}>{meta.label}</p>
+        </div>
+      </div>
+      <div className="shrink-0">{action}</div>
     </div>
   )
 }

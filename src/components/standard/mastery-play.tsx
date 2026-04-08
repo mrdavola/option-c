@@ -116,15 +116,21 @@ export function MasteryPlay({ standardId, onDemonstrated }: MasteryPlayProps) {
   }
 
   if (playing) {
+    // Full-screen overlay so the learner can actually play their game
     return (
-      <div className="flex flex-col gap-3">
-        <div className="flex items-center justify-between">
+      <div className="fixed inset-0 z-[60] bg-zinc-950 flex flex-col">
+        {/* Top bar — back, title, streak counter */}
+        <div className="flex items-center justify-between px-4 py-2 border-b border-zinc-800 bg-zinc-900/90 gap-3">
           <button
             onClick={() => setPlaying(false)}
-            className="text-sm text-zinc-400 hover:text-white transition-colors"
+            className="flex items-center gap-1.5 text-sm text-zinc-300 hover:text-white transition-colors"
           >
             ← Back
           </button>
+          <div className="flex-1 text-center">
+            <p className="text-sm text-white font-semibold truncate">{ownGame.title}</p>
+            <p className="text-xs text-amber-300">Win 3 in a row to turn the moon green</p>
+          </div>
           <div className="flex items-center gap-1">
             {[0, 1, 2].map((i) => (
               <Star
@@ -134,11 +140,7 @@ export function MasteryPlay({ standardId, onDemonstrated }: MasteryPlayProps) {
             ))}
           </div>
         </div>
-        <p className="text-xs text-zinc-400 text-center">
-          Win {3 - wins} more in a row to turn this moon green
-          {wins > 0 && wins < 3 ? ` · streak: ${wins}/3` : ""}
-        </p>
-        <div className="h-[420px] rounded-lg overflow-hidden border border-zinc-800">
+        <div className="flex-1 min-h-0">
           <GameIframe
             html={ownGame.gameHtml}
             className="w-full h-full"
@@ -146,9 +148,11 @@ export function MasteryPlay({ standardId, onDemonstrated }: MasteryPlayProps) {
             onLose={handleLose}
           />
         </div>
-        <p className="text-[11px] text-zinc-500 text-center">
-          Lose a round and your streak resets to 0.
-        </p>
+        <div className="px-4 py-2 border-t border-zinc-800 bg-zinc-900/90 text-center">
+          <p className="text-[11px] text-zinc-500">
+            Lose a round and your streak resets to 0. Streak: {wins}/3
+          </p>
+        </div>
       </div>
     )
   }

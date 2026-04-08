@@ -42,6 +42,10 @@ export default function GuideDashboard() {
   const [showClassPicker, setShowClassPicker] = useState(false)
   const [showNewClass, setShowNewClass] = useState(false)
   const [previewGame, setPreviewGame] = useState<Game | null>(null)
+  // Set of game ids the guide has opened in the player at least once.
+  // The Approve button is disabled until the guide has clicked Play on
+  // the game — they must actually look at it before approving.
+  const [playedGameIds, setPlayedGameIds] = useState<Set<string>>(new Set())
   const [feedbackGameId, setFeedbackGameId] = useState<string | null>(null)
   const [feedbackText, setFeedbackText] = useState("")
   const [newClassName, setNewClassName] = useState("")
@@ -596,7 +600,14 @@ export default function GuideDashboard() {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => setPreviewGame(g)}
+                            onClick={() => {
+                              setPreviewGame(g)
+                              setPlayedGameIds((prev) => {
+                                const next = new Set(prev)
+                                next.add(g.id)
+                                return next
+                              })
+                            }}
                           >
                             <Play className="size-3 mr-1" />
                             Play
@@ -611,10 +622,12 @@ export default function GuideDashboard() {
                           </Button>
                           <Button
                             size="sm"
-                            className="bg-emerald-600 hover:bg-emerald-500"
+                            className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-30 disabled:cursor-not-allowed"
+                            disabled={!playedGameIds.has(g.id)}
+                            title={!playedGameIds.has(g.id) ? "Open the game first to make sure it works" : undefined}
                             onClick={() => handleApproveGame(g.id)}
                           >
-                            Approve
+                            {playedGameIds.has(g.id) ? "Approve" : "Open it first"}
                           </Button>
                         </div>
                       </div>

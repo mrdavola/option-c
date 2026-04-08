@@ -26,6 +26,8 @@ export function GameLibrary({ games }: GameLibraryProps) {
     authorUid?: string
   } | null>(null)
   const [gradeFilter, setGradeFilter] = useState<string>("all")
+  // Top-level tab — "For my grade" (default) or "All games"
+  const [tab, setTab] = useState<"mine" | "all">(activeProfile?.grade ? "mine" : "all")
   const [loading, setLoading] = useState<string | null>(null)
   const [pendingGames, setPendingGames] = useState<Omit<Game, "gameHtml">[]>([])
 
@@ -59,9 +61,14 @@ export function GameLibrary({ games }: GameLibraryProps) {
     return parts[0] || ""
   }).filter(Boolean))).sort()
 
-  const filtered = gradeFilter === "all"
-    ? games
-    : games.filter((g) => g.planetId?.startsWith(gradeFilter + "."))
+  // First narrow by tab, THEN by grade chip filter (only used in "all" tab)
+  const myGrade = activeProfile?.grade
+  const tabFiltered = tab === "mine" && myGrade
+    ? games.filter((g) => g.planetId?.startsWith(myGrade + "."))
+    : games
+  const filtered = gradeFilter === "all" || tab === "mine"
+    ? tabFiltered
+    : tabFiltered.filter((g) => g.planetId?.startsWith(gradeFilter + "."))
 
   const handlePlay = async (gameId: string, isPending = false) => {
     setLoading(gameId)
@@ -100,6 +107,32 @@ export function GameLibrary({ games }: GameLibraryProps) {
 
   return (
     <div>
+      {/* Top tabs — For my grade vs All games. Hidden if no grade picked. */}
+      {myGrade && (
+        <div className="flex gap-1 mb-6 bg-zinc-900 border border-zinc-800 rounded-xl p-1 w-fit">
+          <button
+            onClick={() => setTab("mine")}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              tab === "mine"
+                ? "bg-zinc-700 text-white"
+                : "text-zinc-400 hover:text-zinc-200"
+            }`}
+          >
+            For my grade ({myGrade})
+          </button>
+          <button
+            onClick={() => setTab("all")}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              tab === "all"
+                ? "bg-zinc-700 text-white"
+                : "text-zinc-400 hover:text-zinc-200"
+            }`}
+          >
+            All games
+          </button>
+        </div>
+      )}
+
       {/* Needs Review section */}
       {pendingGames.length > 0 && (
         <div className="mb-8">
@@ -125,32 +158,34 @@ export function GameLibrary({ games }: GameLibraryProps) {
         </div>
       )}
 
-      {/* Filter controls */}
-      <div className="flex gap-2 mb-6 flex-wrap">
-        <button
-          onClick={() => setGradeFilter("all")}
-          className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
-            gradeFilter === "all"
-              ? "bg-zinc-700 text-white"
-              : "bg-zinc-900 text-zinc-400 hover:text-zinc-200 border border-zinc-800"
-          }`}
-        >
-          All Grades
-        </button>
-        {grades.map((grade) => (
+      {/* Filter controls — only meaningful when viewing All games */}
+      {tab === "all" && (
+        <div className="flex gap-2 mb-6 flex-wrap">
           <button
-            key={grade}
-            onClick={() => setGradeFilter(grade)}
+            onClick={() => setGradeFilter("all")}
             className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
-              gradeFilter === grade
+              gradeFilter === "all"
                 ? "bg-zinc-700 text-white"
                 : "bg-zinc-900 text-zinc-400 hover:text-zinc-200 border border-zinc-800"
             }`}
           >
-            Grade {grade}
+            All Grades
           </button>
-        ))}
-      </div>
+          {grades.map((grade) => (
+            <button
+              key={grade}
+              onClick={() => setGradeFilter(grade)}
+              className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                gradeFilter === grade
+                  ? "bg-zinc-700 text-white"
+                  : "bg-zinc-900 text-zinc-400 hover:text-zinc-200 border border-zinc-800"
+              }`}
+            >
+              Grade {grade}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Game grid */}
       {filtered.length === 0 ? (

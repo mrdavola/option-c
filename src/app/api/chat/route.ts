@@ -43,6 +43,15 @@ CRITERIA (evaluate each independently):
 2. Authentic math: Is the concept applied as it would be in real life?
 3. Math is essential: Does math help the player decide, optimize, or win?
 
+🚨 CRITICAL RULE FOR CRITERIA EVALUATION:
+A criterion can ONLY be marked as met if THE LEARNER has personally described that aspect of the game in their own words. Examples that YOU give them are inspiration, not credit. Even if you offer a fully-formed example pitch, you must NOT mark any criterion as met unless the learner has actually committed to that pitch (or described their own version) in a later message.
+
+Specifically:
+- If the learner says "give me an example" and you respond with a sample pitch — mark all criteria as FALSE (the learner hasn't said anything yet about their game).
+- If the learner then replies "yes, that one" or "I like option A" — you may now mark the criteria the learner has effectively endorsed.
+- If the learner stays vague or just thanks you, criteria remain FALSE.
+- Always evaluate against what the LEARNER has actually said, not against hypothetical games YOU described.
+
 RULES:
 - Keep responses to 1-2 sentences. Be direct.
 - Don't ask Socratic questions. Give specific, actionable feedback.
@@ -53,7 +62,7 @@ RULES:
 - Use exclamation marks sparingly — at most one per response. Be warm and encouraging but calm, not over-the-top enthusiastic.
 - When all 3 criteria are met, congratulate the learner calmly and tell them they can launch their game when ready. Do NOT end the conversation — let them keep refining if they want.${stuckInstructions}
 
-After EVERY response, you MUST call the evaluate_criteria tool to report which criteria are currently met.`,
+After EVERY response, you MUST call the evaluate_criteria tool to report which criteria are currently met BASED ON WHAT THE LEARNER HAS SAID.`,
     messages: await convertToModelMessages(messages),
     tools: {
       evaluate_criteria: {

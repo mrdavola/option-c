@@ -22,6 +22,7 @@ import { FeedbackButton } from "@/components/feedback/feedback-button"
 import { UserMenu } from "@/components/user-menu"
 import { GalaxySettingsPopover } from "./galaxy-settings-popover"
 import { RulesPopover } from "@/components/rules-popover"
+import { useSearchParams } from "next/navigation"
 
 interface GraphPageProps {
   data: StandardsGraph
@@ -102,6 +103,7 @@ function recomputeAvailable(
 
 export function GraphPage({ data }: GraphPageProps) {
   const { user, profile, activeProfile, impersonating, stopImpersonating, loading: authLoading, saveProgress, loadProgress } = useAuth()
+  const searchParams = useSearchParams()
   const initialProgress = useMemo(() => computeInitialProgress(data), [data])
   const [progressMap, setProgressMap] = useState<Map<string, NodeStatus>>(initialProgress)
   const [selectedStandard, setSelectedStandard] = useState<StandardNode | null>(null)
@@ -161,6 +163,24 @@ export function GraphPage({ data }: GraphPageProps) {
     setPanelOpen(false)
     setBuildMode("idle")
   }, [activeProfile?.uid, initialProgress])
+
+  // Honor a `?moon=<standardId>` query param: open the planet view +
+  // standard panel for that moon. Used by deep links from My Stuff.
+  // Runs once after onboarding is complete and the data is loaded.
+  const moonParamHandled = useRef(false)
+  useEffect(() => {
+    if (!onboardingComplete || moonParamHandled.current) return
+    const moonId = searchParams?.get("moon")
+    if (!moonId) return
+    const node = data.nodes.find((n) => n.id === moonId)
+    if (!node) return
+    moonParamHandled.current = true
+    const planetId = `${node.grade}.${node.domainCode}`
+    setCurrentPlanetId(planetId)
+    setViewMode("planet")
+    setSelectedStandard(node)
+    setPanelOpen(true)
+  }, [onboardingComplete, searchParams, data.nodes])
 
   // Refreshable progress loader. Pulls from Firestore, merges with the
   // local "what's locked vs available" baseline, then runs the cascade
@@ -442,40 +462,59 @@ export function GraphPage({ data }: GraphPageProps) {
     if (tutorialStep < 3) setTutorialStep(3)
   }, [data, progressMap, tutorialStep, planets, saveProgress])
 
-  // Standard panel: student demonstrated a skill (won their own game 3 in
-  // a row). Flip the local moon to "unlocked" and detect planet completion.
+  // Standard panel: learner demonstrated a skill (won their own game 3 in
+  // a row). Flip the local moon to "unlocked", close the panel, fly back
+  // to the galaxy, and ONLY THEN fire the supernova so the learner can
+  // actually see it happen.
   const handleDemonstrated = useCallback((standardId: string) => {
     const node = data.nodes.find(n => n.id === standardId)
     const planet = node ? planets.find(p => p.id === `${node.grade}.${node.domainCode}`) : null
 
-    if (planet) setWaveColor(planet.color)
-    setShowWaveEffect(true)
-    setTimeout(() => setShowWaveEffect(false), 1500)
-
     setProgressMap(prev => {
       const next = new Map(prev)
       next.set(standardId, "unlocked")
-
-      // Did this fill the planet? (every moon now unlocked or mastered)
-      if (planet) {
-        const allDone = planet.standards.every(s => {
-          if (s.id === standardId) return true
-          const st = next.get(s.id)
-          return st === "unlocked" || st === "mastered"
-        })
-        if (allDone) {
-          setTimeout(() => {
-            setMasteryEvent({ planetName: planet.domainName, planetColor: planet.color, tokenGain: 0 })
-          }, 800)
-        }
-      }
       return next
     })
 
-    // Persist (mastery-play already saved the status to "unlocked",
-    // but this guarantees it lands)
+    // Persist (mastery-play already saved the status, but this guarantees it)
     saveProgress(standardId, { status: "unlocked", unlockedAt: Date.now() }).catch(() => {})
-  }, [data, planets, saveProgress])
+
+    // Close the standard panel + fly back to galaxy
+    setPanelOpen(false)
+    setSelectedStandard(null)
+
+    // Compute "did this fill the planet?" — reads the FRESH progress
+    // map by inspecting the standards we know about. If yes, we'll fire
+    // the supernova once we land in galaxy view.
+    let fillsPlanet = false
+    if (planet) {
+      fillsPlanet = planet.standards.every(s => {
+        if (s.id === standardId) return true
+        const st = progressMap.get(s.id)
+        return st === "unlocked" || st === "mastered"
+      })
+    }
+
+    // Brief wave effect on the moon, then fly to galaxy view
+    if (planet) setWaveColor(planet.color)
+    setShowWaveEffect(true)
+
+    setTimeout(() => {
+      setShowWaveEffect(false)
+      // Switch to galaxy view so the supernova can play in the right place
+      setViewMode("galaxy")
+      // Give the camera a moment to land, then trigger the supernova
+      if (fillsPlanet && planet) {
+        setTimeout(() => {
+          setMasteryEvent({
+            planetName: planet.domainName,
+            planetColor: planet.color,
+            tokenGain: 0,
+          })
+        }, 1200)
+      }
+    }, 1500)
+  }, [data, planets, saveProgress, progressMap])
 
   // Handle "Build my Game" from Genie chat
   const handleBuildGame = useCallback((designDoc: GameDesignDoc) => {
@@ -687,6 +726,9 @@ export function GraphPage({ data }: GraphPageProps) {
             onBridgeClick={handleBridgeClick}
             bridges={currentBridges}
             planetNames={planetNames}
+            // Pass the same color the galaxy uses so the central orb
+            // matches what the learner saw a moment ago.
+            progressColor={galaxyData.nodes.find(n => n.id === currentPlanet.id)?.color}
           />
         ) : null
       )}
@@ -854,8 +896,10 @@ export function GraphPage({ data }: GraphPageProps) {
         </div>
       )}
 
-      {/* Help us make this better — feedback button */}
-      {buildMode === "idle" && <FeedbackButton />}
+      {/* Suggest a fix or idea — feedback button. Visible everywhere
+          including the build/workshop screens, so learners can flag a
+          problem at any moment without losing their work. */}
+      <FeedbackButton />
     </div>
   )
 }
