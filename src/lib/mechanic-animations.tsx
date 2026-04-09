@@ -60,64 +60,172 @@ const SVG_RESOURCE_MGMT = `<svg viewBox="0 0 180 120" xmlns="http://www.w3.org/2
 <text x="90" y="110" font-size="7" fill="#71717a" text-anchor="middle">collect to add up</text>
 </svg>`
 
+// Partitioning — 10-second multi-stage animation showing a circle being
+// progressively cut into halves, then quarters, then eighths. Each
+// cut appears at a fixed time-step so the kid sees the verb (cut a
+// whole into equal parts) play out end-to-end.
+//
+// Stages (10s loop):
+//   0.0-2.0s  whole circle, label "1"
+//   2.0-4.0s  first cut → halves, label "1/2"
+//   4.0-6.0s  second cut → quarters, label "1/4"
+//   6.0-8.0s  third cut → eighths, label "1/8"
+//   8.0-10s   all 8 wedges glow briefly (the "done" beat)
+//
+// Figure uses the unified faceless / angled-leg baseline (no knees).
+// Arm stays raised the whole time to emphasize "I'm doing this".
 const SVG_PARTITIONING = `<svg viewBox="0 0 180 120" xmlns="http://www.w3.org/2000/svg">
 <style>
-@keyframes pa_slice { 0%,40%{transform:translateY(-3px)} 50%,90%{transform:translateY(3px)} }
-@keyframes pa_chop  { 0%,40%{transform:rotate(-30deg)} 50%,90%{transform:rotate(0deg)} }
-@keyframes pa_lean  { 0%,100%{transform:rotate(0deg)}50%{transform:rotate(2deg)} }
-.pa_g    { animation: pa_lean 1s ease-in-out infinite; transform-origin: 30px 65px; }
-.pa_arm  { animation: pa_chop 1s ease-in-out infinite; transform-origin: 30px 52px; }
-.pa_knife{ animation: pa_slice 1s ease-in-out infinite; }
+  @keyframes pa_arm_chop { 0%,15%{transform:rotate(-50deg)} 20%,35%{transform:rotate(0deg)} 40%,55%{transform:rotate(-50deg)} 60%,75%{transform:rotate(0deg)} 80%,95%{transform:rotate(-50deg)} 100%{transform:rotate(-50deg)} }
+  @keyframes pa_lean     { 0%,100%{transform:rotate(0deg)} 25%,55%,85%{transform:rotate(3deg)} }
+  @keyframes pa_step1    { 0%,18%{opacity:0} 22%,100%{opacity:1} }
+  @keyframes pa_step2    { 0%,38%{opacity:0} 42%,100%{opacity:1} }
+  @keyframes pa_step3    { 0%,58%{opacity:0} 62%,100%{opacity:1} }
+  @keyframes pa_step4    { 0%,78%{opacity:0} 82%,100%{opacity:1} }
+  @keyframes pa_glow     { 0%,80%{opacity:0} 85%,95%{opacity:1} 100%{opacity:0} }
+  @keyframes pa_label1   { 0%,18%{opacity:1} 22%,100%{opacity:0} }
+  @keyframes pa_label2   { 0%,18%{opacity:0} 22%,38%{opacity:1} 42%,100%{opacity:0} }
+  @keyframes pa_label3   { 0%,38%{opacity:0} 42%,58%{opacity:1} 62%,100%{opacity:0} }
+  @keyframes pa_label4   { 0%,58%{opacity:0} 62%,100%{opacity:1} }
+
+  .pa_g     { animation: pa_lean 10s ease-in-out infinite; transform-origin: 30px 65px; }
+  .pa_arm   { animation: pa_arm_chop 10s ease-in-out infinite; transform-origin: 30px 52px; }
+  .pa_cut1  { animation: pa_step1 10s step-end infinite; }
+  .pa_cut2  { animation: pa_step2 10s step-end infinite; }
+  .pa_cut3  { animation: pa_step3 10s step-end infinite; }
+  .pa_cut4  { animation: pa_step4 10s step-end infinite; }
+  .pa_glow  { animation: pa_glow 10s ease-in-out infinite; }
+  .pa_lab1  { animation: pa_label1 10s step-end infinite; }
+  .pa_lab2  { animation: pa_label2 10s step-end infinite; }
+  .pa_lab3  { animation: pa_label3 10s step-end infinite; }
+  .pa_lab4  { animation: pa_label4 10s step-end infinite; }
 </style>
 <rect width="180" height="120" fill="#18181b"/>
+
+<!-- Figure on the left, faceless, single-segment angled legs -->
 <g class="pa_g">
   <circle cx="30" cy="40" r="6" fill="none" stroke="#e4e4e7" stroke-width="2"/>
   <line x1="30" y1="46" x2="30" y2="65" stroke="#e4e4e7" stroke-width="2"/>
-  <line class="pa_arm" x1="30" y1="52" x2="55" y2="40" stroke="#e4e4e7" stroke-width="2"/>
+  <g class="pa_arm">
+    <line x1="30" y1="52" x2="55" y2="40" stroke="#e4e4e7" stroke-width="2"/>
+    <!-- Knife held in the raised hand -->
+    <line x1="55" y1="40" x2="62" y2="34" stroke="#60a5fa" stroke-width="2"/>
+  </g>
   <line x1="30" y1="52" x2="15" y2="55" stroke="#e4e4e7" stroke-width="2"/>
   <line x1="23" y1="79" x2="30" y2="65" stroke="#e4e4e7" stroke-width="2"/>
   <line x1="30" y1="65" x2="37" y2="79" stroke="#e4e4e7" stroke-width="2"/>
 </g>
-<g transform="translate(100,55)">
-  <circle cx="0" cy="0" r="22" fill="none" stroke="#f59e0b" stroke-width="2"/>
-  <line class="pa_knife" x1="0" y1="-22" x2="0" y2="22" stroke="#60a5fa" stroke-width="2"/>
-  <text x="-12" y="5" font-size="9" fill="#e4e4e7" font-family="monospace">1/2</text>
-  <text x="6" y="5" font-size="9" fill="#e4e4e7" font-family="monospace">1/2</text>
+
+<!-- Whole circle (always visible) and progressive cuts -->
+<g transform="translate(110,58)">
+  <circle cx="0" cy="0" r="28" fill="none" stroke="#f59e0b" stroke-width="2"/>
+  <!-- Cut 1: vertical line → halves -->
+  <line class="pa_cut1" x1="0" y1="-28" x2="0" y2="28" stroke="#60a5fa" stroke-width="1.5"/>
+  <!-- Cut 2: horizontal line → quarters -->
+  <line class="pa_cut2" x1="-28" y1="0" x2="28" y2="0" stroke="#60a5fa" stroke-width="1.5"/>
+  <!-- Cut 3: diagonal up-right → eighths (one diagonal) -->
+  <line class="pa_cut3" x1="-20" y1="-20" x2="20" y2="20" stroke="#60a5fa" stroke-width="1.5"/>
+  <!-- Cut 4: diagonal up-left → eighths (second diagonal) -->
+  <line class="pa_cut4" x1="-20" y1="20" x2="20" y2="-20" stroke="#60a5fa" stroke-width="1.5"/>
+  <!-- Final glow over the whole circle -->
+  <circle class="pa_glow" cx="0" cy="0" r="28" fill="#22c55e" opacity="0.25"/>
 </g>
-<text x="90" y="110" font-size="7" fill="#71717a" text-anchor="middle">split into equal parts</text>
+
+<!-- Label transitions: "1" → "1/2" → "1/4" → "1/8" -->
+<text class="pa_lab1" x="110" y="106" font-size="10" fill="#fbbf24" text-anchor="middle" font-family="monospace">1 whole</text>
+<text class="pa_lab2" x="110" y="106" font-size="10" fill="#fbbf24" text-anchor="middle" font-family="monospace">1/2 + 1/2</text>
+<text class="pa_lab3" x="110" y="106" font-size="10" fill="#fbbf24" text-anchor="middle" font-family="monospace">4 × 1/4</text>
+<text class="pa_lab4" x="110" y="106" font-size="10" fill="#fbbf24" text-anchor="middle" font-family="monospace">8 × 1/8</text>
+
+<text x="90" y="118" font-size="6" fill="#71717a" text-anchor="middle">cut a whole into equal parts</text>
 </svg>`
 
+// Balance & Equalize — 10-second animation showing the verb "balance
+// the equation by adding tokens to the lighter side". Scale starts
+// heavy on the left (4 blocks vs 1). Figure walks over and adds one
+// block at a time to the right pan until both sides match (4 vs 4).
+// The beam tilts back toward level as each block is added, finally
+// settling flat with a green glow.
+//
+// Stages:
+//   0-1.5s   start state: left has 4, right has 1, beam tilts hard left
+//   1.5-3.5s figure walks to right pan, drops block #2, beam evens out a bit
+//   3.5-5.5s drops block #3, almost level
+//   5.5-7.5s drops block #4, beam now flat — balanced
+//   7.5-10s  hold the balanced state, "= 4" pulses green
 const SVG_BALANCE = `<svg viewBox="0 0 180 120" xmlns="http://www.w3.org/2000/svg">
 <style>
-@keyframes bs_tilt   { 0%,100%{transform:rotate(-3deg)} 50%{transform:rotate(3deg)} }
-@keyframes bs_drop   { 0%,60%{transform:translateY(-15px);opacity:0} 70%,100%{transform:translateY(0);opacity:1} }
-@keyframes bs_reach  { 0%,40%{transform:rotate(0deg)} 60%,100%{transform:rotate(-40deg)} }
-@keyframes bs_think  { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-2px)} }
-.bs_g     { animation: bs_think 1.4s ease-in-out infinite; transform-origin: 25px 65px; }
-.bs_arm   { animation: bs_reach 3s ease-in-out infinite; transform-origin: 25px 55px; }
-.bs_beam  { animation: bs_tilt 3s ease-in-out infinite; transform-origin: 100px 50px; }
-.bs_new   { animation: bs_drop 3s ease-in-out infinite; }
+  /* Beam tilt: starts hard left (-12deg), evens out as blocks are added */
+  @keyframes bs_beam   { 0%,15%{transform:rotate(-12deg)} 25%,35%{transform:rotate(-8deg)} 45%,55%{transform:rotate(-4deg)} 65%,100%{transform:rotate(0deg)} }
+  /* Figure walks from origin (x=10) right to drop at the right pan */
+  @keyframes bs_walk   { 0%,15%{transform:translateX(0)} 25%,35%{transform:translateX(105px)} 40%,45%{transform:translateX(0)} 50%,60%{transform:translateX(105px)} 65%,70%{transform:translateX(0)} 75%,100%{transform:translateX(105px)} }
+  @keyframes bs_legA   { 0%,100%{transform:rotate(-22deg)} 50%{transform:rotate(22deg)} }
+  @keyframes bs_legB   { 0%,100%{transform:rotate(22deg)} 50%{transform:rotate(-22deg)} }
+  @keyframes bs_bob    { 0%,100%{transform:translateY(-1.5px)} 50%{transform:translateY(1.5px)} }
+  /* Right-pan blocks: each appears at the moment the figure drops it */
+  @keyframes bs_b2     { 0%,25%{opacity:0} 30%,100%{opacity:1} }
+  @keyframes bs_b3     { 0%,50%{opacity:0} 55%,100%{opacity:1} }
+  @keyframes bs_b4     { 0%,70%{opacity:0} 75%,100%{opacity:1} }
+  /* Final equality glow */
+  @keyframes bs_glow   { 0%,75%{opacity:0;fill:#71717a} 80%,100%{opacity:1;fill:#22c55e} }
+
+  .bs_g    { animation: bs_walk 10s ease-in-out infinite; }
+  .bs_bob  { animation: bs_bob 0.5s ease-in-out infinite; }
+  .bs_legA { animation: bs_legA 0.5s ease-in-out infinite; transform-origin: 0 22px; }
+  .bs_legB { animation: bs_legB 0.5s ease-in-out infinite; transform-origin: 0 22px; }
+  .bs_beam { animation: bs_beam 10s ease-in-out infinite; transform-origin: 100px 55px; }
+  .bs_b2   { animation: bs_b2 10s step-end infinite; }
+  .bs_b3   { animation: bs_b3 10s step-end infinite; }
+  .bs_b4   { animation: bs_b4 10s step-end infinite; }
+  .bs_glow { animation: bs_glow 10s step-end infinite; }
 </style>
 <rect width="180" height="120" fill="#18181b"/>
-<g class="bs_g">
-  <circle cx="25" cy="45" r="6" fill="none" stroke="#e4e4e7" stroke-width="2"/>
-  <line x1="25" y1="51" x2="25" y2="68" stroke="#e4e4e7" stroke-width="2"/>
-  <line class="bs_arm" x1="25" y1="55" x2="42" y2="48" stroke="#e4e4e7" stroke-width="2"/>
-  <line x1="25" y1="55" x2="14" y2="60" stroke="#e4e4e7" stroke-width="2"/>
-  <line x1="19" y1="82" x2="25" y2="68" stroke="#e4e4e7" stroke-width="2"/>
-  <line x1="25" y1="68" x2="31" y2="82" stroke="#e4e4e7" stroke-width="2"/>
-</g>
-<polygon points="100,70 90,85 110,85" fill="none" stroke="#e4e4e7" stroke-width="1.5"/>
+
+<!-- Fulcrum + base -->
+<polygon points="100,75 88,95 112,95" fill="none" stroke="#e4e4e7" stroke-width="1.5"/>
+<line x1="80" y1="95" x2="120" y2="95" stroke="#e4e4e7" stroke-width="1.5"/>
+
+<!-- Beam (rotates) with fixed pans + blocks -->
 <g class="bs_beam">
-  <line x1="50" y1="50" x2="150" y2="50" stroke="#e4e4e7" stroke-width="2"/>
-  <rect x="58" y="38" width="12" height="12" rx="2" fill="#60a5fa" opacity="0.6"/>
-  <rect x="73" y="38" width="12" height="12" rx="2" fill="#60a5fa" opacity="0.6"/>
-  <rect x="118" y="38" width="12" height="12" rx="2" fill="#f59e0b" opacity="0.6"/>
-  <rect class="bs_new" x="133" y="38" width="12" height="12" rx="2" fill="#f59e0b" opacity="0"/>
+  <line x1="50" y1="55" x2="150" y2="55" stroke="#e4e4e7" stroke-width="2"/>
+  <!-- Left pan: 4 blocks (always visible) -->
+  <line x1="65" y1="55" x2="65" y2="62" stroke="#71717a" stroke-width="1"/>
+  <line x1="50" y1="62" x2="80" y2="62" stroke="#71717a" stroke-width="1.5"/>
+  <rect x="55" y="48" width="9" height="9" fill="#60a5fa" opacity="0.7"/>
+  <rect x="66" y="48" width="9" height="9" fill="#60a5fa" opacity="0.7"/>
+  <rect x="55" y="38" width="9" height="9" fill="#60a5fa" opacity="0.7"/>
+  <rect x="66" y="38" width="9" height="9" fill="#60a5fa" opacity="0.7"/>
+  <!-- Right pan: starts with 1 block; 3 more get dropped over time -->
+  <line x1="135" y1="55" x2="135" y2="62" stroke="#71717a" stroke-width="1"/>
+  <line x1="120" y1="62" x2="150" y2="62" stroke="#71717a" stroke-width="1.5"/>
+  <rect x="130" y="48" width="9" height="9" fill="#fbbf24" opacity="0.7"/>
+  <rect class="bs_b2" x="130" y="38" width="9" height="9" fill="#fbbf24" opacity="0.7"/>
+  <rect class="bs_b3" x="130" y="28" width="9" height="9" fill="#fbbf24" opacity="0.7"/>
+  <rect class="bs_b4" x="130" y="18" width="9" height="9" fill="#fbbf24" opacity="0.7"/>
 </g>
-<text x="70" y="32" font-size="8" fill="#60a5fa" text-anchor="middle" font-family="monospace">2x</text>
-<text x="130" y="32" font-size="8" fill="#f59e0b" text-anchor="middle" font-family="monospace">= ?</text>
-<text x="100" y="110" font-size="7" fill="#71717a" text-anchor="middle">make both sides equal</text>
+
+<!-- Equation label at the top: "4 = ?" → "4 = 4" turns green at the end -->
+<text x="65" y="22" font-size="9" fill="#60a5fa" text-anchor="middle" font-family="monospace">4</text>
+<text x="90" y="22" font-size="9" fill="#e4e4e7" text-anchor="middle" font-family="monospace">=</text>
+<text class="bs_glow" x="115" y="22" font-size="9" text-anchor="middle" font-family="monospace">4</text>
+
+<!-- Figure walks from x=10 toward the right pan -->
+<g class="bs_g">
+  <g class="bs_bob">
+    <circle cx="10" cy="78" r="6" fill="none" stroke="#e4e4e7" stroke-width="2"/>
+    <line x1="10" y1="84" x2="10" y2="98" stroke="#e4e4e7" stroke-width="2"/>
+    <line x1="10" y1="88" x2="17" y2="95" stroke="#e4e4e7" stroke-width="2"/>
+    <line x1="10" y1="88" x2="3" y2="95" stroke="#e4e4e7" stroke-width="2"/>
+    <g class="bs_legA" style="transform-origin: 10px 98px;">
+      <line x1="10" y1="98" x2="10" y2="113" stroke="#e4e4e7" stroke-width="2"/>
+    </g>
+    <g class="bs_legB" style="transform-origin: 10px 98px;">
+      <line x1="10" y1="98" x2="10" y2="113" stroke="#e4e4e7" stroke-width="2"/>
+    </g>
+  </g>
+</g>
+
+<text x="90" y="118" font-size="6" fill="#71717a" text-anchor="middle">add tokens until both sides match</text>
 </svg>`
 
 const SVG_SPATIAL = `<svg viewBox="0 0 180 120" xmlns="http://www.w3.org/2000/svg">
@@ -387,33 +495,105 @@ const SVG_MEASURE = `<svg viewBox="0 0 180 120" xmlns="http://www.w3.org/2000/sv
 <text x="90" y="115" font-size="7" fill="#71717a" text-anchor="middle">measure and compare</text>
 </svg>`
 
+// Score & Rank — 10-second animation showing the verb "fly to a position
+// on the number line". A target number flashes at the top, the figure
+// floats horizontally to land on that position, drops a flag, then
+// repeats with a new target.
+//
+// Stages:
+//   0.0-3.3s  target = 4 → figure floats from start to position 4, drops flag
+//   3.3-6.6s  target = 7 → figure floats to position 7, drops flag
+//   6.6-10s   target = 2 → figure floats back to position 2, drops flag
 const SVG_SCORING = `<svg viewBox="0 0 180 120" xmlns="http://www.w3.org/2000/svg">
 <style>
-@keyframes sc_celeb { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
-@keyframes sc_raise { 0%,100%{transform:rotate(-60deg)} 50%{transform:rotate(-90deg)} }
-.sc_w   { animation: sc_celeb 1s ease-in-out infinite; transform-origin: 97px 60px; }
-.sc_arm { animation: sc_raise 1s ease-in-out infinite; transform-origin: 97px 35px; }
+  /* Figure travels horizontally; spans x=15 (=0) to x=165 (=10).
+     Each tick = 15px. Targets: 4 (x=75), 7 (x=120), 2 (x=45). */
+  @keyframes sr_travel { 0%{transform:translateX(0)} 25%,33%{transform:translateX(60px)} 58%,66%{transform:translateX(105px)} 91%,100%{transform:translateX(30px)} }
+  @keyframes sr_leg_a  { 0%,100%{transform:rotate(-25deg)} 50%{transform:rotate(25deg)} }
+  @keyframes sr_leg_b  { 0%,100%{transform:rotate(25deg)} 50%{transform:rotate(-25deg)} }
+  @keyframes sr_bob    { 0%,100%{transform:translateY(-1.5px)} 50%{transform:translateY(1.5px)} }
+  /* Target labels: each visible during its segment */
+  @keyframes sr_t1     { 0%,33%{opacity:1} 34%,100%{opacity:0} }
+  @keyframes sr_t2     { 0%,33%{opacity:0} 34%,66%{opacity:1} 67%,100%{opacity:0} }
+  @keyframes sr_t3     { 0%,66%{opacity:0} 67%,100%{opacity:1} }
+  /* Flags: each appears at the end of its segment and stays */
+  @keyframes sr_flag1  { 0%,28%{opacity:0} 30%,100%{opacity:1} }
+  @keyframes sr_flag2  { 0%,61%{opacity:0} 63%,100%{opacity:1} }
+  @keyframes sr_flag3  { 0%,94%{opacity:0} 96%,100%{opacity:1} }
+
+  .sr_g     { animation: sr_travel 10s ease-in-out infinite; }
+  .sr_bob   { animation: sr_bob 0.6s ease-in-out infinite; }
+  .sr_leg_a { animation: sr_leg_a 0.6s ease-in-out infinite; transform-origin: 0 22px; }
+  .sr_leg_b { animation: sr_leg_b 0.6s ease-in-out infinite; transform-origin: 0 22px; }
+  .sr_t1    { animation: sr_t1 10s step-end infinite; }
+  .sr_t2    { animation: sr_t2 10s step-end infinite; }
+  .sr_t3    { animation: sr_t3 10s step-end infinite; }
+  .sr_flag1 { animation: sr_flag1 10s step-end infinite; }
+  .sr_flag2 { animation: sr_flag2 10s step-end infinite; }
+  .sr_flag3 { animation: sr_flag3 10s step-end infinite; }
 </style>
 <rect width="180" height="120" fill="#18181b"/>
-<rect x="60" y="55" width="25" height="30" fill="#60a5fa" opacity="0.4" stroke="#60a5fa" stroke-width="1"/>
-<rect x="85" y="40" width="25" height="45" fill="#f59e0b" opacity="0.4" stroke="#f59e0b" stroke-width="1"/>
-<rect x="110" y="65" width="25" height="20" fill="#60a5fa" opacity="0.3" stroke="#60a5fa" stroke-width="1"/>
-<text x="72" y="75" font-size="9" fill="#e4e4e7" text-anchor="middle" font-family="monospace">2nd</text>
-<text x="97" y="60" font-size="9" fill="#f59e0b" text-anchor="middle" font-family="monospace">1st</text>
-<text x="122" y="78" font-size="9" fill="#e4e4e7" text-anchor="middle" font-family="monospace">3rd</text>
-<circle cx="72" cy="48" r="5" fill="none" stroke="#e4e4e7" stroke-width="1.5"/>
-<line x1="72" y1="53" x2="72" y2="55" stroke="#e4e4e7" stroke-width="1.5"/>
-<g class="sc_w">
-  <circle cx="97" cy="32" r="6" fill="none" stroke="#f59e0b" stroke-width="2"/>
-  <line x1="97" y1="38" x2="97" y2="40" stroke="#f59e0b" stroke-width="2"/>
-  <line class="sc_arm" x1="97" y1="35" x2="105" y2="22" stroke="#f59e0b" stroke-width="2"/>
-  <line x1="97" y1="35" x2="89" y2="22" stroke="#f59e0b" stroke-width="2"/>
+
+<!-- Number line -->
+<line x1="15" y1="80" x2="165" y2="80" stroke="#71717a" stroke-width="1.5"/>
+<g stroke="#71717a" stroke-width="1">
+  <line x1="15" y1="76" x2="15" y2="84"/>
+  <line x1="30" y1="78" x2="30" y2="82"/>
+  <line x1="45" y1="76" x2="45" y2="84"/>
+  <line x1="60" y1="78" x2="60" y2="82"/>
+  <line x1="75" y1="76" x2="75" y2="84"/>
+  <line x1="90" y1="78" x2="90" y2="82"/>
+  <line x1="105" y1="76" x2="105" y2="84"/>
+  <line x1="120" y1="78" x2="120" y2="82"/>
+  <line x1="135" y1="76" x2="135" y2="84"/>
+  <line x1="150" y1="78" x2="150" y2="82"/>
+  <line x1="165" y1="76" x2="165" y2="84"/>
 </g>
-<circle cx="122" cy="58" r="5" fill="none" stroke="#e4e4e7" stroke-width="1.5"/>
-<text x="72" y="100" font-size="7" fill="#71717a" text-anchor="middle">85</text>
-<text x="97" y="100" font-size="7" fill="#f59e0b" text-anchor="middle">97</text>
-<text x="122" y="100" font-size="7" fill="#71717a" text-anchor="middle">72</text>
-<text x="90" y="115" font-size="7" fill="#71717a" text-anchor="middle">rank by score</text>
+<g font-size="7" fill="#a1a1aa" text-anchor="middle" font-family="monospace">
+  <text x="15" y="95">0</text>
+  <text x="45" y="95">2</text>
+  <text x="75" y="95">4</text>
+  <text x="105" y="95">6</text>
+  <text x="135" y="95">8</text>
+  <text x="165" y="95">10</text>
+</g>
+
+<!-- Target callout at the top: changes 3 times -->
+<text class="sr_t1" x="90" y="22" font-size="11" fill="#fbbf24" text-anchor="middle" font-family="monospace">target → 4</text>
+<text class="sr_t2" x="90" y="22" font-size="11" fill="#fbbf24" text-anchor="middle" font-family="monospace">target → 7</text>
+<text class="sr_t3" x="90" y="22" font-size="11" fill="#fbbf24" text-anchor="middle" font-family="monospace">target → 2</text>
+
+<!-- Flags dropped at each target -->
+<g class="sr_flag1">
+  <line x1="75" y1="60" x2="75" y2="78" stroke="#22c55e" stroke-width="1.5"/>
+  <polygon points="75,60 84,63 75,66" fill="#22c55e"/>
+</g>
+<g class="sr_flag2">
+  <line x1="120" y1="60" x2="120" y2="78" stroke="#22c55e" stroke-width="1.5"/>
+  <polygon points="120,60 129,63 120,66" fill="#22c55e"/>
+</g>
+<g class="sr_flag3">
+  <line x1="45" y1="60" x2="45" y2="78" stroke="#22c55e" stroke-width="1.5"/>
+  <polygon points="45,60 54,63 45,66" fill="#22c55e"/>
+</g>
+
+<!-- Floating figure -->
+<g class="sr_g">
+  <g class="sr_bob">
+    <circle cx="15" cy="55" r="6" fill="none" stroke="#e4e4e7" stroke-width="2"/>
+    <line x1="15" y1="61" x2="15" y2="75" stroke="#e4e4e7" stroke-width="2"/>
+    <line x1="15" y1="65" x2="22" y2="72" stroke="#e4e4e7" stroke-width="2"/>
+    <line x1="15" y1="65" x2="8" y2="72" stroke="#e4e4e7" stroke-width="2"/>
+    <g class="sr_leg_a" style="transform-origin: 15px 75px;">
+      <line x1="15" y1="75" x2="15" y2="93" stroke="#e4e4e7" stroke-width="2"/>
+    </g>
+    <g class="sr_leg_b" style="transform-origin: 15px 75px;">
+      <line x1="15" y1="75" x2="15" y2="93" stroke="#e4e4e7" stroke-width="2"/>
+    </g>
+  </g>
+</g>
+
+<text x="90" y="113" font-size="7" fill="#71717a" text-anchor="middle">fly to a position on the line</text>
 </svg>`
 
 const SVG_TIMING = `<svg viewBox="0 0 180 120" xmlns="http://www.w3.org/2000/svg">
@@ -560,41 +740,99 @@ const SVG_TERRAIN = `<svg viewBox="0 0 180 120" xmlns="http://www.w3.org/2000/sv
 <text x="100" y="115" font-size="7" fill="#71717a" text-anchor="middle">navigate the grid</text>
 </svg>`
 
+// Bid & Estimate — 10-second animation showing the place-value verb:
+// stack blocks into hundreds / tens / ones bins to build a target
+// number. Figure on the left walks back and forth (floating gait),
+// dropping blocks into each bin until the target number is built.
+//
+// Stages (target = 234):
+//   0-2.5s    drop 2 hundred-blocks into the hundreds bin
+//   2.5-5.5s  drop 3 ten-blocks into the tens bin
+//   5.5-8.5s  drop 4 one-blocks into the ones bin
+//   8.5-10s   the result number "234" lights up green
 const SVG_BIDDING = `<svg viewBox="0 0 180 120" xmlns="http://www.w3.org/2000/svg">
 <style>
-@keyframes bd_b1 { 0%,40%{transform:translateY(0)} 50%,90%{transform:translateY(-10px)} }
-@keyframes bd_b2 { 0%,40%{transform:translateY(0)} 60%,100%{transform:translateY(-10px)} }
-@keyframes bd_r1 { 0%,40%{transform:rotate(0deg)} 50%,90%{transform:rotate(-50deg)} }
-@keyframes bd_r2 { 0%,40%{transform:rotate(0deg)} 60%,100%{transform:rotate(50deg)} }
-.bd_g1   { animation: bd_b1 2.5s ease-in-out infinite; transform-origin: 35px 90px; }
-.bd_a1   { animation: bd_r1 2.5s ease-in-out infinite; transform-origin: 35px 60px; }
-.bd_g2   { animation: bd_b2 2.5s ease-in-out infinite; transform-origin: 145px 90px; }
-.bd_a2   { animation: bd_r2 2.5s ease-in-out infinite; transform-origin: 145px 65px; }
+  @keyframes bi_walk { 0%{transform:translateX(0)} 25%,33%{transform:translateX(40px)} 58%,66%{transform:translateX(75px)} 83%,100%{transform:translateX(110px)} }
+  @keyframes bi_arm  { 0%,15%{transform:rotate(-50deg)} 22%,30%{transform:rotate(0deg)} 32%,47%{transform:rotate(-50deg)} 54%,62%{transform:rotate(0deg)} 64%,79%{transform:rotate(-50deg)} 86%,100%{transform:rotate(0deg)} }
+  @keyframes bi_legA { 0%,100%{transform:rotate(-22deg)} 50%{transform:rotate(22deg)} }
+  @keyframes bi_legB { 0%,100%{transform:rotate(22deg)} 50%{transform:rotate(-22deg)} }
+  @keyframes bi_bob  { 0%,100%{transform:translateY(-1.5px)} 50%{transform:translateY(1.5px)} }
+  /* Block placements — each block fades in at its drop time */
+  @keyframes bi_h1 { 0%,5%{opacity:0} 8%,100%{opacity:1} }
+  @keyframes bi_h2 { 0%,15%{opacity:0} 18%,100%{opacity:1} }
+  @keyframes bi_t1 { 0%,30%{opacity:0} 33%,100%{opacity:1} }
+  @keyframes bi_t2 { 0%,40%{opacity:0} 43%,100%{opacity:1} }
+  @keyframes bi_t3 { 0%,50%{opacity:0} 53%,100%{opacity:1} }
+  @keyframes bi_o1 { 0%,60%{opacity:0} 63%,100%{opacity:1} }
+  @keyframes bi_o2 { 0%,67%{opacity:0} 70%,100%{opacity:1} }
+  @keyframes bi_o3 { 0%,74%{opacity:0} 77%,100%{opacity:1} }
+  @keyframes bi_o4 { 0%,82%{opacity:0} 85%,100%{opacity:1} }
+  @keyframes bi_total { 0%,85%{opacity:0;fill:#71717a} 88%,100%{opacity:1;fill:#22c55e} }
+
+  .bi_g    { animation: bi_walk 10s ease-in-out infinite; }
+  .bi_bob  { animation: bi_bob 0.5s ease-in-out infinite; }
+  .bi_arm  { animation: bi_arm 10s ease-in-out infinite; transform-origin: 0 -10px; }
+  .bi_legA { animation: bi_legA 0.5s ease-in-out infinite; transform-origin: 0 22px; }
+  .bi_legB { animation: bi_legB 0.5s ease-in-out infinite; transform-origin: 0 22px; }
+  .bi_h1   { animation: bi_h1 10s step-end infinite; }
+  .bi_h2   { animation: bi_h2 10s step-end infinite; }
+  .bi_t1   { animation: bi_t1 10s step-end infinite; }
+  .bi_t2   { animation: bi_t2 10s step-end infinite; }
+  .bi_t3   { animation: bi_t3 10s step-end infinite; }
+  .bi_o1   { animation: bi_o1 10s step-end infinite; }
+  .bi_o2   { animation: bi_o2 10s step-end infinite; }
+  .bi_o3   { animation: bi_o3 10s step-end infinite; }
+  .bi_o4   { animation: bi_o4 10s step-end infinite; }
+  .bi_total{ animation: bi_total 10s step-end infinite; }
 </style>
 <rect width="180" height="120" fill="#18181b"/>
-<g class="bd_g1">
-  <circle cx="35" cy="50" r="6" fill="none" stroke="#e4e4e7" stroke-width="2"/>
-  <line x1="35" y1="56" x2="35" y2="72" stroke="#e4e4e7" stroke-width="2"/>
-  <line class="bd_a1" x1="35" y1="60" x2="48" y2="50" stroke="#e4e4e7" stroke-width="2"/>
-  <line x1="35" y1="60" x2="22" y2="65" stroke="#e4e4e7" stroke-width="2"/>
-  <line x1="29" y1="86" x2="35" y2="72" stroke="#e4e4e7" stroke-width="2"/>
-  <line x1="35" y1="72" x2="41" y2="86" stroke="#e4e4e7" stroke-width="2"/>
+
+<!-- Three place-value bins: hundreds, tens, ones -->
+<rect x="55" y="55" width="22" height="40" rx="2" fill="none" stroke="#71717a" stroke-width="1"/>
+<rect x="85" y="55" width="22" height="40" rx="2" fill="none" stroke="#71717a" stroke-width="1"/>
+<rect x="115" y="55" width="22" height="40" rx="2" fill="none" stroke="#71717a" stroke-width="1"/>
+<text x="66" y="105" font-size="6" fill="#71717a" text-anchor="middle">100s</text>
+<text x="96" y="105" font-size="6" fill="#71717a" text-anchor="middle">10s</text>
+<text x="126" y="105" font-size="6" fill="#71717a" text-anchor="middle">1s</text>
+
+<!-- Hundred blocks (large squares) -->
+<rect class="bi_h1" x="58" y="80" width="16" height="14" fill="#60a5fa" opacity="0.6"/>
+<rect class="bi_h2" x="58" y="64" width="16" height="14" fill="#60a5fa" opacity="0.6"/>
+
+<!-- Ten blocks (tall thin) -->
+<rect class="bi_t1" x="88" y="78" width="4" height="16" fill="#fbbf24" opacity="0.7"/>
+<rect class="bi_t2" x="94" y="78" width="4" height="16" fill="#fbbf24" opacity="0.7"/>
+<rect class="bi_t3" x="100" y="78" width="4" height="16" fill="#fbbf24" opacity="0.7"/>
+
+<!-- One blocks (small squares) -->
+<rect class="bi_o1" x="118" y="89" width="4" height="4" fill="#22c55e" opacity="0.8"/>
+<rect class="bi_o2" x="124" y="89" width="4" height="4" fill="#22c55e" opacity="0.8"/>
+<rect class="bi_o3" x="130" y="89" width="4" height="4" fill="#22c55e" opacity="0.8"/>
+<rect class="bi_o4" x="118" y="83" width="4" height="4" fill="#22c55e" opacity="0.8"/>
+
+<!-- Target / final number -->
+<text x="90" y="35" font-size="13" fill="#71717a" text-anchor="middle" font-family="monospace">build → 234</text>
+<text class="bi_total" x="90" y="50" font-size="11" text-anchor="middle" font-family="monospace">2 hundreds + 3 tens + 4 ones</text>
+
+<!-- Figure starts at x=15, walks right to drop each block in turn -->
+<g class="bi_g">
+  <g class="bi_bob">
+    <circle cx="15" cy="55" r="6" fill="none" stroke="#e4e4e7" stroke-width="2"/>
+    <line x1="15" y1="61" x2="15" y2="75" stroke="#e4e4e7" stroke-width="2"/>
+    <g class="bi_arm" style="transform-origin: 15px 65px;">
+      <line x1="15" y1="65" x2="22" y2="72" stroke="#e4e4e7" stroke-width="2"/>
+    </g>
+    <line x1="15" y1="65" x2="8" y2="72" stroke="#e4e4e7" stroke-width="2"/>
+    <g class="bi_legA" style="transform-origin: 15px 75px;">
+      <line x1="15" y1="75" x2="15" y2="93" stroke="#e4e4e7" stroke-width="2"/>
+    </g>
+    <g class="bi_legB" style="transform-origin: 15px 75px;">
+      <line x1="15" y1="75" x2="15" y2="93" stroke="#e4e4e7" stroke-width="2"/>
+    </g>
+  </g>
 </g>
-<rect x="48" y="32" width="30" height="14" rx="3" fill="#60a5fa" opacity="0.3" stroke="#60a5fa" stroke-width="1"/>
-<text x="63" y="42" font-size="8" fill="#60a5fa" text-anchor="middle" font-family="monospace">$25</text>
-<g class="bd_g2">
-  <circle cx="145" cy="55" r="6" fill="none" stroke="#e4e4e7" stroke-width="2"/>
-  <line x1="145" y1="61" x2="145" y2="75" stroke="#e4e4e7" stroke-width="2"/>
-  <line class="bd_a2" x1="145" y1="65" x2="158" y2="55" stroke="#e4e4e7" stroke-width="2"/>
-  <line x1="145" y1="65" x2="133" y2="58" stroke="#e4e4e7" stroke-width="2"/>
-  <line x1="139" y1="89" x2="145" y2="75" stroke="#e4e4e7" stroke-width="2"/>
-  <line x1="145" y1="75" x2="151" y2="89" stroke="#e4e4e7" stroke-width="2"/>
-</g>
-<rect x="103" y="38" width="30" height="14" rx="3" fill="#f59e0b" opacity="0.3" stroke="#f59e0b" stroke-width="1"/>
-<text x="118" y="48" font-size="8" fill="#f59e0b" text-anchor="middle" font-family="monospace">$30</text>
-<rect x="80" y="75" width="30" height="15" rx="3" fill="none" stroke="#71717a" stroke-width="1.5"/>
-<text x="95" y="86" font-size="7" fill="#71717a" text-anchor="middle">?</text>
-<text x="90" y="110" font-size="7" fill="#71717a" text-anchor="middle">estimate the value</text>
+
+<text x="90" y="118" font-size="6" fill="#71717a" text-anchor="middle">stack into place-value bins</text>
 </svg>`
 
 // Rise & Fall — vertical number line with 0 marked as sea level. The

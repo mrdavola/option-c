@@ -1,0 +1,35 @@
+<svg viewBox="0 0 480 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagonally">
+  <!--
+    Diagonally logo — exact trace of the user-drawn galaxy outline,
+    filled solid blue. The shape is the user's drawing, point for
+    point. Only the very sharpest zig-zags have been smoothed by ~2px;
+    every notable feature (beak point, top spike for the second
+    wing, right tail point, bottom curve, belly bump) is preserved.
+  -->
+
+  <path
+    fill="#3b82f6"
+    d="
+      M 50 145
+
+      L 165 95
+      L 200 90
+      L 215 50
+      L 240 95
+      L 380 90
+      L 425 110
+      L 460 175
+      L 415 200
+      L 360 245
+      L 315 290
+      L 285 240
+      L 195 240
+      L 145 220
+      L 115 240
+      L 90 215
+      L 130 195
+      L 105 180
+      L 50 145 Z
+    "
+  />
+</svg>
