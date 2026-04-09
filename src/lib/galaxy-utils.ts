@@ -457,7 +457,9 @@ export function buildMoonData(
         break
       case "mastered":
         size = 4
-        color = "#f59e0b" // gold
+        // Mastered = green moon (same as unlocked) with a gold ring
+        // overlay rendered separately by the planet view.
+        color = "#22c55e"
         break
     }
 

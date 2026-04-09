@@ -33,6 +33,14 @@ export interface FeedbackDoc {
   // Has the recipient seen the latest reply?
   unreadForRecipient: boolean
   unreadForSender: boolean
+  // Inbox-management flags (added for the inbox-filters feature). Both
+  // optional so older docs without these fields still load.
+  // archived = hidden from the default inbox view, only visible in the
+  //   "Archived" filter tab. Admin-only toggle.
+  // actionFlagged = manually flagged as needing follow-up. Surfaces in
+  //   the "Action needed" filter tab.
+  archived?: boolean
+  actionFlagged?: boolean
   createdAt: number
   updatedAt: number
 }

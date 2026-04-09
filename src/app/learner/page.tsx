@@ -278,6 +278,10 @@ export default function LearnerDashboard() {
             const sortedMoons = [...group.moons].sort(
               (a, b) => (STATUS_PRIORITY[a.status] ?? 99) - (STATUS_PRIORITY[b.status] ?? 99)
             )
+            // Split into the buildable (prereqs met) moons and the locked
+            // ones so we can render a "Locked" subheader between them.
+            const buildable = sortedMoons.filter((m) => m.status !== "locked")
+            const locked = sortedMoons.filter((m) => m.status === "locked")
             const greenCount = group.moons.filter(
               (m) => m.status === "unlocked" || m.status === "mastered"
             ).length
@@ -293,7 +297,7 @@ export default function LearnerDashboard() {
                   </span>
                 </div>
                 <div className="divide-y divide-zinc-800">
-                  {sortedMoons.map((moon) => (
+                  {buildable.map((moon) => (
                     <MoonRow
                       key={moon.id}
                       moon={moon}
@@ -301,6 +305,25 @@ export default function LearnerDashboard() {
                     />
                   ))}
                 </div>
+                {locked.length > 0 && (
+                  <>
+                    <div className="px-4 py-2 bg-zinc-900/30 border-t border-zinc-800 flex items-center gap-2">
+                      <Lock className="size-3 text-zinc-500" />
+                      <span className="text-xs text-zinc-500 uppercase tracking-wide font-medium">
+                        Locked — finish their prerequisites first
+                      </span>
+                    </div>
+                    <div className="divide-y divide-zinc-800">
+                      {locked.map((moon) => (
+                        <MoonRow
+                          key={moon.id}
+                          moon={moon}
+                          onPlayGame={(g) => setPreviewGame(g)}
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
             )
           })
@@ -369,7 +392,7 @@ function MoonRow({
       case "approved_unplayed":
         return { dot: "bg-yellow-500", label: "Approved · play 3 in a row to demonstrate", labelClass: "text-yellow-300" }
       case "unlocked":
-        return { dot: "bg-emerald-500", label: "Demonstrated · play to master", labelClass: "text-emerald-300" }
+        return { dot: "bg-emerald-500", label: "Demonstrated · play other learners' games to master", labelClass: "text-emerald-300" }
       case "mastered":
         return { dot: "bg-amber-500", label: "Mastered", labelClass: "text-amber-300" }
       case "locked":
@@ -382,11 +405,17 @@ function MoonRow({
   // Pick the right action button per status
   const action = (() => {
     if (status === "locked") {
+      // Show the same Build game button shape so the layout matches the
+      // unlocked rows, but make it grey and inactive.
       return (
-        <span className="flex items-center gap-1 text-xs text-zinc-600">
+        <button
+          disabled
+          title="Locked — finish its prerequisites first"
+          className="flex items-center gap-1.5 bg-zinc-800 text-zinc-500 text-xs font-semibold rounded-md px-3 py-1.5 cursor-not-allowed border border-zinc-700/60"
+        >
           <Lock className="size-3.5" />
-          Locked
-        </span>
+          Build game
+        </button>
       )
     }
     if (status === "available") {

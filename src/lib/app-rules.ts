@@ -33,9 +33,9 @@ export const APP_RULES: RulesByRole = {
         "🔵 Blue — at your grade level, ready to explore.",
         "🟡 Yellow — in progress (you've started, submitted a game for review, or your game is approved but you haven't demonstrated it yet).",
         "🟢 Green — demonstrated (you built a game, your guide approved it, AND you won your own game 3 times in a row).",
-        "🟣 Purple — available but not at your grade level (only shown when 'My grade' filter is on).",
-        "⚫ Grey — locked (prerequisites not met) or 'Not Started' planets.",
-        "🟠 Gold — mastered (you played other learners' games on this skill and won 3 times total).",
+        "🟣 Purple — available but not at your grade level (only shown when 'My grade' filter is off).",
+        "⚫ Grey — locked (prerequisites not met).",
+        "🟢 Green with a spinning gold ring — mastered (you played other learners' games on this skill and won 3 times total).",
       ],
     },
     {

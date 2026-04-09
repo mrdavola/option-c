@@ -12,6 +12,7 @@ import type { OnboardingData } from "@/components/onboarding/onboarding-flow"
 import { StandardPanel } from "@/components/standard/standard-panel"
 import { BuildScreen } from "@/components/game/build-screen"
 import { Workshop } from "@/components/game/workshop"
+import { ImportHtml } from "@/components/game/import-html"
 import { MasteryAnimation } from "./mastery-animation"
 import type { GameDesignDoc } from "@/lib/game-types"
 import { doc, setDoc, getDoc, collection } from "firebase/firestore"
@@ -182,6 +183,54 @@ export function GraphPage({ data }: GraphPageProps) {
     setPanelOpen(true)
   }, [onboardingComplete, searchParams, data.nodes])
 
+  // Honor a `?fix=<gameId>` query param: load the game from Firestore
+  // and drop the creator straight into the Workshop to fix it. Used by
+  // the "Fix this game" button on the creator's feedback inbox. Runs
+  // once when both onboarding is complete and we have an active profile.
+  const fixParamHandled = useRef(false)
+  useEffect(() => {
+    if (!onboardingComplete || fixParamHandled.current) return
+    if (!activeProfile) return
+    const gameIdToFix = searchParams?.get("fix")
+    if (!gameIdToFix) return
+    fixParamHandled.current = true
+    ;(async () => {
+      try {
+        const snap = await getDoc(doc(db, "games", gameIdToFix))
+        if (!snap.exists()) return
+        const gameData = snap.data() as {
+          authorUid?: string
+          gameHtml?: string
+          designDoc?: GameDesignDoc
+          standardId?: string
+        }
+        // Only the original author can open their own game in the Workshop.
+        if (gameData.authorUid !== activeProfile.uid) return
+        if (!gameData.designDoc || !gameData.gameHtml) return
+        // Revert the author's progress for this standard back to in_progress
+        // so the moon doesn't keep claiming "demonstrated" while it's being
+        // re-worked. Best-effort.
+        if (gameData.standardId) {
+          saveProgress(gameData.standardId, { status: "in_progress" }).catch(() => {})
+          setProgressMap((prev) => {
+            const next = new Map(prev)
+            next.set(gameData.standardId!, "in_progress")
+            return next
+          })
+        }
+        setCurrentDesignDoc(gameData.designDoc)
+        setCurrentGameHtml(gameData.gameHtml)
+        setCurrentGameId(gameIdToFix)
+        setBuildMode("workshop")
+      } catch (err) {
+        console.warn("fix-flow load failed:", err)
+      }
+    })()
+  // saveProgress is intentionally excluded — it's stable enough and we
+  // only want this effect to run once per query param change.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onboardingComplete, searchParams, activeProfile])
+
   // Refreshable progress loader. Pulls from Firestore, merges with the
   // local "what's locked vs available" baseline, then runs the cascade
   // pass so newly approved standards bubble out to their dependents.
@@ -248,8 +297,11 @@ export function GraphPage({ data }: GraphPageProps) {
   // Token notification (for game publish)
   const [tokenNotify, setTokenNotify] = useState<string | null>(null)
 
-  // Game builder state
-  const [buildMode, setBuildMode] = useState<"idle" | "building" | "workshop">("idle")
+  // Game builder state. "importing" = the learner is pasting their own HTML;
+  // once it passes the AI judge they go straight to the workshop preview.
+  const [buildMode, setBuildMode] = useState<"idle" | "building" | "workshop" | "importing">("idle")
+  // The standard the learner is importing HTML for (only set in importing mode)
+  const [importingStandard, setImportingStandard] = useState<StandardNode | null>(null)
   const [currentDesignDoc, setCurrentDesignDoc] = useState<GameDesignDoc | null>(null)
   const [currentGameHtml, setCurrentGameHtml] = useState<string>("")
   const [currentGameId, setCurrentGameId] = useState<string | null>(null)
@@ -541,6 +593,38 @@ export function GraphPage({ data }: GraphPageProps) {
     setBuildMode("building")
   }, [])
 
+  // Handle "Paste my own HTML" — open the import screen for this standard.
+  const handleImportHtml = useCallback((standard: StandardNode) => {
+    setImportingStandard(standard)
+    setPanelOpen(false)
+    setBuildMode("importing")
+  }, [])
+
+  // Called by ImportHtml when the AI judge passes. Synthesise a minimal
+  // design doc and drop the learner into the workshop preview, where the
+  // play-and-win gate still applies before they can submit for review.
+  const handleImportPass = useCallback((params: { title: string; html: string; visualConcept: string[] }) => {
+    if (!importingStandard) return
+    const std = importingStandard
+    const designDoc: GameDesignDoc = {
+      title: params.title,
+      concept: `Imported HTML game for ${std.description.slice(0, 80)}`,
+      standardId: std.id,
+      planetId: `${std.grade}.${std.domainCode}`,
+      howItWorks: "Imported from a learner-pasted HTML file.",
+      rules: [],
+      winCondition: "Player wins as defined in the imported HTML.",
+      mathRole: std.description,
+      designChoices: {},
+      visualConcept: params.visualConcept,
+    }
+    setCurrentDesignDoc(designDoc)
+    setCurrentGameHtml(params.html)
+    setCurrentGameId(null)
+    setImportingStandard(null)
+    setBuildMode("workshop")
+  }, [importingStandard])
+
   // Handle build complete — move to workshop. Stash the visual concept
   // bullets on the design doc so they get saved with the game.
   const handleBuildComplete = useCallback((html: string, designChoices: Record<string, string>, visualConcept: string[]) => {
@@ -688,6 +772,15 @@ export function GraphPage({ data }: GraphPageProps) {
         <BuildScreen
           designDoc={currentDesignDoc}
           onComplete={handleBuildComplete}
+        />
+      )}
+
+      {/* Game Builder: HTML import */}
+      {buildMode === "importing" && importingStandard && (
+        <ImportHtml
+          standard={importingStandard}
+          onCancel={() => { setBuildMode("idle"); setImportingStandard(null) }}
+          onPass={handleImportPass}
         />
       )}
 
@@ -893,6 +986,7 @@ export function GraphPage({ data }: GraphPageProps) {
         onUnlock={handleUnlock}
         onDemonstrated={handleDemonstrated}
         onBuildGame={handleBuildGame}
+        onImportHtml={handleImportHtml}
         interests={studentData?.interests}
         nodeStatus={selectedStandard ? progressMap.get(selectedStandard.id) : undefined}
       />

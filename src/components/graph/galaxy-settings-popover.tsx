@@ -147,7 +147,7 @@ export function GalaxySettingsPopover({
               )}
 
               {colorMode === "domain" && (
-                <div className="grid grid-cols-1 gap-1 max-h-48 overflow-y-auto pr-1">
+                <div className="grid grid-cols-1 gap-1">
                   {CONCEPT_LEGEND.map((c) => (
                     <div key={c.name} className="flex items-center gap-2">
                       <div

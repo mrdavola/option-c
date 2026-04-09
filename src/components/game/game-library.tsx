@@ -189,8 +189,26 @@ export function GameLibrary({ games }: GameLibraryProps) {
 
       {/* Game grid */}
       {filtered.length === 0 ? (
-        <div className="text-center py-16">
-          <p className="text-zinc-500 text-sm">No games published yet. Be the first!</p>
+        <div className="text-center py-20 px-6">
+          {tab === "mine" && myGrade ? (
+            <div className="max-w-md mx-auto space-y-4">
+              <div className="text-5xl">🚀</div>
+              <h3 className="text-xl font-bold text-white">
+                No games for grade {myGrade} yet
+              </h3>
+              <p className="text-zinc-400 text-sm leading-relaxed">
+                Be the first to build one! Pick a moon on your grade level from the galaxy and create a game that demonstrates the math skill. You&apos;ll earn 2000 tokens when your guide approves it.
+              </p>
+              <a
+                href="/"
+                className="inline-block bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold rounded-lg px-5 py-2.5 mt-2 transition-colors"
+              >
+                Go to the galaxy →
+              </a>
+            </div>
+          ) : (
+            <p className="text-zinc-500 text-sm">No games published yet. Be the first!</p>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">

@@ -31,17 +31,19 @@ export function FeedbackButton({ targetGame }: FeedbackButtonProps) {
     setSending(true)
     setError(null)
     try {
-      const id = doc(collection(db, "feedback")).id
       const now = Date.now()
-      // Build the doc — strip undefined fields, Firestore rejects them
-      const docData: Record<string, unknown> = {
-        id,
+      const trimmedMessage = message.trim()
+
+      // Game messages go to the creator AND a copy to admin so admins
+      // (and the creator's guide via the game-target path) all see it.
+      // App-feedback messages are admin-only.
+      const docs: Record<string, unknown>[] = []
+      const baseDoc = {
         fromUid: activeProfile.uid,
         fromName: activeProfile.name,
         fromRole: activeProfile.role,
-        target: isGameMessage ? "game" : "admin",
         type,
-        message: message.trim(),
+        message: trimmedMessage,
         status: "open",
         replies: [],
         unreadForRecipient: true,
@@ -49,24 +51,52 @@ export function FeedbackButton({ targetGame }: FeedbackButtonProps) {
         createdAt: now,
         updatedAt: now,
       }
-      if (targetGame?.id) docData.gameId = targetGame.id
-      if (targetGame?.title) docData.gameTitle = targetGame.title
-      if (targetGame?.authorUid) docData.toUid = targetGame.authorUid
 
-      await setDoc(doc(db, "feedback", id), docData)
+      if (isGameMessage) {
+        // 1) creator-facing copy (target=game, toUid=authorUid)
+        const gameId = doc(collection(db, "feedback")).id
+        const gameDocData: Record<string, unknown> = {
+          ...baseDoc,
+          id: gameId,
+          target: "game",
+        }
+        if (targetGame?.id) gameDocData.gameId = targetGame.id
+        if (targetGame?.title) gameDocData.gameTitle = targetGame.title
+        if (targetGame?.authorUid) gameDocData.toUid = targetGame.authorUid
+        docs.push(gameDocData)
 
-      // Best-effort: ping the admin email API (only for admin-targeted feedback)
-      if (!isGameMessage) {
-        fetch("/api/feedback/notify-admin", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            fromName: activeProfile.name,
-            type,
-            message: message.trim(),
-          }),
-        }).catch(() => {})
+        // 2) admin copy (target=admin, but tagged with the game info so
+        //    admins see what game it's about)
+        const adminId = doc(collection(db, "feedback")).id
+        const adminDocData: Record<string, unknown> = {
+          ...baseDoc,
+          id: adminId,
+          target: "admin",
+        }
+        if (targetGame?.id) adminDocData.gameId = targetGame.id
+        if (targetGame?.title) adminDocData.gameTitle = targetGame.title
+        docs.push(adminDocData)
+      } else {
+        // App feedback — admin-only
+        const id = doc(collection(db, "feedback")).id
+        docs.push({ ...baseDoc, id, target: "admin" })
       }
+
+      // Write all docs in parallel
+      await Promise.all(
+        docs.map((d) => setDoc(doc(db, "feedback", d.id as string), d))
+      )
+
+      // Best-effort: ping the admin email API
+      fetch("/api/feedback/notify-admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fromName: activeProfile.name,
+          type,
+          message: trimmedMessage,
+        }),
+      }).catch(() => {})
 
       setSent(true)
       setMessage("")
@@ -93,7 +123,7 @@ export function FeedbackButton({ targetGame }: FeedbackButtonProps) {
           aria-label={isGameMessage ? "Message the game creator" : "Suggest a fix or idea"}
         >
           <MessageSquarePlus className="size-4" />
-          {isGameMessage ? "Message creator" : "Suggest a fix or idea"}
+          {isGameMessage ? "Message creator, guide, and admins" : "Suggest a fix or idea"}
         </button>
       )}
 

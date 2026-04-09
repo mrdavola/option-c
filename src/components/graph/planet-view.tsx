@@ -41,7 +41,7 @@ function statusBorder(status: NodeStatus): string {
     case "in_review": return "border-yellow-700/70"   // mustard border
     case "approved_unplayed": return "border-amber-500/70"
     case "unlocked": return "border-emerald-400/60"
-    case "mastered": return "border-amber-400/60"
+    case "mastered": return "border-emerald-400/60"
   }
 }
 
@@ -162,6 +162,12 @@ export function PlanetView({
 
   return (
     <div className="w-full h-full bg-zinc-950 flex items-center justify-center overflow-hidden">
+      <style>{`
+        @keyframes mastered-ring-spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
       <div
         className="relative"
         style={{ width: viewSize, height: viewSize }}
@@ -220,6 +226,37 @@ export function PlanetView({
 
           return (
             <div key={moon.id}>
+              {/* Mastered moons get a slowly spinning gold ring around their green dot.
+                  The ring is a dashed circle so the rotation is visible. */}
+              {moon.status === "mastered" && (
+                <svg
+                  className="absolute pointer-events-none"
+                  width={hitSize + 16}
+                  height={hitSize + 16}
+                  style={{
+                    left: x - hitSize / 2 - 8,
+                    top: y - hitSize / 2 - 8,
+                    transform: isHovered ? "scale(1.3)" : "scale(1)",
+                    transition: "transform 150ms",
+                    filter: "drop-shadow(0 0 6px rgba(251,191,36,0.7))",
+                  }}
+                >
+                  <circle
+                    cx={(hitSize + 16) / 2}
+                    cy={(hitSize + 16) / 2}
+                    r={hitSize / 2 + 4}
+                    fill="none"
+                    stroke="#fbbf24"
+                    strokeWidth={2.5}
+                    strokeDasharray="6 4"
+                    strokeLinecap="round"
+                    style={{
+                      transformOrigin: "center",
+                      animation: "mastered-ring-spin 8s linear infinite",
+                    }}
+                  />
+                </svg>
+              )}
               {/* Moon dot */}
               <button
                 className={`absolute rounded-full border-2 transition-transform duration-150 ${statusBorder(moon.status)} ${

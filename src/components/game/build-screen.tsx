@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import type { GameDesignDoc } from "@/lib/game-types"
 import { MatrixRain } from "./matrix-rain"
+import { FunnyStickFigure } from "./funny-stick-figure"
 
 interface BuildScreenProps {
   designDoc: GameDesignDoc
@@ -301,8 +302,9 @@ export function BuildScreen({ designDoc, onComplete }: BuildScreenProps) {
                   <p key={i} className="text-sm text-zinc-200">{b}</p>
                 ))}
               </div>
-              <div className="text-center space-y-2 py-2">
-                <div className="w-6 h-6 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin mx-auto" />
+              {/* Funny stick figure does silly things while waiting */}
+              <FunnyStickFigure />
+              <div className="text-center">
                 <p className="text-sm text-emerald-400 animate-pulse">
                   {progress < 0.3 ? "Drawing characters..." :
                    progress < 0.6 ? "Wiring up the math..." :

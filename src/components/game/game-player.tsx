@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react"
 import { GameIframe } from "./game-iframe"
 import { MathMomentOverlay } from "./math-moment-overlay"
 import { ReviewPanel } from "./review-panel"
-import { X, Flag, Star, RotateCcw, ArrowLeft } from "lucide-react"
+import { X, Star, RotateCcw, ArrowLeft } from "lucide-react"
 import { FeedbackButton } from "@/components/feedback/feedback-button"
 import { useAuth } from "@/lib/auth"
 import { collection, doc, setDoc, updateDoc, arrayUnion } from "firebase/firestore"
@@ -60,11 +60,6 @@ export function GamePlayer({ gameId, title, html, concept, onClose, isPendingRev
   const [hoverRating, setHoverRating] = useState(0)
   const [hasRated, setHasRated] = useState(false)
   const [submittingRating, setSubmittingRating] = useState(false)
-  // Report-this-game state
-  const [showReport, setShowReport] = useState(false)
-  const [reportText, setReportText] = useState("")
-  const [reportSent, setReportSent] = useState(false)
-  const [reportSending, setReportSending] = useState(false)
   // Guide-only un-approve state
   const [showUnapprove, setShowUnapprove] = useState(false)
   const [unapproveText, setUnapproveText] = useState("")
@@ -74,9 +69,28 @@ export function GamePlayer({ gameId, title, html, concept, onClose, isPendingRev
   const timerRef = useRef<ReturnType<typeof setTimeout>>(null)
   // Track whether we've already incremented playCount for this session
   const playCountedRef = useRef(false)
+  // Last time a game_win event arrived. Used to suppress the math-moment
+  // overlay when a buggy game posts game_lose right after game_win.
+  const lastWinAtRef = useRef<number>(0)
 
   const isGuide = activeProfile?.role === "guide" || activeProfile?.role === "admin"
   const isAuthor = !!authorUid && activeProfile?.uid === authorUid
+
+  // Whether the player should be required to rate before they can leave.
+  // True for any non-author, non-pending-review session — i.e. someone
+  // playing a published game from the library or a moon.
+  const ratingRequiredOnExit = !isAuthor && !isPendingReview
+
+  // Try to close the player. If a rating is required and hasn't happened
+  // yet, pop the rating modal instead — they have to rate before they leave.
+  const tryClose = useCallback(() => {
+    if (ratingRequiredOnExit && !hasRated) {
+      setShowRating(true)
+      setRatingMandatory(true)
+      return
+    }
+    onClose()
+  }, [ratingRequiredOnExit, hasRated, onClose])
 
   // Increment playCount once per session (not for the author's own plays)
   useEffect(() => {
@@ -90,22 +104,22 @@ export function GamePlayer({ gameId, title, html, concept, onClose, isPendingRev
 
   // Game-end handler — fired when the iframe posts game_win or game_lose.
   // Forwards to the parent's onWin/onLose callbacks (for mastery state
-  // tracking) AND triggers the mandatory rating modal (unless the player
-  // is the author or this is a peer-review session).
+  // tracking). The rating modal is no longer shown here — it pops on
+  // Back/X click instead, so the learner doesn't get interrupted mid-play.
   const handleGameEnd = useCallback((kind: "win" | "lose") => {
+    const now = Date.now()
     if (kind === "win") {
+      lastWinAtRef.current = now
       onWin?.()
     } else {
       onLose?.()
-      if (concept) setShowMathMoment(true)
+      // Only show the math-moment overlay if we're sure the player actually
+      // lost. Buggy games sometimes post game_lose right after game_win;
+      // if a win happened within the last 3 seconds, suppress the overlay.
+      const recentlyWon = now - lastWinAtRef.current < 3000
+      if (concept && !recentlyWon) setShowMathMoment(true)
     }
-    // Force the rating modal — but only for plays that aren't the author's own
-    // and aren't a peer review session
-    if (!isAuthor && !isPendingReview) {
-      setShowRating(true)
-      setRatingMandatory(true)
-    }
-  }, [onWin, onLose, concept, isAuthor, isPendingReview])
+  }, [onWin, onLose, concept])
 
   const handleUnapprove = async () => {
     if (!activeProfile) return
@@ -192,76 +206,13 @@ export function GamePlayer({ gameId, title, html, concept, onClose, isPendingRev
         }),
       })
       setHasRated(true)
+      // The rating modal is shown when the player tries to leave. After
+      // they submit, take them out of the player automatically.
+      setTimeout(() => onClose(), 600)
     } catch {
       // Keep the form open so they can retry
     } finally {
       setSubmittingRating(false)
-    }
-  }
-
-  const handleSendReport = async () => {
-    if (!activeProfile) return
-    if (reportText.trim().length < 5) return
-    setReportSending(true)
-    try {
-      const id = doc(collection(db, "feedback")).id
-      const now = Date.now()
-      // The report goes to BOTH admin and the game author's guide.
-      // Easiest way: send a single doc with target="admin" so admin sees it,
-      // plus a second doc with target="game" pointing at the author so the
-      // author's guide sees it on their dashboard's reports tab.
-      const adminDoc: FeedbackDoc = {
-        id,
-        fromUid: activeProfile.uid,
-        fromName: activeProfile.name,
-        fromRole: activeProfile.role,
-        target: "admin",
-        gameId,
-        gameTitle: title,
-        type: "bug",
-        message: `🚩 REPORT for game "${title}": ${reportText.trim()}`,
-        status: "open",
-        replies: [],
-        unreadForRecipient: true,
-        unreadForSender: false,
-        createdAt: now,
-        updatedAt: now,
-      }
-      await setDoc(doc(db, "feedback", id), adminDoc)
-      // Second copy targeted at the game author so their guide can see
-      // it in the author's inbox / report list.
-      if (authorUid) {
-        const id2 = doc(collection(db, "feedback")).id
-        const gameDoc: FeedbackDoc = {
-          id: id2,
-          fromUid: activeProfile.uid,
-          fromName: activeProfile.name,
-          fromRole: activeProfile.role,
-          target: "game",
-          gameId,
-          gameTitle: title,
-          toUid: authorUid,
-          type: "bug",
-          message: `🚩 REPORT: ${reportText.trim()}`,
-          status: "open",
-          replies: [],
-          unreadForRecipient: true,
-          unreadForSender: false,
-          createdAt: now,
-          updatedAt: now,
-        }
-        await setDoc(doc(db, "feedback", id2), gameDoc)
-      }
-      setReportSent(true)
-      setReportText("")
-      setTimeout(() => {
-        setShowReport(false)
-        setReportSent(false)
-      }, 3500)
-    } catch {
-      // ignore
-    } finally {
-      setReportSending(false)
     }
   }
 
@@ -270,13 +221,9 @@ export function GamePlayer({ gameId, title, html, concept, onClose, isPendingRev
       {/* Top bar */}
       <div className="flex items-center justify-between px-4 py-2 border-b border-zinc-800 bg-zinc-900/80 gap-2">
         <button
-          onClick={() => {
-            if (ratingMandatory && !hasRated) return
-            onClose()
-          }}
-          disabled={ratingMandatory && !hasRated}
-          className="flex items-center gap-1.5 text-sm text-zinc-300 hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-          title={ratingMandatory && !hasRated ? "Submit your rating first" : "Back"}
+          onClick={tryClose}
+          className="flex items-center gap-1.5 text-sm text-zinc-300 hover:text-white transition-colors"
+          title="Back"
         >
           <ArrowLeft className="size-4" />
           Back
@@ -295,17 +242,6 @@ export function GamePlayer({ gameId, title, html, concept, onClose, isPendingRev
             <RotateCcw className="size-3.5" />
             Play again
           </button>
-          {/* Manual rating trigger — for games that don't post game_win/game_lose */}
-          {!isAuthor && !isPendingReview && !hasRated && (
-            <button
-              onClick={() => { setShowRating(true); setRatingMandatory(false) }}
-              className="flex items-center gap-1 text-xs text-blue-300 border border-blue-500/40 hover:text-white hover:bg-blue-500/10 rounded-md px-2.5 py-1 transition-colors"
-              title="Rate this game"
-            >
-              <Star className="size-3.5" />
-              Rate
-            </button>
-          )}
           {isGuide && isPublished && !isPendingReview && (
             <button
               onClick={() => setShowUnapprove(true)}
@@ -315,13 +251,9 @@ export function GamePlayer({ gameId, title, html, concept, onClose, isPendingRev
             </button>
           )}
           <button
-            onClick={() => {
-              if (ratingMandatory && !hasRated) return // blocked
-              onClose()
-            }}
-            disabled={ratingMandatory && !hasRated}
-            className="text-zinc-400 hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-            title={ratingMandatory && !hasRated ? "Submit your rating first" : "Close"}
+            onClick={tryClose}
+            className="text-zinc-400 hover:text-white transition-colors"
+            title="Close"
           >
             <X className="size-5" />
           </button>
@@ -442,71 +374,6 @@ export function GamePlayer({ gameId, title, html, concept, onClose, isPendingRev
         {hasRated && (
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-emerald-900/90 border border-emerald-500/30 rounded-xl px-5 py-2 text-sm text-emerald-300">
             Thanks! You rated {selectedRating}/5
-          </div>
-        )}
-
-        {/* Report this game — top-right corner of the play area */}
-        {!isPendingReview && activeProfile && (
-          <button
-            onClick={() => setShowReport(true)}
-            className="absolute top-4 right-4 z-30 flex items-center gap-1.5 bg-zinc-900/85 hover:bg-zinc-800 border border-zinc-700 hover:border-red-500/50 text-zinc-300 hover:text-red-300 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors"
-            title="Report a problem with this game"
-          >
-            <Flag className="size-3.5" />
-            Report
-          </button>
-        )}
-
-        {/* Report modal */}
-        {showReport && (
-          <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/70 p-4">
-            <div className="bg-zinc-900 border border-zinc-700 rounded-xl max-w-md w-full p-5 space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-base font-semibold text-white flex items-center gap-2">
-                  <Flag className="size-4 text-red-400" />
-                  Report this game
-                </h3>
-                <button
-                  onClick={() => setShowReport(false)}
-                  className="text-zinc-400 hover:text-white p-1"
-                >
-                  <X className="size-4" />
-                </button>
-              </div>
-              {reportSent ? (
-                <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-3 text-sm text-emerald-300 text-center">
-                  Report sent. The team and the creator&apos;s guide will see it in their inboxes.
-                </div>
-              ) : (
-                <>
-                  <p className="text-xs text-zinc-400">
-                    What&apos;s wrong? Your message goes to your guide and the team.
-                  </p>
-                  <textarea
-                    value={reportText}
-                    onChange={(e) => setReportText(e.target.value)}
-                    placeholder="The game is broken / inappropriate / cheats / etc."
-                    rows={4}
-                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-red-500/50 resize-none"
-                  />
-                  <div className="flex gap-2 justify-end">
-                    <button
-                      onClick={() => setShowReport(false)}
-                      className="px-3 py-1.5 text-sm text-zinc-300 hover:text-white"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={handleSendReport}
-                      disabled={reportText.trim().length < 5 || reportSending}
-                      className="bg-red-600 hover:bg-red-500 disabled:opacity-30 text-white rounded-lg px-3 py-1.5 text-sm font-medium transition-colors"
-                    >
-                      {reportSending ? "Sending..." : "Send report"}
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
           </div>
         )}
 

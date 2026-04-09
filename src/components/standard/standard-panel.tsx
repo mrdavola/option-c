@@ -104,6 +104,8 @@ interface StandardPanelProps {
   onUnlock: (standardId: string) => void
   onDemonstrated?: (standardId: string) => void
   onBuildGame?: (designDoc: import("@/lib/game-types").GameDesignDoc, chatHistory: string) => void
+  // Called when the learner clicks "Paste my own HTML" — opens the import flow.
+  onImportHtml?: (standard: StandardNode) => void
   interests?: string[]
   nodeStatus?: "locked" | "available" | "in_progress" | "in_review" | "approved_unplayed" | "unlocked" | "mastered"
 }
@@ -115,6 +117,7 @@ export function StandardPanel({
   onUnlock,
   onDemonstrated,
   onBuildGame,
+  onImportHtml,
   interests,
   nodeStatus,
 }: StandardPanelProps) {
@@ -187,7 +190,7 @@ export function StandardPanel({
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-amber-400 text-sm">
                 <Lock className="size-4 shrink-0" />
-                <span>You haven&apos;t started this one yet — complete its prerequisites first.</span>
+                <span>You haven&apos;t completed its prerequisites. Go back to the galaxy and complete them first.</span>
               </div>
               {playToMasterButton}
               <ConceptCard
@@ -270,6 +273,15 @@ export function StandardPanel({
                     onReady={() => setStep("earn")}
                     interests={interests}
                   />
+                  {/* Alternate path: skip the AI build flow and paste your own HTML */}
+                  {onImportHtml && (
+                    <button
+                      onClick={() => onImportHtml(standard)}
+                      className="w-full py-3 rounded-lg border-2 border-dashed border-zinc-700 text-zinc-300 hover:text-white hover:border-zinc-500 text-sm font-medium transition-colors"
+                    >
+                      Or paste your own HTML game →
+                    </button>
+                  )}
                 </div>
               )}
 
