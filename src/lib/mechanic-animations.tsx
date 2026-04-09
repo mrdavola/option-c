@@ -13,7 +13,15 @@ export interface MechanicAnimation {
   id: string
   title: string
   mathDomain: string
-  keywords: string[] // for matching to standards
+  // Words that, if found in a standard's description, suggest this
+  // mechanic. Matched with word boundaries (so "part" won't match
+  // "particular"). Use base forms — "add" will catch "addition", "adds",
+  // "adding" via the loose suffix rule.
+  descKeywords: string[]
+  // Common-Core domain code prefixes (e.g. "NF", "G-SRT"). Matched with
+  // a startsWith check on the standard's domain code so "G" doesn't
+  // accidentally match every code containing the letter g.
+  domainCodes: string[]
   svg: React.ReactNode
 }
 
@@ -589,71 +597,208 @@ const SVG_BIDDING = `<svg viewBox="0 0 180 120" xmlns="http://www.w3.org/2000/sv
 <text x="90" y="110" font-size="7" fill="#71717a" text-anchor="middle">estimate the value</text>
 </svg>`
 
+// Rise & Fall — vertical number line with 0 marked as sea level. The
+// stick figure climbs and dives between +3 and -3, in sync with a
+// thermometer's mercury rising and falling. The verb is "move above
+// and below zero" — covers signed numbers, integers, and absolute value.
+const SVG_RISE_FALL = `<svg viewBox="0 0 180 120" xmlns="http://www.w3.org/2000/svg">
+<style>
+@keyframes rf_climb { 0%,100%{transform:translateY(-25px)} 50%{transform:translateY(25px)} }
+@keyframes rf_armA  { 0%,100%{transform:rotate(140deg)} 50%{transform:rotate(40deg)} }
+@keyframes rf_armB  { 0%,100%{transform:rotate(40deg)} 50%{transform:rotate(140deg)} }
+@keyframes rf_legA  { 0%,100%{transform:rotate(-15deg)} 50%{transform:rotate(15deg)} }
+@keyframes rf_legB  { 0%,100%{transform:rotate(15deg)} 50%{transform:rotate(-15deg)} }
+.rf_g    { animation: rf_climb 4s ease-in-out infinite; transform-origin: 100px 60px; }
+.rf_aA   { animation: rf_armA 4s ease-in-out infinite; transform-origin: 100px 58px; }
+.rf_aB   { animation: rf_armB 4s ease-in-out infinite; transform-origin: 100px 58px; }
+.rf_lA   { animation: rf_legA 0.8s ease-in-out infinite; transform-origin: 100px 78px; }
+.rf_lB   { animation: rf_legB 0.8s ease-in-out infinite; transform-origin: 100px 78px; }
+</style>
+<rect width="180" height="120" fill="#18181b"/>
+
+<!-- Vertical number line on the right -->
+<line x1="140" y1="15" x2="140" y2="105" stroke="#52525b" stroke-width="1.5"/>
+<line x1="135" y1="20" x2="145" y2="20" stroke="#52525b" stroke-width="1"/>
+<line x1="135" y1="35" x2="145" y2="35" stroke="#52525b" stroke-width="1"/>
+<line x1="135" y1="50" x2="145" y2="50" stroke="#52525b" stroke-width="1"/>
+<line x1="128" y1="60" x2="152" y2="60" stroke="#60a5fa" stroke-width="2"/>
+<line x1="135" y1="70" x2="145" y2="70" stroke="#52525b" stroke-width="1"/>
+<line x1="135" y1="85" x2="145" y2="85" stroke="#52525b" stroke-width="1"/>
+<line x1="135" y1="100" x2="145" y2="100" stroke="#52525b" stroke-width="1"/>
+<text x="148" y="23" font-size="6" fill="#a1a1aa" font-family="monospace">+3</text>
+<text x="148" y="38" font-size="6" fill="#a1a1aa" font-family="monospace">+2</text>
+<text x="148" y="53" font-size="6" fill="#a1a1aa" font-family="monospace">+1</text>
+<text x="148" y="63" font-size="7" fill="#60a5fa" font-family="monospace" font-weight="bold">0</text>
+<text x="148" y="73" font-size="6" fill="#a1a1aa" font-family="monospace">-1</text>
+<text x="148" y="88" font-size="6" fill="#a1a1aa" font-family="monospace">-2</text>
+<text x="148" y="103" font-size="6" fill="#a1a1aa" font-family="monospace">-3</text>
+
+<!-- Thermometer on the left. Mercury rises and falls in sync with the
+     climbing figure (4s cycle). Bulb is fixed at the bottom; the
+     mercury column animates its y and height attributes via SMIL. -->
+<rect x="20" y="15" width="14" height="80" rx="6" fill="none" stroke="#71717a" stroke-width="1.5"/>
+<line x1="36" y1="25" x2="40" y2="25" stroke="#71717a" stroke-width="1"/>
+<line x1="36" y1="40" x2="40" y2="40" stroke="#71717a" stroke-width="1"/>
+<line x1="36" y1="55" x2="40" y2="55" stroke="#71717a" stroke-width="1"/>
+<line x1="34" y1="70" x2="42" y2="70" stroke="#60a5fa" stroke-width="1.5"/>
+<line x1="36" y1="85" x2="40" y2="85" stroke="#71717a" stroke-width="1"/>
+<circle cx="27" cy="100" r="9" fill="#dc2626"/>
+<rect x="23" width="8" rx="3" fill="#dc2626">
+  <animate attributeName="y" values="75;20;75" dur="4s" repeatCount="indefinite"/>
+  <animate attributeName="height" values="25;80;25" dur="4s" repeatCount="indefinite"/>
+</rect>
+
+<!-- Stick figure climbing the number line, vertically translated by rf_climb -->
+<g class="rf_g">
+  <circle cx="100" cy="50" r="6" fill="none" stroke="#e4e4e7" stroke-width="2"/>
+  <line x1="100" y1="56" x2="100" y2="78" stroke="#e4e4e7" stroke-width="2"/>
+  <g class="rf_aA"><line x1="100" y1="58" x2="100" y2="48" stroke="#e4e4e7" stroke-width="2"/></g>
+  <g class="rf_aB"><line x1="100" y1="58" x2="100" y2="48" stroke="#e4e4e7" stroke-width="2"/></g>
+  <g class="rf_lA"><line x1="100" y1="78" x2="100" y2="92" stroke="#e4e4e7" stroke-width="2"/></g>
+  <g class="rf_lB"><line x1="100" y1="78" x2="100" y2="92" stroke="#e4e4e7" stroke-width="2"/></g>
+</g>
+
+<text x="90" y="116" font-size="6" fill="#71717a" text-anchor="middle">above and below zero</text>
+</svg>`
+
 export const MECHANIC_ANIMATIONS: MechanicAnimation[] = [
   { id: "resource-management", title: "Collect & Manage", mathDomain: "arithmetic operations",
-    keywords: ["add", "subtract", "operation", "sum", "difference", "plus", "minus", "OA", "NBT"],
+    descKeywords: ["subtract", "subtraction", "difference", "minus", "take away", "operation"],
+    domainCodes: ["OA"],
     svg: dangerousSvg(SVG_RESOURCE_MGMT) },
   { id: "partitioning", title: "Split & Share", mathDomain: "fractions and ratios",
-    keywords: ["fraction", "ratio", "part", "whole", "half", "quarter", "third", "NF", "RP", "partition"],
+    descKeywords: ["fraction", "partition", "equivalent", "equivalence", "half", "quarter", "third", "fourths", "eighths", "numerator", "denominator", "share equally"],
+    domainCodes: ["NF"],
     svg: dangerousSvg(SVG_PARTITIONING) },
   { id: "balance-systems", title: "Balance & Equalize", mathDomain: "equations",
-    keywords: ["equal", "equation", "balance", "solve", "variable", "unknown", "EE", "A-REI", "A-CED"],
+    descKeywords: ["equation", "balance", "solve", "variable", "unknown", "expression", "inequality",
+      // polynomial algebra: factoring, zeros, remainder theorem, rational expressions
+      "polynomial", "remainder theorem", "rational expression", "factor of", "zeros of"],
+    domainCodes: ["EE", "A-REI", "A-CED", "A-SSE", "A-APR"],
     svg: dangerousSvg(SVG_BALANCE) },
   { id: "spatial-puzzles", title: "Fit & Rotate", mathDomain: "geometry",
-    keywords: ["shape", "angle", "rotate", "symmetry", "transform", "congruent", "geometry", "G"],
+    descKeywords: ["shape", "angle", "rotate", "rotation", "reflection", "translation", "symmetry", "transform", "congruent", "polygon", "triangle", "circle", "quadrilateral"],
+    domainCodes: ["G", "G-CO", "G-SRT", "G-C"],
     svg: dangerousSvg(SVG_SPATIAL) },
   { id: "probability-systems", title: "Roll & Predict", mathDomain: "statistics and probability",
-    keywords: ["probability", "chance", "data", "random", "likely", "predict", "statistics", "SP", "S-CP", "S-ID"],
+    descKeywords: ["probability", "chance", "random", "likely", "outcome", "event", "sample space", "data", "histogram", "bar graph", "line plot", "scatter", "distribution", "median", "mean", "mode",
+      // statistical inference: sampling, surveys, observational studies
+      "sample survey", "randomization", "observational study", "experiment"],
+    domainCodes: ["SP", "S-CP", "S-ID", "S-MD", "S-IC"],
     svg: dangerousSvg(SVG_PROBABILITY) },
   { id: "path-optimization", title: "Navigate & Optimize", mathDomain: "graph reasoning",
-    keywords: ["path", "graph", "shortest", "route", "network", "vertex", "edge", "distance"],
+    descKeywords: ["shortest path", "route", "network", "vertex", "edge", "graph theory"],
+    domainCodes: [],
     svg: dangerousSvg(SVG_PATH_OPT) },
   { id: "construction-systems", title: "Build & Measure", mathDomain: "area and volume",
-    keywords: ["area", "volume", "perimeter", "length", "width", "height", "square", "cube", "MD", "G-GMD"],
+    descKeywords: ["area", "volume", "perimeter", "surface area", "rectangle", "rectangular array", "square unit", "cubic", "tile"],
+    domainCodes: ["G-GMD", "G-MG"],
     svg: dangerousSvg(SVG_CONSTRUCTION) },
   { id: "motion-simulation", title: "Race & Calculate", mathDomain: "rates and slopes",
-    keywords: ["rate", "speed", "slope", "distance", "time", "per", "unit rate", "RP", "F-IF", "F-LE"],
+    descKeywords: ["rate", "speed", "slope", "per hour", "per second", "unit rate", "linear", "constant rate"],
+    domainCodes: ["F-IF", "F-LE"],
     svg: dangerousSvg(SVG_MOTION) },
   { id: "constraint-puzzles", title: "Solve & Eliminate", mathDomain: "logical reasoning",
-    keywords: ["logic", "reason", "if", "then", "constraint", "rule", "deduce", "MP"],
+    descKeywords: ["logical", "reasoning", "constraint", "deduce", "argument", "proof"],
+    domainCodes: ["MP"],
     svg: dangerousSvg(SVG_CONSTRAINT) },
   { id: "strategy-economy", title: "Grow & Compound", mathDomain: "exponential growth",
-    keywords: ["exponent", "growth", "double", "multiply", "compound", "power", "F-LE", "F-BF"],
+    descKeywords: ["exponent", "exponential", "growth", "double", "compound", "power",
+      // rational/irrational exponents and radicals
+      "rational exponent", "radical", "irrational", "square root", "cube root", "nth root"],
+    domainCodes: ["F-BF", "N-RN"],
     svg: dangerousSvg(SVG_STRATEGY) },
   { id: "measurement-challenges", title: "Measure & Compare", mathDomain: "units and measurement",
-    keywords: ["measure", "unit", "length", "weight", "capacity", "convert", "estimate", "MD"],
+    descKeywords: ["measure", "measurement", "unit", "length", "weight", "mass", "capacity", "convert", "inch", "foot", "centimeter", "meter", "liter", "gram", "ounce"],
+    domainCodes: ["MD"],
     svg: dangerousSvg(SVG_MEASURE) },
   { id: "scoring-ranking", title: "Score & Rank", mathDomain: "ordering and comparison",
-    keywords: ["order", "compare", "greater", "less", "rank", "sort", "number sense", "CC", "NBT"],
+    descKeywords: ["order", "compare", "comparing", "greater", "less than", "ascending", "descending", "rank", "sort", "number line", "count to", "count forward", "count by", "skip count"],
+    domainCodes: ["CC"],
     svg: dangerousSvg(SVG_SCORING) },
   { id: "timing-rhythm", title: "Pattern & Repeat", mathDomain: "patterns and sequences",
-    keywords: ["pattern", "sequence", "repeat", "rule", "next", "term", "OA", "F-BF"],
+    descKeywords: ["pattern", "sequence", "repeating", "next term", "rule", "arithmetic sequence", "geometric sequence", "function rule",
+      // trigonometric / periodic functions — they repeat
+      "trigonometric", "periodic", "amplitude", "frequency", "midline", "sine", "cosine", "tangent"],
+    domainCodes: ["F-BF", "F-LE", "F-TF"],
     svg: dangerousSvg(SVG_TIMING) },
   { id: "scaling-resizing", title: "Scale & Transform", mathDomain: "proportional reasoning",
-    keywords: ["proportion", "scale", "ratio", "similar", "enlarge", "shrink", "G-SRT", "RP"],
+    descKeywords: ["proportion", "proportional", "scale", "scaling", "ratio", "similar", "enlarge", "shrink", "percent", "percentage"],
+    domainCodes: ["RP", "G-SRT"],
     svg: dangerousSvg(SVG_SCALING) },
   { id: "inventory-crafting", title: "Craft & Combine", mathDomain: "addition and grouping",
-    keywords: ["add", "group", "combine", "total", "altogether", "OA", "NBT"],
+    descKeywords: ["add", "addition", "sum", "plus", "combine", "altogether", "in all", "group", "multiplication", "multiply", "product", "times", "array", "equal groups"],
+    domainCodes: [],
     svg: dangerousSvg(SVG_INVENTORY) },
   { id: "terrain-generation", title: "Plot & Explore", mathDomain: "coordinate systems",
-    keywords: ["coordinate", "grid", "plot", "x", "y", "axis", "point", "ordered pair", "G-GPE"],
+    descKeywords: ["coordinate", "ordered pair", "x-axis", "y-axis", "first quadrant", "plot", "graph the point",
+      // complex plane = real on x, imaginary on y — same plotting verb
+      "complex number", "complex plane", "imaginary",
+      // vectors live on a coordinate grid (magnitude + direction)
+      "vector", "magnitude and direction", "directed line segment", "scalar"],
+    domainCodes: ["G-GPE", "N-CN", "N-VM"],
     svg: dangerousSvg(SVG_TERRAIN) },
   { id: "bidding-auction", title: "Bid & Estimate", mathDomain: "estimation and place value",
-    keywords: ["estimate", "round", "approximate", "place value", "digit", "value", "NBT"],
+    descKeywords: ["estimate", "estimation", "round", "rounding", "approximate", "place value", "digit", "tens", "hundreds", "thousands", "ones place", "money", "coin", "dollar", "cent", "time", "clock", "hour", "minute"],
+    domainCodes: ["NBT"],
     svg: dangerousSvg(SVG_BIDDING) },
+  { id: "above-below-zero", title: "Rise & Fall", mathDomain: "signed numbers and absolute value",
+    descKeywords: ["negative number", "absolute value", "integer", "opposite", "sea level", "above zero", "below zero", "elevation", "temperature", "credit", "debit"],
+    // No domainCodes — "NS" would grab too much (fractions, GCF, irrationals).
+    // Rely on the specific descKeywords above.
+    domainCodes: [],
+    svg: dangerousSvg(SVG_RISE_FALL) },
 ]
 
-// Match mechanics to a standard based on keywords
+// Match mechanics to a standard. Returns the top 3, ordered by score.
+//
+// Scoring rules:
+//   +5 per descKeyword found in the description
+//   +4 if the standard's domainCode matches any of the mechanic's
+//      domainCodes (exact, or with a "-"/"." suffix)
+//
+// Keyword matching is "prefix at a word boundary" for keywords ≥ 5 chars
+// and "exact word boundary on both sides" for shorter keywords. The
+// length rule lets long keywords like "fraction" match "fractions"/
+// "fractional" while keeping short ones like "add" from matching
+// "additional". Multi-word keywords (e.g. "complex plane") are matched
+// as substrings since they already disambiguate themselves.
 export function matchMechanics(description: string, domainCode: string): MechanicAnimation[] {
   const desc = description.toLowerCase()
-  const scored = MECHANIC_ANIMATIONS.map(m => {
+  const code = domainCode.toUpperCase()
+  const scored = MECHANIC_ANIMATIONS.map((m) => {
     let score = 0
-    for (const kw of m.keywords) {
-      if (desc.includes(kw.toLowerCase())) score += 2
-      if (domainCode.includes(kw.toUpperCase())) score += 3
+    for (const kw of m.descKeywords) {
+      if (descMatches(desc, kw.toLowerCase())) score += 5
+    }
+    for (const dc of m.domainCodes) {
+      if (code === dc || code.startsWith(`${dc}-`) || code.startsWith(`${dc}.`)) {
+        score += 4
+      }
     }
     return { mechanic: m, score }
   })
   scored.sort((a, b) => b.score - a.score)
-  return scored.slice(0, 3).map(s => s.mechanic)
+  // Drop zero-scoring mechanics so we don't return random fallbacks.
+  return scored.filter((s) => s.score > 0).slice(0, 3).map((s) => s.mechanic)
+}
+
+function descMatches(desc: string, kw: string): boolean {
+  if (kw.includes(" ")) {
+    // Multi-word keywords are already specific enough — substring match.
+    return desc.includes(kw)
+  }
+  if (kw.length >= 5) {
+    // Long keywords: prefix at word boundary, suffixes free (catches
+    // plurals like "fractions", "exponents"; derivatives like
+    // "exponential", "fractional"; tenses like "subtracted").
+    return new RegExp(`(^|[^a-z])${escapeRegex(kw)}`).test(desc)
+  }
+  // Short keywords (≤4 chars): exact word boundary on both sides so
+  // "add" doesn't match "additional" and "sum" doesn't match "summary".
+  return new RegExp(`(^|[^a-z])${escapeRegex(kw)}([^a-z]|$)`).test(desc)
+}
+
+function escapeRegex(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 }

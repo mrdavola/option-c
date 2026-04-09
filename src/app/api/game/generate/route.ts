@@ -199,6 +199,56 @@ export async function POST(req: Request) {
       max_tokens: 8000,
       system: `You generate complete, self-contained HTML files for playable browser games for learners aged 7-18. Output ONLY the HTML. No markdown. No code fences. Start with <!DOCTYPE html>.
 
+🧠 INTRINSIC INTEGRATION — THE MOST IMPORTANT RULE:
+This game teaches a math concept. Per Habgood & Ainsworth (2011), the math
+concept MUST be the core player action — not a question stuck on top of an
+unrelated game. The player verb IS the math operation.
+
+❌ EXTRINSIC (forbidden — these are quizzes wearing a costume, not games):
+- Multiple choice ("which of these is correct?")
+- Type the answer in a box
+- Click the right number / the right shape / the right bin
+- A platformer/runner where you stop to answer a math question to keep going
+- Any pattern where the math could be replaced by trivia and the game still works
+
+✅ INTRINSIC (required — the math is the verb):
+- The player physically MANIPULATES math objects to win
+- Removing the math breaks the game itself, not just its scoring
+
+CONCEPT → CORE VERB MAPPING (use this table to pick the right mechanic):
+
+| Math concept type                  | Core player verb (the game IS this) |
+|------------------------------------|--------------------------------------|
+| Number line / ordering / comparing | Dive, jump, or fly to a position on a line |
+| Counting / cardinality             | Collect a specific count of discrete objects |
+| Place value / composing 10/100     | Stack, load, or pack into fixed-capacity containers |
+| Addition / subtraction             | Combine or separate physical groups; merge/split |
+| Multiplication / arrays            | Build a rectangle of rows × columns; tile a grid |
+| Division / factoring               | Split an object into equal groups; cut/share evenly |
+| Fractions (partitioning)           | Cut, slice, share a whole into equal parts |
+| Fractions (equivalence)            | Mix or stretch parts until two amounts match |
+| Ratio / proportion                 | Mix, pour, or balance two quantities (potions, paint) |
+| Percent / scaling                  | Resize, zoom, fill a meter to a target proportion |
+| Decimals                           | Aim/launch with magnitude; place on a fine number line |
+| Measurement (length/area)          | Stretch, drag, compare, or fit shapes |
+| Measurement (time/money)           | Spend, schedule, exchange tokens of fixed values |
+| Geometry (shapes)                  | Build, fold, rotate, fit shapes together |
+| Coordinate plane                   | Navigate, aim, or defend by (x,y) position |
+| Algebra / equations                | Move/balance tokens across a divide to keep both sides equal |
+| Functions / patterns               | Predict the next step; tune a machine that transforms input |
+| Statistics / data                  | Sort, group, sample; build a chart by adding bars |
+| Probability                        | Bet, gamble, weight outcomes; spin/draw to hit a target |
+
+PROCESS — do this BEFORE writing any HTML:
+1. Read the math role and concept below.
+2. Match it to a row in the table above. Pick ONE core player verb.
+3. Design the entire game around that verb. The verb is THE game.
+4. Verify: if I removed the math, would the game still be playable? If yes,
+   start over — the math is bolted on, not intrinsic.
+5. At the very top of the <body>, write an HTML comment:
+   <!-- coreVerb: <the verb you picked> -->
+   This is required for debugging.
+
 ${vibePreset.spec}
 
 ${forbiddenRules}
@@ -209,11 +259,15 @@ ${characterRule}
 - The game looks like it belongs in the chosen era — not like a generic web app.
 
 🚨 CRITICAL GAMEPLAY RULES:
-- The math concept must be ESSENTIAL — the player cannot win without using it.
+- The math concept must be the core player verb (see intrinsic integration above).
 - Every round must use different numbers so memorising doesn't work.
 - Game ends after 3-5 rounds with a clear win/lose screen.
 - Mouse/touch input. Keyboard is a bonus.
 - Include a brief 1-sentence "how to play" before the game starts.
+- BANNED interaction patterns (these are extrinsic quizzes, not games):
+  multiple choice buttons, "type the answer" inputs, "tap the correct one"
+  grids of options, trivia-style Q&A. If the design doc seems to imply these,
+  REPLACE the mechanic with the matching intrinsic verb from the table above.
 
 🚨 MANDATORY POST-MESSAGE PROTOCOL — NON-NEGOTIABLE:
 The game runs inside a parent app that needs to know when the player wins or loses.
@@ -239,6 +293,16 @@ GAME DESIGN:
 - Math role: ${designDoc.mathRole}
 - Vibe: ${vibePreset.label}${visualConceptBlock}
 
+⚠️ FIRST: pick the core player verb using the CONCEPT → CORE VERB MAPPING in
+the system prompt. The math role above tells you which row of the table
+to use. The game's central interaction MUST be that verb. If the design
+doc above describes anything that looks like multiple choice, "type the
+answer", or "click the right one" — IGNORE that and replace it with the
+intrinsic verb from the table. The design doc is a starting point, not
+a constraint on the mechanic.
+
+Add the required <!-- coreVerb: ... --> comment at the top of <body>.
+
 REQUIREMENTS:
 - All CSS and JavaScript inline.
 - Apply the ${vibePreset.label} vibe spec strictly: palette, font, effects.
@@ -263,6 +327,12 @@ REMEMBER: ${vibePreset.allowSketch
     if (cleanHtml.startsWith("```")) {
       cleanHtml = cleanHtml.replace(/^```html?\n?/, "").replace(/\n?```$/, "")
     }
+
+    // Log the model's chosen coreVerb so we can audit whether the
+    // intrinsic-integration prompt is actually working. Cheap to keep on.
+    const verbMatch = cleanHtml.match(/<!--\s*coreVerb:\s*(.+?)\s*-->/i)
+    const coreVerb = verbMatch ? verbMatch[1] : "(NOT DECLARED)"
+    console.log(`[generate] standard=${designDoc.standardId ?? "?"} mathRole="${designDoc.mathRole ?? "?"}" coreVerb="${coreVerb}"`)
 
     return Response.json({ html: cleanHtml })
   } catch (error) {

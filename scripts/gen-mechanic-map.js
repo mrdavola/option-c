@@ -25,7 +25,8 @@ const mechanics = [
     id: "resource-management",
     title: "Collect & Manage",
     domain: "arithmetic operations",
-    keywords: ["add", "subtract", "operation", "sum", "difference", "plus", "minus", "OA", "NBT"],
+    descKeywords: ["subtract", "subtraction", "difference", "minus", "take away", "operation"],
+    domainCodes: ["OA"],
     svg: `<svg viewBox="0 0 180 120" xmlns="http://www.w3.org/2000/svg">
 <style>
   @keyframes walkRight { 0%,100%{transform:translateX(0)}50%{transform:translateX(20px)} }
@@ -61,7 +62,8 @@ const mechanics = [
     id: "partitioning",
     title: "Split & Share",
     domain: "fractions and ratios",
-    keywords: ["fraction", "ratio", "part", "whole", "half", "quarter", "third", "NF", "RP", "partition"],
+    descKeywords: ["fraction", "partition", "equivalent", "equivalence", "half", "quarter", "third", "fourths", "eighths", "numerator", "denominator", "share equally"],
+    domainCodes: ["NF"],
     svg: `<svg viewBox="0 0 180 120" xmlns="http://www.w3.org/2000/svg">
 <style>
   @keyframes slice { 0%,40%{transform:translateY(-3px)} 50%,90%{transform:translateY(3px)} }
@@ -93,7 +95,9 @@ const mechanics = [
     id: "balance-systems",
     title: "Balance & Equalize",
     domain: "equations",
-    keywords: ["equal", "equation", "balance", "solve", "variable", "unknown", "EE", "A-REI", "A-CED"],
+    descKeywords: ["equation", "balance", "solve", "variable", "unknown", "expression", "inequality",
+      "polynomial", "remainder theorem", "rational expression", "factor of", "zeros of"],
+    domainCodes: ["EE", "A-REI", "A-CED", "A-SSE", "A-APR"],
     svg: `<svg viewBox="0 0 180 120" xmlns="http://www.w3.org/2000/svg">
 <style>
   @keyframes tilt   { 0%,100%{transform:rotate(-3deg)} 50%{transform:rotate(3deg)} }
@@ -131,7 +135,8 @@ const mechanics = [
     id: "spatial-puzzles",
     title: "Fit & Rotate",
     domain: "geometry",
-    keywords: ["shape", "angle", "rotate", "symmetry", "transform", "congruent", "geometry", "G"],
+    descKeywords: ["shape", "angle", "rotate", "rotation", "reflection", "translation", "symmetry", "transform", "congruent", "polygon", "triangle", "circle", "quadrilateral"],
+    domainCodes: ["G", "G-CO", "G-SRT", "G-C"],
     svg: `<svg viewBox="0 0 180 120" xmlns="http://www.w3.org/2000/svg">
 <style>
   @keyframes spin  { 0%{transform:rotate(0)} 100%{transform:rotate(360deg)} }
@@ -166,7 +171,9 @@ const mechanics = [
     id: "probability-systems",
     title: "Roll & Predict",
     domain: "statistics and probability",
-    keywords: ["probability", "chance", "data", "random", "likely", "predict", "statistics", "SP", "S-CP", "S-ID"],
+    descKeywords: ["probability", "chance", "random", "likely", "outcome", "event", "sample space", "data", "histogram", "bar graph", "line plot", "scatter", "distribution", "median", "mean", "mode",
+      "sample survey", "randomization", "observational study", "experiment"],
+    domainCodes: ["SP", "S-CP", "S-ID", "S-MD", "S-IC"],
     svg: `<svg viewBox="0 0 180 120" xmlns="http://www.w3.org/2000/svg">
 <style>
   @keyframes shake { 0%,100%{transform:translateX(-3px)} 50%{transform:translateX(3px)} }
@@ -202,7 +209,8 @@ const mechanics = [
     id: "path-optimization",
     title: "Navigate & Optimize",
     domain: "graph reasoning",
-    keywords: ["path", "graph", "shortest", "route", "network", "vertex", "edge", "distance"],
+    descKeywords: ["shortest path", "route", "network", "vertex", "edge", "graph theory"],
+    domainCodes: [],
     svg: `<svg viewBox="0 0 180 120" xmlns="http://www.w3.org/2000/svg">
 <style>
   @keyframes walk { 0%{offset-distance:0%} 100%{offset-distance:100%} }
@@ -241,7 +249,8 @@ const mechanics = [
     id: "construction-systems",
     title: "Build & Measure",
     domain: "area and volume",
-    keywords: ["area", "volume", "perimeter", "length", "width", "height", "square", "cube", "MD", "G-GMD"],
+    descKeywords: ["area", "volume", "perimeter", "surface area", "rectangle", "rectangular array", "square unit", "cubic", "tile"],
+    domainCodes: ["G-GMD", "G-MG"],
     svg: `<svg viewBox="0 0 180 120" xmlns="http://www.w3.org/2000/svg">
 <style>
   @keyframes lift { 0%,30%{transform:translateY(0)} 50%{transform:translateY(-12px)} 70%,100%{transform:translateY(0)} }
@@ -274,7 +283,8 @@ const mechanics = [
     id: "motion-simulation",
     title: "Race & Calculate",
     domain: "rates and slopes",
-    keywords: ["rate", "speed", "slope", "distance", "time", "per", "unit rate", "RP", "F-IF", "F-LE"],
+    descKeywords: ["rate", "speed", "slope", "per hour", "per second", "unit rate", "linear", "constant rate"],
+    domainCodes: ["F-IF", "F-LE"],
     svg: `<svg viewBox="0 0 180 120" xmlns="http://www.w3.org/2000/svg">
 <style>
   @keyframes run     { 0%{transform:translateX(0)} 100%{transform:translateX(110px)} }
@@ -315,7 +325,8 @@ const mechanics = [
     id: "constraint-puzzles",
     title: "Solve & Eliminate",
     domain: "logical reasoning",
-    keywords: ["logic", "reason", "if", "then", "constraint", "rule", "deduce", "MP"],
+    descKeywords: ["logical", "reasoning", "constraint", "deduce", "argument", "proof"],
+    domainCodes: ["MP"],
     svg: `<svg viewBox="0 0 180 120" xmlns="http://www.w3.org/2000/svg">
 <style>
   @keyframes nod   { 0%,100%{transform:rotate(-3deg)} 50%{transform:rotate(3deg)} }
@@ -354,7 +365,9 @@ const mechanics = [
     id: "strategy-economy",
     title: "Grow & Compound",
     domain: "exponential growth",
-    keywords: ["exponent", "growth", "double", "multiply", "compound", "power", "F-LE", "F-BF"],
+    descKeywords: ["exponent", "exponential", "growth", "double", "compound", "power",
+      "rational exponent", "radical", "irrational", "square root", "cube root", "nth root"],
+    domainCodes: ["F-BF", "N-RN"],
     svg: `<svg viewBox="0 0 180 120" xmlns="http://www.w3.org/2000/svg">
 <style>
   @keyframes growCurve { 0%{stroke-dashoffset:100} 100%{stroke-dashoffset:0} }
@@ -396,7 +409,8 @@ const mechanics = [
     id: "measurement-challenges",
     title: "Measure & Compare",
     domain: "units and measurement",
-    keywords: ["measure", "unit", "length", "weight", "capacity", "convert", "estimate", "MD"],
+    descKeywords: ["measure", "measurement", "unit", "length", "weight", "mass", "capacity", "convert", "inch", "foot", "centimeter", "meter", "liter", "gram", "ounce"],
+    domainCodes: ["MD"],
     svg: `<svg viewBox="0 0 180 120" xmlns="http://www.w3.org/2000/svg">
 <style>
   @keyframes measure { 0%,100%{transform:translateX(0)} 50%{transform:translateX(35px)} }
@@ -438,7 +452,8 @@ const mechanics = [
     id: "scoring-ranking",
     title: "Score & Rank",
     domain: "ordering and comparison",
-    keywords: ["order", "compare", "greater", "less", "rank", "sort", "number sense", "CC", "NBT"],
+    descKeywords: ["order", "compare", "comparing", "greater", "less than", "ascending", "descending", "rank", "sort", "number line", "count to", "count forward", "count by", "skip count"],
+    domainCodes: ["CC"],
     svg: `<svg viewBox="0 0 180 120" xmlns="http://www.w3.org/2000/svg">
 <style>
   @keyframes celebrate { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
@@ -472,7 +487,9 @@ const mechanics = [
     id: "timing-rhythm",
     title: "Pattern & Repeat",
     domain: "patterns and sequences",
-    keywords: ["pattern", "sequence", "repeat", "rule", "next", "term", "OA", "F-BF"],
+    descKeywords: ["pattern", "sequence", "repeating", "next term", "rule", "arithmetic sequence", "geometric sequence", "function rule",
+      "trigonometric", "periodic", "amplitude", "frequency", "midline", "sine", "cosine", "tangent"],
+    domainCodes: ["F-BF", "F-LE", "F-TF"],
     svg: `<svg viewBox="0 0 180 120" xmlns="http://www.w3.org/2000/svg">
 <style>
   @keyframes beat1 { 0%,100%{r:5;opacity:0.5} 10%,20%{r:8;opacity:1} }
@@ -515,7 +532,8 @@ const mechanics = [
     id: "scaling-resizing",
     title: "Scale & Transform",
     domain: "proportional reasoning",
-    keywords: ["proportion", "scale", "ratio", "similar", "enlarge", "shrink", "G-SRT", "RP"],
+    descKeywords: ["proportion", "proportional", "scale", "scaling", "ratio", "similar", "enlarge", "shrink", "percent", "percentage"],
+    domainCodes: ["RP", "G-SRT"],
     svg: `<svg viewBox="0 0 180 120" xmlns="http://www.w3.org/2000/svg">
 <style>
   @keyframes scaleUp { 0%,100%{transform:scale(1)} 50%{transform:scale(1.4)} }
@@ -550,7 +568,8 @@ const mechanics = [
     id: "inventory-crafting",
     title: "Craft & Combine",
     domain: "addition and grouping",
-    keywords: ["add", "group", "combine", "total", "altogether", "OA", "NBT"],
+    descKeywords: ["add", "addition", "sum", "plus", "combine", "altogether", "in all", "group", "multiplication", "multiply", "product", "times", "array", "equal groups"],
+    domainCodes: [],
     svg: `<svg viewBox="0 0 180 120" xmlns="http://www.w3.org/2000/svg">
 <style>
   @keyframes mergeL  { 0%,40%{transform:translateX(0)} 60%,100%{transform:translateX(15px)} }
@@ -594,7 +613,10 @@ const mechanics = [
     id: "terrain-generation",
     title: "Plot & Explore",
     domain: "coordinate systems",
-    keywords: ["coordinate", "grid", "plot", "x", "y", "axis", "point", "ordered pair", "G-GPE"],
+    descKeywords: ["coordinate", "ordered pair", "x-axis", "y-axis", "first quadrant", "plot", "graph the point",
+      "complex number", "complex plane", "imaginary",
+      "vector", "magnitude and direction", "directed line segment", "scalar"],
+    domainCodes: ["G-GPE", "N-CN", "N-VM"],
     svg: `<svg viewBox="0 0 180 120" xmlns="http://www.w3.org/2000/svg">
 <style>
   @keyframes blink { 0%,100%{opacity:0.3} 50%{opacity:1} }
@@ -636,7 +658,8 @@ const mechanics = [
     id: "bidding-auction",
     title: "Bid & Estimate",
     domain: "estimation and place value",
-    keywords: ["estimate", "round", "approximate", "place value", "digit", "value", "NBT"],
+    descKeywords: ["estimate", "estimation", "round", "rounding", "approximate", "place value", "digit", "tens", "hundreds", "thousands", "ones place", "money", "coin", "dollar", "cent", "time", "clock", "hour", "minute"],
+    domainCodes: ["NBT"],
     svg: `<svg viewBox="0 0 180 120" xmlns="http://www.w3.org/2000/svg">
 <style>
   @keyframes bid1 { 0%,40%{transform:translateY(0)} 50%,90%{transform:translateY(-10px)} }
@@ -674,19 +697,101 @@ const mechanics = [
 <text x="90" y="110" font-size="7" fill="#71717a" text-anchor="middle">estimate the value</text>
 </svg>`,
   },
+  {
+    id: "above-below-zero",
+    title: "Rise & Fall",
+    domain: "signed numbers and absolute value",
+    descKeywords: ["negative number", "absolute value", "integer", "opposite", "sea level", "above zero", "below zero", "elevation", "temperature", "credit", "debit"],
+    domainCodes: [],
+    svg: `<svg viewBox="0 0 180 120" xmlns="http://www.w3.org/2000/svg">
+<style>
+  @keyframes rfClimb { 0%,100%{transform:translateY(-25px)} 50%{transform:translateY(25px)} }
+  @keyframes rfArmA  { 0%,100%{transform:rotate(140deg)} 50%{transform:rotate(40deg)} }
+  @keyframes rfArmB  { 0%,100%{transform:rotate(40deg)} 50%{transform:rotate(140deg)} }
+  @keyframes rfLegA  { 0%,100%{transform:rotate(-15deg)} 50%{transform:rotate(15deg)} }
+  @keyframes rfLegB  { 0%,100%{transform:rotate(15deg)} 50%{transform:rotate(-15deg)} }
+  .climber { animation: rfClimb 4s ease-in-out infinite; transform-origin: 100px 60px; }
+  .climberArmA { animation: rfArmA 4s ease-in-out infinite; transform-origin: 100px 58px; }
+  .climberArmB { animation: rfArmB 4s ease-in-out infinite; transform-origin: 100px 58px; }
+  .climberLegA { animation: rfLegA 0.8s ease-in-out infinite; transform-origin: 100px 78px; }
+  .climberLegB { animation: rfLegB 0.8s ease-in-out infinite; transform-origin: 100px 78px; }
+</style>
+<rect width="180" height="120" fill="#18181b"/>
+<line x1="140" y1="15" x2="140" y2="105" stroke="#52525b" stroke-width="1.5"/>
+<line x1="135" y1="20" x2="145" y2="20" stroke="#52525b" stroke-width="1"/>
+<line x1="135" y1="35" x2="145" y2="35" stroke="#52525b" stroke-width="1"/>
+<line x1="135" y1="50" x2="145" y2="50" stroke="#52525b" stroke-width="1"/>
+<line x1="128" y1="60" x2="152" y2="60" stroke="#60a5fa" stroke-width="2"/>
+<line x1="135" y1="70" x2="145" y2="70" stroke="#52525b" stroke-width="1"/>
+<line x1="135" y1="85" x2="145" y2="85" stroke="#52525b" stroke-width="1"/>
+<line x1="135" y1="100" x2="145" y2="100" stroke="#52525b" stroke-width="1"/>
+<text x="148" y="23" font-size="6" fill="#a1a1aa" font-family="monospace">+3</text>
+<text x="148" y="38" font-size="6" fill="#a1a1aa" font-family="monospace">+2</text>
+<text x="148" y="53" font-size="6" fill="#a1a1aa" font-family="monospace">+1</text>
+<text x="148" y="63" font-size="7" fill="#60a5fa" font-family="monospace" font-weight="bold">0</text>
+<text x="148" y="73" font-size="6" fill="#a1a1aa" font-family="monospace">-1</text>
+<text x="148" y="88" font-size="6" fill="#a1a1aa" font-family="monospace">-2</text>
+<text x="148" y="103" font-size="6" fill="#a1a1aa" font-family="monospace">-3</text>
+<rect x="20" y="15" width="14" height="80" rx="6" fill="none" stroke="#71717a" stroke-width="1.5"/>
+<line x1="36" y1="25" x2="40" y2="25" stroke="#71717a" stroke-width="1"/>
+<line x1="36" y1="40" x2="40" y2="40" stroke="#71717a" stroke-width="1"/>
+<line x1="36" y1="55" x2="40" y2="55" stroke="#71717a" stroke-width="1"/>
+<line x1="34" y1="70" x2="42" y2="70" stroke="#60a5fa" stroke-width="1.5"/>
+<line x1="36" y1="85" x2="40" y2="85" stroke="#71717a" stroke-width="1"/>
+<circle cx="27" cy="100" r="9" fill="#dc2626"/>
+<rect x="23" width="8" rx="3" fill="#dc2626">
+  <animate attributeName="y" values="75;20;75" dur="4s" repeatCount="indefinite"/>
+  <animate attributeName="height" values="25;80;25" dur="4s" repeatCount="indefinite"/>
+</rect>
+<g class="climber">
+  <circle cx="100" cy="50" r="6" fill="none" stroke="#e4e4e7" stroke-width="2"/>
+  <line x1="100" y1="56" x2="100" y2="78" stroke="#e4e4e7" stroke-width="2"/>
+  <g class="climberArmA"><line x1="100" y1="58" x2="100" y2="48" stroke="#e4e4e7" stroke-width="2"/></g>
+  <g class="climberArmB"><line x1="100" y1="58" x2="100" y2="48" stroke="#e4e4e7" stroke-width="2"/></g>
+  <g class="climberLegA"><line x1="100" y1="78" x2="100" y2="92" stroke="#e4e4e7" stroke-width="2"/></g>
+  <g class="climberLegB"><line x1="100" y1="78" x2="100" y2="92" stroke="#e4e4e7" stroke-width="2"/></g>
+</g>
+<text x="90" y="116" font-size="6" fill="#71717a" text-anchor="middle">above and below zero</text>
+</svg>`,
+  },
 ]
 
-// Match a moon to a mechanic. Score: keyword in description = +2,
-// keyword in domain code = +3. Highest score wins.
+// Match a moon to a mechanic. Mirrors matchMechanics() in
+// src/lib/mechanic-animations.tsx — keep these in sync.
+//
+// Scoring:
+//   +5 per descKeyword found in the description
+//   +4 if the standard's domain code matches one of the mechanic's
+//      domainCodes (exact, or with a "-" / "." suffix)
+//
+// Keyword matching: long keywords (≥5 chars) match as a prefix at a
+// word boundary so "fraction" matches "fractions"/"fractional"; short
+// ones (≤4 chars) require an exact word boundary so "add" doesn't
+// match "additional". Multi-word keywords are matched as substrings.
+//
+// Returns null if no mechanic scores above zero.
+function escapeRegex(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+}
+function descMatches(desc, kw) {
+  if (kw.indexOf(" ") !== -1) return desc.indexOf(kw) !== -1
+  if (kw.length >= 5) return new RegExp(`(^|[^a-z])${escapeRegex(kw)}`).test(desc)
+  return new RegExp(`(^|[^a-z])${escapeRegex(kw)}([^a-z]|$)`).test(desc)
+}
 function matchTopMechanic(desc, domainCode) {
   const d = (desc || "").toLowerCase()
-  let bestId = mechanics[0].id
-  let bestScore = -1
+  const code = (domainCode || "").toUpperCase()
+  let bestId = null
+  let bestScore = 0
   for (const m of mechanics) {
     let score = 0
-    for (const kw of m.keywords) {
-      if (d.includes(kw.toLowerCase())) score += 2
-      if (domainCode.includes(kw.toUpperCase())) score += 3
+    for (const kw of m.descKeywords) {
+      if (descMatches(d, kw.toLowerCase())) score += 5
+    }
+    for (const dc of m.domainCodes) {
+      if (code === dc || code.startsWith(`${dc}-`) || code.startsWith(`${dc}.`)) {
+        score += 4
+      }
     }
     if (score > bestScore) {
       bestScore = score
@@ -696,13 +801,20 @@ function matchTopMechanic(desc, domainCode) {
   return bestId
 }
 
-// Build the mechanic→moons map
+// Build the mechanic→moons map. Standards with no matching mechanic
+// land in the "unmatched" bucket so we can see what's not being covered.
 const mechanicMap = {}
 for (const m of mechanics) mechanicMap[m.id] = []
+const unmatched = []
 for (const moon of moons) {
-  const domainCode = moon.id.split(".").slice(0, 2).join(".")
-  const top = matchTopMechanic(moon.description || "", domainCode)
-  mechanicMap[top].push({ id: moon.id, desc: moon.description || "" })
+  // Use the domainCode field from standards.json directly — it's the
+  // canonical short code (e.g. "CC", "OA", "G-SRT"), not a prefix of the id.
+  const top = matchTopMechanic(moon.description || "", moon.domainCode || "")
+  if (top) {
+    mechanicMap[top].push({ id: moon.id, desc: moon.description || "" })
+  } else {
+    unmatched.push({ id: moon.id, desc: moon.description || "" })
+  }
 }
 
 // Build the HTML
@@ -760,8 +872,31 @@ mechanics.forEach((m, i) => {
 </div>`
 })
 
+// Unmatched standards — anything the keyword matcher couldn't place.
+// Useful for spotting gaps where a new mechanic (or new keywords) is needed.
+if (unmatched.length > 0) {
+  const unmatchedRows = unmatched
+    .map((mn) => `<div class="moon-tag"><span class="moon-id">${mn.id}</span><span class="moon-desc">${mn.desc.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</span></div>`)
+    .join("")
+  html += `
+<div class="mechanic" style="border-color:#7f1d1d;">
+  <div>
+    <div class="mechanic-num" style="color:#ef4444;">Unmatched</div>
+    <div class="mechanic-title">No mechanic matched</div>
+    <div class="mechanic-domain" style="color:#fca5a5;">these standards need a keyword or a new mechanic</div>
+  </div>
+  <div class="moons-section">
+    <h3>Standards with no match</h3>
+    <div class="moon-count">${unmatched.length} standards</div>
+    <div class="moon-grid">${unmatchedRows}</div>
+  </div>
+</div>`
+}
+
 html += "\n</body>\n</html>\n"
 
 const desktopPath = path.join(os.homedir(), "Desktop", "mechanic-moon-map.html")
 fs.writeFileSync(desktopPath, html)
 console.log(`Done — ${html.length} bytes written to ${desktopPath}`)
+console.log(`  matched: ${moons.length - unmatched.length} / ${moons.length}`)
+console.log(`  unmatched: ${unmatched.length}`)
