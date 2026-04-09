@@ -12,6 +12,12 @@ interface Template {
   title: string
   description: string
   examples: string[]
+  // Pre-generated chip menus for the chat-with-chips flow. These come
+  // from /api/templates and are passed up to the standard panel when
+  // the learner clicks a template card.
+  themeChips?: string[]
+  actionChips?: string[]
+  winChips?: string[]
 }
 
 type ReadingLevel = "simpler" | "default" | "challenge"
@@ -69,7 +75,10 @@ function GameTemplates({
   readOnly,
 }: {
   standard: StandardNode
-  onPick: (seedMessage: string) => void
+  // Click handler — receives the full template so the parent can
+  // route to the chip-driven TemplateChat (using the chip arrays)
+  // instead of the free-form GenieChat.
+  onPick: (template: Template) => void
   // readOnly = the moon is locked / in_review / already mastered. Show
   // the templates so the learner can SEE what's possible, but disable
   // the build buttons (rendered as a "Locked" pill instead).
@@ -149,12 +158,6 @@ function GameTemplates({
 
       <div className="space-y-2">
         {templates.map((t, i) => {
-          // Seed message: terse, non-declarative — just names which
-          // template the learner picked. The chat picks it up from
-          // there and walks them through theme/action/win-condition.
-          // (Verbose seeds caused the AI to grade the mechanic as if
-          // it were a fresh idea instead of treating it as pre-verified.)
-          const seed = `I picked the "${t.title}" template.`
           // On read-only moons (locked / in_review / already mastered)
           // we render the same card but as a disabled div with a
           // "Locked" pill instead of the Build → action.
@@ -196,7 +199,7 @@ function GameTemplates({
           return (
             <button
               key={i}
-              onClick={() => onPick(seed)}
+              onClick={() => onPick(t)}
               className="w-full text-left bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-blue-500/50 rounded-xl p-3 transition-colors group"
             >
               {cardInner}
@@ -210,10 +213,12 @@ function GameTemplates({
 
 interface ConceptCardProps {
   standard: StandardNode
-  // onReady is called when the learner is ready to start building. The
-  // optional seedMessage gets pre-filled as their first chat message
-  // (used by the template cards).
-  onReady: (seedMessage?: string) => void
+  // onReady is called when the learner is ready to start building. If
+  // they picked a template card, the full template is passed (so the
+  // panel can route to the chip-driven TemplateChat). If they hit
+  // "describe your own game", template is undefined and the panel
+  // routes to the free-form GenieChat.
+  onReady: (template?: Template) => void
   readOnly?: boolean
 }
 
@@ -416,7 +421,7 @@ export function ConceptCard({ standard, onReady, readOnly }: ConceptCardProps) {
           they could build, even before unlocking. */}
       <GameTemplates
         standard={standard}
-        onPick={(seed) => onReady(seed)}
+        onPick={(template) => onReady(template)}
         readOnly={readOnly}
       />
 

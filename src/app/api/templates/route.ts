@@ -9,25 +9,32 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 // Generates 2-3 generic game-mechanic TEMPLATES for a math standard.
 // A template describes the game shape in practical terms — what the
 // player does with the math — WITHOUT prescribing a setting or theme.
-// Each template has 3-4 diverse examples (realistic + fun) that show
-// the range of worlds the kid could place the mechanic in.
+// Each template now ALSO includes 3 chip menus that drive the
+// chip-based chat flow:
+//   - themeChips:     "what world should this happen in?"
+//   - actionChips:    "what does the player physically do on screen?"
+//   - winChips:       "how does the player know they won?"
 //
-// The learner clicks a template and it seeds the Genie chat with the
-// template description. They then decide the theme/setting themselves
-// (in chat), preserving their imagination while removing the "how
-// does this math become a game?" cognitive block.
+// The first chip menu (themeChips) reuses the template's `examples`
+// list — the kid sees the same examples in the template card AND in
+// the chat, which is consistent and reassuring.
+//
+// All chips are generated in the SAME AI call as the templates so
+// the options stay coherent across the template + the 3 chip menus.
 //
 // Request body:
 //   { standardId, description, grade }
 //
 // Response:
-//   { templates: [{ title, description, examples: string[], mechanicId? }, ...] }
+//   { templates: [{title, description, examples, themeChips, actionChips, winChips}, ...] }
 
 interface Template {
   title: string
   description: string
   examples: string[]
-  mechanicId?: string
+  themeChips?: string[]
+  actionChips?: string[]
+  winChips?: string[]
 }
 
 export async function POST(req: Request) {
@@ -40,7 +47,7 @@ export async function POST(req: Request) {
   try {
     const message = await anthropic.messages.create({
       model: "claude-sonnet-4-6",
-      max_tokens: 1200,
+      max_tokens: 2000,
       system: `You generate game-mechanic TEMPLATES for a math game builder app. A kid (grade ${grade}) is about to build a browser game that teaches a specific math concept. You give them 2-3 template options that describe the GAME SHAPE in practical terms, without prescribing a specific theme.
 
 Each template is a generic player-action blueprint. The kid fills in what world it lives in — their imagination, not yours.
@@ -81,31 +88,61 @@ The math concept must BE the core player action, not a multiple-choice quiz. The
 | Negative numbers       | Climb above and below zero                    |
 
 TEMPLATE FORMAT:
-- "title": 2-4 words, generic, describes the VERB (e.g. "Build a Structure", "Cut the Whole", "Climb the Line"). NOT theme-specific.
-- "description": 1-2 sentences, plain English, describes what the player DOES with the math. Starts with a verb. No specific settings or characters — just the action. Max 30 words.
-- "examples": an array of 3-4 short phrases showing different WORLDS this mechanic could live in. Mix realistic + fun + diverse domains (building, sport, fantasy, animals, food, craft, space). Each example is 3-6 words. Think of these as "you could do this about..."
-- The first example should be the MOST REALISTIC/tangible (helps kids who want a grounded idea)
-- The second should be the MOST FUN/imaginative (helps kids who want something playful)
-- Additional examples add variety
+- "title": 2-4 words, generic, describes the VERB. NOT theme-specific.
+- "description": 1-2 sentences, plain English, what the player DOES with the math. Starts with a verb. No specific settings or characters. Max 30 words.
+- "examples": array of 3-4 short phrases showing different WORLDS this mechanic could live in. Mix realistic + fun + diverse domains. Each example 3-6 words.
+- "themeChips": EXACTLY 4 chip strings the kid can click to pick a theme/world. THESE MUST BE THE SAME AS the "examples" array (just copy them — don't generate different ones). Reusing the examples keeps the kid's experience consistent: they see the same options on the template card AND when they start the chat. Each chip is a short noun phrase (3-6 words).
+- "actionChips": EXACTLY 3 chip strings describing concrete on-screen actions the player could perform with this verb. Each chip is a short phrase starting with a verb (e.g. "Drag pieces from a tray", "Tap the right block in order", "Use arrow keys to aim and shoot"). They should be visibly DIFFERENT mechanically — not three variations of the same thing.
+- "winChips": EXACTLY 3 chip strings describing how the player wins. Each chip is a short sentence starting with a noun or verb (e.g. "Build the shape exactly", "Beat the timer", "Score 10 points without missing"). They should describe DIFFERENT win conditions, not three flavors of the same one.
 
 You MUST respond with ONLY a valid JSON object — no markdown, no code fences. The JSON has exactly one key "templates" — an array of 2-3 objects.
 
-Example for K.G.B.5 (Kindergarten — Model shapes in the world by building shapes from components, e.g., sticks and clay balls):
+Example for K.G.B.5 (Kindergarten — Model shapes in the world by building shapes from components):
 {"templates":[
-  {"title":"Build a Structure","description":"Snap together sticks and corner pieces to build the exact shape shown on the screen.","examples":["build a house","build a rocket","sculpt a trophy","make a robot"]},
-  {"title":"Copy the Shape","description":"Look at a target shape and place matching pieces on a blank board until it's identical.","examples":["copy a window","copy a snowflake","copy a dinosaur","copy a crown"]}
+  {
+    "title":"Build a Structure",
+    "description":"Snap together sticks and corner pieces to build the exact shape shown on the screen.",
+    "examples":["build a house","build a rocket","sculpt a trophy","make a robot"],
+    "themeChips":["build a house","build a rocket","sculpt a trophy","make a robot"],
+    "actionChips":[
+      "Drag pieces from a tray onto the frame",
+      "Click two dots to draw an edge between them",
+      "Tap the next correct piece in the right order"
+    ],
+    "winChips":[
+      "Build the target shape exactly",
+      "Build it before the timer runs out",
+      "Build 3 different shapes in a row"
+    ]
+  },
+  {
+    "title":"Copy the Shape",
+    "description":"Look at a target shape and place matching pieces on a blank board until it's identical.",
+    "examples":["copy a window","copy a snowflake","copy a dinosaur","copy a crown"],
+    "themeChips":["copy a window","copy a snowflake","copy a dinosaur","copy a crown"],
+    "actionChips":[
+      "Drag pieces onto the grid",
+      "Click empty cells to fill them in",
+      "Place pieces by typing coordinates"
+    ],
+    "winChips":[
+      "Match the target perfectly",
+      "Match it using the fewest pieces",
+      "Match 3 different targets in a row"
+    ]
+  }
 ]}
 
 The 2-3 templates should differ from each other in verb or feel. If the math concept only realistically supports 2 good templates, return 2. Never return 4 or more. Return 3 whenever reasonable.`,
       messages: [
         {
           role: "user",
-          content: `Generate 2-3 game-mechanic templates for this math standard:
+          content: `Generate 2-3 game-mechanic templates with chips for this math standard:
 - Standard ID: ${standardId}
 - Description: ${description}
 - Grade: ${grade}
 
-Pick the right player verb. Describe the shape generically. Give 3-4 example worlds per template, first realistic, second fun. Return JSON only.`,
+Pick the right player verb. Describe the shape generically. Give 3-4 example worlds + matching themeChips, then 3 actionChips, then 3 winChips per template. Return JSON only.`,
         },
       ],
     })
@@ -124,11 +161,22 @@ Pick the right player verb. Describe the shape generically. Give 3-4 example wor
       return Response.json({ templates: fallbackTemplates(description) })
     }
 
-    // Clip to 3 and ensure every template has an examples array.
+    // Clip to 3 and ensure every template has the chip arrays.
+    // If the AI forgot a chip array, fall back to sensible defaults
+    // so the chat flow doesn't break.
     const cleaned_templates = parsed.templates.slice(0, 3).map((t) => ({
       title: t.title ?? "Game Idea",
       description: t.description ?? "",
       examples: Array.isArray(t.examples) ? t.examples.slice(0, 4) : [],
+      themeChips: Array.isArray(t.themeChips) && t.themeChips.length > 0
+        ? t.themeChips.slice(0, 4)
+        : (Array.isArray(t.examples) ? t.examples.slice(0, 4) : []),
+      actionChips: Array.isArray(t.actionChips) && t.actionChips.length > 0
+        ? t.actionChips.slice(0, 3)
+        : ["Drag pieces", "Click in the right order", "Tap to select"],
+      winChips: Array.isArray(t.winChips) && t.winChips.length > 0
+        ? t.winChips.slice(0, 3)
+        : ["Match the target", "Beat the timer", "Score the most points"],
     }))
 
     return Response.json({ templates: cleaned_templates })
@@ -144,6 +192,9 @@ function fallbackTemplates(description: string): Template[] {
       title: "Build Your Own",
       description: `Design a small game where the player has to use ${description.toLowerCase()} to win.`,
       examples: ["build anything you like"],
+      themeChips: ["build anything you like"],
+      actionChips: ["Drag pieces", "Click in the right order", "Tap to select"],
+      winChips: ["Match the target", "Beat the timer", "Score the most points"],
     },
   ]
 }

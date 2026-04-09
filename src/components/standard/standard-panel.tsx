@@ -13,6 +13,7 @@ import { Lock, CheckCircle, ChevronLeft, Trophy, Play } from "lucide-react"
 import Link from "next/link"
 import { ConceptCard } from "./concept-card"
 import { GenieChat } from "./genie-chat"
+import { TemplateChat, type TemplateForChat } from "./template-chat"
 import { MasteryPlay } from "./mastery-play"
 import { GameIframe } from "@/components/game/game-iframe"
 import { useAuth } from "@/lib/auth"
@@ -121,15 +122,16 @@ export function StandardPanel({
 }: StandardPanelProps) {
   const [step, setStep] = useState<FlowStep>("learn")
   const [approvedGameCount, setApprovedGameCount] = useState(0)
-  // When the learner clicks one of the personalized pitch cards, we
-  // store the pitch text here and pass it to GenieChat as a seed
-  // message — chat sends it as the learner's first turn automatically.
-  const [seedMessage, setSeedMessage] = useState<string | null>(null)
+  // When the learner picks a template card, store it here and route
+  // to the chip-driven TemplateChat (auto-fills theme/action/win
+  // through clicks). When they pick "describe your own game", this
+  // stays null and we route to the free-form GenieChat.
+  const [pickedTemplate, setPickedTemplate] = useState<TemplateForChat | null>(null)
 
   // Reset step when standard changes
   useEffect(() => {
     setStep("learn")
-    setSeedMessage(null)
+    setPickedTemplate(null)
   }, [standard?.id])
 
   // Count published games for this exact skill (across all classes), so we
@@ -270,8 +272,28 @@ export function StandardPanel({
                   {playToMasterButton}
                   <ConceptCard
                     standard={standard}
-                    onReady={(seed) => {
-                      setSeedMessage(seed ?? null)
+                    onReady={(template) => {
+                      // If a template was clicked we route to the
+                      // chip-driven TemplateChat. If the learner hit
+                      // "I have a game idea" (no template), pickedTemplate
+                      // stays null and we fall through to GenieChat.
+                      if (
+                        template &&
+                        template.themeChips &&
+                        template.actionChips &&
+                        template.winChips &&
+                        template.themeChips.length > 0
+                      ) {
+                        setPickedTemplate({
+                          title: template.title,
+                          description: template.description,
+                          themeChips: template.themeChips,
+                          actionChips: template.actionChips,
+                          winChips: template.winChips,
+                        })
+                      } else {
+                        setPickedTemplate(null)
+                      }
                       setStep("earn")
                     }}
                   />
@@ -287,19 +309,36 @@ export function StandardPanel({
                 </div>
               )}
 
-              {step === "earn" && (
+              {step === "earn" && pickedTemplate ? (
+                // Template path: structured chip-driven flow.
+                // Authentic + Essential are pre-checked by the template;
+                // the learner only fills in theme, action, win condition.
+                <TemplateChat
+                  template={pickedTemplate}
+                  standardDescription={standard.description}
+                  standardId={standard.id}
+                  planetId={`${standard.grade}.${standard.domainCode}`}
+                  onUnlock={() => {
+                    setStep("unlocked")
+                    onUnlock(standard.id)
+                  }}
+                  onBuildGame={(designDoc, history) => {
+                    if (onBuildGame) onBuildGame(designDoc, history)
+                  }}
+                />
+              ) : step === "earn" ? (
+                // Free-form path: full Genie chat with criteria checking
                 <GenieChat
                   standardDescription={standard.description}
                   standardId={standard.id}
                   planetId={`${standard.grade}.${standard.domainCode}`}
-                  seedMessage={seedMessage ?? undefined}
                   onUnlock={() => {
                     setStep("unlocked")
                     onUnlock(standard.id)
                   }}
                   onBuildGame={onBuildGame}
                 />
-              )}
+              ) : null}
             </>
           )}
         </div>
