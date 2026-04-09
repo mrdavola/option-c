@@ -56,28 +56,68 @@ interface AuthContextValue {
 }
 
 // Friendly nouns for personal codes — easy to say, spell, and remember
+// Normalize a learner name for lookup. Handles "Pepito ", "PEPITO",
+// "pepito-1", "Pepito Sanchez" — anything with spaces, mixed case,
+// or special characters. The normalized form is alphanumeric-only,
+// lowercase, no spaces. Used for matching, NEVER for display.
+//
+// Example normalizations:
+//   "Pepito"          → "pepito"
+//   "Pepito "         → "pepito"
+//   "PEPITO"          → "pepito"
+//   "pepito-1"        → "pepito1"
+//   "Pepito Sanchez"  → "pepitosanchez"
+//   "  pepito  "      → "pepito"
+//   ""                → ""
+function normalizeName(name: string): string {
+  return name
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "")
+}
+
+// Universe / cosmos themed words for personal codes. All 4-6 letters
+// so codes look like "NOVA-42", "COMET-08", "QUASAR-19" — short,
+// memorable, and tied to the Diagonally galaxy aesthetic.
+//
+// Old format was 3-4 digit suffixes (e.g. "STAR-742"). New format is
+// 2-digit suffix (00-99) which gives ~3700 unique codes. Plenty for
+// a single classroom and easier for kids to remember.
+//
+// Existing codes from the old format keep working — we don't migrate
+// them. New learners get the new format.
 const CODE_WORDS = [
-  "STAR", "MOON", "SUN", "CAT", "DOG", "OWL", "FOX", "BEE",
-  "BEAR", "LION", "WOLF", "DEER", "FROG", "DUCK", "HAWK", "SEAL",
-  "FISH", "CRAB", "WAVE", "ROCK", "TREE", "LEAF", "RAIN", "SNOW",
-  "FIRE", "WIND", "LAVA", "MINT", "PLUM", "KIWI", "LIME", "PEAR",
+  // Stars and stellar bodies
+  "STAR", "NOVA", "SUN", "PULSE", "QUASAR", "BLAZAR",
+  // Planets, moons, orbits
+  "MOON", "ORBIT", "LUNA", "MARS", "VENUS", "TITAN", "RHEA", "IO",
+  // Comets, asteroids, meteors
+  "COMET", "METEOR", "ROCKET", "PROBE",
+  // Galaxies, nebulas, cosmic structures
+  "NEBULA", "GALAXY", "COSMOS", "VOID", "RIFT", "WARP",
+  // Light, energy, gravity
+  "FLARE", "BEAM", "RAY", "GLOW", "ECHO", "WAVE",
+  // Other space stuff
+  "ATOM", "ION", "ZERO", "INFIN",
 ]
 
-// Generate a unique personal code like "STAR-742". Collision probability per
-// attempt is ~1/32000, so a couple of retries is enough.
+// Generate a unique personal code like "NOVA-42" or "COMET-08".
+// 2-digit suffix (00-99) means each word has 100 unique codes,
+// times ~30 words = ~3000 unique codes total per Firebase project.
 async function generateUniquePersonalCode(): Promise<string> {
-  for (let attempt = 0; attempt < 10; attempt++) {
+  for (let attempt = 0; attempt < 12; attempt++) {
     const word = CODE_WORDS[Math.floor(Math.random() * CODE_WORDS.length)]
-    const digits = String(Math.floor(Math.random() * 1000)).padStart(3, "0")
+    const digits = String(Math.floor(Math.random() * 100)).padStart(2, "0")
     const code = `${word}-${digits}`
     const existing = await getDocs(
       query(collection(db, "users"), where("personalCode", "==", code))
     )
     if (existing.empty) return code
   }
-  // Fallback: add a trailing random char to break any remaining collision
+  // Fallback after 12 collisions: bump to a 3-digit suffix to break
+  // any remaining collision. Vanishingly rare in practice.
   const word = CODE_WORDS[Math.floor(Math.random() * CODE_WORDS.length)]
-  const digits = String(Math.floor(Math.random() * 10000)).padStart(4, "0")
+  const digits = String(Math.floor(Math.random() * 1000)).padStart(3, "0")
   return `${word}-${digits}`
 }
 
@@ -167,6 +207,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const signInLearner = useCallback(async (classCode: string, name: string) => {
+    // Validate and normalize the name up front
+    const trimmedName = name.trim()
+    if (!trimmedName) throw new Error("Please enter your name.")
+    const normalizedName = normalizeName(trimmedName)
+    if (!normalizedName) throw new Error("That name doesn't have any letters or numbers. Try again.")
+
     // 1. Sign in anonymously first (needed for Firestore access)
     let currentUser = auth.currentUser
     if (!currentUser) {
@@ -184,19 +230,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const classDoc = classSnap.docs[0]
     const classId = classDoc.id
 
-    // 3. Check if this student already exists in this class
+    // 3. Check if this student already exists in this class. We query
+    //    by classId only and filter client-side by normalized name so
+    //    "Pepito", "pepito ", "PEPITO" all match the same student
+    //    (and we don't need a Firestore composite index for this).
     const studentsQuery = query(
       collection(db, "users"),
-      where("classId", "==", classId),
-      where("name", "==", name.trim())
+      where("classId", "==", classId)
     )
     const studentSnap = await getDocs(studentsQuery)
+    const matching = studentSnap.docs.find((d) => {
+      const docName = (d.data() as { name?: string }).name ?? ""
+      return normalizeName(docName) === normalizedName
+    })
 
-    if (!studentSnap.empty) {
+    if (matching) {
       // Returning student signing in via class-code + name path.
       // Migrate their data to the new anonymous uid and preserve personalCode.
-      const existingDoc = studentSnap.docs[0]
-      const existingData = existingDoc.data() as UserProfile
+      const existingData = matching.data() as UserProfile
       const oldUid = existingData.uid
       // Make sure they have a personal code (back-fill for pre-existing users)
       const personalCode = existingData.personalCode ?? (await generateUniquePersonalCode())
@@ -208,11 +259,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       })
       await migrateStudentData(oldUid, currentUser.uid)
     } else {
-      // Brand-new student — generate a personal code and save the profile
+      // Brand-new student — generate a personal code and save the profile.
+      // Store the trimmed display name (preserving the kid's original
+      // capitalization), but rely on normalizeName() for all future
+      // matching.
       const personalCode = await generateUniquePersonalCode()
       await setDoc(doc(db, "users", currentUser.uid), {
         uid: currentUser.uid,
-        name: name.trim(),
+        name: trimmedName,
         role: "student",
         grade: "",
         interests: [],
@@ -254,8 +308,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const existingDoc = codeSnap.docs[0]
     const existingData = existingDoc.data() as UserProfile
 
-    // 3. Second factor: name must match (case-insensitive, trimmed)
-    if (existingData.name.trim().toLowerCase() !== name.trim().toLowerCase()) {
+    // 3. Second factor: name must match. Use normalizeName so "Pepito",
+    //    "pepito", "PEPITO ", "pepito-1" all match the same record.
+    if (normalizeName(existingData.name) !== normalizeName(name)) {
       throw new Error("That code doesn't match the name. Try again.")
     }
 

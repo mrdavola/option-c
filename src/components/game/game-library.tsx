@@ -7,6 +7,8 @@ import { db } from "@/lib/firebase"
 import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore"
 import { GameCard } from "./game-card"
 import { GamePlayer } from "./game-player"
+import { Leaderboard } from "./leaderboard"
+import { Search } from "lucide-react"
 
 interface GameLibraryProps {
   games: Omit<Game, "gameHtml">[]
@@ -28,6 +30,10 @@ export function GameLibrary({ games }: GameLibraryProps) {
   const [gradeFilter, setGradeFilter] = useState<string>("all")
   // Top-level tab — "For my grade" (default) or "All games"
   const [tab, setTab] = useState<"mine" | "all">(activeProfile?.grade ? "mine" : "all")
+  // Search query — matches against title, designer name, concept, and
+  // standard ID. Standard ID is matched both with AND without dots so
+  // "kgb5" finds "K.G.B.5". Empty query disables the filter.
+  const [search, setSearch] = useState<string>("")
   const [loading, setLoading] = useState<string | null>(null)
   const [pendingGames, setPendingGames] = useState<Omit<Game, "gameHtml">[]>([])
 
@@ -61,14 +67,34 @@ export function GameLibrary({ games }: GameLibraryProps) {
     return parts[0] || ""
   }).filter(Boolean))).sort()
 
-  // First narrow by tab, THEN by grade chip filter (only used in "all" tab)
+  // First narrow by tab, THEN by grade chip filter, THEN by search.
   const myGrade = activeProfile?.grade
   const tabFiltered = tab === "mine" && myGrade
     ? games.filter((g) => g.planetId?.startsWith(myGrade + "."))
     : games
-  const filtered = gradeFilter === "all" || tab === "mine"
+  const gradeFiltered = gradeFilter === "all" || tab === "mine"
     ? tabFiltered
     : tabFiltered.filter((g) => g.planetId?.startsWith(gradeFilter + "."))
+
+  // Search filter — case-insensitive match against title, designer
+  // name, math concept, and standard ID. The standard ID is matched
+  // both raw ("K.G.B.5") and stripped of dots ("KGB5") so kids can
+  // type either form.
+  const searchNormalized = search.trim().toLowerCase()
+  const searchNoDots = searchNormalized.replace(/\./g, "")
+  const filtered = !searchNormalized
+    ? gradeFiltered
+    : gradeFiltered.filter((g) => {
+        const haystacks: string[] = []
+        if (g.title) haystacks.push(g.title.toLowerCase())
+        if (g.designerName) haystacks.push(g.designerName.toLowerCase())
+        if (g.designDoc?.concept) haystacks.push(g.designDoc.concept.toLowerCase())
+        if (g.standardId) {
+          haystacks.push(g.standardId.toLowerCase())
+          haystacks.push(g.standardId.toLowerCase().replace(/\./g, ""))
+        }
+        return haystacks.some((h) => h.includes(searchNormalized) || h.includes(searchNoDots))
+      })
 
   const handlePlay = async (gameId: string, isPending = false) => {
     setLoading(gameId)
@@ -109,7 +135,7 @@ export function GameLibrary({ games }: GameLibraryProps) {
     <div>
       {/* Top tabs — For my grade vs All games. Hidden if no grade picked. */}
       {myGrade && (
-        <div className="flex gap-1 mb-6 bg-zinc-900 border border-zinc-800 rounded-xl p-1 w-fit">
+        <div className="flex gap-1 mb-4 bg-zinc-900 border border-zinc-800 rounded-xl p-1 w-fit">
           <button
             onClick={() => setTab("mine")}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -133,6 +159,29 @@ export function GameLibrary({ games }: GameLibraryProps) {
         </div>
       )}
 
+      {/* Search box — matches title, author, concept, and standard ID
+          (with or without dots). Always visible, always searches the
+          currently active tab+grade selection. */}
+      <div className="mb-6 relative max-w-md">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-zinc-500 pointer-events-none" />
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search by title, author, or standard (e.g. KGB5)"
+          className="w-full bg-zinc-900 border border-zinc-800 rounded-lg pl-10 pr-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-zinc-600"
+        />
+        {search && (
+          <button
+            onClick={() => setSearch("")}
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-zinc-500 hover:text-zinc-300 px-2 py-0.5"
+            aria-label="Clear search"
+          >
+            Clear
+          </button>
+        )}
+      </div>
+
       {/* Needs Review section */}
       {pendingGames.length > 0 && (
         <div className="mb-8">
@@ -155,6 +204,14 @@ export function GameLibrary({ games }: GameLibraryProps) {
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Leaderboard — shown above the game grid on the All games tab.
+          Hidden on the For-my-grade tab so the focused view stays clean. */}
+      {tab === "all" && (
+        <div className="mb-8">
+          <Leaderboard myGrade={myGrade ?? ""} myUid={user?.uid} />
         </div>
       )}
 

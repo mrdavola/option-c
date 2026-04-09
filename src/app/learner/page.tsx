@@ -40,11 +40,40 @@ export default function LearnerDashboard() {
   const [progressStats, setProgressStats] = useState({ unlocked: 0, mastered: 0, inReview: 0 })
   const [progressByStandard, setProgressByStandard] = useState<Map<string, string>>(new Map())
   const [previewGame, setPreviewGame] = useState<Game | null>(null)
+  // Class name for the "Class: ___" tag at the top of My Stuff. Loaded
+  // separately because the class lives in its own collection and the
+  // user profile only stores the classId.
+  const [className, setClassName] = useState<string | null>(null)
 
   useEffect(() => {
     if (!activeProfile?.uid) return
     loadData()
   }, [activeProfile?.uid])
+
+  // Fetch the learner's class name once the profile is loaded.
+  useEffect(() => {
+    if (!activeProfile?.classId) {
+      setClassName(null)
+      return
+    }
+    let cancelled = false
+    import("firebase/firestore").then(({ doc, getDoc }) => {
+      getDoc(doc(db, "classes", activeProfile.classId!))
+        .then((snap) => {
+          if (cancelled) return
+          if (snap.exists()) {
+            const data = snap.data() as { name?: string }
+            setClassName(data.name ?? null)
+          }
+        })
+        .catch(() => {
+          // Silent — class name is decorative, don't block the UI
+        })
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [activeProfile?.classId])
 
   async function loadData() {
     setLoading(true)
@@ -197,7 +226,15 @@ export default function LearnerDashboard() {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-white">Hey {activeProfile.name}</h1>
+        <div>
+          <h1 className="text-2xl font-bold text-white">Hey {activeProfile.name}</h1>
+          {className && (
+            <p className="text-xs text-zinc-500 mt-0.5">
+              Class:{" "}
+              <span className="text-zinc-300 font-medium">{className}</span>
+            </p>
+          )}
+        </div>
         <UserMenu />
       </div>
 

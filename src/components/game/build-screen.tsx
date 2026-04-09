@@ -4,6 +4,8 @@ import { useState, useEffect, useRef, useCallback } from "react"
 import type { GameDesignDoc } from "@/lib/game-types"
 import { MatrixRain } from "./matrix-rain"
 import { FunnyStickFigure } from "./funny-stick-figure"
+import { BuildWaitMiniGame } from "./build-wait-mini-game"
+import { useAuth } from "@/lib/auth"
 
 interface BuildScreenProps {
   designDoc: GameDesignDoc
@@ -33,12 +35,25 @@ type Phase = "narration" | "visualConcept" | "vibe" | "generating" | "done"
 
 type Vibe = "arcade" | "c64" | "kawaii" | "stickman"
 
+// The standardized Game Card structure. Same 5 fields for every game,
+// rendered with fixed labels and icons in the BuildScreen UI. The
+// /api/game/visual-concept endpoint fills these in from the design doc.
+interface GameCard {
+  playAs: string
+  goal: string
+  action: string
+  mathRole: string
+  watchOut: string
+}
+
 export function BuildScreen({ designDoc, onComplete }: BuildScreenProps) {
+  const { activeProfile } = useAuth()
   const narrationSequence = buildNarrationSequence(designDoc)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [progress, setProgress] = useState(0)
   const [phase, setPhase] = useState<Phase>("narration")
   const [visualBullets, setVisualBullets] = useState<string[]>([])
+  const [gameCard, setGameCard] = useState<GameCard | null>(null)
   const [conceptLoading, setConceptLoading] = useState(false)
   const [conceptError, setConceptError] = useState<string | null>(null)
   const [generatedHtml, setGeneratedHtml] = useState<string | null>(null)
@@ -49,7 +64,9 @@ export function BuildScreen({ designDoc, onComplete }: BuildScreenProps) {
 
   const currentItem = narrationSequence[currentIndex] ?? null
 
-  // Fetch the visual concept bullets for the learner to approve.
+  // Fetch the visual concept (now: Game Card) for the learner to approve.
+  // The API returns BOTH the structured card (for UI rendering) AND a
+  // legacy bullets list (for the generate prompt that expects strings).
   const fetchVisualConcept = useCallback(async () => {
     setConceptLoading(true)
     setConceptError(null)
@@ -60,9 +77,25 @@ export function BuildScreen({ designDoc, onComplete }: BuildScreenProps) {
         body: JSON.stringify({ designDoc }),
       })
       const data = await res.json()
+      if (data.gameCard) {
+        setGameCard(data.gameCard as GameCard)
+      }
       if (Array.isArray(data.bullets) && data.bullets.length > 0) {
         setVisualBullets(data.bullets)
         visualBulletsRef.current = data.bullets
+      } else if (data.gameCard) {
+        // No bullets but we have a card — synthesize bullets from it
+        // so the generate prompt has something to work with.
+        const c = data.gameCard as GameCard
+        const synth = [
+          `You play as: ${c.playAs}`,
+          `Your goal: ${c.goal}`,
+          `What you do: ${c.action}`,
+          `How math fits: ${c.mathRole}`,
+          `Watch out for: ${c.watchOut}`,
+        ]
+        setVisualBullets(synth)
+        visualBulletsRef.current = synth
       } else {
         setConceptError("Couldn't draft the visual concept. Building anyway.")
         setPhase("generating")
@@ -189,23 +222,53 @@ export function BuildScreen({ designDoc, onComplete }: BuildScreenProps) {
             </div>
           )}
 
-          {/* Phase: visual concept preview — bullets */}
+          {/* Phase: visual concept preview — the standardized Game Card.
+              Same 5 fields every time, with fixed labels and icons. No
+              random per-game emojis. The card is structured so kids
+              know exactly what to expect across every game. */}
           {phase === "visualConcept" && (
             <div className="space-y-4">
               {conceptLoading && (
                 <div className="text-center space-y-3 py-6">
                   <div className="w-6 h-6 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin mx-auto" />
-                  <p className="text-sm text-zinc-300">Sketching the visuals...</p>
+                  <p className="text-sm text-zinc-300">Drafting your Game Card...</p>
                 </div>
               )}
-              {visualBullets.length > 0 && !conceptLoading && (
+              {gameCard && !conceptLoading && (
                 <>
-                  <div className="bg-zinc-900 border-2 border-emerald-500/30 rounded-xl p-5 space-y-2">
-                    {visualBullets.map((b, i) => (
-                      <p key={i} className="text-base text-zinc-100 leading-relaxed">
-                        {b}
+                  <div className="bg-zinc-900 border-2 border-emerald-500/30 rounded-xl overflow-hidden">
+                    <div className="bg-emerald-500/15 border-b border-emerald-500/30 px-4 py-2">
+                      <p className="text-xs text-emerald-300 font-semibold uppercase tracking-wide">
+                        Game Card
                       </p>
-                    ))}
+                    </div>
+                    <div className="p-4 space-y-3">
+                      <GameCardField
+                        icon="🧑"
+                        label="You play as"
+                        value={gameCard.playAs}
+                      />
+                      <GameCardField
+                        icon="🎯"
+                        label="Your goal"
+                        value={gameCard.goal}
+                      />
+                      <GameCardField
+                        icon="🛠️"
+                        label="What you do"
+                        value={gameCard.action}
+                      />
+                      <GameCardField
+                        icon="🧮"
+                        label="How math fits"
+                        value={gameCard.mathRole}
+                      />
+                      <GameCardField
+                        icon="⚠️"
+                        label="Watch out for"
+                        value={gameCard.watchOut}
+                      />
+                    </div>
                   </div>
                   <button
                     onClick={handleConceptApprove}
@@ -296,14 +359,38 @@ export function BuildScreen({ designDoc, onComplete }: BuildScreenProps) {
           {/* Phase: generating */}
           {phase === "generating" && (
             <div className="space-y-4">
-              <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 space-y-1.5">
-                <p className="text-xs text-zinc-500 uppercase tracking-wide mb-2">Building this in {vibe === "arcade" ? "Arcade" : vibe === "c64" ? "Retro Game" : vibe === "kawaii" ? "Kawaii" : "Stick Man"} style:</p>
-                {visualBullets.map((b, i) => (
-                  <p key={i} className="text-sm text-zinc-200">{b}</p>
-                ))}
+              <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+                <div className="bg-emerald-500/15 border-b border-emerald-500/30 px-4 py-2 flex items-center justify-between">
+                  <p className="text-xs text-emerald-300 font-semibold uppercase tracking-wide">
+                    Game Card
+                  </p>
+                  <p className="text-[10px] text-zinc-500 uppercase tracking-wide">
+                    {vibe === "arcade" ? "Arcade" : vibe === "c64" ? "Retro Game" : vibe === "kawaii" ? "Kawaii" : "Stick Man"} style
+                  </p>
+                </div>
+                <div className="p-4 space-y-3">
+                  {gameCard ? (
+                    <>
+                      <GameCardField icon="🧑" label="You play as" value={gameCard.playAs} />
+                      <GameCardField icon="🎯" label="Your goal" value={gameCard.goal} />
+                      <GameCardField icon="🛠️" label="What you do" value={gameCard.action} />
+                      <GameCardField icon="🧮" label="How math fits" value={gameCard.mathRole} />
+                      <GameCardField icon="⚠️" label="Watch out for" value={gameCard.watchOut} />
+                    </>
+                  ) : (
+                    visualBullets.map((b, i) => (
+                      <p key={i} className="text-sm text-zinc-200">{b}</p>
+                    ))
+                  )}
+                </div>
               </div>
               {/* Funny stick figure does silly things while waiting */}
               <FunnyStickFigure />
+
+              {/* Math practice mini-game while waiting. Adapts to the
+                  learner's grade. Awards 1 token per correct answer. */}
+              <BuildWaitMiniGame grade={activeProfile?.grade} />
+
               <div className="text-center">
                 <p className="text-sm text-emerald-400 animate-pulse">
                   {progress < 0.3 ? "Drawing characters..." :
@@ -326,6 +413,23 @@ export function BuildScreen({ designDoc, onComplete }: BuildScreenProps) {
             </div>
           </div>
         )}
+      </div>
+    </div>
+  )
+}
+
+// One row of the standardized Game Card. Fixed icon + label on the
+// left, the AI-generated value on the right. Used 5 times in the
+// visualConcept phase, always with the same set of icons.
+function GameCardField({ icon, label, value }: { icon: string; label: string; value: string }) {
+  return (
+    <div className="flex items-start gap-3">
+      <div className="text-xl shrink-0 leading-tight w-6 text-center">{icon}</div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[10px] text-emerald-400 font-semibold uppercase tracking-wide">
+          {label}
+        </p>
+        <p className="text-sm text-zinc-100 leading-snug">{value}</p>
       </div>
     </div>
   )

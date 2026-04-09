@@ -10,10 +10,13 @@ import { useRouter } from "next/navigation"
 import type { Game } from "@/lib/game-types"
 import { GameIframe } from "@/components/game/game-iframe"
 import { UserMenu } from "@/components/user-menu"
+import { LearnerEditModal } from "@/components/learner-edit-modal"
+import { Pencil } from "lucide-react"
 
 interface StudentSummary {
   uid: string
   name: string
+  grade: string
   tokens: number
   lastLoginAt: number
   skillsUnlocked: number
@@ -48,6 +51,7 @@ export default function GuideDashboard() {
   const [playedGameIds, setPlayedGameIds] = useState<Set<string>>(new Set())
   const [feedbackGameId, setFeedbackGameId] = useState<string | null>(null)
   const [feedbackText, setFeedbackText] = useState("")
+  const [editingLearner, setEditingLearner] = useState<StudentSummary | null>(null)
   const [newClassName, setNewClassName] = useState("")
   const [creatingClass, setCreatingClass] = useState(false)
 
@@ -173,6 +177,7 @@ export default function GuideDashboard() {
         studentList.push({
           uid: studentDoc.id,
           name: s.name || "Unknown",
+          grade: s.grade || "",
           tokens: s.tokens || 0,
           lastLoginAt: s.lastLoginAt || 0,
           skillsUnlocked: unlocked,
@@ -540,7 +545,23 @@ export default function GuideDashboard() {
                   ← Back to roster
                 </button>
                 <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-                  <h2 className="text-lg font-bold text-white">{selectedStudent.name}</h2>
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h2 className="text-lg font-bold text-white">{selectedStudent.name}</h2>
+                      {selectedStudent.grade && (
+                        <p className="text-xs text-zinc-500 mt-0.5">
+                          Grade <span className="text-zinc-300 font-medium">{selectedStudent.grade}</span>
+                        </p>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => setEditingLearner(selectedStudent)}
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs text-zinc-400 hover:text-white hover:bg-zinc-800 border border-zinc-700 transition-colors"
+                    >
+                      <Pencil className="size-3" />
+                      Edit
+                    </button>
+                  </div>
                   <div className="flex gap-6 mt-3">
                     <div>
                       <p className="text-xs text-zinc-500">Tokens</p>
@@ -736,6 +757,32 @@ export default function GuideDashboard() {
             <GameIframe html={previewGame.gameHtml} className="w-full h-full" />
           </div>
         </div>
+      )}
+
+      {/* Edit learner modal — opens from the student detail panel.
+          Saves directly to users/{uid}, then updates local state so
+          the panel reflects the new values without a refetch. */}
+      {editingLearner && (
+        <LearnerEditModal
+          open
+          uid={editingLearner.uid}
+          currentName={editingLearner.name}
+          currentGrade={editingLearner.grade}
+          onClose={() => setEditingLearner(null)}
+          onSaved={(newName, newGrade) => {
+            // Update the in-memory list so the change appears immediately
+            setStudents((prev) =>
+              prev.map((s) =>
+                s.uid === editingLearner.uid ? { ...s, name: newName, grade: newGrade } : s
+              )
+            )
+            // Also update the currently-selected student so its detail
+            // header reflects the new name
+            if (selectedStudent?.uid === editingLearner.uid) {
+              setSelectedStudent({ ...selectedStudent, name: newName, grade: newGrade })
+            }
+          }}
+        />
       )}
     </div>
   )

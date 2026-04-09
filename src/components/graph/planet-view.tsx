@@ -167,28 +167,30 @@ export function PlanetView({
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
         }
-        /* Pulsing data beacon — used to mark moons that have published
-           games available. Three rings cascade outward from a center
-           dot like a radar ping. Transform-origin must be set on the
-           SVG circles so they scale from their center, not the
-           top-left of the viewBox. */
-        @keyframes beacon-ring-pulse {
-          0%   { transform: scale(0.4); opacity: 0.95; }
-          100% { transform: scale(3.5); opacity: 0; }
+        /* Bat-signal beam — used to mark moons that have published
+           games available. A vertical cone of cyan light shoots
+           upward from the moon, gently pulsing in opacity. Reads
+           as "signal beam" / "spotlight calling for attention".
+
+           The beam is one SVG path (triangle with rounded top edge)
+           with a gradient that fades from solid cyan at the base
+           to transparent at the top. The whole element pulses
+           opacity so it draws the eye without being annoying. */
+        @keyframes beam-pulse {
+          0%, 100% { opacity: 0.75; }
+          50%      { opacity: 1; }
         }
-        @keyframes beacon-dot-pulse {
-          0%, 100% { opacity: 1; }
-          50%      { opacity: 0.55; }
+        @keyframes beam-source-pulse {
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50%      { transform: scale(1.15); opacity: 0.85; }
         }
-        .beacon-ring {
-          transform-origin: 14px 14px;
-          animation: beacon-ring-pulse 1.8s ease-out infinite;
+        .games-beam {
+          animation: beam-pulse 2s ease-in-out infinite;
         }
-        .beacon-ring-2 { animation-delay: 0.6s; }
-        .beacon-ring-3 { animation-delay: 1.2s; }
-        .beacon-dot {
-          animation: beacon-dot-pulse 1.8s ease-in-out infinite;
-          filter: drop-shadow(0 0 3px rgba(34, 211, 238, 0.85));
+        .games-beam-source {
+          transform-origin: center;
+          animation: beam-source-pulse 2s ease-in-out infinite;
+          filter: drop-shadow(0 0 4px rgba(34, 211, 238, 0.9));
         }
       `}</style>
       <div
@@ -305,33 +307,66 @@ export function PlanetView({
                 aria-label={`${moon.description} - ${statusLabel(moon.status)}`}
               />
 
-              {/* "Has games" indicator — pulsing data beacon next to
-                  the moon. SVG so the edges stay crisp at any zoom.
-                  Three concentric rings expand outward from a solid
-                  center dot, fading as they grow. Reads as a sci-fi
-                  "transmission detected" marker. Cyan against the
-                  dark space background for max contrast.
-
-                  We use transform: scale() instead of animating the
-                  SVG `r` attribute because `r` animation isn't
-                  supported in all browsers, but `transform` is. The
-                  rings start tiny and scale up to ~4x while fading. */}
+              {/* "Has games" indicator — Bat-signal style beam shooting
+                  upward from the moon. The beam is a vertical cone with
+                  a fade gradient (solid cyan at the moon, transparent
+                  at the top), and a small bright source circle at the
+                  base where it meets the moon. Whole thing gently
+                  pulses to draw the eye. SVG so it stays crisp at
+                  any zoom level. */}
               {gameCount > 0 && (
                 <div
-                  className="absolute z-10 pointer-events-none beacon-indicator"
+                  className="absolute z-10 pointer-events-none"
                   style={{
-                    left: x + hitSize / 2 + 2,
-                    top: y - hitSize / 2 - 14,
-                    width: 28,
-                    height: 28,
+                    // Center the beam horizontally on the moon and let
+                    // it shoot straight up. Width is 30px (wide enough
+                    // for the cone), height is 60px (the full beam).
+                    left: x - 15,
+                    top: y - hitSize / 2 - 60,
+                    width: 30,
+                    height: 60,
                   }}
                   title={`${gameCount} game${gameCount === 1 ? "" : "s"} available`}
                 >
-                  <svg viewBox="0 0 28 28" width="28" height="28" style={{ overflow: "visible" }}>
-                    <circle className="beacon-ring beacon-ring-1" cx="14" cy="14" r="3" fill="none" stroke="#22d3ee" strokeWidth="1.5" />
-                    <circle className="beacon-ring beacon-ring-2" cx="14" cy="14" r="3" fill="none" stroke="#22d3ee" strokeWidth="1.5" />
-                    <circle className="beacon-ring beacon-ring-3" cx="14" cy="14" r="3" fill="none" stroke="#22d3ee" strokeWidth="1.5" />
-                    <circle className="beacon-dot" cx="14" cy="14" r="2.5" fill="#22d3ee" />
+                  <svg
+                    viewBox="0 0 30 60"
+                    width="30"
+                    height="60"
+                    style={{ overflow: "visible" }}
+                  >
+                    <defs>
+                      {/* Vertical gradient: solid cyan at the bottom
+                          (the source), fully transparent at the top. */}
+                      <linearGradient
+                        id={`beam-gradient-${moon.id.replace(/[^a-zA-Z0-9]/g, "")}`}
+                        x1="0"
+                        y1="60"
+                        x2="0"
+                        y2="0"
+                        gradientUnits="userSpaceOnUse"
+                      >
+                        <stop offset="0%" stopColor="#22d3ee" stopOpacity="0.7" />
+                        <stop offset="60%" stopColor="#22d3ee" stopOpacity="0.25" />
+                        <stop offset="100%" stopColor="#22d3ee" stopOpacity="0" />
+                      </linearGradient>
+                    </defs>
+                    {/* The beam cone: narrow at the moon (bottom),
+                        wide at the top. Triangle with the wide edge
+                        rounded slightly via a curved top. */}
+                    <path
+                      className="games-beam"
+                      d="M 13 58 L 17 58 Q 24 30 26 2 Q 15 0 4 2 Q 6 30 13 58 Z"
+                      fill={`url(#beam-gradient-${moon.id.replace(/[^a-zA-Z0-9]/g, "")})`}
+                    />
+                    {/* Bright source dot at the base of the beam, on
+                        top of the moon. Pulses subtly. */}
+                    <circle
+                      className="games-beam-source"
+                      cx="15"
+                      cy="58"
+                      r="2.5"
+                      fill="#22d3ee"
+                    />
                   </svg>
                 </div>
               )}

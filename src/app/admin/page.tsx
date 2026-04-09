@@ -21,6 +21,7 @@ import {
   Pencil,
 } from "lucide-react"
 import { FeedbackInbox } from "@/components/feedback/feedback-inbox"
+import { LearnerEditModal } from "@/components/learner-edit-modal"
 import { UserMenu } from "@/components/user-menu"
 import { Logo } from "@/components/logo"
 import { GamePlayer } from "@/components/game/game-player"
@@ -78,6 +79,7 @@ export default function AdminDashboardPage() {
   const [guides, setGuides] = useState<GuideRow[]>([])
   const [classes, setClasses] = useState<ClassRow[]>([])
   const [students, setStudents] = useState<StudentRow[]>([])
+  const [editingLearner, setEditingLearner] = useState<StudentRow | null>(null)
   const [games, setGames] = useState<GameRow[]>([])
   const [feedbackCount, setFeedbackCount] = useState(0)
 
@@ -776,12 +778,13 @@ export default function AdminDashboardPage() {
                         <th className="text-left px-4 py-3 font-medium">Grade</th>
                         <th className="text-right px-4 py-3 font-medium">Tokens</th>
                         <th className="text-right px-4 py-3 font-medium">Last Active</th>
+                        <th className="text-right px-4 py-3 font-medium"></th>
                       </tr>
                     </thead>
                     <tbody>
                       {students.length === 0 ? (
                         <tr>
-                          <td colSpan={5} className="px-4 py-8 text-center text-zinc-500">
+                          <td colSpan={6} className="px-4 py-8 text-center text-zinc-500">
                             No learners yet.
                           </td>
                         </tr>
@@ -793,6 +796,14 @@ export default function AdminDashboardPage() {
                             <td className="px-4 py-3 text-zinc-400">{s.grade || "-"}</td>
                             <td className="px-4 py-3 text-right text-zinc-300">{s.tokens}</td>
                             <td className="px-4 py-3 text-right text-zinc-400">{formatDate(s.lastLoginAt)}</td>
+                            <td className="px-4 py-3 text-right">
+                              <button
+                                onClick={() => setEditingLearner(s)}
+                                className="text-xs text-blue-400 hover:text-blue-300 hover:underline"
+                              >
+                                Edit
+                              </button>
+                            </td>
                           </tr>
                         ))
                       )}
@@ -898,6 +909,24 @@ export default function AdminDashboardPage() {
           isPendingReview={playingGame.isPendingReview}
           onClose={() => setPlayingGame(null)}
           onUnapproved={() => { setPlayingGame(null); fetchData() }}
+        />
+      )}
+
+      {/* Edit learner modal — opens from the Learners tab Edit button */}
+      {editingLearner && (
+        <LearnerEditModal
+          open
+          uid={editingLearner.uid}
+          currentName={editingLearner.name}
+          currentGrade={editingLearner.grade}
+          onClose={() => setEditingLearner(null)}
+          onSaved={(newName, newGrade) => {
+            setStudents((prev) =>
+              prev.map((s) =>
+                s.uid === editingLearner.uid ? { ...s, name: newName, grade: newGrade } : s
+              )
+            )
+          }}
         />
       )}
 

@@ -4,18 +4,40 @@ import Link from "next/link"
 import moonNames from "@/data/moon-names.json"
 import { LearnerNav } from "@/components/learner-nav"
 import { UserMenu } from "@/components/user-menu"
+import { getAdminDb } from "@/lib/firebase-admin"
 
 const MOON_NAMES = moonNames as Record<string, string>
 
+// Server-side fetch of all published games. We talk DIRECTLY to
+// firebase-admin instead of going through /api/games because:
+//   1. Avoids a self-fetch that requires knowing the deployment URL
+//      (the old code used NEXT_PUBLIC_BASE_URL which fell back to
+//      "http://localhost:3000" on Vercel — causing the library to
+//      always return zero games in production).
+//   2. One Firestore query is faster than HTTP round-trip + Firestore.
+//   3. Same admin SDK and same query as /api/games — behavior is
+//      identical, just no extra hop.
 async function getPublishedGames(): Promise<Omit<Game, "gameHtml">[]> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
-    const res = await fetch(`${baseUrl}/api/games`, {
-      cache: "no-store",
+    const adminDb = getAdminDb()
+    const snap = await adminDb
+      .collection("games")
+      .where("status", "==", "published")
+      .get()
+    const games = snap.docs.map((d) => {
+      const data = d.data()
+      const { gameHtml: _gameHtml, ...meta } = data
+      return { ...meta, id: d.id } as Omit<Game, "gameHtml">
     })
-    if (!res.ok) return []
-    return res.json()
-  } catch {
+    // Sort newest first by createdAt
+    games.sort((a, b) => {
+      const ta = typeof a.createdAt === "number" ? a.createdAt : 0
+      const tb = typeof b.createdAt === "number" ? b.createdAt : 0
+      return tb - ta
+    })
+    return games
+  } catch (err) {
+    console.error("[library/page] Failed to load published games:", err)
     return []
   }
 }
