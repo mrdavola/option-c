@@ -253,9 +253,13 @@ export function GraphPage({ data }: GraphPageProps) {
       setStudentData({ name: activeProfile.name, grade: activeProfile.grade, interests: activeProfile.interests })
       setTokens(activeProfile.tokens)
 
-      // Only skip onboarding if profile is complete (has grade and interests)
-      const profileComplete = activeProfile.grade && activeProfile.interests.length > 0
-      if (profileComplete) {
+      // Skip onboarding if the learner already has a grade. We
+      // intentionally do NOT require interests anymore — the
+      // interests step was removed from onboarding entirely. The
+      // older check (`interests.length > 0`) was leaving every
+      // newly-onboarded learner stuck in the welcome screen forever
+      // because they had no chance to set interests.
+      if (activeProfile.grade) {
         setOnboardingComplete(true)
       }
 
@@ -742,8 +746,13 @@ export function GraphPage({ data }: GraphPageProps) {
     }
   }, [currentDesignDoc, activeProfile, saveProgress])
 
-  // Show loading while auth is initializing
-  if (authLoading) {
+  // Show loading while auth is initializing OR while we're a returning
+  // learner whose profile is being read from Firestore. Without the
+  // second check, navigating from /learner → / would briefly flash
+  // the onboarding welcome screen because `onboardingComplete` is
+  // false on initial mount before the profile-loading useEffect runs.
+  const profileLoadingForReturningLearner = !!activeProfile && !onboardingComplete && !!activeProfile.grade
+  if (authLoading || profileLoadingForReturningLearner) {
     return (
       <div className="h-screen w-screen flex items-center justify-center bg-zinc-950">
         <div className="flex flex-col items-center gap-4">

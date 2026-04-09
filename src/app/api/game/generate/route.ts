@@ -1,6 +1,15 @@
 import Anthropic from "@anthropic-ai/sdk"
 
-export const maxDuration = 60
+// Generate-and-test loop can take 60-180s in the worst case:
+//   - Initial generation:        ~25-40s
+//   - Static checks:             instant
+//   - Playtest AI call:          ~15-25s
+//   - Optional fix generation:   ~25-40s
+//   - Optional 2nd playtest:     ~15-25s
+// Total worst case: ~3 minutes. 300s gives us comfortable headroom.
+// Vercel hobby plans cap at 60s; pro plans allow 300. Set the higher
+// value here so the route works on whichever plan you're on.
+export const maxDuration = 300
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
@@ -237,26 +246,317 @@ function buildForbiddenRules(allowPastels: boolean, allowSketch: boolean): strin
   return `\n🚫 BANNED — reject these even if you're tempted:\n${rules.join("\n")}\n`
 }
 
-export async function POST(req: Request) {
+// =====================================================================
+// SELF-TEST PIPELINE
+// =====================================================================
+// We catch most broken games BEFORE the kid sees them by running:
+//   1. Static structural checks (regex/parse) — instant, no AI cost
+//   2. Playtest AI call — checks for runtime/logic bugs by simulating play
+//   3. Fix-and-retry loop — sends specific bugs back to the generator
+// Up to ~3 retries total. Total worst-case latency ~3 minutes; typical
+// successful generation ~30-60s.
+
+interface StaticCheckResult {
+  ok: boolean
+  issues: string[]
+}
+
+// Fast structural checks. Run first because they're free and catch the
+// most blatant bugs (truncated HTML, missing gameWin call, etc).
+function runStaticChecks(html: string): StaticCheckResult {
+  const issues: string[] = []
+  const lower = html.toLowerCase()
+
+  // Truncation / structural completeness
+  if (!lower.includes("<!doctype html>") && !lower.includes("<html")) {
+    issues.push("HTML is missing the <!DOCTYPE html> declaration. The file looks truncated or malformed.")
+  }
+  if (!lower.includes("<body")) {
+    issues.push("HTML is missing a <body> tag.")
+  }
+  if (!lower.includes("</body>")) {
+    issues.push("HTML is missing a closing </body> tag — probably truncated mid-generation.")
+  }
+  if (!lower.includes("</html>")) {
+    issues.push("HTML is missing a closing </html> tag — probably truncated mid-generation.")
+  }
+  if (!lower.includes("<script")) {
+    issues.push("Game has no <script> tag, so it has no game logic at all.")
+  }
+
+  // Required postMessage protocol
+  if (!html.includes("function gameWin") && !html.includes("gameWin =") && !html.includes("gameWin:")) {
+    issues.push("Game does not define a gameWin() function. The parent app cannot detect wins.")
+  }
+  if (!html.includes("function gameLose") && !html.includes("gameLose =") && !html.includes("gameLose:")) {
+    issues.push("Game does not define a gameLose() function.")
+  }
+  // Check that gameWin is actually CALLED somewhere (not just defined).
+  // We look for an invocation pattern that isn't the function declaration.
+  const gameWinDefIndex = html.indexOf("gameWin")
+  const gameWinAfterDef = gameWinDefIndex >= 0 ? html.slice(gameWinDefIndex + 50) : ""
+  if (!gameWinAfterDef.includes("gameWin(")) {
+    issues.push("gameWin() is defined but never called. The player can never win this game.")
+  }
+
+  // At least one interactive element
+  const hasInteraction =
+    html.includes("addEventListener") ||
+    /onclick\s*=/i.test(html) ||
+    /ontouch/i.test(html) ||
+    /onkey/i.test(html) ||
+    /onpointerdown/i.test(html)
+  if (!hasInteraction) {
+    issues.push("Game has no event listeners or onclick handlers. Nothing the player does will register.")
+  }
+
+  // Forbidden body overflow:hidden
+  // Look for body { ... overflow: hidden ... } pattern
+  if (/body\s*\{[^}]*overflow\s*:\s*hidden/i.test(html)) {
+    issues.push("Body has overflow:hidden which can hide the win screen. Remove it.")
+  }
+
+  // Brace balance — basic JS syntax sanity check
+  const openBraces = (html.match(/\{/g) ?? []).length
+  const closeBraces = (html.match(/\}/g) ?? []).length
+  if (Math.abs(openBraces - closeBraces) > 2) {
+    issues.push(`Curly braces are unbalanced (${openBraces} open vs ${closeBraces} close). The script may have a syntax error.`)
+  }
+
+  return { ok: issues.length === 0, issues }
+}
+
+interface PlaytestResult {
+  works: boolean
+  issues: string[]
+  winPath: string
+  // Raw AI text in case parsing fails — useful for debugging.
+  raw?: string
+}
+
+// Calls Claude to "playtest" the game. The model reads the HTML and
+// answers structured questions about whether a kid could actually
+// play and win it. Returns a JSON-shaped result.
+async function runPlaytest(html: string, designDoc: { title?: string; concept?: string; mathRole?: string; winCondition?: string }): Promise<PlaytestResult> {
   try {
-    const { designDoc, designChoices, visualConcept, vibe } = await req.json()
+    const playtestSystem = `You are a paranoid QA tester for a kids' math game app. A 6-12 year old will play the game you're testing. Your job is to find any bug, dead button, or contradiction BEFORE the kid does.
+
+You will read a complete HTML game file and report whether it actually works.
+
+Check for these specific bugs:
+1. ELEMENT/WORD MISMATCH: Does every visible word in the UI match a real element on screen? Example bug: the UI says "Click a light beam" but there is no element called a light beam — only buttons labeled with numbers.
+2. DEAD HANDLERS: Does every button/clickable element have a working onclick that actually changes game state? Example bug: a button exists but its onclick is missing, empty, or points to a function that does nothing.
+3. STALE STATUS TEXT: Is any status message hardcoded to a wrong state on load? Example bug: "Status: try again!" is showing on round 1 before the player has even made a move.
+4. UNREACHABLE WIN: Is there any 3-step sequence the player could take that triggers gameWin()? If you can't find a path to victory, the game is unwinnable.
+5. ROUND-RESET BUGS: If the game has multiple rounds, does round 2 work? Does the score, status, target, and UI reset properly between rounds?
+6. MATH NOT EMBODIED: Is the math the actual REASON to click something, or is it cosmetic? Example bug: the game says it teaches fractions but you can win by clicking randomly.
+7. TRUNCATION / SYNTAX: Does the HTML end with </html>? Does the JavaScript look syntactically complete (no missing braces, no obvious truncation)?
+8. WIN BUTTON DISABLED FOREVER: Is the main "submit / build / done" button stuck disabled because of a state bug?
+
+For each bug you find, describe it in ONE concrete sentence the generator can act on. Don't say "the game has issues" — say "the 70 button has no onclick handler" or "the status bar is hardcoded to 'try again' on line 142."
+
+Output JSON ONLY, no markdown, no code fences, no commentary:
+{"works": true|false, "issues": ["specific bug 1", "specific bug 2", ...], "winPath": "click X then Y then Z to win"}
+
+If works=true, issues should be an empty array. winPath should always be a concrete sequence even if works=false (your best guess of how to win).`
+
+    const playtestUser = `Game design:
+- Title: ${designDoc.title ?? "?"}
+- Math concept: ${designDoc.concept ?? "?"}
+- Math role: ${designDoc.mathRole ?? "?"}
+- Win condition: ${designDoc.winCondition ?? "?"}
+
+Game HTML:
+${html}
+
+Now playtest this. Return JSON only.`
+
+    const response = await anthropic.messages.create({
+      model: "claude-sonnet-4-5",
+      max_tokens: 1500,
+      system: playtestSystem,
+      messages: [{ role: "user", content: playtestUser }],
+    })
+
+    const text = response.content[0].type === "text" ? response.content[0].text : ""
+    const cleaned = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim()
+    const start = cleaned.indexOf("{")
+    const end = cleaned.lastIndexOf("}")
+    if (start === -1 || end === -1) {
+      console.warn("[playtest] no JSON in response — assuming game works")
+      return { works: true, issues: [], winPath: "(playtest unparseable)", raw: text.slice(0, 200) }
+    }
+    const parsed = JSON.parse(cleaned.slice(start, end + 1)) as PlaytestResult
+    return {
+      works: !!parsed.works,
+      issues: Array.isArray(parsed.issues) ? parsed.issues : [],
+      winPath: typeof parsed.winPath === "string" ? parsed.winPath : "",
+    }
+  } catch (e) {
+    // If playtest fails for any reason, don't block the kid — assume
+    // the game works and let them try it. Better than blocking forever.
+    console.warn("[playtest] error:", String(e))
+    return { works: true, issues: [], winPath: "(playtest failed)" }
+  }
+}
+
+// Wraps an Anthropic generation call. Used both for the initial
+// generation and for fix-up generations during the self-test loop.
+async function generateGameHtml(opts: {
+  systemPrompt: string
+  userPrompt: string
+}): Promise<string> {
+  const message = await anthropic.messages.create({
+    model: "claude-sonnet-4-5",
+    max_tokens: 10000,
+    system: opts.systemPrompt,
+    messages: [{ role: "user", content: opts.userPrompt }],
+  })
+
+  const text = message.content[0].type === "text" ? message.content[0].text : ""
+  let cleanHtml = text
+  if (cleanHtml.startsWith("```")) {
+    cleanHtml = cleanHtml.replace(/^```html?\n?/, "").replace(/\n?```$/, "")
+  }
+  return cleanHtml
+}
+
+// =====================================================================
+// POST /api/game/generate
+// =====================================================================
+// Generates a playable HTML game with a self-test loop:
+//   1. Generate HTML
+//   2. Run static checks (instant)
+//   3. If structural issues, ask AI to fix them, regenerate
+//   4. Run AI playtest
+//   5. If playtest reports issues, ask AI to fix them, regenerate
+//   6. Return whatever HTML we have (better something than nothing)
+//
+// Up to 3 generation attempts total. Each attempt includes the
+// previous bug list as fix instructions.
+
+export async function POST(req: Request) {
+  // We track wall-clock time so the loop can degrade gracefully if
+  // we're approaching the route's maxDuration. Each step checks
+  // "do I have enough time for one more AI call?" and skips itself
+  // if not. The kid still gets a game (better unverified than no
+  // game at all).
+  //
+  // Time budget per step (rough averages, padded for safety):
+  //   Initial generation:  45s
+  //   Static check fix:    45s
+  //   Playtest:            30s
+  //   Playtest fix:        45s
+  //
+  // If we're past 200s budget remaining (out of 300s maxDuration),
+  // we skip the playtest entirely and ship whatever we have.
+  const startTime = Date.now()
+  const TIMEOUT_MS = 290_000 // 290s — leaves 10s buffer below the 300s hard limit
+  const remaining = () => TIMEOUT_MS - (Date.now() - startTime)
+
+  try {
+    const { designDoc, visualConcept, vibe } = await req.json()
 
     const vibePreset = VIBE_PRESETS[vibe as string] ?? VIBE_PRESETS.arcade
-    const forbiddenRules = buildForbiddenRules(!!vibePreset.allowPastels, !!vibePreset.allowSketch)
-    const visualConceptBlock = visualConcept
-      ? `\n\nVISUAL CONCEPT (the learner already approved this — match it):\n${visualConcept}\n`
-      : ""
+    const systemPrompt = buildSystemPrompt(vibePreset, visualConcept)
+    const baseUserPrompt = buildUserPrompt(designDoc, vibePreset, visualConcept)
 
-    // Sketch vibe overrides the "must use emoji" rule. Other vibes still
-    // require big emoji as game characters.
-    const characterRule = vibePreset.allowSketch
-      ? `- Use stick figures and simple line drawings as the main characters (the sketch aesthetic). Tiny emoji decorations are OK but the main characters MUST be hand-drawn-style line art.`
-      : `- Every moving entity (player, enemy, item, obstacle) MUST be a recognizable real thing — use big emoji at 50px+ font sizes.\n- Never use plain colored shapes as characters or items. ZERO exceptions.`
+    // ATTEMPT 1: initial generation
+    let html = await generateGameHtml({
+      systemPrompt,
+      userPrompt: baseUserPrompt,
+    })
 
-    const message = await anthropic.messages.create({
-      model: "claude-sonnet-4-5",
-      max_tokens: 10000,
-      system: `You generate complete, self-contained HTML files for playable browser games for learners aged 7-18. Output ONLY the HTML. No markdown. No code fences. Start with <!DOCTYPE html>.
+    if (!html || (!html.includes("<!DOCTYPE html>") && !html.includes("<html"))) {
+      return Response.json({ error: "Failed to generate game" }, { status: 500 })
+    }
+
+    // STATIC CHECKS — instant, always run
+    let staticResult = runStaticChecks(html)
+    console.log(`[generate] attempt 1 static checks:`, staticResult.ok ? "OK" : staticResult.issues.length + " issues")
+
+    // FIX-FROM-STATIC retry (up to 1) — only if we have time
+    if (!staticResult.ok && remaining() > 60_000) {
+      const fixPrompt = `${baseUserPrompt}
+
+⚠️ THE PREVIOUS ATTEMPT HAD THESE STRUCTURAL BUGS — fix them:
+${staticResult.issues.map((issue, i) => `${i + 1}. ${issue}`).join("\n")}
+
+Regenerate the entire HTML, fixing all the bugs above. Output ONLY the HTML.`
+      html = await generateGameHtml({ systemPrompt, userPrompt: fixPrompt })
+      staticResult = runStaticChecks(html)
+      console.log(`[generate] attempt 2 (after static fix):`, staticResult.ok ? "OK" : staticResult.issues.length + " issues remaining")
+    } else if (!staticResult.ok) {
+      console.log(`[generate] skipping static fix retry — only ${Math.round(remaining() / 1000)}s left`)
+    }
+
+    // PLAYTEST — only if we have time for both the playtest AND a
+    // potential follow-up fix (~75s combined)
+    if (remaining() > 75_000) {
+      const playtest = await runPlaytest(html, designDoc)
+      console.log(`[generate] playtest:`, playtest.works ? "OK" : `${playtest.issues.length} issues`)
+      if (!playtest.works && playtest.issues.length > 0) {
+        console.log(`[generate] playtest issues:`, playtest.issues.slice(0, 3).join(" | "))
+      }
+
+      // FIX-FROM-PLAYTEST retry (up to 1) — only if we have time
+      if (!playtest.works && playtest.issues.length > 0 && remaining() > 50_000) {
+        const fixPrompt = `${baseUserPrompt}
+
+⚠️ A PLAYTEST OF YOUR PREVIOUS ATTEMPT FOUND THESE BUGS — fix all of them:
+${playtest.issues.map((issue, i) => `${i + 1}. ${issue}`).join("\n")}
+
+Regenerate the COMPLETE HTML file, fixing every bug above. Pay special attention to:
+- Click handlers must actually do something to game state
+- Status text must reflect the current state, not be hardcoded
+- gameWin() must be reachable through normal play
+- Math must be the REASON to click, not decoration
+
+Output ONLY the HTML, no markdown, no code fences.`
+        html = await generateGameHtml({ systemPrompt, userPrompt: fixPrompt })
+        console.log(`[generate] attempt 3 (after playtest fix) — sending to learner regardless`)
+      } else if (!playtest.works) {
+        console.log(`[generate] skipping playtest fix retry — only ${Math.round(remaining() / 1000)}s left`)
+      }
+    } else {
+      console.log(`[generate] skipping playtest entirely — only ${Math.round(remaining() / 1000)}s left after generation`)
+    }
+
+    // Log the chosen coreVerb for audit
+    const verbMatch = html.match(/<!--\s*coreVerb:\s*(.+?)\s*-->/i)
+    const coreVerb = verbMatch ? verbMatch[1] : "(NOT DECLARED)"
+    const totalSeconds = Math.round((Date.now() - startTime) / 1000)
+    console.log(`[generate] standard=${designDoc.standardId ?? "?"} mathRole="${designDoc.mathRole ?? "?"}" coreVerb="${coreVerb}" totalTime=${totalSeconds}s`)
+
+    return Response.json({ html })
+  } catch (error) {
+    console.error("Generate API error:", error)
+    return Response.json(
+      { error: "Failed to generate game. Please try again." },
+      { status: 500 }
+    )
+  }
+}
+
+// =====================================================================
+// PROMPT BUILDERS — split out so the self-test loop can rebuild the
+// user prompt with bug-fix instructions appended.
+// =====================================================================
+
+interface VibePresetLite {
+  label: string
+  spec: string
+  allowPastels?: boolean
+  allowSketch?: boolean
+}
+
+function buildSystemPrompt(vibePreset: VibePresetLite, _visualConcept: string | undefined): string {
+  const forbiddenRules = buildForbiddenRules(!!vibePreset.allowPastels, !!vibePreset.allowSketch)
+  const characterRule = vibePreset.allowSketch
+    ? `- Use stick figures and simple line drawings as the main characters (the sketch aesthetic). Tiny emoji decorations are OK but the main characters MUST be hand-drawn-style line art.`
+    : `- Every moving entity (player, enemy, item, obstacle) MUST be a recognizable real thing — use big emoji at 50px+ font sizes.\n- Never use plain colored shapes as characters or items. ZERO exceptions.`
+
+  return `You generate complete, self-contained HTML files for playable browser games for learners aged 7-18. Output ONLY the HTML. No markdown. No code fences. Start with <!DOCTYPE html>.
 
 🧠 INTRINSIC INTEGRATION — THE MOST IMPORTANT RULE:
 This game teaches a math concept. Per Habgood & Ainsworth (2011), the math
@@ -371,10 +671,32 @@ You MUST include this exact handler in your <script> tag:
 And you MUST call gameWin() the moment the player wins a round (not just at the end of the game),
 and gameLose() the moment the player loses (collision, time out, wrong answer too many times, etc.).
 If you forget this, the parent app cannot mark the learner as having played and won. This is more
-important than any other rule. Every game MUST call gameWin() at least once when the player wins.`,
-      messages: [{
-        role: "user",
-        content: `Generate a complete, self-contained HTML file for a playable browser game.
+important than any other rule. Every game MUST call gameWin() at least once when the player wins.`
+}
+
+// Builds the user prompt with the design doc and visual concept
+// embedded. The same prompt is reused on retries (with bug-fix
+// instructions appended) inside the self-test loop.
+interface DesignDoc {
+  title?: string
+  concept?: string
+  howItWorks?: string
+  rules?: string[]
+  winCondition?: string
+  mathRole?: string
+  standardId?: string
+}
+
+function buildUserPrompt(
+  designDoc: DesignDoc,
+  vibePreset: VibePresetLite,
+  visualConcept: string | undefined
+): string {
+  const visualConceptBlock = visualConcept
+    ? `\n\nVISUAL CONCEPT (the learner already approved this — match it):\n${visualConcept}\n`
+    : ""
+
+  return `Generate a complete, self-contained HTML file for a playable browser game.
 
 GAME DESIGN:
 - Title: ${designDoc.title}
@@ -406,35 +728,14 @@ REQUIREMENTS:
   prompt). The tutorial must contain CONCRETE valid and invalid examples
   using real numbers from this game's math concept.
 
+🚨 SELF-CHECK BEFORE FINALIZING:
+- Does every visible UI word correspond to a real element on screen?
+- Does every button have a working onclick that changes game state?
+- Is the status text correct on round 1 (not pre-set to "try again")?
+- Can the player actually reach gameWin() through normal play?
+- Does round 2 reset the score, status, target, and UI properly?
+
 REMEMBER: ${vibePreset.allowSketch
   ? "main characters are stick figures and simple line drawings, NOT emoji."
-  : "every character/item is a recognizable big EMOJI, never a plain shape."} The game must FEEL like it belongs in the ${vibePreset.label} aesthetic.`,
-      }],
-    })
-
-    const text = message.content[0].type === "text" ? message.content[0].text : ""
-
-    if (!text || (!text.includes("<!DOCTYPE html>") && !text.includes("<html"))) {
-      return Response.json({ error: "Failed to generate game" }, { status: 500 })
-    }
-
-    let cleanHtml = text
-    if (cleanHtml.startsWith("```")) {
-      cleanHtml = cleanHtml.replace(/^```html?\n?/, "").replace(/\n?```$/, "")
-    }
-
-    // Log the model's chosen coreVerb so we can audit whether the
-    // intrinsic-integration prompt is actually working. Cheap to keep on.
-    const verbMatch = cleanHtml.match(/<!--\s*coreVerb:\s*(.+?)\s*-->/i)
-    const coreVerb = verbMatch ? verbMatch[1] : "(NOT DECLARED)"
-    console.log(`[generate] standard=${designDoc.standardId ?? "?"} mathRole="${designDoc.mathRole ?? "?"}" coreVerb="${coreVerb}"`)
-
-    return Response.json({ html: cleanHtml })
-  } catch (error) {
-    console.error("Generate API error:", error)
-    return Response.json(
-      { error: "Failed to generate game. Please try again." },
-      { status: 500 }
-    )
-  }
+  : "every character/item is a recognizable big EMOJI, never a plain shape."} The game must FEEL like it belongs in the ${vibePreset.label} aesthetic.`
 }

@@ -18,12 +18,29 @@ export async function GET(req: Request) {
       q = q.where("classId", "==", classId)
     }
 
+    // Debug: also count ALL games in the collection regardless of status,
+    // so we can tell whether the admin SDK is talking to an empty
+    // database (wrong project) or a populated one with no published
+    // games (status filter issue).
+    const allSnap = await adminDb.collection("games").get()
+    const statusCounts: Record<string, number> = {}
+    allSnap.docs.forEach((d) => {
+      const s = (d.data().status as string) || "(no status)"
+      statusCounts[s] = (statusCounts[s] ?? 0) + 1
+    })
+
     const snap = await q.get()
     const games = snap.docs.map((d) => {
       const data = d.data()
       const { gameHtml: _gameHtml, ...meta } = data
       return meta as Record<string, unknown>
     })
+
+    console.log(
+      `[/api/games] status=${status} classId=${classId ?? "any"} ` +
+      `→ ${games.length} games | total in collection: ${allSnap.size} | ` +
+      `status breakdown: ${JSON.stringify(statusCounts)}`
+    )
 
     // Sort newest first by createdAt
     games.sort((a, b) => {
