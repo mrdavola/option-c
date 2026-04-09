@@ -11,10 +11,9 @@ import {
 import {
   signInAnonymously,
   signInWithEmailAndPassword,
-  signInWithRedirect,
-  getRedirectResult,
+  signInWithPopup,
   GoogleAuthProvider,
-  linkWithRedirect,
+  linkWithPopup,
   onAuthStateChanged,
   signOut as firebaseSignOut,
   type User,
@@ -109,10 +108,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  // Handle Google redirect result on page load
-  useEffect(() => {
-    getRedirectResult(auth).catch((err) => { console.error("[Auth] Redirect error:", err) })
-  }, [])
 
   // Listen for auth state changes
   useEffect(() => {
@@ -283,13 +278,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [loadProfile])
 
   const signInGuideWithGoogle = useCallback(async () => {
-    await signInWithRedirect(auth, googleProvider)
-  }, [])
+    const result = await signInWithPopup(auth, googleProvider)
+    await loadProfile(result.user.uid)
+  }, [loadProfile])
 
   const linkGoogleAccount = useCallback(async () => {
     if (!user) throw new Error("Must be signed in to link accounts.")
-    await linkWithRedirect(user, googleProvider)
-  }, [user])
+    await linkWithPopup(user, googleProvider)
+    await loadProfile(user.uid)
+  }, [user, loadProfile])
 
   const handleSignOut = useCallback(async () => {
     await firebaseSignOut(auth)
