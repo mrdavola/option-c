@@ -59,7 +59,7 @@ function WelcomeChoiceStep({
   onReturning: () => void
 }) {
   return (
-    <div className="flex flex-col md:flex-row items-center md:items-center gap-8 md:gap-20 max-w-5xl w-full px-8">
+    <div className="flex flex-col md:flex-row items-center md:items-center gap-8 md:gap-16 max-w-4xl w-full px-6">
       {/* Left: sign-in options */}
       <div className="flex flex-col items-center gap-6 flex-1 w-full">
         <Logo size={56} className="text-blue-400" />
@@ -96,7 +96,7 @@ function WelcomeChoiceStep({
       </div>
 
       {/* Right: how it works */}
-      <div className="flex-1 w-full bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6 space-y-4">
+      <div className="flex-1 w-full min-w-[320px] bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6 space-y-4">
         <h2 className="text-sm font-semibold text-zinc-300 uppercase tracking-wide">How Diagonally works</h2>
         <div className="space-y-3">
           <div className="flex items-start gap-3">
