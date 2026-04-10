@@ -401,32 +401,6 @@ export function PlanetView({
         {/* Bridge navigation bubbles removed */}
       </div>
 
-      {/* Community Games section */}
-      {communityGames.length > 0 && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 w-full max-w-lg px-4">
-          <div className="bg-zinc-900/90 backdrop-blur-sm border border-zinc-800 rounded-xl p-3">
-            <h3 className="text-xs font-medium text-zinc-400 mb-2">
-              Community Games ({communityGames.length})
-            </h3>
-            <div className="flex gap-2 overflow-x-auto pb-1">
-              {communityGames.slice(0, 4).map((game) => (
-                <button
-                  key={game.id}
-                  onClick={() => handlePlayGame(game.id)}
-                  className="flex-shrink-0 bg-zinc-800/50 border border-zinc-700/50 rounded-lg px-3 py-2 text-left hover:border-emerald-500/50 transition-colors min-w-[120px]"
-                >
-                  <div className="text-xs font-medium text-white truncate">
-                    {game.title}
-                  </div>
-                  <div className="text-xs text-zinc-500 mt-0.5">
-                    {game.playCount} plays
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Game player modal */}
       {playingGame && (
