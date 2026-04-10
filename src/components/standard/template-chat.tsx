@@ -250,22 +250,18 @@ Win condition: ${picks.win}`
       {/* Confirm step: show the assembled game and a build button */}
       {step === "confirm" && (
         <div className="space-y-3">
-          <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-zinc-200 space-y-1.5">
-            <p className="text-xs text-emerald-400 font-semibold uppercase tracking-wide">
+          <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm">
+            <p className="text-xs text-emerald-400 font-semibold uppercase tracking-wide mb-3">
               Your game
             </p>
-            <p>
-              <span className="text-zinc-500">Mechanic:</span> {template.description}
-            </p>
-            <p>
-              <span className="text-zinc-500">Theme:</span> {picks.theme}
-            </p>
-            <p>
-              <span className="text-zinc-500">What you do:</span> {picks.action}
-            </p>
-            <p>
-              <span className="text-zinc-500">How you win:</span> {picks.win}
-            </p>
+            <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-2">
+              <span className="text-zinc-500 text-xs uppercase tracking-wide pt-0.5">Theme</span>
+              <span className="text-zinc-200">{picks.theme}</span>
+              <span className="text-zinc-500 text-xs uppercase tracking-wide pt-0.5">Action</span>
+              <span className="text-zinc-200">{picks.action}</span>
+              <span className="text-zinc-500 text-xs uppercase tracking-wide pt-0.5">Win</span>
+              <span className="text-zinc-200">{picks.win}</span>
+            </div>
           </div>
           <div className="flex gap-2">
             <button
