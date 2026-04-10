@@ -61,9 +61,9 @@ export function GalaxySettingsPopover({
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-[500px] max-w-[calc(100vw-2rem)] bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl overflow-hidden z-50">
-          <div className="grid grid-cols-2 divide-x divide-zinc-800">
-            {/* LEFT — settings (compact, tight) */}
+        <div className="absolute right-0 mt-2 w-[280px] max-w-[calc(100vw-2rem)] bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl overflow-hidden z-50">
+          <div className="flex flex-col divide-y divide-zinc-800">
+            {/* TOP — settings (compact, tight) */}
             <div className="p-3 space-y-3">
               {/* Color mode */}
               <div className="space-y-1.5">
@@ -126,7 +126,7 @@ export function GalaxySettingsPopover({
               )}
             </div>
 
-            {/* RIGHT — legend */}
+            {/* BOTTOM — legend */}
             <div className="p-3 space-y-2">
               <p className="text-[10px] text-zinc-500 font-semibold uppercase tracking-wide">
                 What the colors mean
