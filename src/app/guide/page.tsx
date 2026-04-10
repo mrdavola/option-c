@@ -14,6 +14,7 @@ import { UserMenu } from "@/components/user-menu"
 import { LearnerEditModal } from "@/components/learner-edit-modal"
 import { FeedbackInbox } from "@/components/feedback/feedback-inbox"
 import { Logo } from "@/components/logo"
+import { LearnerProgressGrid } from "@/components/learner-progress-grid"
 
 interface StudentSummary {
   uid: string
@@ -532,6 +533,10 @@ export default function GuideDashboard() {
                     ))}
                   </div>
                 )}
+
+                {/* Progress grid — all planets and moons for this learner's grade */}
+                <h3 className="text-sm font-medium text-zinc-300">Skill Progress</h3>
+                <LearnerProgressGrid uid={selectedStudent.uid} grade={selectedStudent.grade} />
               </div>
             )}
 
