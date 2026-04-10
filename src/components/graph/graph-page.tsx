@@ -25,6 +25,9 @@ import { GalaxySettingsPopover } from "./galaxy-settings-popover"
 import { RulesPopover } from "@/components/rules-popover"
 import { useTokenConfig } from "@/lib/token-config"
 import { useSearchParams } from "next/navigation"
+import { Search, X } from "lucide-react"
+import moonNamesData from "@/data/moon-names.json"
+const MOON_NAMES = moonNamesData as Record<string, string>
 
 interface GraphPageProps {
   data: StandardsGraph
@@ -126,6 +129,34 @@ export function GraphPage({ data }: GraphPageProps) {
   const [showWaveEffect, setShowWaveEffect] = useState(false)
   const [waveColor, setWaveColor] = useState("#22c55e")
   const [lockedMessage, setLockedMessage] = useState<string | null>(null)
+
+  // Search
+  const [searchQuery, setSearchQuery] = useState("")
+  const [searchOpen, setSearchOpen] = useState(false)
+  const searchResults = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase()
+    if (!q) return []
+    const qNoDots = q.replace(/\./g, "")
+    const results: { id: string; name: string; planetId: string; planetName: string }[] = []
+    for (const node of data.nodes) {
+      if (isClusterNode(node.id)) continue
+      const moonName = (MOON_NAMES[node.id] ?? node.description).toLowerCase()
+      const stdId = node.id.toLowerCase()
+      const stdIdNoDots = stdId.replace(/\./g, "")
+      const domain = node.domain.toLowerCase()
+      if (moonName.includes(q) || stdId.includes(q) || stdIdNoDots.includes(qNoDots) || domain.includes(q)) {
+        const planetId = `${node.grade}.${node.domainCode}`
+        results.push({
+          id: node.id,
+          name: MOON_NAMES[node.id] ?? node.description,
+          planetId,
+          planetName: `${node.domain} (Grade ${node.grade})`,
+        })
+      }
+      if (results.length >= 8) break
+    }
+    return results
+  }, [searchQuery, data.nodes])
 
   // Tokens
   const [tokens, setTokens] = useState(0)
@@ -928,6 +959,70 @@ export function GraphPage({ data }: GraphPageProps) {
           />
         )}
       </div>
+
+      {/* Search bar — galaxy view only */}
+      {viewMode === "galaxy" && (
+        <div className={`absolute ${impersonating ? "top-14" : "top-4"} left-4 z-10`}>
+          {searchOpen ? (
+            <div className="w-72">
+              <div className="flex items-center gap-2 bg-zinc-900/95 backdrop-blur-sm border border-zinc-700 rounded-lg px-3 py-2">
+                <Search className="size-4 text-zinc-500 shrink-0" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search skills, standards, topics..."
+                  className="flex-1 bg-transparent text-sm text-white placeholder:text-zinc-500 focus:outline-none"
+                  autoFocus
+                />
+                <button onClick={() => { setSearchOpen(false); setSearchQuery("") }} className="text-zinc-500 hover:text-white">
+                  <X className="size-4" />
+                </button>
+              </div>
+              {searchResults.length > 0 && (
+                <div className="mt-1 bg-zinc-900/95 backdrop-blur-sm border border-zinc-700 rounded-lg overflow-hidden max-h-64 overflow-y-auto">
+                  {searchResults.map((r) => (
+                    <button
+                      key={r.id}
+                      onClick={() => {
+                        setSearchOpen(false)
+                        setSearchQuery("")
+                        // Navigate to the planet, then open the moon
+                        setViewMode("planet")
+                        setCurrentPlanetId(r.planetId)
+                        const node = data.nodes.find(n => n.id === r.id)
+                        if (node) {
+                          setTimeout(() => {
+                            setSelectedStandard(node)
+                            setPanelOpen(true)
+                          }, 300)
+                        }
+                      }}
+                      className="w-full text-left px-3 py-2 hover:bg-zinc-800 transition-colors border-b border-zinc-800 last:border-0"
+                    >
+                      <p className="text-sm text-white truncate">{r.name}</p>
+                      <p className="text-xs text-zinc-500">{r.id} · {r.planetName}</p>
+                    </button>
+                  ))}
+                </div>
+              )}
+              {searchQuery.trim() && searchResults.length === 0 && (
+                <div className="mt-1 bg-zinc-900/95 backdrop-blur-sm border border-zinc-700 rounded-lg px-3 py-3 text-center">
+                  <p className="text-sm text-zinc-500">No results</p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="flex items-center gap-2 bg-zinc-900/85 backdrop-blur-sm border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-300 hover:text-white hover:border-zinc-600 transition-colors"
+            >
+              <Search className="size-4" />
+              <span>Search</span>
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Rotate hint — show once, dismissable */}
       {viewMode === "galaxy" && showRotateHint && (
