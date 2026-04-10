@@ -1,26 +1,32 @@
 import Anthropic from "@anthropic-ai/sdk"
+import { getAdminDb } from "@/lib/firebase-admin"
 
 export const maxDuration = 30
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
 export async function POST(req: Request) {
-  const { standardId, description, grade, readingLevel, interests } = await req.json() as {
+  const { standardId, description, grade, readingLevel } = await req.json() as {
     standardId: string
     description: string
     grade: string
     readingLevel: "simpler" | "default" | "challenge"
-    interests?: string[]
   }
 
-  const interestPhrase = interests && interests.length > 0
-    ? `The student is into: ${interests.join(", ")}.`
-    : ""
+  // Check cache first — keyed by standardId + readingLevel
+  const cacheKey = `${standardId}__${readingLevel}`
+  try {
+    const adminDb = getAdminDb()
+    const cached = await adminDb.collection("explanations").doc(cacheKey).get()
+    if (cached.exists) {
+      return Response.json(cached.data())
+    }
+  } catch {}
 
   const levelInstruction = {
     simpler: `Explain at a 2nd-grade reading level. Use very short sentences. Simple words only. Use "you" a lot.`,
-    default: `Explain at a ${grade === "K" ? "kindergarten" : `grade ${grade}`} reading level. Use age-appropriate language. Be clear and direct. ${interestPhrase ? `The student is into ${interests!.join(", ")} — weave their interests into every example naturally.` : "Give relatable real-world examples."}`,
-    challenge: `Explain at a ${grade === "K" ? "kindergarten" : `grade ${grade}`} reading level. ${interestPhrase} Make EVERY example connect directly to their interests. Make it feel personal.`,
+    default: `Explain at a ${grade === "K" ? "kindergarten" : `grade ${grade}`} reading level. Use age-appropriate language. Be clear and direct. Give relatable real-world examples.`,
+    challenge: `Explain at a ${grade === "K" ? "kindergarten" : `grade ${grade}`} reading level. Make EVERY example connect directly to real-world scenarios. Make it feel personal.`,
   }[readingLevel]
 
   try {
@@ -33,7 +39,7 @@ You MUST respond with ONLY a valid JSON object — no markdown, no code fences, 
 The JSON must have exactly these four keys:
 - "whatIsThis": string — 2-3 sentences explaining the concept at the right reading level
 - "commonMistakes": array of strings — 2-4 items, each a specific concrete mistake students make with THIS concept (one sentence each)
-- "realWorldUse": string — 2-3 sentences showing SPECIFICALLY where THIS math concept shows up in real life, not generic math. Be concrete and specific to the concept. Tie to student interests if any.
+- "realWorldUse": string — 2-3 sentences showing SPECIFICALLY where THIS math concept shows up in real life, not generic math. Be concrete and specific to the concept.
 - "formula": string — the key formula for this concept in plain text, or "" if none applies
 
 Example of correct format:
@@ -60,6 +66,13 @@ Example of correct format:
         .map((s: string) => s.trim())
         .filter((s: string) => s.length > 0)
     }
+
+    // Cache the result for next time
+    try {
+      const adminDb = getAdminDb()
+      await adminDb.collection("explanations").doc(cacheKey).set(parsed)
+    } catch {}
+
     return Response.json(parsed)
   } catch (e) {
     console.error("[explain] Error:", String(e))
