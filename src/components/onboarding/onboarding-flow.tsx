@@ -59,7 +59,7 @@ function WelcomeChoiceStep({
   onReturning: () => void
 }) {
   return (
-    <div className="flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-12 max-w-3xl w-full">
+    <div className="flex flex-col md:flex-row items-center md:items-center gap-8 md:gap-20 max-w-5xl w-full px-8">
       {/* Left: sign-in options */}
       <div className="flex flex-col items-center gap-6 flex-1 w-full">
         <Logo size={56} className="text-blue-400" />
