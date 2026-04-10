@@ -211,8 +211,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.warn("[auth] feedback migration failed:", err)
     }
 
-    // 4. Delete the old user doc so lookups by personalCode stay unique.
-    //    (We could also delete progress/{oldUid} but it costs reads; leave it.)
+    // 4. Delete old progress so a future anonymous user who gets this
+    //    UID won't inherit stale data.
+    try {
+      const oldProgressSnap = await getDocs(collection(db, "progress", oldUid, "standards"))
+      if (oldProgressSnap.size > 0) {
+        const deleteBatch = writeBatch(db)
+        oldProgressSnap.forEach((d) => deleteBatch.delete(d.ref))
+        await deleteBatch.commit()
+      }
+    } catch (err) {
+      console.warn("[auth] old progress cleanup failed:", err)
+    }
+
+    // 5. Delete the old user doc so lookups by personalCode stay unique.
     try {
       await deleteDoc(doc(db, "users", oldUid))
     } catch (err) {
