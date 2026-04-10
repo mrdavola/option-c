@@ -111,7 +111,7 @@ export function CriteriaProgress({ criteria, preChecked }: CriteriaProgressProps
         })}
       </div>
       <p className="text-sm text-zinc-300">
-        {metCount}/3 — {metCount === 3 ? "You did it!" : metCount === 0 ? "Tell me your game idea" : "Keep going!"}
+        {metCount}/3 criteria passed — {metCount === 3 ? "You did it!" : metCount === 0 ? "Tell me your game idea" : "Keep going!"}
       </p>
     </div>
   )
