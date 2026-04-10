@@ -53,9 +53,10 @@ export function FeedbackInbox({ mode }: FeedbackInboxProps) {
         if (isAdmin) {
           q = query(collection(db, "feedback"), where("target", "==", "admin"))
         } else {
+          // Single-field query to avoid needing a composite index.
+          // Filter by target client-side.
           q = query(
             collection(db, "feedback"),
-            where("target", "==", "game"),
             where("toUid", "==", activeProfile.uid)
           )
         }
