@@ -55,6 +55,7 @@ interface StudentRow {
   uid: string
   name: string
   className: string
+  classId: string
   grade: string
   tokens: number
   lastLoginAt: number
@@ -277,6 +278,7 @@ export default function AdminDashboardPage() {
           uid: s.uid || s.id,
           name: s.name || "Unknown",
           className: cls?.name || "No class",
+          classId: s.classId || "",
           grade: s.grade || "",
           tokens: s.tokens || 0,
           lastLoginAt: s.lastLoginAt || 0,
@@ -931,11 +933,16 @@ export default function AdminDashboardPage() {
           uid={editingLearner.uid}
           currentName={editingLearner.name}
           currentGrade={editingLearner.grade}
+          currentClassId={editingLearner.classId}
           onClose={() => setEditingLearner(null)}
-          onSaved={(newName, newGrade) => {
+          onSaved={(newName, newGrade, newClassId) => {
+            // Find the class name for display
+            const cls = classes.find((c) => c.id === newClassId)
             setStudents((prev) =>
               prev.map((s) =>
-                s.uid === editingLearner.uid ? { ...s, name: newName, grade: newGrade } : s
+                s.uid === editingLearner.uid
+                  ? { ...s, name: newName, grade: newGrade, classId: newClassId || s.classId, className: cls?.name || s.className }
+                  : s
               )
             )
           }}

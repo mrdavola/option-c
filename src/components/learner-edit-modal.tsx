@@ -1,28 +1,26 @@
 "use client"
 
-import { useState } from "react"
-import { doc, updateDoc } from "firebase/firestore"
+import { useState, useEffect } from "react"
+import { doc, updateDoc, collection, getDocs } from "firebase/firestore"
 import { db } from "@/lib/firebase"
 import { X, Save } from "lucide-react"
 
-// Modal that lets a guide or admin edit a learner's name and grade.
-// Used by both the guide dashboard and the admin dashboard.
-//
-// Doesn't touch the personalCode (kid keeps the same one) or any
-// other profile field. Just name + grade. Saves directly to the
-// users/{uid} doc — no API roundtrip.
-
 const GRADES = ["K", "1", "2", "3", "4", "5", "6", "7", "8", "HS"]
+
+interface ClassOption {
+  id: string
+  name: string
+  code: string
+}
 
 interface LearnerEditModalProps {
   open: boolean
   uid: string
   currentName: string
   currentGrade: string
+  currentClassId?: string
   onClose: () => void
-  // Called after a successful save with the new values, so the parent
-  // can update its local state without refetching.
-  onSaved: (newName: string, newGrade: string) => void
+  onSaved: (newName: string, newGrade: string, newClassId?: string) => void
 }
 
 export function LearnerEditModal({
@@ -30,13 +28,36 @@ export function LearnerEditModal({
   uid,
   currentName,
   currentGrade,
+  currentClassId,
   onClose,
   onSaved,
 }: LearnerEditModalProps) {
   const [name, setName] = useState(currentName)
   const [grade, setGrade] = useState(currentGrade)
+  const [classId, setClassId] = useState(currentClassId || "")
+  const [classes, setClasses] = useState<ClassOption[]>([])
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Fetch all classes for the dropdown
+  useEffect(() => {
+    if (!open) return
+    getDocs(collection(db, "classes")).then((snap) => {
+      const opts: ClassOption[] = snap.docs.map((d) => {
+        const data = d.data()
+        return { id: d.id, name: data.name || "Unnamed", code: data.code || "" }
+      })
+      opts.sort((a, b) => a.name.localeCompare(b.name))
+      setClasses(opts)
+    }).catch(() => {})
+  }, [open])
+
+  // Reset state when modal opens with new learner
+  useEffect(() => {
+    setName(currentName)
+    setGrade(currentGrade)
+    setClassId(currentClassId || "")
+  }, [currentName, currentGrade, currentClassId])
 
   if (!open) return null
 
@@ -49,11 +70,15 @@ export function LearnerEditModal({
     setSaving(true)
     setError(null)
     try {
-      await updateDoc(doc(db, "users", uid), {
+      const updates: Record<string, unknown> = {
         name: trimmed,
         grade,
-      })
-      onSaved(trimmed, grade)
+      }
+      if (classId) {
+        updates.classId = classId
+      }
+      await updateDoc(doc(db, "users", uid), updates)
+      onSaved(trimmed, grade, classId || undefined)
       onClose()
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not save changes.")
@@ -113,6 +138,25 @@ export function LearnerEditModal({
               </button>
             ))}
           </div>
+        </div>
+
+        {/* Class */}
+        <div className="space-y-1.5">
+          <label className="text-xs text-zinc-400 uppercase tracking-wide font-medium">
+            Class
+          </label>
+          <select
+            value={classId}
+            onChange={(e) => setClassId(e.target.value)}
+            className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500/50"
+          >
+            <option value="">No class</option>
+            {classes.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name} ({c.code})
+              </option>
+            ))}
+          </select>
         </div>
 
         {error && (

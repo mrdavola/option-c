@@ -770,6 +770,7 @@ export default function GuideDashboard() {
           uid={editingLearner.uid}
           currentName={editingLearner.name}
           currentGrade={editingLearner.grade}
+          currentClassId={classData?.id}
           onClose={() => setEditingLearner(null)}
           onSaved={(newName, newGrade) => {
             // Update the in-memory list so the change appears immediately
