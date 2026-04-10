@@ -312,6 +312,41 @@ export function GalaxyView({ galaxyData, onPlanetClick, onLockedPlanetClick, cur
       group.add(recRing)
     }
 
+    // Moon dots — small spheres in a ring around the planet, color-coded by status
+    if (node.moonCount > 0 && !isLocked) {
+      const moonOrbitRadius = radius * 2.2
+      const moonDotRadius = Math.max(radius * 0.15, 0.3)
+      const moonGeom = new THREE.SphereGeometry(moonDotRadius, 6, 4)
+
+      // Derive per-status counts
+      // unlockedCount includes mastered; availableCount = blue; inProgressCount = yellow
+      const greenCount = node.unlockedCount
+      const yellowCount = node.inProgressCount
+      const blueCount = node.availableCount
+      const greyCount = Math.max(0, node.moonCount - greenCount - yellowCount - blueCount)
+
+      // Build ordered color array: green first, then yellow, blue, grey
+      const moonColors: string[] = []
+      for (let i = 0; i < greenCount; i++) moonColors.push("#22c55e")
+      for (let i = 0; i < yellowCount; i++) moonColors.push("#eab308")
+      for (let i = 0; i < blueCount; i++) moonColors.push("#3b82f6")
+      for (let i = 0; i < greyCount; i++) moonColors.push("#555555")
+
+      for (let i = 0; i < node.moonCount; i++) {
+        const angle = (i / node.moonCount) * Math.PI * 2
+        const mx = Math.cos(angle) * moonOrbitRadius
+        const mz = Math.sin(angle) * moonOrbitRadius
+        const moonMat = new THREE.MeshBasicMaterial({
+          color: moonColors[i] || "#555555",
+          transparent: true,
+          opacity: 0.85,
+        })
+        const moonMesh = new THREE.Mesh(moonGeom, moonMat)
+        moonMesh.position.set(mx, 0, mz)
+        group.add(moonMesh)
+      }
+    }
+
     // Text label — truncate long names
     const canvas = document.createElement("canvas")
     const ctx = canvas.getContext("2d")!
