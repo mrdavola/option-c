@@ -2,7 +2,8 @@
 
 import { useState } from "react"
 import type { StandardNode } from "@/lib/graph-types"
-import { ArrowLeft, Check, X, AlertTriangle, Sparkles } from "lucide-react"
+import { ArrowLeft, Check, X, AlertTriangle, Sparkles, Shield } from "lucide-react"
+import { sanitizeGameHtml, findSecurityIssues } from "@/lib/html-sanitizer"
 
 interface ImportHtmlProps {
   standard: StandardNode
@@ -67,13 +68,18 @@ export function ImportHtml({ standard, onCancel, onPass }: ImportHtmlProps) {
       setLocalError(v)
       return
     }
+    // Sanitize before judging
+    const issues = findSecurityIssues(html)
+    const cleanHtml = sanitizeGameHtml(html)
+    setHtml(cleanHtml)
+
     setBusy(true)
     try {
       const res = await fetch("/api/game/judge-html", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          html,
+          html: cleanHtml,
           standardDescription: standard.description,
           standardId: standard.id,
         }),

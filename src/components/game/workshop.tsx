@@ -8,6 +8,7 @@ import { GameIframe } from "./game-iframe"
 import { MathMomentOverlay } from "./math-moment-overlay"
 import { Send, ArrowLeft, MessageCircle, X } from "lucide-react"
 import { useAuth } from "@/lib/auth"
+import { sanitizeGameHtml } from "@/lib/html-sanitizer"
 
 interface WorkshopProps {
   initialHtml: string
@@ -65,7 +66,8 @@ export function Workshop({
   // in on mount) so every save targets the same Firestore doc. createdAt
   // and the play/rating counters are only set the FIRST time the doc is
   // created — subsequent saves just merge the editable fields.
-  const saveDraft = async (gameHtml: string) => {
+  const saveDraft = async (rawHtml: string) => {
+    const gameHtml = sanitizeGameHtml(rawHtml)
     try {
       const ref = doc(db, "games", currentGameId)
       const existing = await getDoc(ref)

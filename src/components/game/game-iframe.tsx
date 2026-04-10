@@ -17,6 +17,9 @@ export function GameIframe({ html, className, onWin, onLose }: GameIframeProps) 
 
   useEffect(() => {
     const handler = (e: MessageEvent) => {
+      // Only accept messages from sandboxed iframes (origin is "null")
+      // or from our own domain
+      if (e.origin !== "null" && e.origin !== window.location.origin) return
       if (e.data?.type === "game_win") {
         onWinRef.current?.()
       }

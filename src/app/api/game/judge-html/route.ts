@@ -9,6 +9,7 @@
 //   - if any are missing → tells them exactly what's missing and how to fix it
 
 import Anthropic from "@anthropic-ai/sdk"
+import { sanitizeGameHtml, findSecurityIssues } from "@/lib/html-sanitizer"
 
 export const maxDuration = 60
 
@@ -31,9 +32,12 @@ export async function POST(req: Request) {
       )
     }
 
-    // Truncate huge HTML to keep token costs sane. 16k chars is plenty
-    // for the AI to judge structure + math logic.
-    const truncated = html.length > 16000 ? html.slice(0, 16000) + "\n\n<!-- ... truncated ... -->" : html
+    // Check for security issues before judging
+    const issues = findSecurityIssues(html)
+
+    // Sanitize and truncate
+    const sanitized = sanitizeGameHtml(html)
+    const truncated = sanitized.length > 16000 ? sanitized.slice(0, 16000) + "\n\n<!-- ... truncated ... -->" : sanitized
 
     const message = await anthropic.messages.create({
       model: "claude-sonnet-4-5",
