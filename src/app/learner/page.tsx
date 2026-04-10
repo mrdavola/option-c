@@ -156,6 +156,35 @@ export default function LearnerDashboard() {
     const grade = activeProfile?.grade
     if (!grade) return []
 
+    // Build a set of standards that have incoming prerequisite edges
+    // (these start as "locked" unless progress says otherwise)
+    const incomingPrereqs = new Set<string>()
+    for (const edge of STANDARDS.edges) {
+      if (edge.type === "prerequisite") {
+        incomingPrereqs.add(edge.target)
+      }
+    }
+
+    // Determine effective status: if the progress system has a status,
+    // use it. Otherwise, check if the standard has prerequisites — if
+    // yes, it's locked; if no, it's available (entry point).
+    // Additionally, for locked standards whose prereqs are all met,
+    // upgrade to available.
+    const effectiveStatus = (nodeId: string): string => {
+      const stored = progressByStandard.get(nodeId)
+      if (stored) return stored
+      // No progress entry — check prerequisites
+      if (!incomingPrereqs.has(nodeId)) return "available"
+      // Has prerequisites — check if they're all met
+      const allPrereqsMet = STANDARDS.edges
+        .filter(e => e.type === "prerequisite" && e.target === nodeId)
+        .every(e => {
+          const s = progressByStandard.get(e.source)
+          return s === "unlocked" || s === "mastered"
+        })
+      return allPrereqsMet ? "available" : "locked"
+    }
+
     const gameByStandard = new Map(games.map((g) => [g.standardId, g]))
     const groupMap = new Map<string, PlanetGroup>()
 
@@ -172,7 +201,7 @@ export default function LearnerDashboard() {
         groupMap.set(planetId, group)
       }
 
-      const status = progressByStandard.get(node.id) ?? "available"
+      const status = effectiveStatus(node.id)
       group.moons.push({
         id: node.id,
         title: MOON_NAMES[node.id] ?? node.description,
