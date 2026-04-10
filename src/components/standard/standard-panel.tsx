@@ -170,7 +170,7 @@ export function StandardPanel({
     <Sheet open={open} onOpenChange={(isOpen) => { if (!isOpen) onClose() }}>
       <SheetContent
         side="right"
-        className="w-full sm:w-[75vw] lg:w-[60vw] overflow-y-auto"
+        className={`overflow-y-auto ${step === "earn" ? "w-full sm:w-[90vw] lg:w-[80vw]" : "w-full sm:w-[75vw] lg:w-[60vw]"}`}
       >
         <SheetHeader>
           <p className="text-xs text-blue-400 font-medium uppercase tracking-wide">
