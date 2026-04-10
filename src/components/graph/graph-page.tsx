@@ -444,15 +444,8 @@ export function GraphPage({ data }: GraphPageProps) {
     setPanelOpen(true)
     if (tutorialStep === 1) setTutorialStep(2)
 
-    // Mark as in_progress when first opened (if currently available)
-    if (status === "available") {
-      saveProgress(standardId, { status: "in_progress" }).catch(() => {})
-      setProgressMap(prev => {
-        const next = new Map(prev)
-        next.set(standardId, "in_progress")
-        return next
-      })
-    }
+    // Don't mark as in_progress just by opening — only when they
+    // actually start building a game (handled in the build flow).
   }, [data.nodes, tutorialStep, saveProgress])
 
   // Planet view: click bridge -> fly to that planet
@@ -597,7 +590,19 @@ export function GraphPage({ data }: GraphPageProps) {
     setCurrentDesignDoc(designDoc)
     setPanelOpen(false)
     setBuildMode("building")
-  }, [])
+    // Mark as in_progress now that they're actually building
+    if (designDoc.standardId) {
+      const currentStatus = progressMap.get(designDoc.standardId)
+      if (currentStatus === "available" || !currentStatus) {
+        saveProgress(designDoc.standardId, { status: "in_progress" }).catch(() => {})
+        setProgressMap(prev => {
+          const next = new Map(prev)
+          next.set(designDoc.standardId, "in_progress")
+          return next
+        })
+      }
+    }
+  }, [progressMap, saveProgress])
 
   // Handle "Paste my own HTML" — open the import screen for this standard.
   const handleImportHtml = useCallback((standard: StandardNode) => {
