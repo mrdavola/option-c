@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagonally — First Challenge</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #09090b; color: #e4e4e7; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 32px 24px; max-width: 720px; margin: 0 auto; line-height: 1.6; }
+  h1 { font-size: 28px; color: #fff; text-align: center; margin-bottom: 4px; }
+  .date { text-align: center; color: #71717a; font-size: 13px; margin-bottom: 32px; }
+  .section { margin-bottom: 28px; }
+  .section-title { font-size: 11px; color: #3b82f6; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px; }
+  .steps { list-style: none; counter-reset: step; }
+  .steps li { counter-increment: step; padding: 12px 16px; background: #18181b; border: 1px solid #27272a; border-radius: 12px; margin-bottom: 8px; position: relative; padding-left: 48px; }
+  .steps li::before { content: counter(step); position: absolute; left: 14px; top: 12px; width: 24px; height: 24px; background: #3b82f6; color: #fff; border-radius: 50%; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .code-box { display: inline-block; background: #1e3a5f; border: 1px solid #3b82f6; color: #60a5fa; font-family: monospace; font-size: 18px; font-weight: 700; letter-spacing: 3px; padding: 4px 12px; border-radius: 8px; }
+  .challenge-box { background: #1a2e1a; border: 2px solid #22c55e40; border-radius: 16px; padding: 20px; margin-bottom: 12px; }
+  .challenge-title { font-size: 18px; font-weight: 700; color: #22c55e; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+  .challenge-part { background: #0f1f0f; border: 1px solid #22c55e30; border-radius: 10px; padding: 14px; margin-top: 12px; }
+  .challenge-part h3 { font-size: 13px; color: #4ade80; font-weight: 700; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; }
+  .challenge-part p { font-size: 14px; color: #d4d4d8; }
+  .hint { font-size: 12px; color: #a1a1aa; font-style: italic; margin-top: 6px; }
+  .token-box { background: #1a1a0f; border: 1px solid #f59e0b40; border-radius: 14px; padding: 18px; }
+  .token-title { font-size: 14px; font-weight: 700; color: #fbbf24; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .token-box p { font-size: 13px; color: #a1a1aa; margin-bottom: 6px; }
+  .token-box strong { color: #fde68a; }
+  .highlight { color: #60a5fa; font-weight: 600; }
+  .warn { color: #fbbf24; }
+  .green { color: #4ade80; }
+  .feedback-callout { background: #1a1a2e; border: 1px solid #3b82f640; border-radius: 12px; padding: 14px; text-align: center; margin-top: 8px; }
+  .feedback-callout p { font-size: 13px; color: #a1a1aa; }
+  .feedback-callout strong { color: #60a5fa; }
+</style>
+</head>
+<body>
+
+<h1>🚀 Diagonally — First Challenge</h1>
+<p class="date">April 10, 2026</p>
+
+<!-- GETTING STARTED -->
+<div class="section">
+  <p class="section-title">Getting Started</p>
+  <ol class="steps">
+    <li>On your laptop, log in as <span class="highlight">"AI user"</span> and click the <span class="highlight">Diagonally</span> bookmark.</li>
+    <li>Click <span class="highlight">"I'm new"</span> and enter this class code: <span class="code-box">QUHWLA</span></li>
+    <li>Type your <strong>first name</strong>. You'll get a <span class="warn">personal code</span> — <strong>write it down!</strong> You'll need it every time you come back.</li>
+    <li>Pick <span class="highlight">6th grade</span> (just for today — we'll change it later).</li>
+    <li>Explore! Click planets, open moons, check out the Game Library, and poke around.</li>
+  </ol>
+</div>
+
+<!-- CHALLENGE -->
+<div class="section">
+  <div class="challenge-box">
+    <div class="challenge-title">🏆 Your Challenge</div>
+
+    <div class="challenge-part">
+      <h3>Part 1 — Build 3 Games</h3>
+      <p>Pick <strong>3 different moons</strong> (any planet, any grade). Design a game on each one. <strong>Test it, win it, then submit it for review.</strong></p>
+      <p class="hint">Hint: lower grades have easier moons. Start there if you want quick wins.</p>
+    </div>
+
+    <div class="challenge-part">
+      <h3>Part 2 — Rate the App</h3>
+      <p>Use the <span class="highlight">"Suggest a fix or idea"</span> button to send us a rating from <strong>1 to 10</strong>. Tell us why — especially what's missing to make it a 10.</p>
+    </div>
+  </div>
+
+  <div class="feedback-callout">
+    <p>🗣️ <strong>Send ALL your feedback through the button</strong> — ideas, bugs, questions, even crazy ones. The more the better!</p>
+  </div>
+</div>
+
+<!-- TOKENS -->
+<div class="section">
+  <div class="token-box">
+    <div class="token-title">⬡ How Tokens Work</div>
+    <p>I'll review your games. If they work and make sense, I approve them. <strong>+2,000 tokens per approved game.</strong></p>
+    <p>🏅 <strong>Let's see who makes the podium today!</strong></p>
+    <p style="margin-top: 10px;">Want extra tokens? Play and win games other students already built. Figure out how. 😏</p>
+    <p style="font-size: 12px; color: #71717a; margin-top: 8px;">You keep your tokens forever. Later you'll be able to spend them in the app.</p>
+  </div>
+</div>
+
+</body>
+</html>
