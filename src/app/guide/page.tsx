@@ -15,6 +15,7 @@ import { LearnerEditModal } from "@/components/learner-edit-modal"
 import { FeedbackInbox } from "@/components/feedback/feedback-inbox"
 import { Logo } from "@/components/logo"
 import { LearnerProgressGrid } from "@/components/learner-progress-grid"
+import { WeeklyProgressChart } from "@/components/weekly-progress-chart"
 
 interface StudentSummary {
   uid: string
@@ -442,6 +443,13 @@ export default function GuideDashboard() {
             {tab === "learners" && !selectedStudent && (
               <div className="space-y-4">
                 <h2 className="text-lg font-semibold">Learners ({students.length})</h2>
+
+                {/* Class-wide progress chart */}
+                {students.length > 0 && (
+                  <WeeklyProgressChart
+                    learners={students.map(s => ({ uid: s.uid, name: s.name }))}
+                  />
+                )}
                 <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
                   <table className="w-full text-sm">
                     <thead>
@@ -533,6 +541,13 @@ export default function GuideDashboard() {
                     ))}
                   </div>
                 )}
+
+                {/* Individual progress chart */}
+                <h3 className="text-sm font-medium text-zinc-300">Weekly Progress</h3>
+                <WeeklyProgressChart
+                  learners={[{ uid: selectedStudent.uid, name: selectedStudent.name }]}
+                  highlightUid={selectedStudent.uid}
+                />
 
                 {/* Progress grid — all planets and moons for this learner's grade */}
                 <h3 className="text-sm font-medium text-zinc-300">Skill Progress</h3>

@@ -27,8 +27,8 @@ import { FeedbackInbox } from "@/components/feedback/feedback-inbox"
 import { LearnerEditModal } from "@/components/learner-edit-modal"
 import { UserMenu } from "@/components/user-menu"
 import { Logo } from "@/components/logo"
-import { GamePlayer } from "@/components/game/game-player"
-import { Play } from "lucide-react"
+import { GameIframe } from "@/components/game/game-iframe"
+import { Play, Bug } from "lucide-react"
 import { getTokenConfig, saveTokenConfig, TOKEN_DEFAULTS, type TokenConfig } from "@/lib/token-config"
 
 type Tab = "overview" | "guides" | "classes" | "students" | "games" | "feedback" | "tokens" | "broadcast"
@@ -117,6 +117,8 @@ export default function AdminDashboardPage() {
     isPendingReview: boolean
   } | null>(null)
   const [loadingPlay, setLoadingPlay] = useState<string | null>(null)
+  const [adminFeedbackGameId, setAdminFeedbackGameId] = useState<string | null>(null)
+  const [adminFeedbackText, setAdminFeedbackText] = useState("")
 
   const handlePlayAdminGame = async (g: GameRow) => {
     setLoadingPlay(g.id)
@@ -150,6 +152,8 @@ export default function AdminDashboardPage() {
       await updateDoc(gameRef, {
         status: "published",
         approvedBy: profile.uid,
+        approvedByName: profile.name,
+        approvedAt: Date.now(),
         reviews: arrayUnion({
           reviewerUid: profile.uid,
           reviewerName: profile.name,
@@ -189,6 +193,43 @@ export default function AdminDashboardPage() {
       fetchData()
     } catch (err) {
       console.error("Admin approve error:", err)
+    }
+  }
+
+  const handleRejectGameAdmin = async (g: GameRow) => {
+    if (!profile || !adminFeedbackText.trim()) return
+    try {
+      const gameRef = doc(db, "games", g.id)
+      await updateDoc(gameRef, {
+        status: "needs_work",
+        reviews: arrayUnion({
+          reviewerUid: profile.uid,
+          reviewerName: profile.name,
+          approved: false,
+          comment: adminFeedbackText.trim(),
+          createdAt: Date.now(),
+        }),
+      })
+      if (g.authorUid && g.standardId) {
+        await setDoc(doc(db, "progress", g.authorUid, "standards", g.standardId), { status: "available" }, { merge: true })
+      }
+      if (g.authorUid) {
+        const fbId = doc(collection(db, "feedback")).id
+        const now = Date.now()
+        await setDoc(doc(db, "feedback", fbId), {
+          id: fbId, fromUid: profile.uid, fromName: profile.name, fromRole: "admin",
+          target: "game", gameId: g.id, gameTitle: g.title, toUid: g.authorUid,
+          type: "improvement",
+          message: `Your game "${g.title}" needs work. Feedback from admin:\n\n${adminFeedbackText.trim()}`,
+          status: "open", replies: [], unreadForRecipient: true, unreadForSender: false, createdAt: now, updatedAt: now,
+        }).catch(() => {})
+      }
+      setAdminFeedbackGameId(null)
+      setAdminFeedbackText("")
+      setPlayingGame(null)
+      fetchData()
+    } catch (err) {
+      console.error("Admin reject error:", err)
     }
   }
 
@@ -876,26 +917,15 @@ export default function AdminDashboardPage() {
                               {g.ratingCount > 0 ? `${g.rating.toFixed(1)} (${g.ratingCount})` : "-"}
                             </td>
                             <td className="px-4 py-3 text-right">
-                              <div className="flex items-center gap-1.5 justify-end">
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  disabled={loadingPlay === g.id}
-                                  onClick={() => handlePlayAdminGame(g)}
-                                >
-                                  <Play className="size-3" data-icon="inline-start" />
-                                  {loadingPlay === g.id ? "..." : "Play"}
-                                </Button>
-                                {g.status === "pending_review" && (
-                                  <Button
-                                    size="sm"
-                                    className="bg-emerald-600 hover:bg-emerald-500"
-                                    onClick={() => handleApproveGameAdmin(g)}
-                                  >
-                                    <Check className="size-3" data-icon="inline-start" /> Approve
-                                  </Button>
-                                )}
-                              </div>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                disabled={loadingPlay === g.id}
+                                onClick={() => handlePlayAdminGame(g)}
+                              >
+                                <Play className="size-3" data-icon="inline-start" />
+                                {loadingPlay === g.id ? "..." : "Play"}
+                              </Button>
                             </td>
                           </tr>
                         ))
@@ -909,21 +939,56 @@ export default function AdminDashboardPage() {
         )}
       </div>
 
-      {/* GamePlayer — opens when admin clicks Play on a game.
-          Reuses the same component the guide uses; admins automatically
-          get the Un-approve button when viewing a published game. */}
+      {/* Game player — full-screen with Approve/Needs Fix in top bar */}
       {playingGame && (
-        <GamePlayer
-          gameId={playingGame.id}
-          title={playingGame.title}
-          html={playingGame.html}
-          authorUid={playingGame.authorUid}
-          standardId={playingGame.standardId}
-          isPublished={playingGame.isPublished}
-          isPendingReview={playingGame.isPendingReview}
-          onClose={() => setPlayingGame(null)}
-          onUnapproved={() => { setPlayingGame(null); fetchData() }}
-        />
+        <div className="fixed inset-0 z-50 bg-zinc-950 flex flex-col">
+          <div className="flex items-center justify-between px-6 py-3 border-b border-zinc-800 bg-zinc-900">
+            <div>
+              <h3 className="text-white font-semibold">{playingGame.title}</h3>
+              <p className="text-xs text-zinc-400">{playingGame.standardId}</p>
+            </div>
+            <div className="flex items-center gap-2">
+              {playingGame.isPendingReview && (
+                <>
+                  <Button variant="outline" className="text-amber-400 border-amber-500/30 hover:bg-amber-500/10"
+                    onClick={() => setAdminFeedbackGameId(adminFeedbackGameId === playingGame.id ? null : playingGame.id)}>
+                    <Bug className="size-3.5 mr-1" /> Needs Fix
+                  </Button>
+                  <Button className="bg-emerald-600 hover:bg-emerald-500"
+                    onClick={() => {
+                      const g = games.find(gg => gg.id === playingGame.id)
+                      if (g) handleApproveGameAdmin(g)
+                      setPlayingGame(null)
+                    }}>
+                    Approve
+                  </Button>
+                </>
+              )}
+              <button onClick={() => { setPlayingGame(null); setAdminFeedbackGameId(null); setAdminFeedbackText("") }}
+                className="text-zinc-400 hover:text-white transition-colors p-2 ml-2" aria-label="Close">
+                <X className="size-6" />
+              </button>
+            </div>
+          </div>
+          {adminFeedbackGameId === playingGame.id && (
+            <div className="px-6 py-3 border-b border-zinc-800 bg-zinc-900/80">
+              <textarea autoFocus value={adminFeedbackText} onChange={(e) => setAdminFeedbackText(e.target.value)}
+                placeholder="What should the student improve?" rows={2}
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 resize-none" />
+              <div className="flex justify-end gap-2 mt-2">
+                <Button size="sm" variant="outline" onClick={() => { setAdminFeedbackGameId(null); setAdminFeedbackText("") }}>Cancel</Button>
+                <Button size="sm" className="bg-amber-600 hover:bg-amber-500" disabled={!adminFeedbackText.trim()}
+                  onClick={() => {
+                    const g = games.find(gg => gg.id === playingGame.id)
+                    if (g) handleRejectGameAdmin(g)
+                  }}>Send Feedback</Button>
+              </div>
+            </div>
+          )}
+          <div className="flex-1 min-h-0">
+            <GameIframe html={playingGame.html} className="w-full h-full" />
+          </div>
+        </div>
       )}
 
       {/* Edit learner modal — opens from the Learners tab Edit button */}

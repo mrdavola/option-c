@@ -16,6 +16,7 @@ import type { StandardsGraph } from "@/lib/graph-types"
 import { isClusterNode } from "@/lib/galaxy-utils"
 import { Logo } from "@/components/logo"
 import { InfoButton } from "@/components/info-button"
+import { WeeklyProgressChart } from "@/components/weekly-progress-chart"
 
 const MOON_NAMES = moonNames as Record<string, string>
 const STANDARDS = standardsData as StandardsGraph
@@ -46,6 +47,7 @@ export default function LearnerDashboard() {
   // separately because the class lives in its own collection and the
   // user profile only stores the classId.
   const [className, setClassName] = useState<string | null>(null)
+  const [classmates, setClassmates] = useState<{ uid: string; name: string }[]>([])
 
   useEffect(() => {
     if (!activeProfile?.uid) return
@@ -76,6 +78,19 @@ export default function LearnerDashboard() {
       cancelled = true
     }
   }, [activeProfile?.classId])
+
+  // Fetch classmates for the progress chart
+  useEffect(() => {
+    if (!activeProfile?.classId || !activeProfile?.uid) return
+    getDocs(query(collection(db, "users"), where("classId", "==", activeProfile.classId), where("role", "==", "student")))
+      .then(snap => {
+        setClassmates(snap.docs.map(d => {
+          const data = d.data()
+          return { uid: d.id, name: data.name || "Unknown" }
+        }))
+      })
+      .catch(() => {})
+  }, [activeProfile?.classId, activeProfile?.uid])
 
   async function loadData() {
     setLoading(true)
@@ -320,6 +335,16 @@ export default function LearnerDashboard() {
           <p className="text-xs text-zinc-400 mt-1">Tokens</p>
         </div>
       </div>
+
+      {/* Weekly progress chart — me vs classmates */}
+      {classmates.length > 0 && (
+        <div className="space-y-2">
+          <h2 className="text-sm font-medium text-zinc-300 flex items-center gap-2">
+            <Trophy className="size-4" /> My Progress vs Class
+          </h2>
+          <WeeklyProgressChart learners={classmates} highlightUid={activeProfile.uid} />
+        </div>
+      )}
 
       {/* Notifications */}
       {notifications.length > 0 && (
