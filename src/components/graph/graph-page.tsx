@@ -947,7 +947,7 @@ export function GraphPage({ data }: GraphPageProps) {
       {tutorialStep === 0 && viewMode === "galaxy" && (
         <div className={`absolute ${impersonating ? "top-28" : "top-16"} left-4 z-10 max-w-[260px]`}>
           <div className="bg-blue-500/20 backdrop-blur-sm border border-blue-500/30 rounded-xl px-4 py-2 text-sm text-blue-200">
-            Click a planet to explore its standards
+            Click a planet to explore its moons
           </div>
         </div>
       )}
