@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { MessageSquarePlus, X, Send } from "lucide-react"
+import { useState, useRef } from "react"
+import { MessageSquarePlus, X, Send, Camera, Link2 } from "lucide-react"
 import { collection, doc, setDoc } from "firebase/firestore"
 import { db } from "@/lib/firebase"
 import { useAuth } from "@/lib/auth"
@@ -20,6 +20,63 @@ export function FeedbackButton({ targetGame }: FeedbackButtonProps) {
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [screenshot, setScreenshot] = useState<string | null>(null)
+  const [capturingScreenshot, setCapturingScreenshot] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Current page URL is auto-captured when the form opens
+  const pageUrl = typeof window !== "undefined" ? window.location.href : ""
+
+  const handleScreenshot = async () => {
+    setCapturingScreenshot(true)
+    try {
+      // Try using the native screen capture API
+      const canvas = document.createElement("canvas")
+      const ctx = canvas.getContext("2d")
+      if (!ctx) throw new Error("No canvas context")
+
+      // Use html2canvas-style approach: capture via media stream
+      const stream = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: "browser" } as any })
+      const video = document.createElement("video")
+      video.srcObject = stream
+      await video.play()
+
+      canvas.width = video.videoWidth
+      canvas.height = video.videoHeight
+      ctx.drawImage(video, 0, 0)
+
+      stream.getTracks().forEach(t => t.stop())
+
+      // Compress to JPEG, max 800px wide
+      const maxW = 800
+      if (canvas.width > maxW) {
+        const ratio = maxW / canvas.width
+        const tempCanvas = document.createElement("canvas")
+        tempCanvas.width = maxW
+        tempCanvas.height = canvas.height * ratio
+        const tempCtx = tempCanvas.getContext("2d")!
+        tempCtx.drawImage(canvas, 0, 0, tempCanvas.width, tempCanvas.height)
+        setScreenshot(tempCanvas.toDataURL("image/jpeg", 0.7))
+      } else {
+        setScreenshot(canvas.toDataURL("image/jpeg", 0.7))
+      }
+    } catch {
+      // If screen capture fails (denied or unsupported), fall back to file picker
+      fileInputRef.current?.click()
+    } finally {
+      setCapturingScreenshot(false)
+    }
+  }
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => {
+      setScreenshot(reader.result as string)
+    }
+    reader.readAsDataURL(file)
+  }
 
   if (!activeProfile) return null
 
@@ -38,7 +95,7 @@ export function FeedbackButton({ targetGame }: FeedbackButtonProps) {
       // (and the creator's guide via the game-target path) all see it.
       // App-feedback messages are admin-only.
       const docs: Record<string, unknown>[] = []
-      const baseDoc = {
+      const baseDoc: Record<string, unknown> = {
         fromUid: activeProfile.uid,
         fromName: activeProfile.name,
         fromRole: activeProfile.role,
@@ -50,7 +107,9 @@ export function FeedbackButton({ targetGame }: FeedbackButtonProps) {
         unreadForSender: false,
         createdAt: now,
         updatedAt: now,
+        pageUrl: pageUrl || null,
       }
+      if (screenshot) baseDoc.screenshot = screenshot
 
       if (isGameMessage) {
         // 1) creator-facing copy (target=game, toUid=authorUid)
@@ -100,6 +159,7 @@ export function FeedbackButton({ targetGame }: FeedbackButtonProps) {
 
       setSent(true)
       setMessage("")
+      setScreenshot(null)
       setTimeout(() => {
         setSent(false)
         setOpen(false)
@@ -195,6 +255,44 @@ export function FeedbackButton({ targetGame }: FeedbackButtonProps) {
                 className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 resize-none"
                 required
               />
+
+              {/* Screenshot + URL */}
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleScreenshot}
+                  disabled={capturingScreenshot}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs border border-zinc-700 bg-zinc-800 text-zinc-400 hover:text-zinc-200 hover:border-zinc-600 transition-colors disabled:opacity-30"
+                >
+                  <Camera className="size-3.5" />
+                  {screenshot ? "Retake" : "Screenshot"}
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleFileUpload}
+                />
+                <div className="flex items-center gap-1 text-[10px] text-zinc-500 flex-1 min-w-0 truncate">
+                  <Link2 className="size-3 shrink-0" />
+                  <span className="truncate">{pageUrl}</span>
+                </div>
+              </div>
+
+              {/* Screenshot preview */}
+              {screenshot && (
+                <div className="relative">
+                  <img src={screenshot} alt="Screenshot" className="w-full rounded-lg border border-zinc-700" />
+                  <button
+                    type="button"
+                    onClick={() => setScreenshot(null)}
+                    className="absolute top-1 right-1 bg-zinc-900/80 text-zinc-400 hover:text-white rounded-full p-0.5"
+                  >
+                    <X className="size-3" />
+                  </button>
+                </div>
+              )}
 
               <button
                 type="submit"

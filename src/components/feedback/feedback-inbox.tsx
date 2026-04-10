@@ -309,6 +309,16 @@ export function FeedbackInbox({ mode }: FeedbackInboxProps) {
 
               <p className="text-sm text-zinc-200 whitespace-pre-wrap">{item.message}</p>
 
+              {/* Screenshot + page link */}
+              {(item as any).screenshot && (
+                <img src={(item as any).screenshot} alt="Screenshot" className="w-full max-w-sm rounded-lg border border-zinc-700 mt-2" />
+              )}
+              {(item as any).pageUrl && (
+                <p className="text-[11px] text-zinc-500 mt-1">
+                  Page: <a href={(item as any).pageUrl} className="text-blue-400 hover:underline" target="_blank" rel="noopener">{(item as any).pageUrl}</a>
+                </p>
+              )}
+
               {/* Replies */}
               {item.replies.length > 0 && (
                 <div className="space-y-2 border-t border-zinc-800 pt-3">
