@@ -61,7 +61,7 @@ function WelcomeChoiceStep({
   return (
     <div className="flex flex-col md:flex-row items-center md:items-center gap-8 md:gap-16 max-w-4xl w-full px-6">
       {/* Left: sign-in options */}
-      <div className="flex flex-col items-center gap-6 flex-1 w-full">
+      <div className="flex flex-col items-center gap-6 flex-1 w-full min-w-[360px]">
         <Logo size={56} className="text-blue-400" />
         <h1 className="text-3xl font-bold text-white text-center">Welcome to Diagonally</h1>
         <p className="text-zinc-400 text-sm text-center">
