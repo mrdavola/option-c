@@ -193,12 +193,12 @@ export function BuildScreen({ designDoc, onComplete }: BuildScreenProps) {
       </div>
 
       {/* Right: Phase content */}
-      <div className="flex-1 flex flex-col items-center justify-center p-8 relative">
+      <div className="flex-1 flex flex-col items-center p-8 relative overflow-y-auto">
         <div className="absolute inset-0 md:hidden opacity-20 overflow-hidden">
           <MatrixRain className="absolute inset-0" />
         </div>
 
-        <div className="relative z-10 max-w-md w-full space-y-6">
+        <div className="relative z-10 max-w-md w-full space-y-6 my-auto">
           {/* Header */}
           <div className="text-center">
             <h2 className="text-2xl font-bold text-white mb-1">
