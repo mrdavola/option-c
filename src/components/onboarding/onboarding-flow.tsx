@@ -59,38 +59,64 @@ function WelcomeChoiceStep({
   onReturning: () => void
 }) {
   return (
-    <div className="flex flex-col items-center gap-6">
-      <Logo size={56} className="text-blue-400" />
-      <h1 className="text-3xl font-bold text-white text-center">Welcome to Diagonally</h1>
-      <p className="text-zinc-400 text-sm text-center">
-        Are you new here, or coming back?
-      </p>
-      <div className="w-full flex flex-col gap-3">
-        <button
-          onClick={onNew}
-          className="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-xl px-5 py-4 text-base font-semibold transition-colors text-left"
+    <div className="flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-12 max-w-3xl w-full">
+      {/* Left: sign-in options */}
+      <div className="flex flex-col items-center gap-6 flex-1 w-full">
+        <Logo size={56} className="text-blue-400" />
+        <h1 className="text-3xl font-bold text-white text-center">Welcome to Diagonally</h1>
+        <p className="text-zinc-400 text-sm text-center">
+          Are you new here, or coming back?
+        </p>
+        <div className="w-full flex flex-col gap-3">
+          <button
+            onClick={onNew}
+            className="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-xl px-5 py-4 text-base font-semibold transition-colors text-left"
+          >
+            I&apos;m new — I have a class code
+            <p className="text-xs text-blue-200 font-normal mt-0.5">
+              Your teacher gave you a class code to join
+            </p>
+          </button>
+          <button
+            onClick={onReturning}
+            className="w-full bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl px-5 py-4 text-base font-semibold transition-colors border border-zinc-700 text-left"
+          >
+            I&apos;m coming back — I have my personal code
+            <p className="text-xs text-zinc-400 font-normal mt-0.5">
+              The code you saved last time (like STAR-742)
+            </p>
+          </button>
+        </div>
+        <a
+          href="/guide/login"
+          className="text-zinc-500 text-xs hover:text-zinc-300 transition-colors mt-2"
         >
-          I&apos;m new — I have a class code
-          <p className="text-xs text-blue-200 font-normal mt-0.5">
-            Your teacher gave you a class code to join
-          </p>
-        </button>
-        <button
-          onClick={onReturning}
-          className="w-full bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl px-5 py-4 text-base font-semibold transition-colors border border-zinc-700 text-left"
-        >
-          I&apos;m coming back — I have my personal code
-          <p className="text-xs text-zinc-400 font-normal mt-0.5">
-            The code you saved last time (like STAR-742)
-          </p>
-        </button>
+          I&apos;m a guide →
+        </a>
       </div>
-      <a
-        href="/guide/login"
-        className="text-zinc-500 text-xs hover:text-zinc-300 transition-colors mt-2"
-      >
-        I&apos;m a guide →
-      </a>
+
+      {/* Right: how it works */}
+      <div className="flex-1 w-full bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6 space-y-4">
+        <h2 className="text-sm font-semibold text-zinc-300 uppercase tracking-wide">How Diagonally works</h2>
+        <div className="space-y-3">
+          <div className="flex items-start gap-3">
+            <span className="text-lg leading-tight">🌌</span>
+            <p className="text-sm text-zinc-400"><span className="text-zinc-200 font-medium">Explore the galaxy.</span> Math concepts are planets. Each skill is a moon orbiting its planet.</p>
+          </div>
+          <div className="flex items-start gap-3">
+            <span className="text-lg leading-tight">🎮</span>
+            <p className="text-sm text-zinc-400"><span className="text-zinc-200 font-medium">Build a game.</span> Pick a skill, design a game with AI, and the AI builds it for you.</p>
+          </div>
+          <div className="flex items-start gap-3">
+            <span className="text-lg leading-tight">✅</span>
+            <p className="text-sm text-zinc-400"><span className="text-zinc-200 font-medium">Get it reviewed.</span> Your guide plays your game and approves it. You earn tokens.</p>
+          </div>
+          <div className="flex items-start gap-3">
+            <span className="text-lg leading-tight">🏆</span>
+            <p className="text-sm text-zinc-400"><span className="text-zinc-200 font-medium">Master the skill.</span> Play other learners&apos; games to prove you&apos;ve got it. Climb the ranking.</p>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

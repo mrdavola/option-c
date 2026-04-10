@@ -176,7 +176,7 @@ export function FeedbackButton({ targetGame }: FeedbackButtonProps) {
                       : "bg-zinc-800 border-zinc-700 text-zinc-400 hover:text-zinc-200"
                   }`}
                 >
-                  🔧 Fix
+                  🐛 Fix
                 </button>
               </div>
 

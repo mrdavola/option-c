@@ -13,7 +13,7 @@ import {
 import { db } from "@/lib/firebase"
 import { useAuth } from "@/lib/auth"
 import type { FeedbackDoc, FeedbackReply } from "@/lib/feedback-types"
-import { Send, MessageCircle, Archive, ArchiveRestore, Flag, Wrench } from "lucide-react"
+import { Send, MessageCircle, Archive, ArchiveRestore, Flag, Bug } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 interface FeedbackInboxProps {
@@ -278,7 +278,7 @@ export function FeedbackInbox({ mode }: FeedbackInboxProps) {
                           : "bg-blue-500/20 text-blue-400"
                       }`}
                     >
-                      {item.type === "bug" ? "🔧 Fix" : "💡 Idea"}
+                      {item.type === "bug" ? "🐛 Fix" : "💡 Idea"}
                     </span>
                     {item.actionFlagged && (
                       <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-amber-500/20 text-amber-300">
@@ -334,7 +334,7 @@ export function FeedbackInbox({ mode }: FeedbackInboxProps) {
                       className="flex items-center gap-1.5 bg-amber-600 hover:bg-amber-500 disabled:opacity-30 text-white text-xs font-semibold rounded-md px-3 py-1.5 transition-colors"
                       title="Open this game in the Workshop and fix it"
                     >
-                      <Wrench className="size-3.5" />
+                      <Bug className="size-3.5" />
                       Fix this game
                     </button>
                   )}

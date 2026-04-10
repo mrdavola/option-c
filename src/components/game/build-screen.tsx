@@ -358,9 +358,9 @@ export function BuildScreen({ designDoc, onComplete }: BuildScreenProps) {
 
           {/* Phase: generating */}
           {phase === "generating" && (
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
-                <div className="bg-emerald-500/15 border-b border-emerald-500/30 px-4 py-2 flex items-center justify-between">
+                <div className="bg-emerald-500/15 border-b border-emerald-500/30 px-3 py-1.5 flex items-center justify-between">
                   <p className="text-xs text-emerald-300 font-semibold uppercase tracking-wide">
                     Game Card
                   </p>
@@ -368,7 +368,7 @@ export function BuildScreen({ designDoc, onComplete }: BuildScreenProps) {
                     {vibe === "arcade" ? "Arcade" : vibe === "c64" ? "Retro Game" : vibe === "kawaii" ? "Kawaii" : "Stick Man"} style
                   </p>
                 </div>
-                <div className="p-4 space-y-3">
+                <div className="p-3 space-y-2">
                   {gameCard ? (
                     <>
                       <GameCardField icon="🧑" label="You play as" value={gameCard.playAs} />
@@ -384,12 +384,15 @@ export function BuildScreen({ designDoc, onComplete }: BuildScreenProps) {
                   )}
                 </div>
               </div>
-              {/* Funny stick figure does silly things while waiting */}
-              <FunnyStickFigure />
-
-              {/* Math practice mini-game while waiting. Adapts to the
-                  learner's grade. Awards 1 token per correct answer. */}
-              <BuildWaitMiniGame grade={activeProfile?.grade} />
+              {/* Stick figure + math practice side by side */}
+              <div className="flex gap-3 items-stretch">
+                <div className="flex-1">
+                  <FunnyStickFigure />
+                </div>
+                <div className="flex-1">
+                  <BuildWaitMiniGame grade={activeProfile?.grade} />
+                </div>
+              </div>
 
               <div className="text-center">
                 <p className="text-sm text-emerald-400 animate-pulse">
