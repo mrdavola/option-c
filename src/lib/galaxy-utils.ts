@@ -304,10 +304,23 @@ export function buildGalaxyData(
 
     let color: string
     if (colorMode === "mastery") {
-      // Out-of-grade but accessible → purple. Out-of-grade & locked → very dim grey.
-      if (outOfGrade) {
+      // Grade-aware coloring:
+      //   - Student's grade → normal mastery colors (blue = not started)
+      //   - Previous grades → purple (explorable)
+      //   - Future grades → dim grey (locked feel)
+      const planetNum = gradeToNumber(planet.grade)
+      const studentNum = studentGrade ? gradeToNumber(studentGrade) : null
+      const isPreviousGrade = studentNum !== null && planetNum < studentNum
+      const isFutureGrade = studentNum !== null && planetNum > studentNum
+
+      if (isPreviousGrade) {
+        // Previous grade levels → purple if accessible, very dim if locked
         color = access === "locked" ? "#262626" : MASTERY_COLORS.otherGrade
+      } else if (isFutureGrade) {
+        // Future grades → dim grey
+        color = access === "locked" ? "#262626" : "#444444"
       } else {
+        // Student's own grade → normal mastery colors
         color = getMasteryColor({ unlockedCount, availableCount, inProgressCount, moonCount: planet.standards.length, isCompleted })
         if (access === "locked") color = "#333333"
       }

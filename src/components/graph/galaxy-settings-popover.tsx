@@ -109,7 +109,7 @@ export function GalaxySettingsPopover({
                   <LegendRow color="bg-yellow-700" label="In review" />
                   <LegendRow color="bg-emerald-500" label="Demonstrated" />
                   <LegendRow color="bg-amber-500" label="Mastered" />
-                  <LegendRow color="bg-purple-600" label="Other grade" />
+                  <LegendRow color="bg-purple-600" label="Previous grade levels" />
                   <LegendRow color="bg-zinc-500" label="Locked" />
                 </div>
               )}
