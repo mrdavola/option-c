@@ -228,7 +228,7 @@ function generateRound(round) {
   return { values, sorted: [...values].sort((a, b) => a - b) };
 }
 
-function startRound() {
+function startRound() { resetFails();
   const { values, sorted } = generateRound(currentRound);
   correctOrder = sorted;
   itemCount = values.length;

@@ -54,14 +54,14 @@ function pickAnswer(v, el) {
     if (currentRound >= TOTAL_ROUNDS) { setTimeout(() => showVictory('${config.winMessage}'), 600); }
     else { setTimeout(startRound, 800); }
   } else {
-    screenShake(); resetCombo();
+    screenShake(); resetCombo(); trackFail();
     el.style.background = '${c.danger}33'; el.style.borderColor = '${c.danger}';
     setTimeout(() => { el.style.background = '${c.secondary}11'; el.style.borderColor = '${c.secondary}'; }, 500);
     document.getElementById('feedback').style.color = '${c.danger}'; document.getElementById('feedback').textContent = 'Not that one!';
     setTimeout(() => { document.getElementById('feedback').textContent = ''; }, 1200);
   }
 }
-function startRound() {
+function startRound() { resetFails();
   const count = currentRound < 2 ? 6 : currentRound < 4 ? 8 : 10;
   const max = currentRound < 2 ? 10 : 20;
   const data = [];

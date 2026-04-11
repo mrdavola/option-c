@@ -130,13 +130,14 @@ function checkPosition() {
   } else {
     screenShake();
     resetCombo();
+    trackFail();
     const diff = targetPos - playerPos;
     if (diff > 0) showScorePopup(window.innerWidth/2, window.innerHeight/2, 'Go up ' + diff + ' more!');
     else showScorePopup(window.innerWidth/2, window.innerHeight/2, 'Go down ' + Math.abs(diff) + ' more!');
   }
 }
 
-function startRound() {
+function startRound() { resetFails();
   // Progressive difficulty
   let range;
   if (currentRound < 2) range = 5;

@@ -296,6 +296,20 @@ function showDefeat(msg) {
 }
 
 window.gameScore = 0;
+
+// === FAIL TRACKER ===
+// Engines can call trackFail() on wrong answers.
+// After 3 fails in a round, triggers gameLose + math moment.
+let failCount = 0;
+const MAX_FAILS = 3;
+function trackFail() {
+  failCount++;
+  if (failCount >= MAX_FAILS) {
+    failCount = 0;
+    showDefeat('${config.loseMessage}');
+  }
+}
+function resetFails() { failCount = 0; }
 </script>
 
 <div id="combo" class="combo"></div>

@@ -102,11 +102,11 @@ function checkTower() {
     if (currentRound >= TOTAL_ROUNDS) { setTimeout(() => showVictory('${config.winMessage}'), 500); }
     else { setTimeout(startRound, 800); }
   } else {
-    screenShake(); resetCombo();
+    screenShake(); resetCombo(); trackFail();
     showScorePopup(window.innerWidth/2, window.innerHeight/2, currentHeight > targetHeight ? 'Too tall!' : 'Not tall enough!');
   }
 }
-function startRound() {
+function startRound() { resetFails();
   stackedBlocks = []; currentHeight = 0;
   let maxBlock;
   if (currentRound < 2) { targetHeight = Math.floor(Math.random() * 8) + 6; maxBlock = 5; }

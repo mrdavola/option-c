@@ -74,7 +74,7 @@ function pickOption(opt) {
     if (currentRound >= TOTAL_ROUNDS) { setTimeout(() => showVictory('${config.winMessage}'), 600); }
     else { setTimeout(startRound, 800); }
   } else {
-    screenShake(); resetCombo();
+    screenShake(); resetCombo(); trackFail();
     const btn = document.getElementById('opt' + opt);
     btn.style.borderColor = '${c.danger}';
     setTimeout(() => { btn.style.borderColor = opt === 'A' ? '${c.primary}44' : '${c.accent}44'; }, 500);
@@ -84,7 +84,7 @@ function pickOption(opt) {
   }
 }
 
-function startRound() {
+function startRound() { resetFails();
   let maxVal;
   if (currentRound < 2) maxVal = 20;
   else if (currentRound < 4) maxVal = 100;

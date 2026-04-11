@@ -94,7 +94,7 @@ function pickAnswer(value, el) {
     if (currentRound >= TOTAL_ROUNDS) { setTimeout(() => showVictory('${config.winMessage}'), 600); }
     else { setTimeout(startRound, 800); }
   } else {
-    screenShake(); resetCombo();
+    screenShake(); resetCombo(); trackFail();
     el.style.background = '${c.danger}33';
     el.style.borderColor = '${c.danger}';
     setTimeout(() => { el.style.background = '${c.secondary}11'; el.style.borderColor = '${c.secondary}'; }, 500);
@@ -136,7 +136,7 @@ function generatePattern(round) {
   return { shown, answer, wrongs: wrongArr };
 }
 
-function startRound() {
+function startRound() { resetFails();
   const { shown, answer, wrongs } = generatePattern(currentRound);
   correctAnswer = answer;
   const seqEl = document.getElementById('sequence');

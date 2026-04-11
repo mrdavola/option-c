@@ -148,10 +148,10 @@ function checkCollection() {
       setTimeout(startRound, 800);
     }
   } else if (currentTotal > targetValue) {
-    screenShake(); resetCombo();
+    screenShake(); resetCombo(); trackFail();
     showScorePopup(window.innerWidth/2, window.innerHeight/2, 'Too many! Remove some.');
   } else {
-    screenShake(); resetCombo();
+    screenShake(); resetCombo(); trackFail();
     showScorePopup(window.innerWidth/2, window.innerHeight/2, 'Not enough! Collect more.');
   }
 }
@@ -178,7 +178,7 @@ function generateRound(round) {
   return { target, items };
 }
 
-function startRound() {
+function startRound() { resetFails();
   collectedValues = [];
   currentTotal = 0;
   document.getElementById('currentTotal').textContent = '0';

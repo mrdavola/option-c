@@ -69,9 +69,9 @@ function checkBuild() {
     showScorePopup(rect.left+rect.width/2, rect.top+50, '+'+(10*(currentRound+1)));
     const dots = document.querySelectorAll('.round-dot'); if(dots[currentRound]) dots[currentRound].classList.add('done');
     currentRound++; if(currentRound>=TOTAL_ROUNDS){setTimeout(()=>showVictory('${config.winMessage}'),500);}else{setTimeout(startRound,800);}
-  } else { screenShake(); resetCombo(); showScorePopup(window.innerWidth/2, window.innerHeight/2, 'Wrong shapes! Check the blueprint.'); }
+  } else { screenShake(); resetCombo(); trackFail(); showScorePopup(window.innerWidth/2, window.innerHeight/2, 'Wrong shapes! Check the blueprint.'); }
 }
-function startRound() {
+function startRound() { resetFails();
   const pieceCount = currentRound < 2 ? 3 : currentRound < 4 ? 4 : 5;
   targetPieces = []; builtPieces = [];
   for (let i = 0; i < pieceCount; i++) targetPieces.push(Math.floor(Math.random() * SHAPES.length));

@@ -49,9 +49,9 @@ function checkRotation() {
     showScorePopup(rect.left+rect.width/2, rect.top+50, '+'+(10*(currentRound+1)));
     const dots = document.querySelectorAll('.round-dot'); if(dots[currentRound]) dots[currentRound].classList.add('done');
     currentRound++; if(currentRound>=TOTAL_ROUNDS){setTimeout(()=>showVictory('${config.winMessage}'),500);}else{setTimeout(startRound,800);}
-  } else { screenShake(); resetCombo(); showScorePopup(window.innerWidth/2, window.innerHeight/2, 'Not matching yet!'); }
+  } else { screenShake(); resetCombo(); trackFail(); showScorePopup(window.innerWidth/2, window.innerHeight/2, 'Not matching yet!'); }
 }
-function startRound() {
+function startRound() { resetFails();
   playerRotation = 0; targetRotation = [90, 180, 270][Math.floor(Math.random()*3)];
   const shape = SHAPES[currentRound % SHAPES.length];
   drawShape('targetSvg', shape, targetRotation, '${c.accent}');

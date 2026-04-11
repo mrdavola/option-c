@@ -103,12 +103,12 @@ function checkRecipe() {
     if (currentRound >= TOTAL_ROUNDS) { setTimeout(() => showVictory('${config.winMessage}'), 500); }
     else { setTimeout(startRound, 800); }
   } else {
-    screenShake(); resetCombo();
+    screenShake(); resetCombo(); trackFail();
     showScorePopup(window.innerWidth/2, window.innerHeight/2, 'Wrong mix! Check each ingredient.');
   }
 }
 
-function startRound() {
+function startRound() { resetFails();
   if (currentRound < 2) { ingredientCount = 2; }
   else if (currentRound < 4) { ingredientCount = 3; }
   else { ingredientCount = 4; }

@@ -142,14 +142,14 @@ canvas.addEventListener('click', (e) => {
       setTimeout(startRound, 600);
     }
   } else {
-    screenShake(); resetCombo();
+    screenShake(); resetCombo(); trackFail();
     const fb = document.getElementById('feedback');
     fb.style.color = '${c.danger}';
     fb.textContent = 'You clicked (' + clickX + ', ' + clickY + ') — try again!';
   }
 });
 
-function startRound() {
+function startRound() { resetFails();
   if (currentRound < 2) gridSize = 5;
   else if (currentRound < 4) gridSize = 7;
   else gridSize = 10;

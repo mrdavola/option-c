@@ -43,10 +43,10 @@ function pickRoute(idx, el) {
     showScorePopup(rect.left+rect.width/2, rect.top-10, '+'+(10*(currentRound+1)));
     const dots = document.querySelectorAll('.round-dot'); if(dots[currentRound]) dots[currentRound].classList.add('done');
     currentRound++; if(currentRound>=TOTAL_ROUNDS){setTimeout(()=>showVictory('${config.winMessage}'),600);}else{setTimeout(startRound,800);}
-  } else { screenShake(); resetCombo(); el.style.borderColor='${c.danger}'; setTimeout(()=>{el.style.borderColor='${c.primary}44';},500);
+  } else { screenShake(); resetCombo(); trackFail(); el.style.borderColor='${c.danger}'; setTimeout(()=>{el.style.borderColor='${c.primary}44';},500);
     document.getElementById('feedback').style.color='${c.danger}'; document.getElementById('feedback').textContent='Not the shortest! Add up the numbers.'; setTimeout(()=>{document.getElementById('feedback').textContent='';},1500); }
 }
-function startRound() {
+function startRound() { resetFails();
   const routeCount = currentRound < 2 ? 2 : 3;
   const legCount = currentRound < 2 ? 2 : currentRound < 4 ? 3 : 4;
   const maxLeg = currentRound < 2 ? 10 : currentRound < 4 ? 20 : 30;

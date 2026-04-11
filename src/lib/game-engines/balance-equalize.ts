@@ -252,7 +252,7 @@ function generateRound(round) {
   return { target, tokens };
 }
 
-function startRound() {
+function startRound() { resetFails();
   rightValue = 0;
   rightTokens = [];
   document.getElementById('rightTotal').textContent = '0';

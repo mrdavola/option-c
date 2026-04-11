@@ -104,13 +104,13 @@ function checkScale() {
       setTimeout(startRound, 800);
     }
   } else {
-    screenShake(); resetCombo();
+    screenShake(); resetCombo(); trackFail();
     if (current > targetPercent) showScorePopup(window.innerWidth/2, window.innerHeight/2, 'Too big!');
     else showScorePopup(window.innerWidth/2, window.innerHeight/2, 'Too small!');
   }
 }
 
-function startRound() {
+function startRound() { resetFails();
   // Progressive difficulty
   const ratios = currentRound < 2
     ? [50, 100, 150, 200]

@@ -53,13 +53,13 @@ function launch() {
       const dots = document.querySelectorAll('.round-dot'); if(dots[currentRound]) dots[currentRound].classList.add('done');
       currentRound++; if(currentRound>=TOTAL_ROUNDS){setTimeout(()=>showVictory('${config.winMessage}'),600);}else{setTimeout(startRound,1000);}
     } else {
-      screenShake(); resetCombo();
+      screenShake(); resetCombo(); trackFail();
       showScorePopup(window.innerWidth/2, window.innerHeight/2, dist>targetDist?'Too far! ('+dist+')':'Too short! ('+dist+')');
       setTimeout(()=>{document.getElementById('projectile').style.left='0';document.getElementById('launchBtn').disabled=false;},800);
     }
   }, 1100);
 }
-function startRound() {
+function startRound() { resetFails();
   timeVal = currentRound < 2 ? 2 : currentRound < 4 ? 3 : 4;
   const maxSpeed = currentRound < 2 ? 10 : 20;
   const correctSpeed = Math.floor(Math.random() * (maxSpeed - 2)) + 2;

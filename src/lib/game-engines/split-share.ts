@@ -80,13 +80,13 @@ function checkFraction() {
     if (currentRound >= TOTAL_ROUNDS) { setTimeout(() => showVictory('${config.winMessage}'), 500); }
     else { setTimeout(startRound, 800); }
   } else {
-    screenShake(); resetCombo();
+    screenShake(); resetCombo(); trackFail();
     if (parts !== targetDen) showScorePopup(window.innerWidth/2, window.innerHeight/2, 'Need ' + targetDen + ' equal parts, you have ' + parts);
     else showScorePopup(window.innerWidth/2, window.innerHeight/2, 'Shade ' + targetNum + ' parts, not ' + shadedCount);
   }
 }
 
-function startRound() {
+function startRound() { resetFails();
   cuts = 0; shaded = new Set();
   const denoms = currentRound < 2 ? [2, 3, 4] : currentRound < 4 ? [3, 4, 5, 6] : [4, 5, 6, 8];
   targetDen = denoms[Math.floor(Math.random() * denoms.length)];
