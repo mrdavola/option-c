@@ -1,5 +1,4 @@
-// Game engine registry.
-// Maps mechanic IDs to their pre-built game engines.
+// Game engine registry — all 19 engines.
 
 import type { ThemeConfig, MathParams, GameEngine } from "./engine-types"
 import { balanceEqualizeEngine } from "./balance-equalize"
@@ -8,23 +7,46 @@ import { scoreRankEngine } from "./score-rank"
 import { collectManageEngine } from "./collect-manage"
 import { plotExploreEngine } from "./plot-explore"
 import { scaleTransformEngine } from "./scale-transform"
+import { buildMeasureEngine } from "./build-measure"
+import { patternRepeatEngine } from "./pattern-repeat"
+import { craftCombineEngine } from "./craft-combine"
+import { bidEstimateEngine } from "./bid-estimate"
+import { measureCompareEngine } from "./measure-compare"
+import { growCompoundEngine } from "./grow-compound"
+import { solveEliminateEngine } from "./solve-eliminate"
+import { splitShareEngine } from "./split-share"
+import { rollPredictEngine } from "./roll-predict"
+import { fitRotateEngine } from "./fit-rotate"
+import { navigateOptimizeEngine } from "./navigate-optimize"
+import { raceCalculateEngine } from "./race-calculate"
+import { buildStructureEngine } from "./build-structure"
 
-// Registry of all available engines
 const ENGINE_REGISTRY: Record<string, GameEngine> = {
-  "balance-systems": balanceEqualizeEngine,
-  "above-below-zero": riseFallEngine,
-  "scoring-ranking": scoreRankEngine,
   "resource-management": collectManageEngine,
-  "terrain-generation": plotExploreEngine,
+  "partitioning": splitShareEngine,
+  "balance-systems": balanceEqualizeEngine,
+  "spatial-puzzles": fitRotateEngine,
+  "probability-systems": rollPredictEngine,
+  "path-optimization": navigateOptimizeEngine,
+  "construction-systems": buildMeasureEngine,
+  "motion-simulation": raceCalculateEngine,
+  "constraint-puzzles": solveEliminateEngine,
+  "strategy-economy": growCompoundEngine,
+  "measurement-challenges": measureCompareEngine,
+  "scoring-ranking": scoreRankEngine,
+  "timing-rhythm": patternRepeatEngine,
   "scaling-resizing": scaleTransformEngine,
+  "inventory-crafting": craftCombineEngine,
+  "terrain-generation": plotExploreEngine,
+  "bidding-auction": bidEstimateEngine,
+  "above-below-zero": riseFallEngine,
+  "build-structure": buildStructureEngine,
 }
 
-// Check if a mechanic has a pre-built engine
 export function hasEngine(mechanicId: string): boolean {
   return mechanicId in ENGINE_REGISTRY
 }
 
-// Generate a game using a pre-built engine
 export function generateWithEngine(
   mechanicId: string,
   config: ThemeConfig,
@@ -35,7 +57,6 @@ export function generateWithEngine(
   return engine(config, mathParams)
 }
 
-// Get list of all available engine IDs
 export function getAvailableEngines(): string[] {
   return Object.keys(ENGINE_REGISTRY)
 }
