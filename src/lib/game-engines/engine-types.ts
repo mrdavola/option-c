@@ -33,8 +33,11 @@ export interface ThemeConfigRequest {
   dare?: string
 }
 
+// Game variants — each engine supports 3 modes
+export type GameVariant = "classic" | "timed" | "challenge"
+
 // Each engine exports this function signature
-export type GameEngine = (config: ThemeConfig, mathParams: MathParams) => string
+export type GameEngine = (config: ThemeConfig, mathParams: MathParams, variant?: GameVariant) => string
 
 // Math parameters — what numbers/difficulty to use
 export interface MathParams {

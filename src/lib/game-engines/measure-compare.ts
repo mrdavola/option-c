@@ -2,10 +2,10 @@
 // Two objects shown with measurements. Compare and pick the right one.
 // 5 rounds, progressive difficulty.
 
-import type { ThemeConfig, MathParams } from "./engine-types"
+import type { ThemeConfig, MathParams, GameVariant } from "./engine-types"
 import { baseTemplate } from "./base-template"
 
-export function measureCompareEngine(config: ThemeConfig, math: MathParams): string {
+export function measureCompareEngine(config: ThemeConfig, math: MathParams, variant: GameVariant = "classic"): string {
   const c = config.colors
 
   const gameContent = `

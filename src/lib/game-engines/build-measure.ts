@@ -1,10 +1,10 @@
 // Build & Measure engine
 // Stack blocks to match a target height/area. 5 rounds, progressive difficulty.
 
-import type { ThemeConfig, MathParams } from "./engine-types"
+import type { ThemeConfig, MathParams, GameVariant } from "./engine-types"
 import { baseTemplate } from "./base-template"
 
-export function buildMeasureEngine(config: ThemeConfig, math: MathParams): string {
+export function buildMeasureEngine(config: ThemeConfig, math: MathParams, variant: GameVariant = "classic"): string {
   const c = config.colors
 
   const gameContent = `

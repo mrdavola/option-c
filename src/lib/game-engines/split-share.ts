@@ -1,10 +1,10 @@
 // Split & Share engine
 // A shape/bar is shown. Click to divide it into equal parts matching a target fraction.
 
-import type { ThemeConfig, MathParams } from "./engine-types"
+import type { ThemeConfig, MathParams, GameVariant } from "./engine-types"
 import { baseTemplate } from "./base-template"
 
-export function splitShareEngine(config: ThemeConfig, math: MathParams): string {
+export function splitShareEngine(config: ThemeConfig, math: MathParams, variant: GameVariant = "classic"): string {
   const c = config.colors
   const gameContent = `
 <div class="intro-overlay" id="intro">

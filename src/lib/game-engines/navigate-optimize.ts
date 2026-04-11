@@ -1,10 +1,10 @@
 // Navigate & Optimize — find the shortest path through nodes.
 // Simplified: given distances, pick the route with the shortest total.
 
-import type { ThemeConfig, MathParams } from "./engine-types"
+import type { ThemeConfig, MathParams, GameVariant } from "./engine-types"
 import { baseTemplate } from "./base-template"
 
-export function navigateOptimizeEngine(config: ThemeConfig, math: MathParams): string {
+export function navigateOptimizeEngine(config: ThemeConfig, math: MathParams, variant: GameVariant = "classic"): string {
   const c = config.colors
   const gameContent = `
 <div class="intro-overlay" id="intro"><div class="intro-box"><h2>${config.title}</h2><p>You are a <strong>${config.character}</strong> in a <strong>${config.worldName}</strong>.</p><p>Find the shortest route! Add up the distances and pick the best path.</p><button class="intro-start" onclick="document.getElementById('intro').remove(); startGame()">Play →</button></div></div>

@@ -297,6 +297,30 @@ function showDefeat(msg) {
 
 window.gameScore = 0;
 
+// === TIMER (for timed variant) ===
+let timerSeconds = 0;
+let timerInterval = null;
+let timerEl = null;
+function startTimer(seconds) {
+  timerSeconds = seconds;
+  timerEl = document.getElementById('timerDisplay');
+  if (!timerEl) return;
+  timerEl.textContent = timerSeconds;
+  timerEl.style.display = 'block';
+  timerInterval = setInterval(() => {
+    timerSeconds--;
+    if (timerEl) timerEl.textContent = timerSeconds;
+    if (timerSeconds <= Math.ceil(seconds * 0.25)) {
+      if (timerEl) { timerEl.style.color = '${c.danger}'; timerEl.style.transform = 'scale(1.1)'; }
+    }
+    if (timerSeconds <= 0) {
+      clearInterval(timerInterval);
+      showDefeat('Time\\'s up!');
+    }
+  }, 1000);
+}
+function stopTimer() { if (timerInterval) clearInterval(timerInterval); }
+
 // === FAIL TRACKER ===
 // Engines can call trackFail() on wrong answers.
 // After 3 fails in a round, triggers gameLose + math moment.
@@ -313,6 +337,7 @@ function resetFails() { failCount = 0; }
 </script>
 
 <div id="combo" class="combo"></div>
+<div id="timerDisplay" style="display: none; position: fixed; top: 8px; left: 50%; transform: translateX(-50%); font-size: 28px; font-weight: 700; color: ${c.accent}; z-index: 40; transition: all 0.3s;"></div>
 
 ${gameContent}
 

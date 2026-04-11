@@ -2,10 +2,10 @@
 // Player drags tokens onto a two-sided scale to make both sides equal.
 // 5 rounds, progressive difficulty.
 
-import type { ThemeConfig, MathParams } from "./engine-types"
+import type { ThemeConfig, MathParams, GameVariant } from "./engine-types"
 import { baseTemplate } from "./base-template"
 
-export function balanceEqualizeEngine(config: ThemeConfig, math: MathParams): string {
+export function balanceEqualizeEngine(config: ThemeConfig, math: MathParams, variant: GameVariant = "classic"): string {
   const c = config.colors
 
   const gameContent = `
@@ -260,7 +260,7 @@ function startRound() { resetFails();
 
   const { target, tokens } = generateRound(currentRound);
   leftValue = target;
-  document.getElementById('leftTotal').textContent = target;
+  document.getElementById('leftTotal').textContent = ${variant === "challenge" ? "'?'" : "target"};
 
   // Set left pan
   const leftPan = document.getElementById('leftPan');
@@ -283,6 +283,8 @@ function startRound() { resetFails();
 }
 
 function startGame() {
+  // Start timer for timed variant
+  ${variant === "timed" ? "startTimer(60);" : ""}
   // Create round dots
   const dotsContainer = document.getElementById('roundDots');
   dotsContainer.innerHTML = '';

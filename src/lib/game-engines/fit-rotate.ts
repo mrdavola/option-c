@@ -1,10 +1,10 @@
 // Fit & Rotate engine — click to rotate shapes and drag to fit them into an outline.
 // Simplified: choose the correct rotation to match the target.
 
-import type { ThemeConfig, MathParams } from "./engine-types"
+import type { ThemeConfig, MathParams, GameVariant } from "./engine-types"
 import { baseTemplate } from "./base-template"
 
-export function fitRotateEngine(config: ThemeConfig, math: MathParams): string {
+export function fitRotateEngine(config: ThemeConfig, math: MathParams, variant: GameVariant = "classic"): string {
   const c = config.colors
   const gameContent = `
 <div class="intro-overlay" id="intro"><div class="intro-box">

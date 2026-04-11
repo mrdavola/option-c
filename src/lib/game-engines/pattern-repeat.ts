@@ -2,10 +2,10 @@
 // Shows a sequence with a gap. Player picks the next element.
 // 5 rounds, progressive difficulty.
 
-import type { ThemeConfig, MathParams } from "./engine-types"
+import type { ThemeConfig, MathParams, GameVariant } from "./engine-types"
 import { baseTemplate } from "./base-template"
 
-export function patternRepeatEngine(config: ThemeConfig, math: MathParams): string {
+export function patternRepeatEngine(config: ThemeConfig, math: MathParams, variant: GameVariant = "classic"): string {
   const c = config.colors
 
   const gameContent = `
