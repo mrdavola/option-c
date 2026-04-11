@@ -329,7 +329,7 @@ export function StandardPanel({
     </Sheet>
 
     {/* Full-page game builder — renders OUTSIDE the sheet */}
-    {step === "earn" && standard && (
+    {step === "earn" && standard && open && (
       <div className="fixed inset-0 z-50 bg-zinc-950 flex flex-col">
         {/* Top bar */}
         <div className="flex items-center justify-between px-6 py-3 border-b border-zinc-800 bg-zinc-900 shrink-0">
