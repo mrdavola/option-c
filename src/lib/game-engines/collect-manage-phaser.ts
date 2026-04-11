@@ -269,17 +269,33 @@ class GameScene extends Phaser.Scene {
     this._redrawDots();
 
     // Target display (upper centre)
+    // When AI rounds exist, show the prompt as the challenge — hide the answer
     this.targetLbl = this.add.text(W / 2, pad, 'Collect exactly', {
-      fontSize: '13px', color: COL_TEXT, fontFamily: 'system-ui', alpha: 0.7
+      fontSize: AI_ROUNDS ? '16px' : '13px',
+      color: AI_ROUNDS ? COL_ACCENT : COL_TEXT,
+      fontFamily: 'system-ui',
+      fontStyle: AI_ROUNDS ? 'bold' : 'normal',
+      alpha: AI_ROUNDS ? 1 : 0.7,
+      align: 'center',
+      wordWrap: { width: W - 120 }
     }).setOrigin(0.5, 0).setDepth(10);
 
-    this.targetNum = this.add.text(W / 2, pad + 18, '0', {
-      fontSize: '54px', color: COL_ACCENT, fontFamily: 'system-ui', fontStyle: 'bold'
+    this.targetNum = this.add.text(W / 2, pad + (AI_ROUNDS ? 40 : 18), '0', {
+      fontSize: AI_ROUNDS ? '20px' : '54px',
+      color: AI_ROUNDS ? COL_TEXT : COL_ACCENT,
+      fontFamily: 'system-ui',
+      fontStyle: 'bold',
+      alpha: AI_ROUNDS ? 0.4 : 1
     }).setOrigin(0.5, 0).setDepth(10);
+
+    // When AI rounds exist, hide the target number — student must solve mentally
+    if (AI_ROUNDS) {
+      this.targetNum.setText('?').setFontSize(36).setAlpha(0.3);
+    }
 
     // Current total
-    const totalY = this.targetNum.y + 68;
-    this.add.text(W / 2, totalY, 'You have:', {
+    const totalY = this.targetNum.y + (AI_ROUNDS ? 30 : 68);
+    this.add.text(W / 2, totalY, AI_ROUNDS ? 'Your answer:' : 'You have:', {
       fontSize: '13px', color: COL_TEXT, fontFamily: 'system-ui', alpha: 0.6
     }).setOrigin(0.5, 0).setDepth(10);
 
@@ -388,18 +404,28 @@ class GameScene extends Phaser.Scene {
     this.targetLbl.setText(data.prompt || 'Collect exactly');
 
     // Update help hint if available
-    if (data.hint && this._helpHint) {
-      this._helpHint = data.hint;
-    } else if (data.hint) {
+    if (data.hint) {
       this._helpHint = data.hint;
     }
 
-    // Animate in target number
-    this.targetNum.setText(data.target).setScale(0.4).setAlpha(0);
-    this.tweens.add({
-      targets: this.targetNum, scale: 1, alpha: 1,
-      duration: 350, ease: 'Back.easeOut'
-    });
+    // Animate in target/prompt
+    if (AI_ROUNDS) {
+      // Hide the answer — show "?" so student must solve mentally
+      this.targetNum.setText('?').setFontSize(36).setAlpha(0.3).setScale(1);
+      // Animate the prompt instead
+      this.targetLbl.setScale(0.8).setAlpha(0);
+      this.tweens.add({
+        targets: this.targetLbl, scale: 1, alpha: 1,
+        duration: 350, ease: 'Back.easeOut'
+      });
+    } else {
+      // Generic mode — show the target number
+      this.targetNum.setText(data.target).setScale(0.4).setAlpha(0);
+      this.tweens.add({
+        targets: this.targetNum, scale: 1, alpha: 1,
+        duration: 350, ease: 'Back.easeOut'
+      });
+    }
 
     this._redrawDots();
     this._spawnItems(data.items);
@@ -632,7 +658,14 @@ class GameScene extends Phaser.Scene {
       }
 
     } else {
-      const msg = this.currentTotal > this.targetValue ? 'Too many! Remove some.' : 'Not enough!';
+      let msg;
+      if (AI_ROUNDS) {
+        msg = this.currentTotal > this.targetValue
+          ? 'Too high! The answer is ' + this.targetValue
+          : 'Too low! The answer is ' + this.targetValue;
+      } else {
+        msg = this.currentTotal > this.targetValue ? 'Too many! Remove some.' : 'Not enough!';
+      }
       this._onWrongAnswer(msg);
     }
   }
