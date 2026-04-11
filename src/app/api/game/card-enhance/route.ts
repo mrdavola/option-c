@@ -37,17 +37,23 @@ export async function POST(req: Request) {
     : null
 
   const nextSlotPrompt = nextSlot ? `
-Also generate 3 creative options for the NEXT slot (${nextSlot}):
-${nextSlot === "character" ? "3 characters that would live in this theme world. Fun, unexpected, not obvious." :
-  nextSlot === "action" ? "3 player actions specific to this math mechanic, phrased using the theme and character." :
-  nextSlot === "win" ? "3 win conditions with specific round counts or timers, phrased using the theme, character, and action." : ""}
+Also generate 3 options for the NEXT slot (${nextSlot}). MAX 6 WORDS EACH:
+${nextSlot === "character" ? "3 characters for this world. Short names only (2-4 words). Example: 'ghost hunter', 'lava diver', 'ice wizard'" :
+  nextSlot === "action" ? "3 player actions for this math mechanic + theme. Max 6 words each. Example: 'stack blocks to match height', 'drag tiles to fill shape'" :
+  nextSlot === "win" ? "3 win conditions with round count or timer. Max 8 words each. Example: 'complete 5 rounds before time runs out', 'score 100 with zero mistakes'" : ""}
 ` : ""
 
   try {
     const response = await anthropic.messages.create({
       model: "claude-haiku-4-5-20251001",
       max_tokens: 400,
-      system: `You enhance game card slots for a math game builder. You make generic choices feel specific and themed. Be creative but concise. Every response must be valid JSON, no markdown.`,
+      system: `You enhance game card slots for a kids' math game builder. Keep ALL text SHORT and SIMPLE — these are for 8-14 year olds. Every response must be valid JSON, no markdown.
+
+STRICT LENGTH RULES:
+- "enhanced": max 8 words. Keep it punchy.
+- "nextOptions": each option max 6 words. Simple, fun, easy to read.
+- "summary": max 20 words. Plain English a kid can understand.
+- NO jargon, NO dashes, NO semicolons. Short words only.`,
       messages: [{
         role: "user",
         content: `Math mechanic: ${body.mechanic}
@@ -60,11 +66,13 @@ The learner just picked "${body.picked}" for the ${body.slot} slot.
 
 Return JSON:
 {
-  "enhanced": "The picked value rewritten to be more vivid and themed (max 15 words). Keep the core meaning but add flavor from the theme/character.",
-  "summary": "A one-sentence game description using ALL picks so far. Format: 'You are a [character] in a [theme], [action], [win].' Only include slots that have been picked.",
-  ${nextSlot ? `"nextOptions": ["option 1", "option 2", "option 3"]` : `"nextOptions": []`}
+  "enhanced": "picked value with theme flavor, MAX 8 WORDS",
+  "summary": "You are a [character] in a [theme]. You [action] to [win]. MAX 20 WORDS. Only include what's been picked so far.",
+  ${nextSlot ? `"nextOptions": ["short option 1", "short option 2", "short option 3"]` : `"nextOptions": []`}
 }
-${nextSlotPrompt}`,
+${nextSlotPrompt}
+
+REMEMBER: Keep every option under 6 words. Kids need to read these fast.`,
       }],
     })
 
