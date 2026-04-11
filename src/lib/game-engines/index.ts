@@ -4,11 +4,19 @@
 import type { ThemeConfig, MathParams, GameEngine } from "./engine-types"
 import { balanceEqualizeEngine } from "./balance-equalize"
 import { riseFallEngine } from "./rise-fall"
+import { scoreRankEngine } from "./score-rank"
+import { collectManageEngine } from "./collect-manage"
+import { plotExploreEngine } from "./plot-explore"
+import { scaleTransformEngine } from "./scale-transform"
 
 // Registry of all available engines
 const ENGINE_REGISTRY: Record<string, GameEngine> = {
   "balance-systems": balanceEqualizeEngine,
   "above-below-zero": riseFallEngine,
+  "scoring-ranking": scoreRankEngine,
+  "resource-management": collectManageEngine,
+  "terrain-generation": plotExploreEngine,
+  "scaling-resizing": scaleTransformEngine,
 }
 
 // Check if a mechanic has a pre-built engine
