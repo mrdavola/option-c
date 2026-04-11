@@ -278,7 +278,7 @@ export function ConceptCard({ standard, onReady, readOnly }: ConceptCardProps) {
             disabled={!selectedMechanic}
             className="flex-[2] text-white bg-emerald-600 hover:bg-emerald-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
           >
-            {selectedMechanic ? `Build "${selectedMechanic.title}" →` : "Pick a game mechanic above"}
+            {selectedMechanic ? `${selectedMechanic.title} →` : "Pick a game mechanic above"}
           </Button>
           <Button
             onClick={() => onReady()}
