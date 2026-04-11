@@ -45,7 +45,7 @@ Effects:
   - Every text element gets a glow: text-shadow: 0 0 6px currentColor, 0 0 12px currentColor.
   - Buttons and panels have a 2-3px solid border (cyan or magenta) with a matching glow.
   - Animations should be CHUNKY — step()-style transitions, not smooth.
-  - Use big emoji as game characters (60px+).
+  - Draw all characters and items as inline SVG with the neon palette. Characters are simple geometric shapes with glowing outlines — a circle head, rectangle body, dot eyes. Items are SVG shapes with glow effects.
 
 Vocabulary:
   Score panel: "SCORE" / "LIVES" / "LEVEL". Win screen: "YOU WIN!" / "GAME OVER".
@@ -78,7 +78,7 @@ Effects:
   - Pixel-art feel: borders are crisp 2-4px solid white. No rounded corners. No drop shadows. No glow.
   - Add a few tiny "8x8 pixel" decorations using flat blocks of pure colors from the palette.
   - Animations are step()-style and snappy.
-  - Use big emoji as game characters (50px+).
+  - Draw all characters and items as inline SVG pixel-art style — blocky shapes, flat colors from the C64 palette. No emoji. Characters are simple 8-bit style SVG drawings.
 
 Vocabulary:
   Top of screen: "READY." or "LOAD"*",8,1" easter eggs allowed.
@@ -138,8 +138,8 @@ Effects:
   - Gentle gradient or solid pastel background. NO black backgrounds, NO neon, NO scanlines.
   - Everything has soft rounded corners (border-radius 12-24px).
   - Buttons have a soft shadow (box-shadow: 0 4px 12px rgba(244, 114, 182, 0.25)).
-  - Sprinkle a FEW decorative emoji floating gently in the background: 🌸 ✨ 💖 ⭐ ☁️ 🌷 (max 6-8 total). These are background decoration only — the main characters are SVG-drawn chubby creatures, NOT emoji.
-  - On wins, briefly pop heart sparkles ✨💖 with a CSS keyframe animation (fade + scale).
+  - Sprinkle a FEW small SVG-drawn decorative shapes floating gently in the background: tiny hearts, stars, flowers, clouds (max 6-8 total, drawn with SVG paths, NOT emoji). The main characters are SVG-drawn chubby creatures.
+  - On wins, briefly pop SVG-drawn heart sparkles with a CSS keyframe animation (fade + scale).
   - Animations are gentle and bouncy (cubic-bezier with ease-out, no harsh step()).
   - Characters can have a tiny "breathing" idle animation: scale 1.0 → 1.03 → 1.0 over 2-3 seconds.
 
@@ -238,9 +238,7 @@ function buildForbiddenRules(allowPastels: boolean, allowSketch: boolean): strin
     rules.push("- Cartoonish proportions, soft drop shadows, \"playful\" rounded corners.")
     rules.push("- Pictures of crayons, balloons, or stars-and-rainbows decoration.")
   }
-  if (!allowSketch) {
-    rules.push("- Plain colored circles or rectangles as game characters. Use big emoji.")
-  }
+  rules.push("- Emoji as game characters, items, or obstacles. Draw everything with inline SVG or CSS shapes.")
   rules.push("- Comic Sans, Times New Roman, Arial, default serifs.")
   rules.push("- The word \"mate\" or \"buddy\" anywhere in the UI.")
   return `\n🚫 BANNED — reject these even if you're tempted:\n${rules.join("\n")}\n`
@@ -553,8 +551,8 @@ interface VibePresetLite {
 function buildSystemPrompt(vibePreset: VibePresetLite, _visualConcept: string | undefined): string {
   const forbiddenRules = buildForbiddenRules(!!vibePreset.allowPastels, !!vibePreset.allowSketch)
   const characterRule = vibePreset.allowSketch
-    ? `- Use stick figures and simple line drawings as the main characters (the sketch aesthetic). Tiny emoji decorations are OK but the main characters MUST be hand-drawn-style line art.`
-    : `- Every moving entity (player, enemy, item, obstacle) MUST be a recognizable real thing — use big emoji at 50px+ font sizes.\n- Never use plain colored shapes as characters or items. ZERO exceptions.`
+    ? `- Use stick figures and simple line drawings as the main characters (the sketch aesthetic). All characters MUST be SVG-drawn line art — no emoji.`
+    : `- Every moving entity (player, enemy, item, obstacle) MUST be drawn with inline SVG — simple shapes with faces (circle head, dot eyes, curved mouth). No emoji anywhere.`
 
   return `You generate complete, self-contained HTML files for playable browser games for learners aged 7-18. Output ONLY the HTML. No markdown. No code fences. Start with <!DOCTYPE html>.
 
@@ -613,14 +611,42 @@ ${vibePreset.spec}
 ${forbiddenRules}
 
 🚨 CRITICAL VISUAL RULES:
-${characterRule}
+- NEVER use emoji as game characters, items, or obstacles. Draw ALL visual
+  elements using inline SVG (<svg>, <circle>, <rect>, <path>, <line>) or
+  CSS shapes with colors, gradients, and shadows.
+- Characters should have simple faces drawn with SVG: two small circles
+  for eyes, a curve for a mouth. Bodies are simple shapes (circles, rounded
+  rects). Think: cute but minimal, like a Hollow Knight character.
+- Items and obstacles are also SVG-drawn: a coin is a yellow circle with
+  a shine highlight, a wall is a rectangle, a star is a polygon.
 - Use the chosen vibe's palette and font. Import the Google Font in a <style>.
 - The game looks like it belongs in the chosen era — not like a generic web app.
+
+🎮 GAME JUICE — every game MUST include ALL of these:
+- PARTICLE BURST on correct action: spawn 8-12 small colored circles that
+  fly outward and fade over 0.5s. Use CSS animations, not canvas.
+- SCREEN SHAKE on wrong action: translateX jitter on the game container
+  (±4px, 3 cycles, 0.3s total). Brief and punchy.
+- SCORE POP-UPS: when points are earned, show "+10" text that floats
+  upward and fades out over 0.8s at the location of the action.
+- COMBO COUNTER: track consecutive correct actions. Show "2x!", "3x!",
+  "4x!" with increasing font size and brighter color. Reset on wrong action.
+- PROGRESSIVE DIFFICULTY: start easy (big targets, slow speed, simple
+  numbers), get harder each round (smaller targets, faster, bigger numbers).
+- RANDOMIZED VALUES: every playthrough uses different numbers, positions,
+  or configurations. Never the same twice.
+- TIMER WITH VISUAL PULSE: if there's a timer, make it pulse red and
+  grow slightly when under 25% remaining.
+- VICTORY CELEBRATION: on win, show a big animated celebration — particles
+  flying everywhere, text scaling up with a bounce, background flash.
+  NOT just a plain "You win!" text.
+- SMOOTH ANIMATIONS: all movement uses CSS transitions or requestAnimationFrame.
+  Nothing should teleport. Elements should ease-in-out.
 
 🚨 CRITICAL GAMEPLAY RULES:
 - The math concept must be the core player verb (see intrinsic integration above).
 - Every round must use different numbers so memorising doesn't work.
-- Game ends after 3-5 rounds with a clear win/lose screen.
+- Game should have 3-5 rounds with progressive difficulty, ending with a clear win/lose.
 - Mouse/touch input. Keyboard is a bonus.
 - Include a brief 1-sentence "how to play" before the game starts.
 - BANNED interaction patterns (these are extrinsic quizzes, not games):
