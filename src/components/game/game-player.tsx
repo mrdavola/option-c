@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react"
 import { GameIframe } from "./game-iframe"
 import { MathMomentOverlay } from "./math-moment-overlay"
 import { ReviewPanel } from "./review-panel"
-import { X, Star, RotateCcw, ArrowLeft } from "lucide-react"
+import { X, Star, RotateCcw, ArrowLeft, BookOpen, Zap } from "lucide-react"
 import { FeedbackButton } from "@/components/feedback/feedback-button"
 import { useAuth } from "@/lib/auth"
 import { collection, doc, setDoc, updateDoc, arrayUnion } from "firebase/firestore"
@@ -50,6 +50,12 @@ interface GamePlayerProps {
 
 export function GamePlayer({ gameId, title, html, concept, onClose, isPendingReview, isPublished, standardId, authorUid, authorName, reviewerUid, reviewerName, onReviewComplete, onUnapproved, playMode = "casual", onWin, onLose, playModeHud }: GamePlayerProps) {
   const { activeProfile } = useAuth()
+  // Hint Card state
+  const [hintMode, setHintMode] = useState<"choosing" | "real" | "hint" | "prompt_real">(
+    // Skip chooser for review mode or when there's no concept to show
+    isPendingReview || !concept ? "real" : "choosing"
+  )
+  const [hintCardContent, setHintCardContent] = useState<{ heading: string; problem: string; steps: string[]; encouragement: string } | null>(null)
   const [showRating, setShowRating] = useState(false)
   // True when the rating modal is mandatory (game just ended). Cannot be
   // dismissed without rating + comment.
@@ -110,6 +116,11 @@ export function GamePlayer({ gameId, title, html, concept, onClose, isPendingRev
     const now = Date.now()
     if (kind === "win") {
       lastWinAtRef.current = now
+      // In hint mode, wins don't count — prompt to play for real
+      if (hintMode === "hint") {
+        setHintMode("prompt_real")
+        return
+      }
       onWin?.()
     } else {
       onLose?.()
@@ -119,7 +130,7 @@ export function GamePlayer({ gameId, title, html, concept, onClose, isPendingRev
       const recentlyWon = now - lastWinAtRef.current < 3000
       if (concept && !recentlyWon) setShowMathMoment(true)
     }
-  }, [onWin, onLose, concept])
+  }, [onWin, onLose, concept, hintMode])
 
   const handleUnapprove = async () => {
     if (!activeProfile) return
@@ -295,8 +306,113 @@ export function GamePlayer({ gameId, title, html, concept, onClose, isPendingRev
         </div>
       )}
 
+      {/* Mode chooser — shown before the game starts */}
+      {hintMode === "choosing" && (
+        <div className="flex-1 flex items-center justify-center bg-zinc-950">
+          <div className="max-w-md w-full px-6 space-y-4 text-center">
+            <h3 className="text-xl font-bold text-white">How do you want to play?</h3>
+            <p className="text-sm text-zinc-400">Choose your mode for this game.</p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => setHintMode("real")}
+                className="w-full p-4 rounded-xl border-2 border-emerald-500/40 bg-emerald-500/10 hover:border-emerald-400 transition-all text-left flex items-start gap-3"
+              >
+                <Zap className="size-5 text-emerald-400 mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-sm font-bold text-emerald-300">Play for real</p>
+                  <p className="text-xs text-zinc-400 mt-0.5">Wins count toward mastery and tokens.</p>
+                </div>
+              </button>
+              <button
+                onClick={() => {
+                  setHintMode("hint")
+                  // Fetch hint card content
+                  if (concept) {
+                    fetch("/api/game/math-moment", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ concept }),
+                    }).then(r => r.json()).then(setHintCardContent).catch(() => {})
+                  }
+                }}
+                className="w-full p-4 rounded-xl border-2 border-blue-500/40 bg-blue-500/10 hover:border-blue-400 transition-all text-left flex items-start gap-3"
+              >
+                <BookOpen className="size-5 text-blue-400 mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-sm font-bold text-blue-300">Play with Hint Card</p>
+                  <p className="text-xs text-zinc-400 mt-0.5">A math hint stays visible while you play. No tokens earned — it&apos;s practice.</p>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* "Ready to play for real?" prompt after winning with hint card */}
+      {hintMode === "prompt_real" && (
+        <div className="flex-1 flex items-center justify-center bg-zinc-950">
+          <div className="max-w-md w-full px-6 space-y-4 text-center">
+            <div className="text-4xl mb-2">🎉</div>
+            <h3 className="text-xl font-bold text-white">Nice! You won with the Hint Card.</h3>
+            <p className="text-sm text-zinc-400">Ready to play without it? Wins will count toward mastery and tokens.</p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => { setHintMode("real"); setIframeKey(k => k + 1) }}
+                className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm transition-colors"
+              >
+                Play for real →
+              </button>
+              <button
+                onClick={() => { setHintMode("hint"); setIframeKey(k => k + 1) }}
+                className="w-full py-3 rounded-xl border border-zinc-700 text-zinc-300 hover:text-white text-sm transition-colors"
+              >
+                Practice again with Hint Card
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Game */}
-      <div className="flex-1 relative">
+      {(hintMode === "real" || hintMode === "hint") && (
+      <div className="flex-1 relative flex">
+        {/* Hint Card panel — persistent side panel when in hint mode */}
+        {hintMode === "hint" && (
+          <div className="w-72 shrink-0 bg-blue-500/5 border-r border-blue-500/20 p-4 overflow-y-auto">
+            <div className="flex items-center gap-2 mb-3">
+              <BookOpen className="size-4 text-blue-400" />
+              <p className="text-xs text-blue-400 font-semibold uppercase tracking-wide">Hint Card</p>
+            </div>
+            <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg px-2 py-1 mb-3">
+              <p className="text-[10px] text-amber-400 text-center">Practice mode — wins don&apos;t count</p>
+            </div>
+            {hintCardContent ? (
+              <div className="space-y-3">
+                <div>
+                  <p className="text-sm font-semibold text-white">{hintCardContent.heading}</p>
+                  <p className="text-xs text-zinc-300 mt-1">{hintCardContent.problem}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-zinc-500 uppercase tracking-wide font-semibold mb-1">Steps</p>
+                  <ol className="space-y-1">
+                    {hintCardContent.steps.map((s, i) => (
+                      <li key={i} className="text-xs text-zinc-300 flex gap-2">
+                        <span className="text-blue-400 shrink-0">{i + 1}.</span>
+                        {s}
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+                <p className="text-xs text-emerald-400 italic">{hintCardContent.encouragement}</p>
+              </div>
+            ) : (
+              <div className="flex justify-center py-4">
+                <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+              </div>
+            )}
+          </div>
+        )}
+        <div className="flex-1 relative">
         <GameIframe
           key={iframeKey}
           html={html}
@@ -396,6 +512,8 @@ export function GamePlayer({ gameId, title, html, concept, onClose, isPendingRev
           <FeedbackButton targetGame={{ id: gameId, title, authorUid }} />
         )}
       </div>
+      </div>
+      )}
     </div>
   )
 }

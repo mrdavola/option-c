@@ -338,7 +338,7 @@ export function GraphPage({ data }: GraphPageProps) {
 
   // Game builder state. "importing" = the learner is pasting their own HTML;
   // once it passes the AI judge they go straight to the workshop preview.
-  const [buildMode, setBuildMode] = useState<"idle" | "building" | "workshop" | "importing">("idle")
+  const [buildMode, setBuildMode] = useState<"idle" | "building" | "naming" | "workshop" | "importing">("idle")
   // The standard the learner is importing HTML for (only set in importing mode)
   const [importingStandard, setImportingStandard] = useState<StandardNode | null>(null)
   const [currentDesignDoc, setCurrentDesignDoc] = useState<GameDesignDoc | null>(null)
@@ -675,13 +675,19 @@ export function GraphPage({ data }: GraphPageProps) {
 
   // Handle build complete — move to workshop. Stash the visual concept
   // bullets on the design doc so they get saved with the game.
+  // Game naming state
+  const [gameName, setGameName] = useState("")
+  const [gameDare, setGameDare] = useState("")
+
   const handleBuildComplete = useCallback((html: string, designChoices: Record<string, string>, visualConcept: string[]) => {
     if (currentDesignDoc) {
       setCurrentDesignDoc({ ...currentDesignDoc, designChoices, visualConcept })
     }
     setCurrentGameHtml(html)
     setCurrentGameId(null)
-    setBuildMode("workshop")
+    setGameName(currentDesignDoc?.title || "")
+    setGameDare("")
+    setBuildMode("naming")
   }, [currentDesignDoc])
 
   // Handle back to planet from workshop
@@ -836,6 +842,55 @@ export function GraphPage({ data }: GraphPageProps) {
           onCancel={() => { setBuildMode("idle"); setImportingStandard(null) }}
           onPass={handleImportPass}
         />
+      )}
+
+      {/* Game Builder: Name your game */}
+      {buildMode === "naming" && currentDesignDoc && (
+        <div className="fixed inset-0 z-50 bg-zinc-950 flex items-center justify-center">
+          <div className="max-w-md w-full px-6 space-y-6 text-center">
+            <div className="text-4xl mb-2">🎮</div>
+            <h2 className="text-2xl font-bold text-white">Your game is ready!</h2>
+            <div className="space-y-4 text-left">
+              <div>
+                <label className="text-xs text-zinc-400 uppercase tracking-wide font-semibold block mb-1.5">
+                  Name your game
+                </label>
+                <input
+                  type="text"
+                  value={gameName}
+                  onChange={(e) => setGameName(e.target.value)}
+                  placeholder="Give it a cool name..."
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-blue-500/50"
+                  autoFocus
+                />
+              </div>
+              <div>
+                <label className="text-xs text-zinc-400 uppercase tracking-wide font-semibold block mb-1.5">
+                  Dare other players <span className="text-zinc-600 normal-case font-normal">(optional)</span>
+                </label>
+                <input
+                  type="text"
+                  value={gameDare}
+                  onChange={(e) => setGameDare(e.target.value)}
+                  placeholder="I dare you to beat this in under 30 seconds!"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-blue-500/50"
+                />
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                if (gameName.trim()) {
+                  setCurrentDesignDoc({ ...currentDesignDoc, title: gameName.trim(), dare: gameDare.trim() || undefined } as any)
+                }
+                setBuildMode("workshop")
+              }}
+              disabled={!gameName.trim()}
+              className="w-full py-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-30 text-white font-semibold text-sm transition-colors"
+            >
+              Play it →
+            </button>
+          </div>
+        </div>
       )}
 
       {/* Game Builder: Workshop */}
