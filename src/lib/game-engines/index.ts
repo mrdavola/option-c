@@ -4,7 +4,7 @@ import type { ThemeConfig, MathParams, GameEngine, GameVariant } from "./engine-
 import { balanceEqualizeEngine } from "./balance-equalize"
 import { riseFallEngine } from "./rise-fall"
 import { scoreRankEngine } from "./score-rank"
-import { collectManageEngine } from "./collect-manage"
+import { collectManagePhaserEngine } from "./collect-manage-phaser"
 import { plotExploreEngine } from "./plot-explore"
 import { scaleTransformEngine } from "./scale-transform"
 import { buildMeasureEngine } from "./build-measure"
@@ -22,7 +22,7 @@ import { raceCalculateEngine } from "./race-calculate"
 import { buildStructureEngine } from "./build-structure"
 
 const ENGINE_REGISTRY: Record<string, GameEngine> = {
-  "resource-management": collectManageEngine,
+  "resource-management": collectManagePhaserEngine,
   "partitioning": splitShareEngine,
   "balance-systems": balanceEqualizeEngine,
   "spatial-puzzles": fitRotateEngine,
