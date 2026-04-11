@@ -11,7 +11,7 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
 export async function POST(req: Request) {
   const body = await req.json()
-  const { designDoc, mechanicId, vibe, standardId, standardDescription, grade, cardChoices } = body
+  const { designDoc, mechanicId, vibe, standardId, standardDescription, grade, cardChoices, sprites } = body
 
   if (!mechanicId || !hasEngine(mechanicId)) {
     return Response.json({ error: "No engine for this mechanic", hasEngine: false }, { status: 400 })
@@ -22,8 +22,15 @@ export async function POST(req: Request) {
   try {
     const response = await anthropic.messages.create({
       model: "claude-haiku-4-5-20251001",
-      max_tokens: 300,
-      system: `Generate a theme config JSON for a math game. Be creative with names but keep them SHORT (max 5 words each). Return ONLY valid JSON, no markdown.`,
+      max_tokens: 450,
+      system: `Generate a theme config JSON for a math game. Be creative with names but keep them SHORT (max 5 words each). Return ONLY valid JSON, no markdown.
+
+Also select the best matching sprites from the library:
+Characters: pirate, robot, astronaut, knight, chef, diver, ghost, ninja, wizard, explorer
+Items: coin, gem, treasure-chest, crystal, potion, fruit, star, shell, mushroom, key
+Backgrounds: underwater, space, forest, castle, kitchen, cave, city, volcano, arctic, jungle
+
+Pick the sprites that best match the game's theme and setting.`,
       messages: [{
         role: "user",
         content: `Game design:
@@ -45,7 +52,10 @@ Return JSON:
   "winMessage": "victory text (max 5 words)",
   "loseMessage": "defeat text (max 5 words)",
   "bgColor1": "hex background gradient start color matching the theme",
-  "bgColor2": "hex background gradient end color matching the theme"
+  "bgColor2": "hex background gradient end color matching the theme",
+  "characterSprite": "<best matching character id>",
+  "itemSprite": "<best matching item id>",
+  "backgroundImage": "<best matching background id>"
 }`,
       }],
     })
@@ -75,6 +85,9 @@ Return JSON:
       winMessage: parsed.winMessage || "You did it!",
       loseMessage: parsed.loseMessage || "Try again!",
       dare: designDoc.dare,
+      characterSprite: parsed.characterSprite || "explorer",
+      itemSprite: parsed.itemSprite || "coin",
+      backgroundImage: parsed.backgroundImage || "forest",
     }
   } catch {
     // Fallback config
@@ -90,8 +103,16 @@ Return JSON:
       winMessage: "You did it!",
       loseMessage: "Try again!",
       dare: designDoc.dare,
+      characterSprite: "explorer",
+      itemSprite: "coin",
+      backgroundImage: "forest",
     }
   }
+
+  // Student sprite overrides (from artwork picker UI)
+  if (sprites?.characterSprite) themeConfig.characterSprite = sprites.characterSprite
+  if (sprites?.itemSprite) themeConfig.itemSprite = sprites.itemSprite
+  if (sprites?.backgroundImage) themeConfig.backgroundImage = sprites.backgroundImage
 
   const mathParams: MathParams = {
     grade: grade || "6",
