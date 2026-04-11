@@ -33,20 +33,20 @@ const CRITERIA_INFO: Array<{
   {
     key: "playable",
     icon: "🎮",
-    name: "Playable",
-    description: "Could a kid play this in a browser? Clear rules, clear win condition.",
+    name: "Playable Game",
+    description: "Clear idea, clear goal, clear win/lose.",
   },
   {
     key: "authentic",
     icon: "🧠",
-    name: "Authentic",
-    description: "The math shows up in a real way — not just decorating the game.",
+    name: "Math Well Applied",
+    description: "The math skill is used like in the real world.",
   },
   {
     key: "essential",
     icon: "💎",
-    name: "Essential",
-    description: "Math is the core. Remove it and the game breaks.",
+    name: "Math Essential",
+    description: "Knowing the math skill is essential to win.",
   },
 ]
 

@@ -49,11 +49,11 @@ export async function POST(req: Request) {
 
 Read the HTML carefully and judge whether the game meets ALL THREE criteria:
 
-1. PLAYABLE: A reasonable person could open this HTML and figure out how to play it. There's a clear interaction (click, drag, type, key press), a clear goal, and a clear win/lose condition. NOT just a static page or a broken stub.
+1. PLAYABLE GAME: Clear idea, clear goal, clear win/lose. A kid can open this, understand the rules in 10 seconds, play it, and know if they won or lost. NOT just a static page or a broken stub.
 
-2. AUTHENTIC: The math concept is applied the way it's actually used in real life — not as decorative arithmetic, not as a vague "use numbers somewhere" gesture. The game must genuinely exercise the specific concept "${standardDescription}".
+2. MATH WELL APPLIED: The math skill from the standard is used like in the real world — not simplified, not faked, not just numbers sprinkled on top. The game must genuinely exercise the specific concept "${standardDescription}" the way it would actually be used.
 
-3. ESSENTIAL: The math is REQUIRED to win. The player must compute, decide, optimize, or reason mathematically — they can't just click randomly and win. If you can win without doing the math, this criterion fails.
+3. MATH ESSENTIAL: Knowing the math skill is essential to win. The player must compute, decide, optimize, or reason mathematically — they can't just click randomly and win. Remove the math and the game breaks.
 
 🚨 STRICT RULES:
 - Judge ONLY from what's in the HTML. Don't assume features that aren't there.

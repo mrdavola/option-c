@@ -26,24 +26,24 @@ const criteriaLabels: Array<{
 }> = [
   {
     key: "playable",
-    label: "Your game makes sense",
+    label: "Playable Game",
     shortLabel: "Playable",
     tooltip:
-      "Could a kid actually play this in a browser? Are the rules clear and the game finishable? You'll work on this in the chat.",
+      "Clear idea, clear goal, clear win/lose. A kid can open this, understand the rules in 10 seconds, and know if they won or lost.",
   },
   {
     key: "authentic",
-    label: "The math is applied like in real life",
-    shortLabel: "Authentic",
+    label: "Math Well Applied",
+    shortLabel: "Math Applied",
     tooltip:
-      "Does the math show up in a real way? Auto-checked when you pick from a template, since the math is built into the verb.",
+      "The math skill is used like in the real world — not simplified, not faked, not just numbers sprinkled on top.",
   },
   {
     key: "essential",
-    label: "You need math to win",
-    shortLabel: "Essential",
+    label: "Math Essential",
+    shortLabel: "Math Essential",
     tooltip:
-      "Is the math the CORE of the game? Removing it should break the game. Auto-checked when you pick from a template, since the verb IS the math.",
+      "Knowing the math skill is essential to win. Remove the math and the game breaks — the math IS the game.",
   },
 ]
 

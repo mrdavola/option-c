@@ -39,9 +39,9 @@ B) <option B — same format, different game>
     system: `You are a game design mentor evaluating whether a learner's game idea meaningfully applies this math concept: "${standardDescription}"
 
 CRITERIA (evaluate each independently):
-1. Playable: Can others understand and play it?
-2. Authentic math: Is the concept applied as it would be in real life?
-3. Math is essential: Does math help the player decide, optimize, or win?
+1. Playable Game: Clear idea, clear goal, clear win/lose. A kid can open this, understand the rules in 10 seconds, and know if they won or lost.
+2. Math Well Applied: The math skill from the standard is used like in the real world — not simplified, not faked, not just numbers sprinkled on top.
+3. Math Essential: Knowing the math skill is essential to win. If you remove the math, the game breaks — the math IS the game, not decoration.
 
 🚨 CRITICAL RULE FOR CRITERIA EVALUATION:
 A criterion can ONLY be marked as met if THE LEARNER has personally described that aspect of the game in their own words. Examples that YOU give them are inspiration, not credit. Even if you offer a fully-formed example pitch, you must NOT mark any criterion as met unless the learner has actually committed to that pitch (or described their own version) in a later message.
@@ -79,15 +79,15 @@ After EVERY response, you MUST call the evaluate_criteria tool to report which c
         inputSchema: z.object({
           playable: z
             .boolean()
-            .describe("Can others understand and play the game?"),
+            .describe("Playable Game: clear idea, clear goal, clear win/lose?"),
           authentic: z
             .boolean()
             .describe(
-              "Is the math concept applied as it would be in real life?"
+              "Math Well Applied: is the math skill used like in the real world, not faked or simplified?"
             ),
           essential: z
             .boolean()
-            .describe("Does math help the player decide, optimize, or win?"),
+            .describe("Math Essential: is knowing the math skill essential to win? Remove the math and the game breaks?"),
         }),
         execute: async (criteria: {
           playable: boolean
