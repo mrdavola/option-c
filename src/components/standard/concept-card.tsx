@@ -151,10 +151,10 @@ function GameTemplates({
     <div className="space-y-3">
       <p className="text-sm text-zinc-300 font-medium flex items-center gap-1.5">
         <Sparkles className="size-4 text-blue-400" />
-        Game ideas
+        Choose the player action for your game
       </p>
       <p className="text-xs text-zinc-500 -mt-1">
-        Pick the basic player action of your game. You&apos;ll decide the specifics in the next step.
+        Each action already has the math built in. You&apos;ll pick the theme and details next.
       </p>
 
       <div className="space-y-2">
@@ -420,13 +420,18 @@ export function ConceptCard({ standard, onReady, readOnly }: ConceptCardProps) {
           <Button
             onClick={() => onReady(selectedTemplate || undefined)}
             size="lg"
-            className={`flex-[2] text-white transition-all ${
-              selectedTemplate
-                ? "bg-emerald-600 hover:bg-emerald-500"
-                : "bg-emerald-600 hover:bg-emerald-500"
-            }`}
+            disabled={!selectedTemplate}
+            className="flex-[2] text-white bg-emerald-600 hover:bg-emerald-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
           >
-            {selectedTemplate ? `Build "${selectedTemplate.title}" →` : "I have my own game idea →"}
+            {selectedTemplate ? `Build "${selectedTemplate.title}" →` : "Pick a player action above"}
+          </Button>
+          <Button
+            onClick={() => onReady()}
+            size="lg"
+            variant="outline"
+            className="text-zinc-300 border-zinc-700 hover:border-zinc-500"
+          >
+            I have my own idea →
           </Button>
         </div>
       )}
