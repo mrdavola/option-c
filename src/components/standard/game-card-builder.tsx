@@ -157,6 +157,8 @@ Math skill: ${standardDescription}`
         }),
       })
       const designDoc = (await res.json()) as GameDesignDoc
+      // Attach raw card choices for theme config generation
+      ;(designDoc as any).cardChoices = { theme: theme?.enhanced, character: character?.enhanced, action: action?.enhanced, win: win?.enhanced }
       onBuildGame(designDoc, gameSummary, vibe)
     } catch {
       onBuildGame({

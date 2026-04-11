@@ -11,7 +11,7 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
 export async function POST(req: Request) {
   const body = await req.json()
-  const { designDoc, mechanicId, vibe, standardId, standardDescription, grade } = body
+  const { designDoc, mechanicId, vibe, standardId, standardDescription, grade, cardChoices } = body
 
   if (!mechanicId || !hasEngine(mechanicId)) {
     return Response.json({ error: "No engine for this mechanic", hasEngine: false }, { status: 400 })
@@ -28,9 +28,10 @@ export async function POST(req: Request) {
         role: "user",
         content: `Game design:
 Title: ${designDoc.title || "Math Game"}
-Theme: ${designDoc.howItWorks || "a fun math game"}
-Character: ${designDoc.concept || "player"}
-Win condition: ${designDoc.winCondition || "complete all rounds"}
+Theme/World: ${cardChoices?.theme || designDoc.howItWorks || "a fun place"}
+Character: ${cardChoices?.character || designDoc.concept || "player"}
+Player Action: ${cardChoices?.action || "play the game"}
+Win condition: ${cardChoices?.win || designDoc.winCondition || "complete all rounds"}
 Math: ${designDoc.mathRole || standardDescription}
 Vibe: ${vibe || "stickman"}
 

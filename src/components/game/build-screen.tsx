@@ -159,7 +159,8 @@ export function BuildScreen({ designDoc, onComplete, preSelectedVibe, mechanicId
             vibe: preSelectedVibe,
             standardId: designDoc.standardId,
             standardDescription: designDoc.concept || designDoc.mathRole,
-            grade: "6", // TODO: get from profile
+            grade: "6",
+            cardChoices: (designDoc as any).cardChoices,
           }),
         })
           .then(r => r.json())
