@@ -91,8 +91,9 @@ export function collectManagePhaserEngine(
   <div class="tut-box">
     <h2>${config.title}</h2>
     <p>You are a <strong>${config.character}</strong> in <strong>${config.worldName}</strong>.</p>
-    <p>Each round shows a <strong>target number</strong>. Click ${config.itemName} to collect them.</p>
-    <p>Your collected total must <strong>match the target exactly</strong> — not too many, not too few!</p>
+    <p>Each round shows a <strong>math challenge</strong>. Solve it, then click ${config.itemName} to collect the right answer.</p>
+    <p>Your collected total must <strong>match the answer exactly</strong> — not too many, not too few!</p>
+    ${math.standardDescription ? `<p><em>Skill: ${math.standardDescription}</em></p>` : ""}
     ${IS_TIMED ? `<p>⏱ <strong>Timed mode:</strong> you have ${TIMER_SECONDS} seconds per round!</p>` : ""}
     ${IS_CHALLENGE ? `<p>🔍 <strong>Challenge mode:</strong> item values are hidden — hover to reveal!</p>` : ""}
     <p>3 wrong answers = game over. Good luck!</p>
@@ -127,6 +128,7 @@ const LOSE_MSG       = ${JSON.stringify(config.loseMessage)};
 const ITEM_NAME      = ${JSON.stringify(config.itemName)};
 const CHARACTER_NAME = ${JSON.stringify(config.character)};
 const WORLD_NAME     = ${JSON.stringify(config.worldName)};
+const AI_ROUNDS      = ${math.rounds ? JSON.stringify(math.rounds) : "null"};
 
 // ─── Utility ──────────────────────────────────────────────────────────────────
 function hexToNum(hex) {
@@ -134,6 +136,18 @@ function hexToNum(hex) {
 }
 
 function generateRound(round) {
+  // Use AI-generated rounds if available
+  if (AI_ROUNDS && AI_ROUNDS[round]) {
+    const r = AI_ROUNDS[round];
+    return {
+      prompt: r.prompt || "Collect the target!",
+      target: r.target,
+      items: r.items.slice(),
+      hint: r.hint || null
+    };
+  }
+
+  // Fallback: generic addition rounds
   let maxVal, itemCount;
   if (round < 2)      { maxVal = 10; itemCount = 6; }
   else if (round < 4) { maxVal = 20; itemCount = 7; }
@@ -143,11 +157,9 @@ function generateRound(round) {
   const target = Math.floor(Math.random() * (maxVal - minTarget)) + minTarget;
   const items  = [];
 
-  // Guarantee at least one valid pair
   const a = Math.floor(Math.random() * (target - 1)) + 1;
   items.push(a, target - a);
 
-  // Distractors (avoid accidental solutions that are trivially easy)
   let tries = 0;
   while (items.length < itemCount && tries < 200) {
     tries++;
@@ -155,12 +167,11 @@ function generateRound(round) {
     if (v !== target) items.push(v);
   }
 
-  // Shuffle
   for (let i = items.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [items[i], items[j]] = [items[j], items[i]];
   }
-  return { target, items };
+  return { prompt: "Collect exactly", target, items, hint: null };
 }
 
 // ─── State ────────────────────────────────────────────────────────────────────
@@ -372,6 +383,16 @@ class GameScene extends Phaser.Scene {
     const data = generateRound(this.round);
     this.targetValue = data.target;
     this.roundItems  = data.items;
+
+    // Show the math prompt (AI-generated or generic)
+    this.targetLbl.setText(data.prompt || 'Collect exactly');
+
+    // Update help hint if available
+    if (data.hint && this._helpHint) {
+      this._helpHint = data.hint;
+    } else if (data.hint) {
+      this._helpHint = data.hint;
+    }
 
     // Animate in target number
     this.targetNum.setText(data.target).setScale(0.4).setAlpha(0);

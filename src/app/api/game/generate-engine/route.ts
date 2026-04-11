@@ -2,10 +2,10 @@
 // Takes the design doc + mechanic ID + vibe and returns themed HTML instantly.
 
 import { hasEngine, generateWithEngine, VIBE_PALETTES } from "@/lib/game-engines"
-import type { ThemeConfig, MathParams } from "@/lib/game-engines"
+import type { ThemeConfig, MathParams, RoundData } from "@/lib/game-engines"
 import Anthropic from "@anthropic-ai/sdk"
 
-export const maxDuration = 15
+export const maxDuration = 30
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
@@ -114,11 +114,66 @@ Return JSON:
   if (sprites?.itemSprite) themeConfig.itemSprite = sprites.itemSprite
   if (sprites?.backgroundImage) themeConfig.backgroundImage = sprites.backgroundImage
 
+  // Generate math-specific round data tailored to the exact standard
+  let rounds: RoundData[] | undefined
+  try {
+    const roundResponse = await anthropic.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 800,
+      system: `You generate math game round data. Each round has a PROMPT (what the player sees), a TARGET (the correct number to collect), ITEMS (clickable numbers including the answer and distractors), and an optional HINT.
+
+CRITICAL: The math in each round must DIRECTLY test the specific standard described. Do NOT just make addition problems — make problems that test the EXACT skill.
+
+Return ONLY a JSON array of 5 rounds. No markdown, no explanation.`,
+      messages: [{
+        role: "user",
+        content: `Standard: ${standardId} — ${standardDescription}
+Grade: ${grade || "4"}
+Game mechanic: Player clicks items with numeric values to collect them. Their collected total must match the target exactly.
+Item name in game: ${themeConfig.itemName}
+
+Generate 5 rounds of increasing difficulty. Each round:
+- "prompt": A short math question/challenge that tests this SPECIFIC standard (not generic addition). Max 60 chars.
+- "target": The correct answer (a number the player must collect)
+- "items": Array of 6-8 numbers the player can click. MUST include numbers that sum to target. Include distractors.
+- "hint": One sentence hint about the math concept
+
+Examples for different standards:
+- "Understanding the equals sign": prompt "What makes 5 + ? = 12 true?", target 7, items [3,4,7,9,2,5]
+- "Area using multiplication": prompt "Area of a 6×4 rectangle?", target 24, items [24,18,10,20,12,30,6]
+- "Multiply by multiples of 10": prompt "30 × 7 = ?", target 210, items [210,180,37,200,21,170,240]
+- "Compare fractions": prompt "Which is bigger: 3/4 or 2/3? (as 12ths)", target 9, items [9,8,6,10,12,3,7]
+
+Return JSON array: [{"prompt":"...","target":N,"items":[...],"hint":"..."},...]`,
+      }],
+    })
+
+    const roundText = roundResponse.content[0].type === "text" ? roundResponse.content[0].text : ""
+    const roundCleaned = roundText.replace(/```json?\n?/g, "").replace(/```/g, "").trim()
+    const rStart = roundCleaned.indexOf("[")
+    const rEnd = roundCleaned.lastIndexOf("]")
+    if (rStart !== -1 && rEnd !== -1) {
+      const parsed = JSON.parse(roundCleaned.slice(rStart, rEnd + 1))
+      if (Array.isArray(parsed) && parsed.length >= 3) {
+        rounds = parsed.slice(0, 5).map((r: any) => ({
+          prompt: String(r.prompt || "Collect the target!"),
+          target: Number(r.target) || 10,
+          items: Array.isArray(r.items) ? r.items.map(Number).filter((n: number) => !isNaN(n)) : [1,2,3,4,5,10],
+          hint: r.hint ? String(r.hint) : undefined,
+        }))
+      }
+    }
+  } catch (err) {
+    console.warn("[generate-engine] Round generation failed, using fallback:", err)
+    // rounds stays undefined — engine will use its built-in fallback
+  }
+
   const mathParams: MathParams = {
     grade: grade || "6",
     standardId: standardId || "",
     standardDescription: standardDescription || "",
     difficulty: "medium",
+    rounds,
   }
 
   const html = generateWithEngine(mechanicId, themeConfig, mathParams)

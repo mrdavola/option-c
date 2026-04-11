@@ -1,6 +1,6 @@
 // Game engine registry — all 19 engines.
 
-import type { ThemeConfig, MathParams, GameEngine, GameVariant } from "./engine-types"
+import type { ThemeConfig, MathParams, GameEngine, GameVariant, RoundData } from "./engine-types"
 import { balanceEqualizeEngine } from "./balance-equalize"
 import { riseFallEngine } from "./rise-fall"
 import { scoreRankEngine } from "./score-rank"
@@ -62,5 +62,5 @@ export function getAvailableEngines(): string[] {
   return Object.keys(ENGINE_REGISTRY)
 }
 
-export type { ThemeConfig, MathParams, GameEngine }
+export type { ThemeConfig, MathParams, GameEngine, RoundData }
 export { VIBE_PALETTES } from "./engine-types"
