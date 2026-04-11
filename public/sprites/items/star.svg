@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- Outer glow -->
+  <circle cx="64" cy="64" r="58" fill="#f9ca24" opacity="0.1"/>
+  <circle cx="64" cy="64" r="48" fill="#f9ca24" opacity="0.12"/>
+  <!-- Star shape (5-pointed) -->
+  <path d="M64 8 L74 42 L110 42 L82 62 L92 96 L64 76 L36 96 L46 62 L18 42 L54 42 Z" fill="#f9ca24"/>
+  <!-- Star inner shading (gives 3D) -->
+  <path d="M64 8 L74 42 L110 42 L82 62 L92 96 L64 76 Z" fill="#e8b400" opacity="0.5"/>
+  <!-- Star highlight -->
+  <path d="M64 8 L72 36 L96 38 L76 52 L82 78 L64 66 Z" fill="white" opacity="0.3"/>
+  <!-- Center glow -->
+  <circle cx="64" cy="62" r="16" fill="#fff7c0" opacity="0.6"/>
+  <!-- Star point highlights -->
+  <path d="M64 10 L66 20 L70 14 Z" fill="white" opacity="0.6"/>
+  <path d="M106 42 L96 46 L108 50 Z" fill="white" opacity="0.4"/>
+  <!-- Sparkle trails around star -->
+  <circle cx="110" cy="18" r="4" fill="#f9ca24" opacity="0.7"/>
+  <circle cx="118" cy="30" r="2.5" fill="white" opacity="0.8"/>
+  <circle cx="16" cy="24" r="3" fill="#f9ca24" opacity="0.6"/>
+  <circle cx="10" cy="80" r="2" fill="white" opacity="0.7"/>
+  <circle cx="118" cy="84" r="3" fill="#f9ca24" opacity="0.6"/>
+  <circle cx="48" cy="116" r="2" fill="white" opacity="0.6"/>
+  <circle cx="80" cy="120" r="3" fill="#f9ca24" opacity="0.5"/>
+  <!-- Mini sparkle stars -->
+  <path d="M22 52 L23.5 48 L25 52 L29 53.5 L25 55 L23.5 59 L22 55 L18 53.5 Z" fill="#fff7c0" opacity="0.8"/>
+  <path d="M100 100 L101 96 L102 100 L106 101 L102 102 L101 106 L100 102 L96 101 Z" fill="#fff7c0" opacity="0.7"/>
+</svg>

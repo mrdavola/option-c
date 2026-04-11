@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- Coin shadow -->
+  <ellipse cx="64" cy="116" rx="40" ry="8" fill="#8b6914" opacity="0.3"/>
+  <!-- Coin outer ring -->
+  <circle cx="64" cy="60" r="50" fill="#b8860b"/>
+  <!-- Coin face -->
+  <circle cx="64" cy="60" r="44" fill="#f9ca24"/>
+  <!-- Coin inner ring groove -->
+  <circle cx="64" cy="60" r="38" fill="none" stroke="#e8b400" stroke-width="3"/>
+  <!-- Coin highlight (3D effect top-left) -->
+  <path d="M34 32 Q64 20 92 36 Q78 22 64 18 Q48 18 34 32 Z" fill="white" opacity="0.4"/>
+  <!-- Dollar / star symbol -->
+  <path d="M64 30 L68 46 L84 46 L71 56 L75 72 L64 62 L53 72 L57 56 L44 46 L60 46 Z" fill="#e8a000" stroke="#c88000" stroke-width="1.5"/>
+  <!-- Inner star highlight -->
+  <path d="M64 34 L67 44 L78 44 L70 51 L72 62 L64 56 L56 62 L58 51 L50 44 L61 44 Z" fill="#f9ca24" opacity="0.7"/>
+  <!-- Coin edge ridges (milled edge) -->
+  <circle cx="64" cy="60" r="50" fill="none" stroke="#b8860b" stroke-width="2" stroke-dasharray="4,4"/>
+</svg>

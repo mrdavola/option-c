@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <!-- Magic aura glow -->
+  <ellipse cx="128" cy="180" rx="70" ry="40" fill="#9b59b6" opacity="0.15"/>
+  <!-- Robe body -->
+  <path d="M84 130 L172 130 L192 256 L64 256 Z" fill="#4a0e8f"/>
+  <!-- Robe shading -->
+  <path d="M84 130 L128 130 L128 256 L64 256 Z" fill="#5a1ea0" opacity="0.5"/>
+  <!-- Robe trim -->
+  <path d="M84 130 L64 256 M172 130 L192 256" fill="none" stroke="#9b59b6" stroke-width="3"/>
+  <!-- Star pattern on robe -->
+  <path d="M100 175 L102 169 L104 175 L110 177 L104 179 L102 185 L100 179 L94 177 Z" fill="#f9ca24" opacity="0.8"/>
+  <path d="M148 195 L150 189 L152 195 L158 197 L152 199 L150 205 L148 199 L142 197 Z" fill="#f9ca24" opacity="0.7"/>
+  <path d="M114 215 L116 209 L118 215 L124 217 L118 219 L116 225 L114 219 L108 217 Z" fill="#f9ca24" opacity="0.6"/>
+  <circle cx="145" cy="165" r="3" fill="#f9ca24" opacity="0.6"/>
+  <circle cx="96" cy="210" r="2" fill="#f9ca24" opacity="0.5"/>
+  <!-- Belt with moon buckle -->
+  <rect x="84" y="180" width="88" height="14" rx="4" fill="#2c0060"/>
+  <path d="M120 183 Q128 178 136 183 Q132 194 128 194 Q124 194 120 183 Z" fill="#f9ca24"/>
+  <!-- Chest / torso area -->
+  <rect x="88" y="130" width="80" height="52" rx="6" fill="#5a1ea0"/>
+  <!-- Front clasp chain -->
+  <circle cx="128" cy="140" r="5" fill="#f9ca24"/>
+  <circle cx="128" cy="153" r="4" fill="#f9ca24"/>
+  <circle cx="128" cy="164" r="4" fill="#f9ca24"/>
+  <!-- Head -->
+  <ellipse cx="128" cy="96" rx="36" ry="40" fill="#f0c090"/>
+  <!-- Long beard -->
+  <path d="M100 120 Q94 140 96 165 Q100 185 114 192 Q128 196 142 192 Q156 185 160 165 Q162 140 156 120" fill="#e8e0d0"/>
+  <path d="M108 130 L106 170 M118 132 L116 178 M128 133 L128 180 M138 132 L140 178 M148 130 L150 170" stroke="#d0c8b8" stroke-width="2" opacity="0.6"/>
+  <!-- Eyes (wise, old) -->
+  <circle cx="114" cy="92" r="7" fill="white"/>
+  <circle cx="142" cy="92" r="7" fill="white"/>
+  <circle cx="115" cy="93" r="4" fill="#7b2d8b"/>
+  <circle cx="143" cy="93" r="4" fill="#7b2d8b"/>
+  <circle cx="116" cy="92" r="1.5" fill="white"/>
+  <circle cx="144" cy="92" r="1.5" fill="white"/>
+  <!-- Bushy eyebrows -->
+  <path d="M106 82 Q114 76 122 80" fill="none" stroke="#d0c8b8" stroke-width="4" stroke-linecap="round"/>
+  <path d="M134 80 Q142 76 150 82" fill="none" stroke="#d0c8b8" stroke-width="4" stroke-linecap="round"/>
+  <!-- Nose (aquiline) -->
+  <path d="M126 100 L124 112 L128 114" fill="none" stroke="#c09060" stroke-width="2" stroke-linecap="round"/>
+  <!-- Mustache -->
+  <path d="M110 118 Q120 112 128 115 Q136 112 146 118" fill="#e8e0d0" stroke="#d0c8b8" stroke-width="2"/>
+  <!-- Wizard hat -->
+  <path d="M80 68 L128 8 L176 68 Z" fill="#3d0080"/>
+  <!-- Hat brim -->
+  <ellipse cx="128" cy="68" rx="60" ry="14" fill="#4a0e8f"/>
+  <!-- Hat star -->
+  <path d="M128 22 L131 30 L139 30 L133 36 L135 44 L128 39 L121 44 L123 36 L117 30 L125 30 Z" fill="#f9ca24"/>
+  <!-- Hat band -->
+  <rect x="82" y="60" width="92" height="10" rx="4" fill="#2c0060"/>
+  <!-- Moon on band -->
+  <path d="M116 62 Q124 58 132 62 Q128 70 120 70 Q116 68 116 62 Z" fill="#f9ca24"/>
+  <!-- Arms / sleeves -->
+  <path d="M84 140 Q60 150 44 170 Q40 182 48 188" fill="#5a1ea0" stroke="#4a0e8f" stroke-width="2"/>
+  <ellipse cx="46" cy="192" rx="16" ry="10" fill="#f0c090"/>
+  <!-- Staff in right hand -->
+  <path d="M172 140 Q194 150 208 170 Q214 184 210 192" fill="#5a1ea0" stroke="#4a0e8f" stroke-width="2"/>
+  <!-- Staff -->
+  <rect x="204" y="130" width="8" height="120" rx="4" fill="#8b6914"/>
+  <!-- Staff orb -->
+  <circle cx="208" cy="120" r="18" fill="#9b59b6" opacity="0.8"/>
+  <circle cx="208" cy="120" r="12" fill="#c39bd3"/>
+  <circle cx="204" cy="116" r="5" fill="white" opacity="0.6"/>
+  <!-- Magic sparkles -->
+  <circle cx="52" cy="188" r="4" fill="#f9ca24" opacity="0.8"/>
+  <path d="M44 180 L46 174 L48 180 L54 182 L48 184 L46 190 L44 184 L38 182 Z" fill="#f9ca24" opacity="0.6"/>
+</svg>

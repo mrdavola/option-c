@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <!-- Sky/ocean background hint -->
+  <!-- Body -->
+  <rect x="88" y="130" width="80" height="90" rx="8" fill="#1a1a2e"/>
+  <!-- Coat flaps -->
+  <path d="M88 155 L60 220 L88 210 Z" fill="#e63946"/>
+  <path d="M168 155 L196 220 L168 210 Z" fill="#e63946"/>
+  <!-- Belt -->
+  <rect x="88" y="175" width="80" height="14" fill="#f4a261" rx="3"/>
+  <rect x="118" y="178" width="20" height="8" fill="#e9c46a" rx="2"/>
+  <!-- Shirt collar -->
+  <path d="M108 130 L128 145 L148 130" fill="none" stroke="#f1faee" stroke-width="4"/>
+  <!-- Head -->
+  <ellipse cx="128" cy="100" rx="38" ry="42" fill="#f4a261"/>
+  <!-- Eyes -->
+  <circle cx="114" cy="95" r="6" fill="white"/>
+  <circle cx="142" cy="95" r="6" fill="white"/>
+  <circle cx="116" cy="97" r="3" fill="#2b2d42"/>
+  <circle cx="144" cy="97" r="3" fill="#2b2d42"/>
+  <!-- Eye patch -->
+  <ellipse cx="114" cy="95" rx="9" ry="7" fill="#2b2d42"/>
+  <line x1="105" y1="90" x2="90" y2="84" stroke="#2b2d42" stroke-width="3"/>
+  <line x1="123" y1="90" x2="138" y2="84" stroke="#2b2d42" stroke-width="3"/>
+  <!-- Nose -->
+  <path d="M124 105 Q128 110 132 105" fill="none" stroke="#c68642" stroke-width="2"/>
+  <!-- Smile -->
+  <path d="M112 118 Q128 128 144 118" fill="none" stroke="#c68642" stroke-width="2.5"/>
+  <!-- Beard -->
+  <path d="M100 118 Q106 138 118 140 Q128 143 138 140 Q150 138 156 118" fill="#3d2b1f"/>
+  <line x1="118" y1="130" x2="115" y2="148" stroke="#3d2b1f" stroke-width="3"/>
+  <line x1="128" y1="132" x2="128" y2="150" stroke="#3d2b1f" stroke-width="3"/>
+  <line x1="138" y1="130" x2="141" y2="148" stroke="#3d2b1f" stroke-width="3"/>
+  <!-- Hat brim -->
+  <rect x="86" y="62" width="84" height="10" rx="3" fill="#2b2d42"/>
+  <!-- Hat body -->
+  <rect x="96" y="22" width="64" height="42" rx="4" fill="#2b2d42"/>
+  <!-- Skull & crossbones on hat -->
+  <circle cx="128" cy="40" r="10" fill="white"/>
+  <circle cx="124" cy="38" r="2" fill="#2b2d42"/>
+  <circle cx="132" cy="38" r="2" fill="#2b2d42"/>
+  <path d="M120 46 Q128 50 136 46" fill="none" stroke="#2b2d42" stroke-width="1.5"/>
+  <line x1="116" y1="50" x2="140" y2="54" stroke="white" stroke-width="3"/>
+  <line x1="140" y1="50" x2="116" y2="54" stroke="white" stroke-width="3"/>
+  <!-- Arms -->
+  <rect x="56" y="140" width="32" height="14" rx="7" fill="#1a1a2e" transform="rotate(-30,72,147)"/>
+  <rect x="168" y="140" width="32" height="14" rx="7" fill="#1a1a2e" transform="rotate(30,184,147)"/>
+  <!-- Hook hand -->
+  <path d="M44 162 Q36 162 34 170 Q32 178 40 180" fill="none" stroke="#c0c0c0" stroke-width="5" stroke-linecap="round"/>
+  <!-- Sword -->
+  <line x1="194" y1="155" x2="218" y2="200" stroke="#c0c0c0" stroke-width="4"/>
+  <rect x="188" y="155" width="12" height="5" rx="2" fill="#e9c46a"/>
+  <!-- Legs -->
+  <rect x="96" y="215" width="24" height="36" rx="6" fill="#1a1a2e"/>
+  <rect x="136" y="215" width="24" height="36" rx="6" fill="#1a1a2e"/>
+  <!-- Boots -->
+  <ellipse cx="108" cy="251" rx="16" ry="8" fill="#3d2b1f"/>
+  <ellipse cx="148" cy="251" rx="16" ry="8" fill="#3d2b1f"/>
+</svg>

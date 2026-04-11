@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- Shadow -->
+  <ellipse cx="64" cy="120" rx="28" ry="6" fill="#6a0dad" opacity="0.3"/>
+  <!-- Bottle neck -->
+  <rect x="52" y="18" width="24" height="30" rx="6" fill="#8b8b8b"/>
+  <!-- Cork -->
+  <rect x="54" y="12" width="20" height="12" rx="4" fill="#8b6914"/>
+  <rect x="57" y="10" width="14" height="6" rx="3" fill="#a07820"/>
+  <!-- Bottle body -->
+  <path d="M42 46 Q24 64 24 88 Q24 114 64 114 Q104 114 104 88 Q104 64 86 46 Z" fill="#9b59b6" opacity="0.85"/>
+  <!-- Bottle glass highlight (left) -->
+  <path d="M42 50 Q28 68 28 90 Q32 82 38 74 Q44 66 46 54 Z" fill="white" opacity="0.3"/>
+  <!-- Liquid surface -->
+  <ellipse cx="64" cy="72" rx="34" ry="10" fill="#8e44ad"/>
+  <!-- Liquid body -->
+  <path d="M30 72 Q24 88 24 96 Q24 114 64 114 Q104 114 104 96 Q104 88 98 72 Z" fill="#8e44ad"/>
+  <!-- Bubbles in potion -->
+  <circle cx="48" cy="90" r="5" fill="#c39bd3" opacity="0.7"/>
+  <circle cx="72" cy="96" r="4" fill="#c39bd3" opacity="0.6"/>
+  <circle cx="58" cy="104" r="6" fill="#d7bde2" opacity="0.5"/>
+  <circle cx="84" cy="88" r="3" fill="#c39bd3" opacity="0.7"/>
+  <!-- Sparkles/stars in potion -->
+  <path d="M52 82 L53 78 L54 82 L58 83 L54 84 L53 88 L52 84 L48 83 Z" fill="#f9ca24" opacity="0.8"/>
+  <path d="M74 92 L75 88 L76 92 L80 93 L76 94 L75 98 L74 94 L70 93 Z" fill="#f9ca24" opacity="0.7"/>
+  <!-- Glow effect at bottom -->
+  <ellipse cx="64" cy="106" rx="30" ry="8" fill="#c39bd3" opacity="0.3"/>
+  <!-- Label on bottle -->
+  <rect x="36" y="56" width="56" height="36" rx="6" fill="#e8d5f5" opacity="0.8"/>
+  <!-- Skull on label -->
+  <circle cx="64" cy="66" r="9" fill="#4a0e8f"/>
+  <circle cx="60" cy="64" r="2.5" fill="white"/>
+  <circle cx="68" cy="64" r="2.5" fill="white"/>
+  <path d="M58 70 L60 68 L64 70 L68 68 L70 70" fill="none" stroke="white" stroke-width="1.5"/>
+  <rect x="61" y="70" width="3" height="4" rx="1" fill="white"/>
+  <rect x="64" y="70" width="3" height="4" rx="1" fill="white"/>
+  <!-- Label text lines -->
+  <rect x="44" y="78" width="40" height="4" rx="2" fill="#9b59b6" opacity="0.6"/>
+  <rect x="48" y="84" width="32" height="3" rx="2" fill="#9b59b6" opacity="0.5"/>
+  <!-- Neck ring detail -->
+  <rect x="50" y="44" width="28" height="6" rx="3" fill="#7a7a7a"/>
+  <!-- Steam/smoke from cork -->
+  <path d="M64 8 Q60 2 64 -2 Q68 -4 66 2" fill="none" stroke="#c39bd3" stroke-width="2" opacity="0.5" stroke-linecap="round"/>
+</svg>

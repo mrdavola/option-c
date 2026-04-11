@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <defs>
+    <linearGradient id="arcticsky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a1a3e;stop-opacity:1"/>
+      <stop offset="40%" style="stop-color:#1a3a6e;stop-opacity:1"/>
+      <stop offset="70%" style="stop-color:#2a5a8e;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#b0d4f0;stop-opacity:1"/>
+    </linearGradient>
+    <linearGradient id="icefloor" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#d0ecff;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#a0c8f0;stop-opacity:1"/>
+    </linearGradient>
+    <linearGradient id="aurora1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#00ff88;stop-opacity:0"/>
+      <stop offset="30%" style="stop-color:#00ff88;stop-opacity:0.4"/>
+      <stop offset="60%" style="stop-color:#00f5ff;stop-opacity:0.3"/>
+      <stop offset="100%" style="stop-color:#9b59b6;stop-opacity:0"/>
+    </linearGradient>
+    <linearGradient id="aurora2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#9b59b6;stop-opacity:0"/>
+      <stop offset="40%" style="stop-color:#9b59b6;stop-opacity:0.35"/>
+      <stop offset="70%" style="stop-color:#00ff88;stop-opacity:0.3"/>
+      <stop offset="100%" style="stop-color:#00ff88;stop-opacity:0"/>
+    </linearGradient>
+  </defs>
+  <!-- Sky -->
+  <rect width="800" height="600" fill="url(#arcticsky)"/>
+  <!-- Northern Lights (Aurora Borealis) -->
+  <path d="M-50 120 Q200 80 400 100 Q600 120 850 90 Q600 160 400 145 Q200 165 -50 140 Z" fill="url(#aurora1)" opacity="0.7"/>
+  <path d="M-50 160 Q200 130 400 150 Q600 170 850 140 Q600 210 400 195 Q200 215 -50 185 Z" fill="url(#aurora2)" opacity="0.6"/>
+  <path d="M-50 200 Q200 175 400 190 Q600 205 850 180 Q600 255 400 238 Q200 252 -50 230 Z" fill="url(#aurora1)" opacity="0.5"/>
+  <!-- Aurora vertical streaks -->
+  <path d="M150 80 Q140 140 145 200 Q150 250 142 300" fill="none" stroke="#00ff88" stroke-width="3" opacity="0.3"/>
+  <path d="M300 70 Q295 140 300 210 Q302 260 298 320" fill="none" stroke="#00f5ff" stroke-width="2.5" opacity="0.25"/>
+  <path d="M500 75 Q505 145 498 215 Q495 265 502 330" fill="none" stroke="#9b59b6" stroke-width="3" opacity="0.3"/>
+  <path d="M650 85 Q660 155 655 225 Q650 275 658 335" fill="none" stroke="#00ff88" stroke-width="2" opacity="0.25"/>
+  <!-- Stars -->
+  <circle cx="60" cy="40" r="2" fill="white" opacity="0.8"/>
+  <circle cx="140" cy="20" r="1.5" fill="white" opacity="0.7"/>
+  <circle cx="220" cy="50" r="1" fill="white" opacity="0.6"/>
+  <circle cx="320" cy="30" r="2" fill="white" opacity="0.8"/>
+  <circle cx="420" cy="15" r="1.5" fill="white" opacity="0.7"/>
+  <circle cx="520" cy="45" r="1" fill="white" opacity="0.6"/>
+  <circle cx="620" cy="25" r="2" fill="white" opacity="0.8"/>
+  <circle cx="720" cy="50" r="1.5" fill="white" opacity="0.7"/>
+  <circle cx="780" cy="30" r="1" fill="white" opacity="0.6"/>
+  <!-- Distant icebergs / mountains -->
+  <path d="M0 350 Q80 280 160 320 Q200 260 240 300 Q280 240 320 290 Q400 230 460 280 Q510 250 560 290 Q610 240 660 285 Q720 255 800 300 L800 600 L0 600 Z" fill="#8ab8d8" opacity="0.8"/>
+  <!-- Middle ice sheet -->
+  <path d="M0 400 Q100 380 200 395 Q300 408 400 392 Q500 378 600 394 Q700 408 800 390 L800 600 L0 600 Z" fill="#b8d8f0"/>
+  <!-- Ice floor -->
+  <rect x="0" y="480" width="800" height="120" fill="url(#icefloor)"/>
+  <!-- Ice cracks on floor -->
+  <path d="M100 490 Q130 510 160 500 Q185 515 200 505" fill="none" stroke="#90b8d8" stroke-width="2" opacity="0.6"/>
+  <path d="M350 500 Q380 488 420 498 Q450 508 470 496" fill="none" stroke="#90b8d8" stroke-width="1.5" opacity="0.5"/>
+  <path d="M580 495 Q620 508 660 498 Q690 510 710 502" fill="none" stroke="#90b8d8" stroke-width="2" opacity="0.6"/>
+  <!-- Snow-capped peaks -->
+  <!-- Main iceberg left -->
+  <polygon points="80,380 140,280 200,380" fill="#c8e4f8"/>
+  <polygon points="100,380 140,285 175,380" fill="#d8eeff" opacity="0.6"/>
+  <polygon points="80,380 140,355 200,380" fill="#a0c0e0"/>
+  <!-- Snow cap -->
+  <polygon points="120,305 140,280 160,305 148,302 140,294 132,302" fill="white"/>
+  <!-- Right iceberg -->
+  <polygon points="580,370 660,250 740,370" fill="#c8e4f8"/>
+  <polygon points="600,370 660,256 720,370" fill="#d8eeff" opacity="0.6"/>
+  <polygon points="580,370 660,340 740,370" fill="#a0c0e0"/>
+  <polygon points="640,272 660,250 680,272 668,268 660,258 652,268" fill="white"/>
+  <!-- Small iceberg center-right -->
+  <polygon points="460,400 500,340 540,400" fill="#b8d4f0"/>
+  <polygon points="478,400 500,344 522,400" fill="#d0e8ff" opacity="0.5"/>
+  <polygon points="490,356 500,340 510,356 505,353 500,346 495,353" fill="white"/>
+  <!-- Snowflakes -->
+  <g opacity="0.7">
+    <line x1="220" y1="180" x2="220" y2="196" stroke="white" stroke-width="1.5"/>
+    <line x1="212" y1="188" x2="228" y2="188" stroke="white" stroke-width="1.5"/>
+    <line x1="214" y1="182" x2="226" y2="194" stroke="white" stroke-width="1"/>
+    <line x1="226" y1="182" x2="214" y2="194" stroke="white" stroke-width="1"/>
+  </g>
+  <g opacity="0.6">
+    <line x1="560" y1="210" x2="560" y2="224" stroke="white" stroke-width="1.5"/>
+    <line x1="553" y1="217" x2="567" y2="217" stroke="white" stroke-width="1.5"/>
+    <line x1="555" y1="212" x2="565" y2="222" stroke="white" stroke-width="1"/>
+    <line x1="565" y1="212" x2="555" y2="222" stroke="white" stroke-width="1"/>
+  </g>
+  <g opacity="0.5">
+    <line x1="380" y1="240" x2="380" y2="252" stroke="white" stroke-width="1.5"/>
+    <line x1="374" y1="246" x2="386" y2="246" stroke="white" stroke-width="1.5"/>
+    <line x1="375" y1="241" x2="385" y2="251" stroke="white" stroke-width="1"/>
+    <line x1="385" y1="241" x2="375" y2="251" stroke="white" stroke-width="1"/>
+  </g>
+  <!-- Polar bear silhouette -->
+  <ellipse cx="320" cy="488" rx="45" ry="22" fill="#f0f0ff"/>
+  <ellipse cx="366" cy="490" rx="22" ry="16" fill="#f0f0ff"/>
+  <circle cx="382" cy="482" r="14" fill="#f0f0ff"/>
+  <ellipse cx="390" cy="480" rx="8" ry="5" fill="#f0f0ff"/>
+  <circle cx="394" cy="478" r="3" fill="#2b2d42" opacity="0.8"/>
+  <!-- Bear ears -->
+  <circle cx="382" cy="470" r="5" fill="#f0f0ff"/>
+  <circle cx="394" cy="471" r="5" fill="#f0f0ff"/>
+  <!-- Bear legs -->
+  <ellipse cx="305" cy="506" rx="10" ry="14" fill="#e8e8ff"/>
+  <ellipse cx="327" cy="507" rx="10" ry="14" fill="#e8e8ff"/>
+  <ellipse cx="348" cy="506" rx="10" ry="14" fill="#e8e8ff"/>
+  <!-- Penguin -->
+  <ellipse cx="580" cy="496" rx="16" ry="22" fill="#2b2d42"/>
+  <ellipse cx="580" cy="502" rx="10" ry="14" fill="white"/>
+  <circle cx="580" cy="480" r="12" fill="#2b2d42"/>
+  <ellipse cx="572" cy="497" rx="7" ry="14" fill="#2b2d42" transform="rotate(-20,572,497)"/>
+  <ellipse cx="588" cy="497" rx="7" ry="14" fill="#2b2d42" transform="rotate(20,588,497)"/>
+  <ellipse cx="580" cy="484" rx="5" ry="3" fill="#f9ca24"/>
+  <!-- Ice reflection glow -->
+  <ellipse cx="400" cy="560" rx="300" ry="30" fill="#00f5ff" opacity="0.06"/>
+</svg>

@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- Shadow -->
+  <ellipse cx="64" cy="120" rx="32" ry="7" fill="#2d5a1b" opacity="0.3"/>
+  <!-- Stem -->
+  <path d="M46 88 Q44 118 50 120 L78 120 Q84 118 82 88 Z" fill="#f5e6c8"/>
+  <!-- Stem shading -->
+  <path d="M46 88 Q44 118 50 120 L58 120 L56 88 Z" fill="#e8d0a8" opacity="0.5"/>
+  <!-- Stem stripes -->
+  <path d="M47 96 Q64 92 81 96" fill="none" stroke="#e0c890" stroke-width="2"/>
+  <path d="M46 104 Q64 100 82 104" fill="none" stroke="#e0c890" stroke-width="2"/>
+  <path d="M46 112 Q64 108 82 112" fill="none" stroke="#e0c890" stroke-width="2"/>
+  <!-- Cap / pileus -->
+  <path d="M10 86 Q10 50 38 34 Q50 26 64 24 Q78 26 90 34 Q118 50 118 86 Z" fill="#e63946"/>
+  <!-- Cap left half shading -->
+  <path d="M10 86 Q10 50 38 34 Q50 26 64 24 L64 86 Z" fill="#c82030" opacity="0.4"/>
+  <!-- Cap highlight (morning dew) -->
+  <ellipse cx="44" cy="50" rx="14" ry="20" fill="white" opacity="0.25" transform="rotate(-20,44,50)"/>
+  <!-- White spots (classic mushroom polka dots) -->
+  <circle cx="64" cy="46" r="12" fill="white" opacity="0.9"/>
+  <circle cx="38" cy="66" r="10" fill="white" opacity="0.85"/>
+  <circle cx="90" cy="66" r="10" fill="white" opacity="0.85"/>
+  <circle cx="52" cy="80" r="7" fill="white" opacity="0.8"/>
+  <circle cx="76" cy="80" r="7" fill="white" opacity="0.8"/>
+  <circle cx="30" cy="50" r="7" fill="white" opacity="0.7"/>
+  <circle cx="98" cy="50" r="7" fill="white" opacity="0.7"/>
+  <!-- Cap rim/skirt -->
+  <path d="M10 86 Q64 100 118 86" fill="none" stroke="#c82030" stroke-width="4"/>
+  <path d="M14 86 Q64 96 114 86 Q106 92 64 94 Q22 92 14 86 Z" fill="#f5e6c8" opacity="0.7"/>
+  <!-- Gills underneath rim -->
+  <line x1="24" y1="88" x2="26" y2="94" stroke="#e0c890" stroke-width="2" opacity="0.6"/>
+  <line x1="36" y1="90" x2="38" y2="96" stroke="#e0c890" stroke-width="2" opacity="0.6"/>
+  <line x1="48" y1="92" x2="50" y2="96" stroke="#e0c890" stroke-width="2" opacity="0.6"/>
+  <line x1="80" y1="92" x2="78" y2="96" stroke="#e0c890" stroke-width="2" opacity="0.6"/>
+  <line x1="92" y1="90" x2="90" y2="96" stroke="#e0c890" stroke-width="2" opacity="0.6"/>
+  <line x1="104" y1="88" x2="102" y2="94" stroke="#e0c890" stroke-width="2" opacity="0.6"/>
+</svg>

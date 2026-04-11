@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <!-- Deep ocean gradient background -->
+  <defs>
+    <linearGradient id="ocean" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#005f8a;stop-opacity:1"/>
+      <stop offset="50%" style="stop-color:#003a5c;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#001528;stop-opacity:1"/>
+    </linearGradient>
+    <linearGradient id="lightray" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#7ec8e3;stop-opacity:0.15"/>
+      <stop offset="100%" style="stop-color:#7ec8e3;stop-opacity:0"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#ocean)"/>
+  <!-- Light rays from surface -->
+  <polygon points="200,0 230,0 320,400 270,400" fill="url(#lightray)"/>
+  <polygon points="350,0 380,0 440,400 410,400" fill="url(#lightray)"/>
+  <polygon points="500,0 520,0 580,350 555,350" fill="url(#lightray)"/>
+  <polygon points="650,0 670,0 710,300 695,300" fill="url(#lightray)"/>
+  <!-- Background coral reef (far) -->
+  <!-- Far coral shapes -->
+  <ellipse cx="80" cy="580" rx="40" ry="80" fill="#1a4060" opacity="0.6"/>
+  <ellipse cx="120" cy="570" rx="30" ry="60" fill="#1a4060" opacity="0.5"/>
+  <ellipse cx="700" cy="575" rx="50" ry="70" fill="#1a4060" opacity="0.6"/>
+  <ellipse cx="740" cy="580" rx="35" ry="55" fill="#1a4060" opacity="0.5"/>
+  <!-- Midground - seaweed -->
+  <path d="M140 600 Q130 560 145 530 Q155 510 140 490 Q130 470 145 450 Q158 430 145 410" fill="none" stroke="#2d8a4a" stroke-width="10" stroke-linecap="round"/>
+  <path d="M160 600 Q175 565 162 540 Q150 515 165 490 Q178 465 164 440" fill="none" stroke="#3daa5a" stroke-width="8" stroke-linecap="round"/>
+  <path d="M620 600 Q610 550 625 520 Q638 495 624 465 Q612 440 626 415" fill="none" stroke="#2d8a4a" stroke-width="10" stroke-linecap="round"/>
+  <path d="M660 600 Q674 560 662 530 Q650 502 665 475" fill="none" stroke="#3daa5a" stroke-width="8" stroke-linecap="round"/>
+  <!-- Seaweed fronds -->
+  <path d="M145 530 Q125 520 118 505" fill="none" stroke="#2d8a4a" stroke-width="5" stroke-linecap="round"/>
+  <path d="M145 490 Q168 478 172 462" fill="none" stroke="#2d8a4a" stroke-width="5" stroke-linecap="round"/>
+  <path d="M625 520 Q606 510 600 495" fill="none" stroke="#2d8a4a" stroke-width="5" stroke-linecap="round"/>
+  <!-- Coral structures -->
+  <!-- Red coral tree left -->
+  <line x1="250" y1="600" x2="250" y2="480" stroke="#e63946" stroke-width="12" stroke-linecap="round"/>
+  <line x1="250" y1="560" x2="220" y2="520" stroke="#e63946" stroke-width="8" stroke-linecap="round"/>
+  <line x1="250" y1="540" x2="280" y2="500" stroke="#e63946" stroke-width="8" stroke-linecap="round"/>
+  <line x1="250" y1="520" x2="225" y2="490" stroke="#e63946" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="250" cy="480" r="12" fill="#e63946"/>
+  <circle cx="220" cy="520" r="9" fill="#e63946"/>
+  <circle cx="280" cy="500" r="9" fill="#e63946"/>
+  <circle cx="225" cy="490" r="7" fill="#c82030"/>
+  <!-- Brain coral right -->
+  <circle cx="550" cy="570" r="60" fill="#ff9f43"/>
+  <path d="M500 565 Q515 555 530 565 Q545 555 560 565 Q575 555 590 565 Q600 555 610 565" fill="none" stroke="#e08020" stroke-width="3"/>
+  <path d="M498 578 Q513 568 528 578 Q543 568 558 578 Q573 568 588 578 Q598 568 608 578" fill="none" stroke="#e08020" stroke-width="3"/>
+  <!-- Tube sponges -->
+  <rect x="700" y="530" width="18" height="70" rx="9" fill="#9b59b6"/>
+  <ellipse cx="709" cy="530" rx="9" ry="5" fill="#7b3996"/>
+  <rect x="720" y="545" width="14" height="55" rx="7" fill="#8e44ad"/>
+  <ellipse cx="727" cy="545" rx="7" ry="4" fill="#6b2d8b"/>
+  <rect x="735" y="555" width="16" height="45" rx="8" fill="#9b59b6"/>
+  <!-- Fish swimming -->
+  <!-- Fish 1 (clownfish) -->
+  <ellipse cx="400" cy="250" rx="35" ry="20" fill="#e67e22"/>
+  <path d="M434 250 L450 230 L458 250 L450 270 Z" fill="#e67e22"/>
+  <line x1="405" y1="232" x2="405" y2="268" stroke="white" stroke-width="4"/>
+  <line x1="420" y1="232" x2="420" y2="268" stroke="white" stroke-width="4"/>
+  <circle cx="372" cy="246" r="5" fill="white"/>
+  <circle cx="373" cy="247" r="3" fill="#2b2d42"/>
+  <!-- Fish 2 (blue tang) -->
+  <ellipse cx="300" cy="350" rx="28" ry="16" fill="#4d96ff"/>
+  <path d="M327 350 L342 333 L348 350 L342 367 Z" fill="#4d96ff"/>
+  <ellipse cx="284" cy="348" rx="5" ry="5" fill="white"/>
+  <ellipse cx="285" cy="349" rx="3" ry="3" fill="#1a1a4e"/>
+  <line x1="300" y1="334" x2="300" y2="366" stroke="#f9ca24" stroke-width="3"/>
+  <!-- Jellyfish -->
+  <path d="M580 200 Q560 180 580 160 Q600 140 620 160 Q640 180 620 200 Z" fill="#c39bd3" opacity="0.7"/>
+  <line x1="570" y1="200" x2="562" y2="250" stroke="#c39bd3" stroke-width="2" opacity="0.5"/>
+  <line x1="580" y1="202" x2="576" y2="260" stroke="#c39bd3" stroke-width="2" opacity="0.5"/>
+  <line x1="595" y1="202" x2="594" y2="258" stroke="#c39bd3" stroke-width="2" opacity="0.5"/>
+  <line x1="610" y1="200" x2="614" y2="248" stroke="#c39bd3" stroke-width="2" opacity="0.5"/>
+  <!-- Bubbles -->
+  <circle cx="200" cy="300" r="8" fill="none" stroke="#7ec8e3" stroke-width="2" opacity="0.6"/>
+  <circle cx="210" cy="270" r="5" fill="none" stroke="#7ec8e3" stroke-width="1.5" opacity="0.5"/>
+  <circle cx="195" cy="245" r="7" fill="none" stroke="#7ec8e3" stroke-width="2" opacity="0.4"/>
+  <circle cx="440" cy="380" r="6" fill="none" stroke="#7ec8e3" stroke-width="2" opacity="0.5"/>
+  <circle cx="432" cy="355" r="4" fill="none" stroke="#7ec8e3" stroke-width="1.5" opacity="0.4"/>
+  <!-- Sandy bottom -->
+  <path d="M0 560 Q100 550 200 558 Q300 566 400 555 Q500 544 600 556 Q700 568 800 560 L800 600 L0 600 Z" fill="#c09060"/>
+  <!-- Pebbles on sand -->
+  <ellipse cx="80" cy="590" rx="15" ry="8" fill="#a07848"/>
+  <ellipse cx="350" cy="585" rx="20" ry="10" fill="#b08858"/>
+  <ellipse cx="650" cy="588" rx="18" ry="9" fill="#a07848"/>
+</svg>

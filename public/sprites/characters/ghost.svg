@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <!-- Ghost glow aura -->
+  <ellipse cx="128" cy="130" rx="80" ry="90" fill="#7ec8e3" opacity="0.15"/>
+  <!-- Ghost body -->
+  <path d="M60 110 Q58 80 70 62 Q82 40 104 30 Q116 24 128 24 Q140 24 152 30 Q174 40 186 62 Q198 80 196 110 L196 200 Q180 188 166 200 Q152 212 140 200 Q128 188 116 200 Q104 212 90 200 Q76 188 60 200 Z" fill="#c8e6f0"/>
+  <!-- Ghost shading -->
+  <path d="M60 110 Q58 80 70 62 Q82 40 104 30 Q116 24 128 24 L128 210 Q116 198 104 210 Q90 222 76 210 Q68 204 60 200 Z" fill="#d8eef8" opacity="0.5"/>
+  <!-- Glow effect on body -->
+  <path d="M72 100 Q72 70 82 52 Q94 36 128 30 Q120 40 115 60 Q110 80 110 105 Z" fill="white" opacity="0.3"/>
+  <!-- Eyes -->
+  <ellipse cx="104" cy="108" rx="18" ry="20" fill="#1a1a4e"/>
+  <ellipse cx="152" cy="108" rx="18" ry="20" fill="#1a1a4e"/>
+  <!-- Eye shine -->
+  <circle cx="110" cy="102" r="6" fill="white"/>
+  <circle cx="158" cy="102" r="6" fill="white"/>
+  <circle cx="114" cy="105" r="2.5" fill="#7ec8e3"/>
+  <circle cx="162" cy="105" r="2.5" fill="#7ec8e3"/>
+  <!-- Spooky mouth -->
+  <path d="M104 135 Q114 145 128 138 Q142 145 152 135" fill="#1a1a4e"/>
+  <path d="M108 135 L112 142 L120 136 L128 143 L136 136 L144 142 L148 135" fill="#1a1a4e"/>
+  <!-- Cheek blush (cute) -->
+  <circle cx="90" cy="125" r="12" fill="#b0d8f0" opacity="0.6"/>
+  <circle cx="166" cy="125" r="12" fill="#b0d8f0" opacity="0.6"/>
+  <!-- Floating wisps -->
+  <path d="M58 158 Q44 150 38 160 Q44 170 58 164" fill="#c8e6f0" opacity="0.7"/>
+  <path d="M198 158 Q212 150 218 160 Q212 170 198 164" fill="#c8e6f0" opacity="0.7"/>
+  <!-- Chain (being haunted accessory) -->
+  <circle cx="128" cy="60" r="5" fill="#c0c0c0" opacity="0.6"/>
+  <circle cx="140" cy="62" r="5" fill="#c0c0c0" opacity="0.6"/>
+  <circle cx="120" cy="62" r="5" fill="#c0c0c0" opacity="0.6"/>
+  <!-- Star sparkles around ghost -->
+  <path d="M42 80 L44 74 L46 80 L52 82 L46 84 L44 90 L42 84 L36 82 Z" fill="#7ec8e3" opacity="0.6"/>
+  <path d="M204 90 L206 84 L208 90 L214 92 L208 94 L206 100 L204 94 L198 92 Z" fill="#7ec8e3" opacity="0.6"/>
+  <path d="M80 240 L82 234 L84 240 L90 242 L84 244 L82 250 L80 244 L74 242 Z" fill="#7ec8e3" opacity="0.5"/>
+  <!-- Wavy bottom -->
+  <path d="M60 190 Q70 180 80 190 Q90 200 100 190 Q110 180 120 190 Q130 200 140 190 Q150 180 160 190 Q170 200 180 190 Q190 180 196 190" fill="none" stroke="#a8d8ec" stroke-width="3"/>
+</svg>

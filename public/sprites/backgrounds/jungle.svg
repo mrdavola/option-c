@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <defs>
+    <linearGradient id="junglesky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#004d1a;stop-opacity:1"/>
+      <stop offset="40%" style="stop-color:#1a6e2a;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#2d8a3a;stop-opacity:1"/>
+    </linearGradient>
+    <linearGradient id="junglefloor" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a3a08;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#0a1a04;stop-opacity:1"/>
+    </linearGradient>
+    <radialGradient id="sunlight" cx="60%" cy="20%" r="30%">
+      <stop offset="0%" style="stop-color:#f9ca24;stop-opacity:0.3"/>
+      <stop offset="100%" style="stop-color:#f9ca24;stop-opacity:0"/>
+    </radialGradient>
+  </defs>
+  <!-- Dense canopy sky -->
+  <rect width="800" height="600" fill="url(#junglesky)"/>
+  <!-- Sunlight filtering through -->
+  <ellipse cx="480" cy="120" rx="300" ry="250" fill="url(#sunlight)"/>
+  <!-- Light shafts through canopy -->
+  <polygon points="380,0 390,0 440,300 430,300" fill="#f9ca24" opacity="0.06"/>
+  <polygon points="480,0 490,0 520,250 510,250" fill="#f9ca24" opacity="0.05"/>
+  <polygon points="200,0 210,0 260,280 250,280" fill="#f9ca24" opacity="0.04"/>
+  <!-- Background jungle (darkest layer) -->
+  <!-- Dense back trees -->
+  <rect x="0" y="100" width="80" height="500" fill="#003a0a"/>
+  <rect x="720" y="120" width="80" height="480" fill="#003a0a"/>
+  <ellipse cx="40" cy="100" rx="80" ry="100" fill="#004d12"/>
+  <ellipse cx="760" cy="120" rx="80" ry="95" fill="#004d12"/>
+  <!-- Canopy layer (top) -->
+  <path d="M0 0 Q40 -20 80 10 Q120 -10 160 15 Q200 -5 240 20 Q280 0 320 18 Q360 -8 400 12 Q440 -5 480 16 Q520 0 560 14 Q600 -8 640 10 Q680 -5 720 12 Q760 0 800 15 L800 180 L0 180 Z" fill="#004d12"/>
+  <path d="M0 40 Q50 15 100 45 Q150 20 200 48 Q250 22 300 50 Q350 18 400 46 Q450 20 500 48 Q550 16 600 44 Q650 18 700 46 Q750 20 800 44 L800 200 L0 200 Z" fill="#1a6e2a"/>
+  <path d="M0 80 Q60 55 120 82 Q180 55 240 84 Q300 55 360 82 Q420 52 480 80 Q540 52 600 80 Q660 52 720 80 Q760 58 800 78 L800 220 L0 220 Z" fill="#236a1e"/>
+  <!-- Individual large tropical leaves (canopy) -->
+  <path d="M-20 100 Q30 60 80 90 Q50 110 20 120 Z" fill="#1a6e2a"/>
+  <path d="M80 50 Q130 20 180 55 Q150 70 110 78 Z" fill="#2d8a3a"/>
+  <path d="M300 30 Q360 0 400 40 Q370 55 330 62 Z" fill="#1a6e2a"/>
+  <path d="M500 20 Q560 -5 600 35 Q568 48 530 55 Z" fill="#2d8a3a"/>
+  <path d="M700 40 Q750 10 800 50 Q768 65 728 70 Z" fill="#1a6e2a"/>
+  <!-- Big jungle trees (trunks) -->
+  <!-- Left massive tree -->
+  <rect x="50" y="150" width="80" height="450" rx="10" fill="#2d1a08"/>
+  <path d="M60 200 Q70 225 60 250 Q70 275 60 300" fill="none" stroke="#3d2a18" stroke-width="4" opacity="0.6"/>
+  <path d="M110 210 Q100 238 110 268" fill="none" stroke="#3d2a18" stroke-width="3" opacity="0.5"/>
+  <!-- Left tree canopy (sprawling) -->
+  <ellipse cx="90" cy="155" rx="120" ry="70" fill="#1a4a0a"/>
+  <ellipse cx="60" cy="120" rx="90" ry="60" fill="#1e5a0e"/>
+  <ellipse cx="120" cy="100" rx="100" ry="58" fill="#236a12"/>
+  <ellipse cx="75" cy="75" rx="80" ry="52" fill="#2d8a1b"/>
+  <!-- Right massive tree -->
+  <rect x="670" y="150" width="80" height="450" rx="10" fill="#2d1a08"/>
+  <ellipse cx="710" cy="155" rx="120" ry="70" fill="#1a4a0a"/>
+  <ellipse cx="740" cy="120" rx="90" ry="60" fill="#1e5a0e"/>
+  <ellipse cx="690" cy="100" rx="100" ry="58" fill="#236a12"/>
+  <ellipse cx="725" cy="75" rx="80" ry="52" fill="#2d8a1b"/>
+  <!-- Medium tree left-center -->
+  <rect x="200" y="200" width="50" height="400" rx="6" fill="#3d2a18"/>
+  <ellipse cx="225" cy="200" rx="80" ry="55" fill="#1e5a0e"/>
+  <ellipse cx="210" cy="168" rx="65" ry="44" fill="#236a12"/>
+  <!-- Vines hanging from canopy -->
+  <path d="M130 180 Q138 260 128 340 Q135 420 126 500" fill="none" stroke="#3d6a1b" stroke-width="4" stroke-linecap="round"/>
+  <path d="M160 190 Q154 270 162 350" fill="none" stroke="#3d6a1b" stroke-width="3" stroke-linecap="round"/>
+  <path d="M660 185 Q670 270 658 355 Q665 435 655 515" fill="none" stroke="#3d6a1b" stroke-width="4" stroke-linecap="round"/>
+  <path d="M340 180 Q352 260 342 340" fill="none" stroke="#2d5a10" stroke-width="3" stroke-linecap="round"/>
+  <path d="M500 185 Q512 265 504 345" fill="none" stroke="#2d5a10" stroke-width="3" stroke-linecap="round"/>
+  <!-- Vine leaves -->
+  <ellipse cx="138" cy="280" rx="20" ry="12" fill="#2d8a1b" transform="rotate(-30,138,280)"/>
+  <ellipse cx="126" cy="380" rx="18" ry="10" fill="#3daa2b" transform="rotate(20,126,380)"/>
+  <ellipse cx="658" cy="310" rx="20" ry="12" fill="#2d8a1b" transform="rotate(30,658,310)"/>
+  <!-- Giant tropical leaves (foreground) -->
+  <path d="M0 350 Q60 290 100 340 Q80 380 40 400 Z" fill="#2d8a1b"/>
+  <path d="M0 420 Q50 370 90 410 Q70 450 30 465 Z" fill="#3daa2b"/>
+  <path d="M720 370 Q760 310 800 350 L800 420 Q770 420 740 390 Z" fill="#2d8a1b"/>
+  <path d="M710 450 Q750 400 800 430 L800 490 Q770 490 730 465 Z" fill="#3daa2b"/>
+  <!-- Large palm leaves center -->
+  <path d="M400 300 Q340 240 300 260 Q320 300 360 310 Z" fill="#2d8a1b"/>
+  <path d="M400 300 Q460 240 500 260 Q480 300 440 310 Z" fill="#3daa2b"/>
+  <path d="M400 300 Q380 230 390 200 Q405 225 410 260 Z" fill="#236a12"/>
+  <!-- Flowers on vines -->
+  <circle cx="347" cy="350" r="8" fill="#e63946"/>
+  <circle cx="347" cy="350" r="4" fill="#f9ca24"/>
+  <circle cx="508" cy="340" r="7" fill="#ff69b4"/>
+  <circle cx="508" cy="340" r="3.5" fill="white"/>
+  <circle cx="140" cy="410" r="9" fill="#ff8c00"/>
+  <circle cx="140" cy="410" r="4" fill="#f9ca24"/>
+  <!-- Exotic birds -->
+  <!-- Parrot left -->
+  <ellipse cx="260" cy="240" rx="14" ry="20" fill="#e63946"/>
+  <ellipse cx="266" cy="238" rx="8" ry="12" fill="#2d8a1b"/>
+  <circle cx="268" cy="232" r="10" fill="#e63946"/>
+  <path d="M274 230 Q282 228 280 234" fill="#f9ca24" stroke="#e8a000" stroke-width="1"/>
+  <!-- Parrot tail -->
+  <path d="M260 258 Q254 278 252 290" fill="none" stroke="#e63946" stroke-width="5" stroke-linecap="round"/>
+  <path d="M262 260 Q258 280 256 292" fill="none" stroke="#4d96ff" stroke-width="4" stroke-linecap="round"/>
+  <!-- Toucan right -->
+  <ellipse cx="540" cy="250" rx="14" ry="18" fill="#2b2d42"/>
+  <ellipse cx="546" cy="248" rx="8" ry="11" fill="#f9ca24"/>
+  <circle cx="548" cy="243" r="10" fill="#2b2d42"/>
+  <path d="M556 238 Q574 234 575 242 Q574 250 556 248 Z" fill="#f9ca24"/>
+  <path d="M557 240 Q572 236 570 242" fill="none" stroke="#e63946" stroke-width="3"/>
+  <!-- Ground and roots -->
+  <path d="M0 500 Q100 488 200 496 Q300 504 400 492 Q500 480 600 492 Q700 504 800 492 L800 600 L0 600 Z" fill="url(#junglefloor)"/>
+  <!-- Ground foliage -->
+  <ellipse cx="180" cy="516" rx="80" ry="28" fill="#1a4a0a"/>
+  <ellipse cx="400" cy="510" rx="100" ry="32" fill="#1e5a0e"/>
+  <ellipse cx="620" cy="518" rx="80" ry="28" fill="#1a4a0a"/>
+  <!-- Glowing mushrooms -->
+  <circle cx="310" cy="502" r="10" fill="#aaf04a" opacity="0.7"/>
+  <circle cx="310" cy="492" r="18" fill="#6bcb77" opacity="0.6"/>
+  <circle cx="490" cy="506" r="8" fill="#aaf04a" opacity="0.65"/>
+  <circle cx="490" cy="497" r="15" fill="#6bcb77" opacity="0.55"/>
+  <!-- Water trickle -->
+  <path d="M400 400 Q395 430 398 460 Q402 490 400 520" fill="none" stroke="#4d96ff" stroke-width="4" stroke-linecap="round" opacity="0.6"/>
+  <!-- Fireflies -->
+  <circle cx="320" cy="440" r="3" fill="#f9ca24" opacity="0.8"/>
+  <circle cx="320" cy="440" r="8" fill="#f9ca24" opacity="0.2"/>
+  <circle cx="470" cy="460" r="2.5" fill="#aaf04a" opacity="0.7"/>
+  <circle cx="470" cy="460" r="7" fill="#aaf04a" opacity="0.15"/>
+</svg>

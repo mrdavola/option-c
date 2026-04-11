@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <!-- Body -->
+  <rect x="72" y="120" width="112" height="100" rx="10" fill="#4a90d9"/>
+  <!-- Body panel detail -->
+  <rect x="90" y="138" width="76" height="50" rx="6" fill="#2c6fab"/>
+  <!-- Chest light -->
+  <circle cx="128" cy="155" r="12" fill="#00f5ff" opacity="0.9"/>
+  <circle cx="128" cy="155" r="7" fill="white"/>
+  <!-- Body buttons -->
+  <circle cx="104" cy="175" r="5" fill="#ff6b6b"/>
+  <circle cx="120" cy="175" r="5" fill="#f9ca24"/>
+  <circle cx="136" cy="175" r="5" fill="#6bcb77"/>
+  <circle cx="152" cy="175" r="5" fill="#4d96ff"/>
+  <!-- Vent slats -->
+  <rect x="92" y="195" width="72" height="4" rx="2" fill="#1a5fa8"/>
+  <rect x="92" y="203" width="72" height="4" rx="2" fill="#1a5fa8"/>
+  <rect x="92" y="211" width="72" height="4" rx="2" fill="#1a5fa8"/>
+  <!-- Head -->
+  <rect x="84" y="50" width="88" height="72" rx="14" fill="#5ba3e8"/>
+  <!-- Antenna -->
+  <rect x="124" y="28" width="8" height="24" rx="4" fill="#4a90d9"/>
+  <circle cx="128" cy="24" r="8" fill="#ff6b6b"/>
+  <circle cx="128" cy="24" r="4" fill="#ff0000"/>
+  <!-- Eyes -->
+  <rect x="96" y="72" width="26" height="18" rx="5" fill="#001a33"/>
+  <rect x="134" y="72" width="26" height="18" rx="5" fill="#001a33"/>
+  <!-- Eye glow -->
+  <rect x="98" y="74" width="22" height="14" rx="4" fill="#00f5ff" opacity="0.8"/>
+  <rect x="136" y="74" width="22" height="14" rx="4" fill="#00f5ff" opacity="0.8"/>
+  <rect x="103" y="77" width="12" height="8" rx="2" fill="white" opacity="0.9"/>
+  <rect x="141" y="77" width="12" height="8" rx="2" fill="white" opacity="0.9"/>
+  <!-- Mouth / speaker -->
+  <rect x="98" y="100" width="60" height="12" rx="4" fill="#001a33"/>
+  <rect x="102" y="103" width="8" height="6" rx="1" fill="#00f5ff" opacity="0.7"/>
+  <rect x="114" y="103" width="8" height="6" rx="1" fill="#00f5ff" opacity="0.7"/>
+  <rect x="126" y="103" width="8" height="6" rx="1" fill="#00f5ff" opacity="0.7"/>
+  <rect x="138" y="103" width="8" height="6" rx="1" fill="#00f5ff" opacity="0.7"/>
+  <rect x="150" y="103" width="4" height="6" rx="1" fill="#00f5ff" opacity="0.7"/>
+  <!-- Ear panels -->
+  <rect x="68" y="68" width="18" height="30" rx="6" fill="#3a7bc8"/>
+  <rect x="170" y="68" width="18" height="30" rx="6" fill="#3a7bc8"/>
+  <!-- Arms -->
+  <rect x="38" y="128" width="36" height="20" rx="10" fill="#4a90d9"/>
+  <rect x="36" y="148" width="32" height="16" rx="8" fill="#3a7bc8"/>
+  <!-- Left claw -->
+  <path d="M36 164 L24 158 M36 164 L22 168 M36 164 L26 176" stroke="#2c6fab" stroke-width="5" stroke-linecap="round"/>
+  <rect x="182" y="128" width="36" height="20" rx="10" fill="#4a90d9"/>
+  <rect x="188" y="148" width="32" height="16" rx="8" fill="#3a7bc8"/>
+  <!-- Right claw -->
+  <path d="M220 164 L232 158 M220 164 L234 168 M220 164 L230 176" stroke="#2c6fab" stroke-width="5" stroke-linecap="round"/>
+  <!-- Legs -->
+  <rect x="88" y="218" width="30" height="32" rx="8" fill="#3a7bc8"/>
+  <rect x="138" y="218" width="30" height="32" rx="8" fill="#3a7bc8"/>
+  <!-- Feet -->
+  <rect x="80" y="244" width="46" height="14" rx="7" fill="#2c6fab"/>
+  <rect x="130" y="244" width="46" height="14" rx="7" fill="#2c6fab"/>
+</svg>

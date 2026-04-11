@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- Shadow -->
+  <ellipse cx="64" cy="116" rx="36" ry="8" fill="#b06030" opacity="0.3"/>
+  <!-- Shell body main -->
+  <path d="M64 20 Q96 22 110 54 Q118 78 104 98 Q90 118 64 118 Q38 118 24 98 Q10 78 18 54 Q32 22 64 20 Z" fill="#f4a261"/>
+  <!-- Shell spiral chambers -->
+  <path d="M64 28 Q88 30 100 58 Q108 78 96 96 Q84 112 64 112" fill="none" stroke="#e08040" stroke-width="3"/>
+  <!-- Main spiral whorls -->
+  <path d="M64 108 Q80 96 84 76 Q84 60 72 50 Q62 44 56 52 Q50 60 56 72 Q62 80 70 76 Q76 70 72 64 Q68 58 64 62" fill="none" stroke="#c06030" stroke-width="2.5"/>
+  <!-- Shell rib lines (radial) -->
+  <line x1="64" y1="20" x2="18" y2="54" stroke="#e08040" stroke-width="2" opacity="0.5"/>
+  <line x1="64" y1="20" x2="24" y2="80" stroke="#e08040" stroke-width="2" opacity="0.5"/>
+  <line x1="64" y1="20" x2="40" y2="108" stroke="#e08040" stroke-width="2" opacity="0.4"/>
+  <line x1="64" y1="20" x2="64" y2="118" stroke="#e08040" stroke-width="2" opacity="0.4"/>
+  <line x1="64" y1="20" x2="88" y2="110" stroke="#e08040" stroke-width="2" opacity="0.4"/>
+  <line x1="64" y1="20" x2="104" y2="90" stroke="#e08040" stroke-width="2" opacity="0.4"/>
+  <line x1="64" y1="20" x2="110" y2="60" stroke="#e08040" stroke-width="2" opacity="0.5"/>
+  <!-- Color bands (tropical) -->
+  <path d="M30 90 Q50 105 64 110 Q78 105 98 90" fill="none" stroke="#e63946" stroke-width="4" opacity="0.5"/>
+  <path d="M22 70 Q36 88 64 95 Q92 88 106 70" fill="none" stroke="#f9ca24" stroke-width="3" opacity="0.4"/>
+  <!-- Shell opening -->
+  <ellipse cx="28" cy="98" rx="14" ry="18" fill="#c06030" transform="rotate(30,28,98)"/>
+  <ellipse cx="28" cy="98" rx="9" ry="12" fill="#3d1a08" transform="rotate(30,28,98)"/>
+  <!-- Pearl inside opening -->
+  <ellipse cx="30" cy="96" rx="5" ry="6" fill="#f0e8ff" transform="rotate(30,30,96)"/>
+  <!-- Highlight -->
+  <path d="M80 30 Q96 40 100 58 Q96 44 82 34 Z" fill="white" opacity="0.3"/>
+  <ellipse cx="88" cy="38" rx="10" ry="14" fill="white" opacity="0.2" transform="rotate(-30,88,38)"/>
+</svg>

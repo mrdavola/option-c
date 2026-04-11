@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <!-- Shadow on ground -->
+  <ellipse cx="128" cy="252" rx="50" ry="8" fill="#0a0a0a" opacity="0.4"/>
+  <!-- Body (dark outfit) -->
+  <rect x="84" y="128" width="88" height="96" rx="10" fill="#1a1a2e"/>
+  <!-- Body wrapping/cloth texture -->
+  <path d="M84 150 L172 150" stroke="#16213e" stroke-width="3" opacity="0.7"/>
+  <path d="M84 165 L172 165" stroke="#16213e" stroke-width="3" opacity="0.7"/>
+  <path d="M84 180 L172 180" stroke="#16213e" stroke-width="3" opacity="0.7"/>
+  <!-- Belt / sash -->
+  <rect x="82" y="190" width="92" height="16" rx="4" fill="#c00a2e"/>
+  <!-- Sash knot -->
+  <rect x="118" y="188" width="20" height="20" rx="4" fill="#a00828" transform="rotate(45,128,198)"/>
+  <!-- Head wrap -->
+  <ellipse cx="128" cy="88" rx="42" ry="44" fill="#1a1a2e"/>
+  <!-- Face slit (eyes only showing) -->
+  <rect x="94" y="78" width="68" height="22" rx="6" fill="#0f0f1e"/>
+  <!-- Eyes - intense, narrow -->
+  <ellipse cx="112" cy="89" rx="10" ry="7" fill="#e63946"/>
+  <ellipse cx="144" cy="89" rx="10" ry="7" fill="#e63946"/>
+  <ellipse cx="112" cy="89" rx="6" ry="4" fill="#2b0000"/>
+  <ellipse cx="144" cy="89" rx="6" ry="4" fill="#2b0000"/>
+  <!-- Eye shine -->
+  <circle cx="110" cy="87" r="2" fill="white" opacity="0.9"/>
+  <circle cx="142" cy="87" r="2" fill="white" opacity="0.9"/>
+  <!-- Headband knot / forehead wrap -->
+  <rect x="84" y="68" width="88" height="14" rx="4" fill="#16213e"/>
+  <rect x="82" y="62" width="92" height="12" rx="4" fill="#1a1a2e"/>
+  <!-- Headband tails -->
+  <path d="M170 74 Q182 78 188 86 Q192 96 186 100" fill="none" stroke="#16213e" stroke-width="6" stroke-linecap="round"/>
+  <path d="M170 78 Q184 84 188 96" fill="none" stroke="#1a1a2e" stroke-width="5" stroke-linecap="round"/>
+  <!-- Arms -->
+  <rect x="44" y="136" width="42" height="18" rx="9" fill="#1a1a2e"/>
+  <rect x="36" y="150" width="38" height="16" rx="8" fill="#16213e"/>
+  <!-- Shuriken (throwing star) in left hand -->
+  <path d="M26 168 L32 162 L30 172 L36 166 L34 176 L28 170 Z" fill="#c0c0c0"/>
+  <circle cx="30" cy="169" r="3" fill="#a0a0a0"/>
+  <!-- Right arm raised with sword -->
+  <rect x="170" y="120" width="42" height="18" rx="9" fill="#1a1a2e" transform="rotate(-30,191,129)"/>
+  <rect x="178" y="136" width="38" height="16" rx="8" fill="#16213e" transform="rotate(-15,197,144)"/>
+  <!-- Katana (sword) -->
+  <line x1="200" y1="50" x2="230" y2="180" stroke="#c8c8d8" stroke-width="4" stroke-linecap="round"/>
+  <rect x="195" y="130" width="40" height="8" rx="3" fill="#8b6914" transform="rotate(-30,215,134)"/>
+  <!-- Sword guard -->
+  <ellipse cx="213" cy="128" rx="8" ry="4" fill="#c9a84c" transform="rotate(-30,213,128)"/>
+  <!-- Legs (in run/jump stance) -->
+  <rect x="86" y="222" width="30" height="30" rx="8" fill="#1a1a2e" transform="rotate(-5,101,237)"/>
+  <rect x="140" y="218" width="30" height="30" rx="8" fill="#1a1a2e" transform="rotate(10,155,233)"/>
+  <!-- Tabi boots -->
+  <ellipse cx="100" cy="252" rx="22" ry="7" fill="#0f0f1e"/>
+  <ellipse cx="154" cy="250" rx="22" ry="7" fill="#0f0f1e"/>
+  <!-- Action lines -->
+  <line x1="20" y1="100" x2="50" y2="115" stroke="#c00a2e" stroke-width="2" opacity="0.5" stroke-dasharray="4,3"/>
+  <line x1="16" y1="112" x2="46" y2="122" stroke="#c00a2e" stroke-width="1.5" opacity="0.4" stroke-dasharray="3,4"/>
+</svg>

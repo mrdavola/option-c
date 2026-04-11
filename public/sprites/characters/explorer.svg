@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <!-- Body / shirt -->
+  <rect x="82" y="128" width="92" height="92" rx="8" fill="#d4a855"/>
+  <!-- Vest / jacket -->
+  <rect x="82" y="128" width="46" height="92" rx="6" fill="#8b6914"/>
+  <rect x="128" y="128" width="46" height="92" rx="6" fill="#7a5c10"/>
+  <!-- Vest pockets -->
+  <rect x="90" y="148" width="20" height="18" rx="3" fill="#7a5c10" stroke="#6a4c08" stroke-width="1"/>
+  <rect x="93" y="148" width="14" height="6" rx="2" fill="#6a4c08"/>
+  <rect x="146" y="148" width="20" height="18" rx="3" fill="#6a4c08" stroke="#5a3c06" stroke-width="1"/>
+  <rect x="149" y="148" width="14" height="6" rx="2" fill="#5a3c06"/>
+  <!-- Belt -->
+  <rect x="82" y="192" width="92" height="14" rx="3" fill="#5a3c06"/>
+  <rect x="118" y="194" width="20" height="10" rx="2" fill="#c9a84c"/>
+  <!-- Shirt collar -->
+  <path d="M108 128 L128 142 L148 128 L140 122 L116 122 Z" fill="#f4e0a0"/>
+  <!-- Head -->
+  <ellipse cx="128" cy="96" rx="38" ry="40" fill="#d4916a"/>
+  <!-- Eyes (squinting adventurous look) -->
+  <circle cx="114" cy="91" r="6" fill="white"/>
+  <circle cx="142" cy="91" r="6" fill="white"/>
+  <circle cx="115" cy="92" r="3.5" fill="#4a2c0a"/>
+  <circle cx="143" cy="92" r="3.5" fill="#4a2c0a"/>
+  <circle cx="116" cy="91" r="1.5" fill="white"/>
+  <circle cx="144" cy="91" r="1.5" fill="white"/>
+  <!-- Squint wrinkle -->
+  <path d="M108 87 Q114 85 120 87" fill="none" stroke="#b07040" stroke-width="1.5"/>
+  <path d="M136 87 Q142 85 148 87" fill="none" stroke="#b07040" stroke-width="1.5"/>
+  <!-- Nose, sun-tanned face -->
+  <circle cx="128" cy="100" r="5" fill="#b06040"/>
+  <circle cx="110" cy="104" r="7" fill="#c07050" opacity="0.5"/>
+  <circle cx="146" cy="104" r="7" fill="#c07050" opacity="0.5"/>
+  <!-- Confident smile with stubble -->
+  <path d="M114 112 Q128 122 142 112" fill="none" stroke="#8b5020" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Stubble dots -->
+  <circle cx="110" cy="115" r="1.5" fill="#8b5020" opacity="0.5"/>
+  <circle cx="116" cy="118" r="1.5" fill="#8b5020" opacity="0.4"/>
+  <circle cx="122" cy="120" r="1.5" fill="#8b5020" opacity="0.4"/>
+  <circle cx="146" cy="115" r="1.5" fill="#8b5020" opacity="0.5"/>
+  <circle cx="140" cy="118" r="1.5" fill="#8b5020" opacity="0.4"/>
+  <!-- Hair (tousled, brown) -->
+  <path d="M90 80 Q92 62 100 52 Q110 40 128 38 Q146 40 156 52 Q164 62 166 80" fill="#5a3010"/>
+  <path d="M90 80 Q86 72 88 64" fill="#5a3010"/>
+  <path d="M166 80 Q170 72 168 64" fill="#5a3010"/>
+  <!-- Explorer hat (pith helmet) -->
+  <ellipse cx="128" cy="68" rx="52" ry="14" fill="#d4a855"/>
+  <!-- Hat dome -->
+  <ellipse cx="128" cy="54" rx="40" ry="22" fill="#c49840"/>
+  <!-- Hat band -->
+  <rect x="82" y="64" width="92" height="10" rx="3" fill="#8b6914"/>
+  <!-- Arms -->
+  <rect x="44" y="136" width="40" height="18" rx="9" fill="#8b6914"/>
+  <rect x="40" y="152" width="36" height="16" rx="8" fill="#7a5c10"/>
+  <!-- Compass in left hand -->
+  <circle cx="34" cy="176" r="14" fill="#c9a84c"/>
+  <circle cx="34" cy="176" r="10" fill="#e8d890"/>
+  <line x1="34" y1="166" x2="34" y2="174" stroke="#e63946" stroke-width="2"/>
+  <line x1="34" y1="178" x2="34" y2="186" stroke="#2b2d42" stroke-width="2"/>
+  <line x1="24" y1="176" x2="32" y2="176" stroke="#2b2d42" stroke-width="2"/>
+  <line x1="36" y1="176" x2="44" y2="176" stroke="#2b2d42" stroke-width="2"/>
+  <!-- Right arm with machete -->
+  <rect x="172" y="136" width="40" height="18" rx="9" fill="#8b6914"/>
+  <rect x="180" y="152" width="36" height="16" rx="8" fill="#7a5c10"/>
+  <!-- Machete -->
+  <path d="M210 158 Q228 144 234 132" fill="#c0c0c0" stroke="#a0a0a0" stroke-width="2"/>
+  <path d="M210 158 Q228 152 234 132 L232 130 Q218 148 208 154 Z" fill="#b0b0b0"/>
+  <rect x="206" y="155" width="10" height="8" rx="2" fill="#8b6914"/>
+  <!-- Legs (shorts) -->
+  <rect x="88" y="218" width="32" height="24" rx="6" fill="#d4a855"/>
+  <rect x="136" y="218" width="32" height="24" rx="6" fill="#d4a855"/>
+  <!-- Boots (worn leather) -->
+  <rect x="82" y="236" width="46" height="18" rx="6" fill="#6b4226"/>
+  <rect x="130" y="236" width="46" height="18" rx="6" fill="#6b4226"/>
+  <!-- Boot laces -->
+  <line x1="96" y1="240" x2="112" y2="244" stroke="#4a2c10" stroke-width="1.5"/>
+  <line x1="96" y1="246" x2="112" y2="250" stroke="#4a2c10" stroke-width="1.5"/>
+  <line x1="144" y1="240" x2="160" y2="244" stroke="#4a2c10" stroke-width="1.5"/>
+  <line x1="144" y1="246" x2="160" y2="250" stroke="#4a2c10" stroke-width="1.5"/>
+  <!-- Backpack strap -->
+  <path d="M160 135 Q172 138 174 155 Q174 175 168 185" fill="none" stroke="#6b4226" stroke-width="6" stroke-linecap="round"/>
+</svg>

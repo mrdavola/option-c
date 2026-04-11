@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- Shadow -->
+  <ellipse cx="64" cy="118" rx="36" ry="6" fill="#6a0dad" opacity="0.3"/>
+  <!-- Gem shape (diamond cut) -->
+  <!-- Top facets -->
+  <polygon points="64,10 94,38 64,50 34,38" fill="#9b59b6"/>
+  <!-- Left facet -->
+  <polygon points="34,38 64,50 64,110 20,70" fill="#7d3c98"/>
+  <!-- Right facet -->
+  <polygon points="94,38 108,70 64,110 64,50" fill="#a569bd"/>
+  <!-- Center front facet -->
+  <polygon points="34,38 20,70 64,110 108,70 94,38 64,50" fill="#c39bd3"/>
+  <!-- Inner sparkle lines -->
+  <line x1="64" y1="10" x2="64" y2="50" stroke="#d7bde2" stroke-width="1.5" opacity="0.6"/>
+  <line x1="34" y1="38" x2="64" y2="50" stroke="#d7bde2" stroke-width="1.5" opacity="0.6"/>
+  <line x1="94" y1="38" x2="64" y2="50" stroke="#d7bde2" stroke-width="1.5" opacity="0.6"/>
+  <line x1="20" y1="70" x2="64" y2="50" stroke="white" stroke-width="1" opacity="0.4"/>
+  <line x1="108" y1="70" x2="64" y2="50" stroke="white" stroke-width="1" opacity="0.4"/>
+  <!-- Top highlight -->
+  <polygon points="64,12 88,36 64,48 40,36" fill="white" opacity="0.2"/>
+  <!-- Sparkle points -->
+  <path d="M64 4 L66 10 L72 10 L68 14 L70 20 L64 16 L58 20 L60 14 L56 10 L62 10 Z" fill="white" opacity="0.8"/>
+  <circle cx="104" cy="44" r="4" fill="white" opacity="0.6"/>
+  <circle cx="24" cy="54" r="3" fill="white" opacity="0.5"/>
+</svg>

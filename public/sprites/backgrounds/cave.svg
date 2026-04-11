@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <defs>
+    <radialGradient id="caveGlow1" cx="40%" cy="70%" r="35%">
+      <stop offset="0%" style="stop-color:#00bfff;stop-opacity:0.5"/>
+      <stop offset="100%" style="stop-color:#00bfff;stop-opacity:0"/>
+    </radialGradient>
+    <radialGradient id="caveGlow2" cx="70%" cy="60%" r="28%">
+      <stop offset="0%" style="stop-color:#9b59b6;stop-opacity:0.4"/>
+      <stop offset="100%" style="stop-color:#9b59b6;stop-opacity:0"/>
+    </radialGradient>
+    <linearGradient id="cavefloor" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#2a1a08;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#1a0a04;stop-opacity:1"/>
+    </linearGradient>
+  </defs>
+  <!-- Cave walls (dark rock) -->
+  <rect width="800" height="600" fill="#0d0a0a"/>
+  <!-- Rock texture bg -->
+  <ellipse cx="150" cy="300" rx="200" ry="350" fill="#150e0e"/>
+  <ellipse cx="650" cy="300" rx="200" ry="350" fill="#150e0e"/>
+  <!-- Crystal glow light sources -->
+  <ellipse cx="320" cy="420" rx="240" ry="200" fill="url(#caveGlow1)"/>
+  <ellipse cx="580" cy="380" rx="180" ry="160" fill="url(#caveGlow2)"/>
+  <!-- Cave ceiling stalactites -->
+  <!-- Far row (smaller) -->
+  <polygon points="50,0 38,80 62,80" fill="#1e1414"/>
+  <polygon points="120,0 106,65 134,65" fill="#1e1414"/>
+  <polygon points="200,0 188,90 212,90" fill="#1a1010"/>
+  <polygon points="280,0 265,70 295,70" fill="#1e1414"/>
+  <polygon points="360,0 348,85 372,85" fill="#1a1010"/>
+  <polygon points="440,0 425,75 455,75" fill="#1e1414"/>
+  <polygon points="520,0 506,88 534,88" fill="#1a1010"/>
+  <polygon points="600,0 586,72 614,72" fill="#1e1414"/>
+  <polygon points="680,0 665,82 695,82" fill="#1a1010"/>
+  <polygon points="760,0 744,68 776,68" fill="#1e1414"/>
+  <!-- Main row (larger) -->
+  <polygon points="80,0 58,140 102,140" fill="#241818"/>
+  <polygon points="170,0 148,120 192,120" fill="#1e1414"/>
+  <polygon points="250,0 224,160 276,160" fill="#281c1c"/>
+  <polygon points="340,0 316,130 364,130" fill="#1e1414"/>
+  <polygon points="460,0 434,148 486,148" fill="#281c1c"/>
+  <polygon points="550,0 524,118 576,118" fill="#1e1414"/>
+  <polygon points="640,0 614,155 666,155" fill="#281c1c"/>
+  <polygon points="730,0 706,125 754,125" fill="#1e1414"/>
+  <!-- Crystal clusters - left wall -->
+  <!-- Cyan crystal cluster -->
+  <polygon points="80,320 90,200 100,320" fill="#00bfff"/>
+  <polygon points="80,320 90,200 100,320" fill="#7ee8ff" opacity="0.4"/>
+  <polygon points="68,340 80,230 90,340" fill="#0090d0"/>
+  <polygon points="98,330 108,220 118,330" fill="#00a8e8"/>
+  <polygon points="112,345 120,250 130,345" fill="#00bfff" opacity="0.8"/>
+  <!-- Small crystals left -->
+  <polygon points="40,400 46,340 52,400" fill="#00bfff" opacity="0.7"/>
+  <polygon points="52,395 56,348 62,395" fill="#7ee8ff" opacity="0.6"/>
+  <!-- Crystal clusters - right wall -->
+  <!-- Purple crystal cluster -->
+  <polygon points="680,310 690,190 700,310" fill="#9b59b6"/>
+  <polygon points="680,310 690,190 700,310" fill="#c39bd3" opacity="0.4"/>
+  <polygon points="668,330 678,220 690,330" fill="#7d3c98"/>
+  <polygon points="698,320 708,210 718,320" fill="#8e44ad"/>
+  <polygon points="714,335 722,240 732,335" fill="#9b59b6" opacity="0.8"/>
+  <!-- Center crystal formation -->
+  <polygon points="340,520 355,360 370,520" fill="#00bfff"/>
+  <polygon points="340,520 355,360 370,520" fill="#7ee8ff" opacity="0.4"/>
+  <polygon points="322,530 338,390 354,530" fill="#0090d0"/>
+  <polygon points="368,525 382,400 396,525" fill="#9b59b6"/>
+  <polygon points="368,525 382,400 396,525" fill="#c39bd3" opacity="0.4"/>
+  <polygon points="396,530 410,410 424,530" fill="#8e44ad"/>
+  <!-- Crystal reflections on ground -->
+  <ellipse cx="100" cy="545" rx="50" ry="12" fill="#00bfff" opacity="0.15"/>
+  <ellipse cx="370" cy="558" rx="70" ry="16" fill="#00bfff" opacity="0.12"/>
+  <ellipse cx="700" cy="545" rx="55" ry="13" fill="#9b59b6" opacity="0.15"/>
+  <!-- Cave pool of water -->
+  <ellipse cx="400" cy="560" rx="180" ry="40" fill="#003a5c"/>
+  <ellipse cx="400" cy="555" rx="175" ry="35" fill="#004a6e" opacity="0.8"/>
+  <!-- Pool reflections -->
+  <line x1="350" y1="550" x2="380" y2="552" stroke="#00bfff" stroke-width="2" opacity="0.3"/>
+  <line x1="420" y1="545" x2="450" y2="548" stroke="#9b59b6" stroke-width="2" opacity="0.3"/>
+  <!-- Stalagmites from floor -->
+  <polygon points="140,600 150,480 160,600" fill="#241818"/>
+  <polygon points="200,600 212,510 224,600" fill="#1e1414"/>
+  <polygon points="580,600 592,500 604,600" fill="#241818"/>
+  <polygon points="640,600 650,520 662,600" fill="#1e1414"/>
+  <!-- Cave floor -->
+  <path d="M0 540 Q100 530 200 538 Q300 546 400 535 Q500 524 600 536 Q700 548 800 538 L800 600 L0 600 Z" fill="url(#cavefloor)"/>
+  <!-- Pebbles -->
+  <ellipse cx="200" cy="568" rx="16" ry="7" fill="#241818"/>
+  <ellipse cx="550" cy="572" rx="12" ry="5" fill="#2a1e1e"/>
+  <ellipse cx="680" cy="565" rx="18" ry="8" fill="#241818"/>
+  <!-- Glow sparkles from crystals -->
+  <circle cx="92" cy="280" r="3" fill="white" opacity="0.8"/>
+  <circle cx="108" cy="260" r="2" fill="#7ee8ff" opacity="0.9"/>
+  <circle cx="690" cy="270" r="3" fill="white" opacity="0.7"/>
+  <circle cx="710" cy="250" r="2" fill="#c39bd3" opacity="0.9"/>
+  <circle cx="362" cy="380" r="4" fill="white" opacity="0.8"/>
+  <circle cx="380" cy="365" r="2.5" fill="#7ee8ff" opacity="0.9"/>
+  <!-- Glowing mushrooms at base -->
+  <circle cx="160" cy="540" r="8" fill="#aaf04a" opacity="0.7"/>
+  <circle cx="160" cy="530" r="14" fill="#6bcb77" opacity="0.6"/>
+  <circle cx="620" cy="538" r="7" fill="#aaf04a" opacity="0.65"/>
+  <circle cx="620" cy="529" r="12" fill="#6bcb77" opacity="0.55"/>
+</svg>

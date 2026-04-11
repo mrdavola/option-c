@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- Shadow -->
+  <ellipse cx="64" cy="122" rx="48" ry="6" fill="#4a2c0a" opacity="0.4"/>
+  <!-- Chest base -->
+  <rect x="10" y="72" width="108" height="46" rx="6" fill="#8b5e3c"/>
+  <!-- Chest base front panel -->
+  <rect x="16" y="78" width="96" height="34" rx="4" fill="#7a4e2c"/>
+  <!-- Chest lid -->
+  <rect x="10" y="40" width="108" height="36" rx="6" fill="#a06a40"/>
+  <!-- Lid curve (domed top) -->
+  <ellipse cx="64" cy="40" rx="54" ry="14" fill="#b07a4a"/>
+  <!-- Dome highlight -->
+  <path d="M20 38 Q64 26 108 38 Q82 30 64 28 Q46 30 20 38 Z" fill="white" opacity="0.25"/>
+  <!-- Metal bands - horizontal -->
+  <rect x="8" y="62" width="112" height="10" rx="3" fill="#c9a84c"/>
+  <rect x="8" y="96" width="112" height="8" rx="3" fill="#c9a84c"/>
+  <!-- Metal bands - vertical on base -->
+  <rect x="30" y="72" width="8" height="46" rx="2" fill="#c9a84c"/>
+  <rect x="90" y="72" width="8" height="46" rx="2" fill="#c9a84c"/>
+  <!-- Metal bands - vertical on lid -->
+  <rect x="30" y="40" width="8" height="34" rx="2" fill="#b8960a"/>
+  <rect x="90" y="40" width="8" height="34" rx="2" fill="#b8960a"/>
+  <!-- Lock plate -->
+  <rect x="50" y="63" width="28" height="22" rx="4" fill="#e9c46a"/>
+  <!-- Keyhole -->
+  <circle cx="64" cy="72" r="5" fill="#5a3c06"/>
+  <rect x="61" y="72" width="6" height="8" rx="2" fill="#5a3c06"/>
+  <!-- Gold coins spilling out (chest is open slightly) -->
+  <ellipse cx="44" cy="71" rx="8" ry="5" fill="#f9ca24"/>
+  <ellipse cx="58" cy="68" rx="8" ry="5" fill="#f9ca24"/>
+  <ellipse cx="72" cy="67" rx="8" ry="5" fill="#f9ca24"/>
+  <ellipse cx="86" cy="70" rx="8" ry="5" fill="#f9ca24"/>
+  <circle cx="44" cy="66" r="5" fill="#f9ca24"/>
+  <circle cx="72" cy="63" r="5" fill="#f9ca24"/>
+  <circle cx="58" cy="62" r="5" fill="#f9ca24"/>
+  <!-- Corner rivets -->
+  <circle cx="18" cy="78" r="4" fill="#b8960a"/>
+  <circle cx="110" cy="78" r="4" fill="#b8960a"/>
+  <circle cx="18" cy="112" r="4" fill="#b8960a"/>
+  <circle cx="110" cy="112" r="4" fill="#b8960a"/>
+  <!-- Gem on top -->
+  <polygon points="64,24 68,34 80,34 70,40 74,50 64,44 54,50 58,40 48,34 60,34" fill="#e63946"/>
+  <circle cx="64" cy="36" r="4" fill="white" opacity="0.5"/>
+</svg>

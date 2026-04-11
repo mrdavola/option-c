@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <!-- Body armor (breastplate) -->
+  <rect x="80" y="128" width="96" height="96" rx="8" fill="#708090"/>
+  <!-- Armor highlights -->
+  <path d="M88 128 L128 128 L128 224 L88 224 Z" fill="#8a9aaa" opacity="0.4"/>
+  <!-- Breastplate detail -->
+  <path d="M80 148 Q128 138 176 148 L176 192 Q128 202 80 192 Z" fill="#6a7a8a"/>
+  <!-- Center line of armor -->
+  <rect x="124" y="130" width="8" height="90" rx="2" fill="#5a6a7a"/>
+  <!-- Belt -->
+  <rect x="78" y="196" width="100" height="14" rx="3" fill="#5c3a1a"/>
+  <rect x="114" y="199" width="28" height="8" rx="2" fill="#c9a84c"/>
+  <!-- Tasset (lower armor plates) -->
+  <rect x="82" y="210" width="36" height="20" rx="4" fill="#607080"/>
+  <rect x="138" y="210" width="36" height="20" rx="4" fill="#607080"/>
+  <!-- Helmet -->
+  <ellipse cx="128" cy="76" rx="44" ry="46" fill="#708090"/>
+  <!-- Visor -->
+  <rect x="96" y="64" width="64" height="28" rx="8" fill="#4a5a6a"/>
+  <!-- Eye slits -->
+  <rect x="102" y="72" width="22" height="5" rx="2" fill="#1a2030"/>
+  <rect x="132" y="72" width="22" height="5" rx="2" fill="#1a2030"/>
+  <!-- Visor grill -->
+  <rect x="104" y="82" width="48" height="4" rx="1" fill="#4a5a6a"/>
+  <line x1="108" y1="78" x2="108" y2="92" stroke="#3a4a5a" stroke-width="2"/>
+  <line x1="116" y1="78" x2="116" y2="92" stroke="#3a4a5a" stroke-width="2"/>
+  <line x1="124" y1="78" x2="124" y2="92" stroke="#3a4a5a" stroke-width="2"/>
+  <line x1="132" y1="78" x2="132" y2="92" stroke="#3a4a5a" stroke-width="2"/>
+  <line x1="140" y1="78" x2="140" y2="92" stroke="#3a4a5a" stroke-width="2"/>
+  <line x1="148" y1="78" x2="148" y2="92" stroke="#3a4a5a" stroke-width="2"/>
+  <!-- Plume -->
+  <path d="M128 30 Q118 16 108 10 Q116 22 114 34" fill="#e63946" opacity="0.9"/>
+  <path d="M128 30 Q128 14 128 6 Q132 18 132 30" fill="#e63946"/>
+  <path d="M128 30 Q138 16 148 10 Q140 22 142 34" fill="#c1121f" opacity="0.9"/>
+  <!-- Helmet neck guard -->
+  <rect x="90" y="114" width="76" height="18" rx="6" fill="#607080"/>
+  <!-- Pauldrons (shoulder guards) -->
+  <ellipse cx="72" cy="138" rx="24" ry="18" fill="#607080"/>
+  <ellipse cx="184" cy="138" rx="24" ry="18" fill="#607080"/>
+  <!-- Arms -->
+  <rect x="46" y="148" width="30" height="18" rx="9" fill="#708090"/>
+  <rect x="40" y="164" width="32" height="16" rx="8" fill="#607080"/>
+  <!-- Gauntlet left -->
+  <rect x="34" y="178" width="34" height="20" rx="6" fill="#506070"/>
+  <!-- Shield -->
+  <path d="M14 165 Q14 140 28 130 L48 130 L48 195 Q32 208 14 195 Z" fill="#8b0000"/>
+  <path d="M14 165 Q14 140 28 130 L38 130 L38 195 Q24 208 14 195 Z" fill="#a00000" opacity="0.5"/>
+  <!-- Cross on shield -->
+  <rect x="18" y="150" width="24" height="6" rx="2" fill="#c9a84c"/>
+  <rect x="27" y="140" width="6" height="28" rx="2" fill="#c9a84c"/>
+  <!-- Right arm -->
+  <rect x="180" y="148" width="30" height="18" rx="9" fill="#708090"/>
+  <rect x="184" y="164" width="32" height="16" rx="8" fill="#607080"/>
+  <rect x="188" y="178" width="34" height="20" rx="6" fill="#506070"/>
+  <!-- Sword -->
+  <rect x="218" y="90" width="8" height="100" rx="3" fill="#c0c0c0"/>
+  <rect x="206" y="136" width="32" height="8" rx="3" fill="#c9a84c"/>
+  <rect x="218" y="86" width="8" height="12" rx="3" fill="#c9a84c"/>
+  <!-- Legs -->
+  <rect x="86" y="228" width="32" height="26" rx="8" fill="#607080"/>
+  <rect x="138" y="228" width="32" height="26" rx="8" fill="#607080"/>
+  <!-- Boots / sabatons -->
+  <rect x="78" y="246" width="48" height="14" rx="6" fill="#4a5a6a"/>
+  <rect x="130" y="246" width="48" height="14" rx="6" fill="#4a5a6a"/>
+</svg>

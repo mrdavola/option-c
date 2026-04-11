@@ -1,0 +1,141 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <defs>
+    <linearGradient id="kitchenwall" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#fff8f0;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#f5e8d8;stop-opacity:1"/>
+    </linearGradient>
+    <linearGradient id="counter" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#e8e0d0;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#c8b898;stop-opacity:1"/>
+    </linearGradient>
+  </defs>
+  <!-- Wall -->
+  <rect width="800" height="600" fill="url(#kitchenwall)"/>
+  <!-- Tile backsplash -->
+  <rect x="0" y="240" width="800" height="120" fill="#d0e8f0"/>
+  <!-- Tile grid -->
+  <line x1="0" y1="240" x2="800" y2="240" stroke="white" stroke-width="3"/>
+  <line x1="0" y1="280" x2="800" y2="280" stroke="white" stroke-width="3"/>
+  <line x1="0" y1="320" x2="800" y2="320" stroke="white" stroke-width="3"/>
+  <line x1="0" y1="360" x2="800" y2="360" stroke="white" stroke-width="3"/>
+  <line x1="0" y1="240" x2="0" y2="360" stroke="white" stroke-width="3"/>
+  <line x1="80" y1="240" x2="80" y2="360" stroke="white" stroke-width="3"/>
+  <line x1="160" y1="240" x2="160" y2="360" stroke="white" stroke-width="3"/>
+  <line x1="240" y1="240" x2="240" y2="360" stroke="white" stroke-width="3"/>
+  <line x1="320" y1="240" x2="320" y2="360" stroke="white" stroke-width="3"/>
+  <line x1="400" y1="240" x2="400" y2="360" stroke="white" stroke-width="3"/>
+  <line x1="480" y1="240" x2="480" y2="360" stroke="white" stroke-width="3"/>
+  <line x1="560" y1="240" x2="560" y2="360" stroke="white" stroke-width="3"/>
+  <line x1="640" y1="240" x2="640" y2="360" stroke="white" stroke-width="3"/>
+  <line x1="720" y1="240" x2="720" y2="360" stroke="white" stroke-width="3"/>
+  <line x1="800" y1="240" x2="800" y2="360" stroke="white" stroke-width="3"/>
+  <!-- Decorative tiles (blue pattern) -->
+  <circle cx="40" cy="260" r="12" fill="#4d96ff" opacity="0.3"/>
+  <circle cx="200" cy="300" r="12" fill="#4d96ff" opacity="0.3"/>
+  <circle cx="360" cy="260" r="12" fill="#4d96ff" opacity="0.3"/>
+  <circle cx="520" cy="300" r="12" fill="#4d96ff" opacity="0.3"/>
+  <circle cx="680" cy="260" r="12" fill="#4d96ff" opacity="0.3"/>
+  <!-- Upper cabinets -->
+  <rect x="0" y="0" width="280" height="240" rx="0" fill="#8b6914"/>
+  <rect x="0" y="0" width="280" height="240" rx="0" fill="#a07a20" opacity="0.4"/>
+  <!-- Cabinet doors (left) -->
+  <rect x="10" y="10" width="120" height="108" rx="4" fill="#9a7218" stroke="#7a5810" stroke-width="2"/>
+  <rect x="18" y="18" width="104" height="92" rx="3" fill="#b08a28" opacity="0.4"/>
+  <circle cx="70" cy="64" r="6" fill="#c9a84c"/>
+  <rect x="140" y="10" width="130" height="108" rx="4" fill="#9a7218" stroke="#7a5810" stroke-width="2"/>
+  <circle cx="205" cy="64" r="6" fill="#c9a84c"/>
+  <rect x="10" y="128" width="120" height="104" rx="4" fill="#9a7218" stroke="#7a5810" stroke-width="2"/>
+  <circle cx="70" cy="180" r="6" fill="#c9a84c"/>
+  <rect x="140" y="128" width="130" height="104" rx="4" fill="#9a7218" stroke="#7a5810" stroke-width="2"/>
+  <circle cx="205" cy="180" r="6" fill="#c9a84c"/>
+  <!-- Right upper cabinets -->
+  <rect x="520" y="0" width="280" height="240" fill="#8b6914"/>
+  <rect x="530" y="10" width="120" height="108" rx="4" fill="#9a7218" stroke="#7a5810" stroke-width="2"/>
+  <circle cx="590" cy="64" r="6" fill="#c9a84c"/>
+  <rect x="660" y="10" width="130" height="108" rx="4" fill="#9a7218" stroke="#7a5810" stroke-width="2"/>
+  <circle cx="725" cy="64" r="6" fill="#c9a84c"/>
+  <rect x="530" y="128" width="120" height="104" rx="4" fill="#9a7218" stroke="#7a5810" stroke-width="2"/>
+  <circle cx="590" cy="180" r="6" fill="#c9a84c"/>
+  <rect x="660" y="128" width="130" height="104" rx="4" fill="#9a7218" stroke="#7a5810" stroke-width="2"/>
+  <circle cx="725" cy="180" r="6" fill="#c9a84c"/>
+  <!-- Counter / base cabinets -->
+  <rect x="0" y="360" width="800" height="240" fill="#8b6914"/>
+  <!-- Counter top -->
+  <rect x="0" y="360" width="800" height="30" fill="url(#counter)"/>
+  <rect x="0" y="386" width="800" height="6" fill="#a08060" opacity="0.6"/>
+  <!-- Counter cabinet doors -->
+  <rect x="10" y="400" width="140" height="140" rx="4" fill="#9a7218" stroke="#7a5810" stroke-width="2"/>
+  <circle cx="80" cy="470" r="7" fill="#c9a84c"/>
+  <rect x="160" y="400" width="140" height="140" rx="4" fill="#9a7218" stroke="#7a5810" stroke-width="2"/>
+  <circle cx="230" cy="470" r="7" fill="#c9a84c"/>
+  <rect x="490" y="400" width="140" height="140" rx="4" fill="#9a7218" stroke="#7a5810" stroke-width="2"/>
+  <circle cx="560" cy="470" r="7" fill="#c9a84c"/>
+  <rect x="640" y="400" width="150" height="140" rx="4" fill="#9a7218" stroke="#7a5810" stroke-width="2"/>
+  <circle cx="715" cy="470" r="7" fill="#c9a84c"/>
+  <!-- Stove (center) -->
+  <rect x="310" y="360" width="180" height="240" fill="#4a4a5a"/>
+  <rect x="318" y="368" width="164" height="100" rx="4" fill="#3a3a4a"/>
+  <!-- Burners -->
+  <ellipse cx="355" cy="405" rx="22" ry="22" fill="#2a2a3a"/>
+  <ellipse cx="355" cy="405" rx="16" ry="16" fill="#3a3a4a" stroke="#1a1a2a" stroke-width="2"/>
+  <ellipse cx="355" cy="405" rx="8" ry="8" fill="#2a2a3a"/>
+  <ellipse cx="445" cy="405" rx="22" ry="22" fill="#2a2a3a"/>
+  <ellipse cx="445" cy="405" rx="16" ry="16" fill="#3a3a4a" stroke="#1a1a2a" stroke-width="2"/>
+  <ellipse cx="445" cy="405" rx="8" ry="8" fill="#2a2a3a"/>
+  <!-- Oven door -->
+  <rect x="318" y="476" width="164" height="118" rx="4" fill="#3a3a4a"/>
+  <rect x="330" y="488" width="140" height="94" rx="4" fill="#2a2a3a"/>
+  <rect x="310" y="466" width="180" height="14" rx="2" fill="#5a5a6a"/>
+  <!-- Oven window -->
+  <rect x="338" y="496" width="124" height="72" rx="4" fill="#1a2030"/>
+  <!-- Orange glow from oven -->
+  <rect x="340" y="498" width="120" height="68" rx="3" fill="#ff6b00" opacity="0.15"/>
+  <!-- Pot on stove -->
+  <ellipse cx="355" cy="388" rx="28" ry="12" fill="#607080"/>
+  <rect x="328" y="376" width="54" height="30" rx="4" fill="#708090"/>
+  <ellipse cx="355" cy="376" rx="27" ry="10" fill="#607080"/>
+  <!-- Steam from pot -->
+  <path d="M340 375 Q335 360 340 350 Q345 340 340 330" fill="none" stroke="#e0e0e0" stroke-width="3" opacity="0.4" stroke-linecap="round"/>
+  <path d="M355 373 Q350 358 355 348 Q360 338 355 328" fill="none" stroke="#e0e0e0" stroke-width="3" opacity="0.35" stroke-linecap="round"/>
+  <path d="M370 375 Q375 360 370 350 Q365 340 370 330" fill="none" stroke="#e0e0e0" stroke-width="3" opacity="0.4" stroke-linecap="round"/>
+  <!-- Items on counter -->
+  <!-- Fruit bowl -->
+  <ellipse cx="120" cy="374" rx="40" ry="12" fill="#e08040"/>
+  <circle cx="104" cy="366" r="14" fill="#e63946"/>
+  <circle cx="122" cy="363" r="14" fill="#f9ca24"/>
+  <circle cx="138" cy="366" r="12" fill="#2d8a1b"/>
+  <!-- Cutting board -->
+  <rect x="580" y="362" width="100" height="22" rx="4" fill="#c09060"/>
+  <!-- Knife on board -->
+  <rect x="590" y="366" width="60" height="6" rx="2" fill="#c0c0c0"/>
+  <rect x="648" y="364" width="16" height="10" rx="2" fill="#8b6914"/>
+  <!-- Cookbook -->
+  <rect x="680" y="320" width="80" height="44" rx="3" fill="#e63946"/>
+  <rect x="685" y="324" width="70" height="36" rx="2" fill="#ff8888" opacity="0.5"/>
+  <line x1="720" y1="324" x2="720" y2="360" stroke="#c82030" stroke-width="2"/>
+  <!-- Window in backsplash area -->
+  <rect x="300" y="50" width="200" height="180" rx="4" fill="#a8d8f0"/>
+  <rect x="300" y="50" width="200" height="180" rx="4" fill="none" stroke="#9a7218" stroke-width="6"/>
+  <line x1="400" y1="50" x2="400" y2="230" stroke="#9a7218" stroke-width="4"/>
+  <line x1="300" y1="140" x2="500" y2="140" stroke="#9a7218" stroke-width="4"/>
+  <!-- Window view (outside) -->
+  <rect x="302" y="52" width="96" height="86" fill="#87ceeb"/>
+  <rect x="402" y="52" width="96" height="86" fill="#87ceeb"/>
+  <rect x="302" y="142" width="96" height="86" fill="#87ceeb"/>
+  <rect x="402" y="142" width="96" height="86" fill="#87ceeb"/>
+  <!-- Clouds in window -->
+  <ellipse cx="360" cy="80" rx="28" ry="14" fill="white" opacity="0.8"/>
+  <ellipse cx="348" cy="80" rx="18" ry="12" fill="white" opacity="0.8"/>
+  <ellipse cx="440" cy="100" rx="24" ry="12" fill="white" opacity="0.8"/>
+  <!-- Herbs hanging -->
+  <line x1="50" y1="0" x2="50" y2="30" stroke="#6b4226" stroke-width="2"/>
+  <ellipse cx="50" cy="40" rx="16" ry="20" fill="#2d8a1b"/>
+  <line x1="120" y1="0" x2="120" y2="30" stroke="#6b4226" stroke-width="2"/>
+  <ellipse cx="120" cy="42" rx="14" ry="18" fill="#3daa2b"/>
+  <line x1="680" y1="0" x2="680" y2="30" stroke="#6b4226" stroke-width="2"/>
+  <ellipse cx="680" cy="40" rx="16" ry="20" fill="#2d8a1b"/>
+  <line x1="750" y1="0" x2="750" y2="30" stroke="#6b4226" stroke-width="2"/>
+  <ellipse cx="750" cy="42" rx="14" ry="18" fill="#3daa2b"/>
+  <!-- Floor -->
+  <rect x="0" y="580" width="800" height="20" fill="#c8a870"/>
+</svg>

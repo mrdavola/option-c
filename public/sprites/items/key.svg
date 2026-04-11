@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- Shadow -->
+  <ellipse cx="64" cy="120" rx="40" ry="6" fill="#8b6914" opacity="0.3"/>
+  <!-- Key bow (ring / head) -->
+  <circle cx="42" cy="42" r="30" fill="#f9ca24"/>
+  <circle cx="42" cy="42" r="20" fill="#e8b000"/>
+  <!-- Hole in key bow -->
+  <circle cx="42" cy="42" r="10" fill="#1a1a2e"/>
+  <!-- Key bow highlight -->
+  <path d="M22 26 Q32 18 46 20 Q34 22 28 30 Z" fill="white" opacity="0.4"/>
+  <!-- Diamond inset in bow -->
+  <polygon points="42,30 48,42 42,54 36,42" fill="#4d96ff" opacity="0.8"/>
+  <polygon points="42,32 47,42 42,52 37,42" fill="#7ec8ff" opacity="0.5"/>
+  <!-- Key shaft -->
+  <rect x="66" y="38" width="52" height="12" rx="6" fill="#f9ca24"/>
+  <!-- Key shaft highlight -->
+  <rect x="66" y="38" width="52" height="5" rx="3" fill="white" opacity="0.25"/>
+  <!-- Key teeth (cuts) -->
+  <rect x="78" y="50" width="8" height="14" rx="3" fill="#f9ca24"/>
+  <rect x="94" y="50" width="8" height="20" rx="3" fill="#f9ca24"/>
+  <rect x="110" y="50" width="8" height="11" rx="3" fill="#f9ca24"/>
+  <!-- Shoulder of key (where shaft meets bow) -->
+  <rect x="66" y="34" width="16" height="20" rx="4" fill="#e8b000"/>
+  <!-- Decorative engraving on bow -->
+  <circle cx="42" cy="42" r="5" fill="#c89000" opacity="0.5"/>
+  <circle cx="42" cy="42" r="2" fill="#f9ca24" opacity="0.7"/>
+  <!-- Key glow effect -->
+  <circle cx="42" cy="42" r="32" fill="none" stroke="#f9ca24" stroke-width="3" opacity="0.25"/>
+  <!-- Sparkle near key tip -->
+  <path d="M120 36 L121.5 32 L123 36 L127 37.5 L123 39 L121.5 43 L120 39 L116 37.5 Z" fill="#f9ca24" opacity="0.7"/>
+</svg>

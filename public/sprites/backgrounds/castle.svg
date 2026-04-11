@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <defs>
+    <linearGradient id="castlesky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a4e;stop-opacity:1"/>
+      <stop offset="60%" style="stop-color:#2c2c6e;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#4a3a6e;stop-opacity:1"/>
+    </linearGradient>
+    <linearGradient id="moat" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a3a5c;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#0a1a2e;stop-opacity:1"/>
+    </linearGradient>
+  </defs>
+  <!-- Night sky -->
+  <rect width="800" height="600" fill="url(#castlesky)"/>
+  <!-- Full moon -->
+  <circle cx="680" cy="80" r="55" fill="#fffde7" opacity="0.9"/>
+  <circle cx="666" cy="70" r="12" fill="#f5f0c0" opacity="0.4"/>
+  <circle cx="690" cy="95" r="8" fill="#f5f0c0" opacity="0.3"/>
+  <!-- Stars -->
+  <circle cx="80" cy="50" r="2" fill="white" opacity="0.8"/>
+  <circle cx="160" cy="30" r="1.5" fill="white" opacity="0.7"/>
+  <circle cx="250" cy="60" r="2" fill="white" opacity="0.6"/>
+  <circle cx="380" cy="20" r="1.5" fill="white" opacity="0.8"/>
+  <circle cx="500" cy="45" r="1" fill="white" opacity="0.7"/>
+  <circle cx="590" cy="30" r="2" fill="white" opacity="0.6"/>
+  <circle cx="750" cy="40" r="1.5" fill="white" opacity="0.7"/>
+  <circle cx="120" cy="100" r="1" fill="white" opacity="0.6"/>
+  <circle cx="300" cy="90" r="1.5" fill="white" opacity="0.5"/>
+  <circle cx="450" cy="75" r="1" fill="white" opacity="0.7"/>
+  <!-- Distant mountains / hills -->
+  <path d="M0 380 Q100 300 200 350 Q300 280 400 330 Q500 260 600 310 Q700 270 800 320 L800 600 L0 600 Z" fill="#1a1236"/>
+  <!-- Castle main body (center) -->
+  <rect x="250" y="220" width="300" height="380" fill="#3a3060"/>
+  <!-- Castle stone pattern on main body -->
+  <path d="M250 240 L550 240 M250 264 L550 264 M250 288 L550 288 M250 312 L550 312 M250 336 L550 336" stroke="#2a2050" stroke-width="2"/>
+  <path d="M270 220 L270 600 M310 220 L310 600 M350 220 L350 600 M390 220 L390 600 M430 220 L430 600 M470 220 L470 600 M510 220 L510 600" stroke="#2a2050" stroke-width="1" opacity="0.5"/>
+  <!-- Left tower -->
+  <rect x="160" y="180" width="120" height="420" fill="#2e2650"/>
+  <!-- Left tower battlement -->
+  <rect x="155" y="160" width="25" height="30" rx="2" fill="#2e2650"/>
+  <rect x="188" y="160" width="25" height="30" rx="2" fill="#2e2650"/>
+  <rect x="221" y="160" width="25" height="30" rx="2" fill="#2e2650"/>
+  <rect x="254" y="160" width="26" height="30" rx="2" fill="#2e2650"/>
+  <!-- Right tower -->
+  <rect x="520" y="180" width="120" height="420" fill="#2e2650"/>
+  <!-- Right tower battlement -->
+  <rect x="515" y="160" width="25" height="30" rx="2" fill="#2e2650"/>
+  <rect x="548" y="160" width="25" height="30" rx="2" fill="#2e2650"/>
+  <rect x="581" y="160" width="25" height="30" rx="2" fill="#2e2650"/>
+  <rect x="614" y="160" width="26" height="30" rx="2" fill="#2e2650"/>
+  <!-- Main gate battlement -->
+  <rect x="245" y="200" width="30" height="28" rx="2" fill="#3a3060"/>
+  <rect x="283" y="200" width="30" height="28" rx="2" fill="#3a3060"/>
+  <rect x="321" y="200" width="30" height="28" rx="2" fill="#3a3060"/>
+  <rect x="359" y="200" width="30" height="28" rx="2" fill="#3a3060"/>
+  <rect x="397" y="200" width="30" height="28" rx="2" fill="#3a3060"/>
+  <rect x="435" y="200" width="30" height="28" rx="2" fill="#3a3060"/>
+  <rect x="473" y="200" width="30" height="28" rx="2" fill="#3a3060"/>
+  <rect x="511" y="200" width="30" height="28" rx="2" fill="#3a3060"/>
+  <!-- Tower conical roofs -->
+  <polygon points="220,30 160,180 280,180" fill="#e63946"/>
+  <polygon points="580,30 520,180 640,180" fill="#e63946"/>
+  <!-- Roof highlights -->
+  <line x1="220" y1="32" x2="160" y2="180" stroke="#ff6b6b" stroke-width="3" opacity="0.5"/>
+  <line x1="580" y1="32" x2="520" y2="180" stroke="#ff6b6b" stroke-width="3" opacity="0.5"/>
+  <!-- Tower flags -->
+  <line x1="220" y1="28" x2="220" y2="5" stroke="#c0a030" stroke-width="3"/>
+  <polygon points="220,5 250,12 220,20" fill="#f9ca24"/>
+  <line x1="580" y1="28" x2="580" y2="5" stroke="#c0a030" stroke-width="3"/>
+  <polygon points="580,5 610,12 580,20" fill="#f9ca24"/>
+  <!-- Tower windows (lit up) -->
+  <rect x="190" y="250" width="30" height="44" rx="14" fill="#f9ca24" opacity="0.8"/>
+  <rect x="193" y="252" width="24" height="38" rx="12" fill="#ffee88"/>
+  <rect x="180" y="340" width="30" height="44" rx="14" fill="#f9ca24" opacity="0.6"/>
+  <rect x="570" y="250" width="30" height="44" rx="14" fill="#f9ca24" opacity="0.8"/>
+  <rect x="573" y="252" width="24" height="38" rx="12" fill="#ffee88"/>
+  <rect x="580" y="340" width="30" height="44" rx="14" fill="#f9ca24" opacity="0.6"/>
+  <!-- Main gate arch (portcullis) -->
+  <path d="M320 460 Q320 390 360 380 Q400 370 440 380 Q480 390 480 460 L480 600 L320 600 Z" fill="#1a1530"/>
+  <!-- Portcullis grating -->
+  <line x1="340" y1="380" x2="340" y2="600" stroke="#3a3060" stroke-width="3"/>
+  <line x1="360" y1="378" x2="360" y2="600" stroke="#3a3060" stroke-width="3"/>
+  <line x1="380" y1="376" x2="380" y2="600" stroke="#3a3060" stroke-width="3"/>
+  <line x1="400" y1="375" x2="400" y2="600" stroke="#3a3060" stroke-width="3"/>
+  <line x1="420" y1="376" x2="420" y2="600" stroke="#3a3060" stroke-width="3"/>
+  <line x1="440" y1="378" x2="440" y2="600" stroke="#3a3060" stroke-width="3"/>
+  <line x1="460" y1="380" x2="460" y2="600" stroke="#3a3060" stroke-width="3"/>
+  <line x1="320" y1="420" x2="480" y2="420" stroke="#3a3060" stroke-width="3"/>
+  <line x1="320" y1="460" x2="480" y2="460" stroke="#3a3060" stroke-width="3"/>
+  <line x1="320" y1="500" x2="480" y2="500" stroke="#3a3060" stroke-width="3"/>
+  <line x1="320" y1="540" x2="480" y2="540" stroke="#3a3060" stroke-width="3"/>
+  <line x1="320" y1="580" x2="480" y2="580" stroke="#3a3060" stroke-width="3"/>
+  <!-- Main gate torchlight glow -->
+  <circle cx="320" cy="400" r="20" fill="#f9ca24" opacity="0.15"/>
+  <circle cx="480" cy="400" r="20" fill="#f9ca24" opacity="0.15"/>
+  <!-- Torches flanking gate -->
+  <rect x="306" y="385" width="8" height="20" rx="2" fill="#8b6914"/>
+  <ellipse cx="310" cy="385" rx="6" ry="10" fill="#f9ca24" opacity="0.9"/>
+  <ellipse cx="310" cy="381" rx="4" ry="6" fill="#ff6b00"/>
+  <rect x="486" y="385" width="8" height="20" rx="2" fill="#8b6914"/>
+  <ellipse cx="490" cy="385" rx="6" ry="10" fill="#f9ca24" opacity="0.9"/>
+  <ellipse cx="490" cy="381" rx="4" ry="6" fill="#ff6b00"/>
+  <!-- Moat -->
+  <path d="M0 560 Q200 540 400 548 Q600 556 800 540 L800 600 L0 600 Z" fill="url(#moat)"/>
+  <!-- Moat water shimmer -->
+  <path d="M80 570 Q150 565 220 570" fill="none" stroke="#4d96ff" stroke-width="2" opacity="0.4"/>
+  <path d="M500 565 Q580 558 660 565" fill="none" stroke="#4d96ff" stroke-width="2" opacity="0.4"/>
+  <!-- Drawbridge (down) -->
+  <rect x="330" y="548" width="140" height="20" fill="#6b4226"/>
+  <line x1="330" y1="548" x2="330" y2="450" stroke="#8b6914" stroke-width="4"/>
+  <line x1="470" y1="548" x2="470" y2="450" stroke="#8b6914" stroke-width="4"/>
+</svg>

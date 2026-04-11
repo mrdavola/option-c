@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <defs>
+    <linearGradient id="forestsky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a0a3e;stop-opacity:1"/>
+      <stop offset="50%" style="stop-color:#2d1b5e;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#4a2d0e;stop-opacity:1"/>
+    </linearGradient>
+    <radialGradient id="moonGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#fffde7;stop-opacity:0.8"/>
+      <stop offset="100%" style="stop-color:#fffde7;stop-opacity:0"/>
+    </radialGradient>
+  </defs>
+  <!-- Night sky -->
+  <rect width="800" height="600" fill="url(#forestsky)"/>
+  <!-- Moon -->
+  <circle cx="650" cy="100" r="50" fill="url(#moonGlow)"/>
+  <circle cx="650" cy="100" r="38" fill="#fffde7"/>
+  <circle cx="638" cy="92" r="10" fill="#f5f0c0" opacity="0.5"/>
+  <circle cx="656" cy="108" r="7" fill="#f5f0c0" opacity="0.4"/>
+  <!-- Stars -->
+  <circle cx="100" cy="60" r="2" fill="white" opacity="0.8"/>
+  <circle cx="200" cy="30" r="1.5" fill="white" opacity="0.7"/>
+  <circle cx="320" cy="50" r="2" fill="white" opacity="0.9"/>
+  <circle cx="420" cy="25" r="1" fill="white" opacity="0.7"/>
+  <circle cx="520" cy="55" r="1.5" fill="white" opacity="0.6"/>
+  <circle cx="50" cy="120" r="1" fill="white" opacity="0.8"/>
+  <circle cx="160" cy="90" r="1.5" fill="white" opacity="0.6"/>
+  <circle cx="280" cy="80" r="1" fill="white" opacity="0.7"/>
+  <circle cx="480" cy="80" r="2" fill="#fff9c4" opacity="0.8"/>
+  <circle cx="580" cy="45" r="1.5" fill="white" opacity="0.7"/>
+  <circle cx="730" cy="60" r="1" fill="white" opacity="0.8"/>
+  <circle cx="780" cy="90" r="1.5" fill="white" opacity="0.6"/>
+  <!-- Fireflies -->
+  <circle cx="380" cy="300" r="3" fill="#f9ca24" opacity="0.8"/>
+  <circle cx="380" cy="300" r="8" fill="#f9ca24" opacity="0.2"/>
+  <circle cx="480" cy="350" r="3" fill="#aaf04a" opacity="0.7"/>
+  <circle cx="480" cy="350" r="8" fill="#aaf04a" opacity="0.15"/>
+  <circle cx="280" cy="380" r="2.5" fill="#f9ca24" opacity="0.6"/>
+  <circle cx="280" cy="380" r="7" fill="#f9ca24" opacity="0.15"/>
+  <circle cx="560" cy="320" r="3" fill="#aaf04a" opacity="0.75"/>
+  <circle cx="560" cy="320" r="8" fill="#aaf04a" opacity="0.15"/>
+  <circle cx="200" cy="420" r="2" fill="#f9ca24" opacity="0.6"/>
+  <circle cx="620" cy="400" r="2.5" fill="#f9ca24" opacity="0.7"/>
+  <!-- Background trees (darkest) -->
+  <rect x="0" y="200" width="60" height="400" fill="#1a0a0a"/>
+  <polygon points="30,60 -10,220 70,220" fill="#0d0520"/>
+  <polygon points="30,100 -15,230 75,230" fill="#0d0520"/>
+  <rect x="740" y="200" width="60" height="400" fill="#1a0a0a"/>
+  <polygon points="770,60 730,220 810,220" fill="#0d0520"/>
+  <polygon points="770,100 725,230 815,230" fill="#0d0520"/>
+  <!-- Mid background trees -->
+  <rect x="100" y="250" width="50" height="350" fill="#1e0e0e"/>
+  <polygon points="125,100 82,270 168,270" fill="#14082a"/>
+  <polygon points="125,140 78,280 172,280" fill="#14082a"/>
+  <polygon points="125,180 80,290 170,290" fill="#140829"/>
+  <rect x="620" y="250" width="50" height="350" fill="#1e0e0e"/>
+  <polygon points="645,100 602,270 688,270" fill="#14082a"/>
+  <polygon points="645,140 598,280 692,280" fill="#14082a"/>
+  <!-- Ancient trees (massive, midground) -->
+  <!-- Left giant tree -->
+  <rect x="60" y="180" width="90" height="420" rx="10" fill="#2d1a08"/>
+  <!-- Bark texture -->
+  <path d="M80 200 Q90 220 80 240 Q90 260 80 280 Q90 300 80 320" fill="none" stroke="#3d2a18" stroke-width="5" opacity="0.6"/>
+  <path d="M120 210 Q110 230 120 250 Q110 270 120 290" fill="none" stroke="#3d2a18" stroke-width="4" opacity="0.5"/>
+  <!-- Left tree canopy layers -->
+  <ellipse cx="105" cy="180" rx="95" ry="60" fill="#1a4a0a"/>
+  <ellipse cx="90" cy="150" rx="80" ry="52" fill="#1e5a0e"/>
+  <ellipse cx="110" cy="120" rx="70" ry="46" fill="#236a12"/>
+  <ellipse cx="98" cy="92" rx="60" ry="40" fill="#2d8a1b"/>
+  <!-- Right giant tree -->
+  <rect x="650" y="180" width="90" height="420" rx="10" fill="#2d1a08"/>
+  <ellipse cx="695" cy="180" rx="95" ry="60" fill="#1a4a0a"/>
+  <ellipse cx="710" cy="150" rx="80" ry="52" fill="#1e5a0e"/>
+  <ellipse cx="690" cy="120" rx="70" ry="46" fill="#236a12"/>
+  <ellipse cx="702" cy="92" rx="60" ry="40" fill="#2d8a1b"/>
+  <!-- Glowing mushrooms on ground -->
+  <ellipse cx="220" cy="572" rx="24" ry="8" fill="#aaf04a" opacity="0.4"/>
+  <path d="M220 572 Q208 552 210 540 Q214 528 220 528 Q226 528 230 540 Q232 552 220 572 Z" fill="#3daa2b"/>
+  <ellipse cx="220" cy="540" rx="24" ry="10" fill="#6bcb77"/>
+  <circle cx="214" cy="537" r="3" fill="white" opacity="0.7"/>
+  <circle cx="224" cy="535" r="2.5" fill="white" opacity="0.6"/>
+  <circle cx="218" cy="543" r="2" fill="white" opacity="0.5"/>
+  <circle cx="220" cy="572" rx="24" ry="8" fill="#aaf04a" opacity="0.4"/>
+  <!-- Second mushroom -->
+  <ellipse cx="600" cy="568" rx="20" ry="7" fill="#aaf04a" opacity="0.4"/>
+  <path d="M600 568 Q590 550 592 540 Q596 530 600 530 Q604 530 608 540 Q610 550 600 568 Z" fill="#3daa2b"/>
+  <ellipse cx="600" cy="540" rx="20" ry="8" fill="#6bcb77"/>
+  <!-- Vines hanging from canopy -->
+  <path d="M150 220 Q155 270 148 320 Q153 370 148 420" fill="none" stroke="#3d6a1b" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
+  <path d="M680" y1="220" Q685 280 678 340 Q682 400 676 460" fill="none" stroke="#3d6a1b" stroke-width="3" opacity="0.8"/>
+  <line x1="680" y1="220" x2="680" y2="460" stroke="#3d6a1b" stroke-width="3" opacity="0.8"/>
+  <!-- Ground with roots -->
+  <path d="M0 520 Q200 510 400 518 Q600 526 800 515 L800 600 L0 600 Z" fill="#1a0e04"/>
+  <!-- Ground foliage -->
+  <ellipse cx="300" cy="540" rx="80" ry="30" fill="#1a4a0a"/>
+  <ellipse cx="500" cy="545" rx="70" ry="25" fill="#1e5a0e"/>
+  <ellipse cx="400" cy="535" rx="60" ry="20" fill="#2d6a1b"/>
+  <!-- Glowing path -->
+  <path d="M350 600 Q380 575 400 550 Q420 525 430 500" fill="none" stroke="#aaf04a" stroke-width="4" opacity="0.3"/>
+  <path d="M350 600 Q380 575 400 550 Q420 525 430 500" fill="none" stroke="#f9ca24" stroke-width="2" opacity="0.2"/>
+</svg>

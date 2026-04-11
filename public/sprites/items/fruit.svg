@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- Shadow -->
+  <ellipse cx="64" cy="118" rx="38" ry="7" fill="#2d5a1b" opacity="0.3"/>
+  <!-- Big red apple (main) -->
+  <path d="M64 36 Q44 36 34 54 Q24 72 30 90 Q36 108 52 115 Q60 118 64 116 Q68 118 76 115 Q92 108 98 90 Q104 72 94 54 Q84 36 64 36 Z" fill="#e63946"/>
+  <!-- Apple left half shading -->
+  <path d="M64 36 Q44 36 34 54 Q24 72 30 90 Q36 108 52 115 Q60 118 64 116 Z" fill="#c82030" opacity="0.5"/>
+  <!-- Apple highlight -->
+  <ellipse cx="50" cy="60" rx="12" ry="18" fill="white" opacity="0.3" transform="rotate(-20,50,60)"/>
+  <!-- Apple stem -->
+  <rect x="61" y="22" width="6" height="16" rx="3" fill="#5a3010"/>
+  <!-- Leaf -->
+  <path d="M67 28 Q82 18 90 26 Q84 34 72 32 Q68 30 67 28 Z" fill="#2d8a1b"/>
+  <!-- Leaf vein -->
+  <line x1="67" y1="28" x2="86" y2="24" stroke="#1e6010" stroke-width="1.5"/>
+  <!-- Orange (top right) -->
+  <circle cx="96" cy="50" r="20" fill="#f9892a"/>
+  <circle cx="88" cy="44" r="6" fill="white" opacity="0.2"/>
+  <!-- Orange bumpy texture -->
+  <circle cx="98" cy="46" r="2" fill="#e07020" opacity="0.5"/>
+  <circle cx="104" cy="54" r="2" fill="#e07020" opacity="0.5"/>
+  <circle cx="92" cy="58" r="2" fill="#e07020" opacity="0.5"/>
+  <!-- Orange stem -->
+  <rect x="94" y="30" width="4" height="6" rx="2" fill="#5a3010"/>
+  <!-- Strawberry (bottom left) -->
+  <path d="M32 90 Q26 78 30 70 Q36 62 44 70 Q52 78 44 90 Q40 96 38 98 Q36 96 32 90 Z" fill="#e63946"/>
+  <!-- Strawberry seeds -->
+  <ellipse cx="34" cy="78" rx="1.5" ry="2" fill="#f9f0e0" opacity="0.8" transform="rotate(-20,34,78)"/>
+  <ellipse cx="40" cy="74" rx="1.5" ry="2" fill="#f9f0e0" opacity="0.8"/>
+  <ellipse cx="42" cy="82" rx="1.5" ry="2" fill="#f9f0e0" opacity="0.8" transform="rotate(10,42,82)"/>
+  <ellipse cx="34" cy="86" rx="1.5" ry="2" fill="#f9f0e0" opacity="0.8" transform="rotate(-10,34,86)"/>
+  <!-- Strawberry leaves -->
+  <path d="M32 70 Q28 62 32 58 Q36 62 34 70 Z" fill="#2d8a1b"/>
+  <path d="M40 68 Q38 60 42 58 Q44 62 42 68 Z" fill="#2d8a1b"/>
+  <path d="M36 68 Q36 60 38 56 Q40 60 38 68 Z" fill="#3daa2b"/>
+  <!-- Banana (top left) -->
+  <path d="M22 30 Q18 50 26 66 Q30 72 34 68 Q38 64 32 50 Q28 38 32 26 Q28 24 22 30 Z" fill="#f9ca24"/>
+  <path d="M22 30 Q16 50 24 66 Q28 72 34 68" fill="none" stroke="#e8a000" stroke-width="2"/>
+  <!-- Grape cluster (background) -->
+  <circle cx="90" cy="96" r="10" fill="#7b2d8b" opacity="0.7"/>
+  <circle cx="102" cy="92" r="10" fill="#8b3d9b" opacity="0.7"/>
+  <circle cx="96" cy="106" r="10" fill="#7b2d8b" opacity="0.7"/>
+  <circle cx="90" cy="96" r="5" fill="#a569bd" opacity="0.4"/>
+  <circle cx="102" cy="92" r="5" fill="#a569bd" opacity="0.4"/>
+</svg>
