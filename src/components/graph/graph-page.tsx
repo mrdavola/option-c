@@ -26,7 +26,8 @@ import { RulesPopover } from "@/components/rules-popover"
 import { useTokenConfig } from "@/lib/token-config"
 import { InfoButton } from "@/components/info-button"
 import { useSearchParams } from "next/navigation"
-import { Search, X } from "lucide-react"
+import { Search, X, Gamepad2 } from "lucide-react"
+import { MECHANIC_ANIMATIONS } from "@/lib/mechanic-animations"
 import moonNamesData from "@/data/moon-names.json"
 const MOON_NAMES = moonNamesData as Record<string, string>
 
@@ -139,23 +140,28 @@ export function GraphPage({ data }: GraphPageProps) {
     const q = searchQuery.trim().toLowerCase()
     if (!q) return []
     const qNoDots = q.replace(/\./g, "")
-    const results: { id: string; name: string; planetId: string; planetName: string }[] = []
+    const results: { id: string; name: string; planetId: string; planetName: string; mechanic?: string }[] = []
     for (const node of data.nodes) {
       if (isClusterNode(node.id)) continue
       const moonName = (MOON_NAMES[node.id] ?? node.description).toLowerCase()
       const stdId = node.id.toLowerCase()
       const stdIdNoDots = stdId.replace(/\./g, "")
       const domain = node.domain.toLowerCase()
-      if (moonName.includes(q) || stdId.includes(q) || stdIdNoDots.includes(qNoDots) || domain.includes(q)) {
+      // Find the mechanic for this moon's domain code
+      const matchedMechanic = MECHANIC_ANIMATIONS.find(m => m.domainCodes.includes(node.domainCode))
+      const mechanicTitle = matchedMechanic?.title?.toLowerCase() || ""
+      const mechanicId = matchedMechanic?.id?.toLowerCase() || ""
+      if (moonName.includes(q) || stdId.includes(q) || stdIdNoDots.includes(qNoDots) || domain.includes(q) || mechanicTitle.includes(q) || mechanicId.includes(q)) {
         const planetId = `${node.grade}.${node.domainCode}`
         results.push({
           id: node.id,
           name: MOON_NAMES[node.id] ?? node.description,
           planetId,
           planetName: `${node.domain} (Grade ${node.grade})`,
+          mechanic: matchedMechanic?.title,
         })
       }
-      if (results.length >= 8) break
+      if (results.length >= 12) break
     }
     return results
   }, [searchQuery, data.nodes])
@@ -1082,7 +1088,14 @@ export function GraphPage({ data }: GraphPageProps) {
                       className="w-full text-left px-3 py-2 hover:bg-zinc-800 transition-colors border-b border-zinc-800 last:border-0"
                     >
                       <p className="text-sm text-white truncate">{r.name}</p>
-                      <p className="text-xs text-zinc-500">{r.id} · {r.planetName}</p>
+                      <div className="flex items-center gap-1.5">
+                        <p className="text-xs text-zinc-500">{r.id} · {r.planetName}</p>
+                        {r.mechanic && (
+                          <span className="text-[10px] bg-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded-full flex items-center gap-1">
+                            <Gamepad2 className="size-2.5" />{r.mechanic}
+                          </span>
+                        )}
+                      </div>
                     </button>
                   ))}
                 </div>
