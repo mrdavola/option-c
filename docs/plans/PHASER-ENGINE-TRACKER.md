@@ -20,7 +20,7 @@
 | Update Circuit Board Builder (game option picker) | DONE |
 | Update API route + engine registry | DONE |
 | Rewrite Collect & Manage as reference (3 options) | DONE |
-| Verify + deploy | In Progress — Mike |
+| Verify + deploy | DONE |
 
 ## Phase 2: High Impact
 
