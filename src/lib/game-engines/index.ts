@@ -10,7 +10,7 @@ import { scalingResizingPhaserEngine } from "./scaling-resizing-phaser"
 import { buildMeasureEngine } from "./build-measure"
 import { patternRepeatEngine } from "./pattern-repeat"
 import { inventoryCraftingPhaserEngine } from "./inventory-crafting-phaser"
-import { bidEstimateEngine } from "./bid-estimate"
+import { biddingAuctionPhaserEngine } from "./bidding-auction-phaser"
 import { measurementChallengesPhaserEngine } from "./measurement-challenges-phaser"
 import { growCompoundEngine } from "./grow-compound"
 import { solveEliminateEngine } from "./solve-eliminate"
@@ -38,7 +38,7 @@ const ENGINE_REGISTRY: Record<string, GameEngine> = {
   "scaling-resizing": scalingResizingPhaserEngine,
   "inventory-crafting": inventoryCraftingPhaserEngine,
   "terrain-generation": plotExploreEngine,
-  "bidding-auction": bidEstimateEngine,
+  "bidding-auction": biddingAuctionPhaserEngine,
   "above-below-zero": riseFallEngine,
   "build-structure": buildStructureEngine,
 }
