@@ -32,7 +32,7 @@
 
 <h1>Diagonally Blueprint</h1>
 <p style="color: #f87171; font-size: 12px; margin-bottom: 4px;">INTERNAL — DO NOT SHARE OUTSIDE THE TEAM</p>
-<p class="date">Last updated: April 11, 2026, 10:00 PM ET</p>
+<p class="date">Last updated: April 11, 2026, 11:00 PM ET</p>
 
 <div class="latest-update">
   <strong>Latest update</strong>
@@ -302,6 +302,9 @@
   <li>✅ <strong>Lifetime tokens</strong> — tracked separately from spendable, used for leaderboard ranking</li>
   <li>✅ <strong>Creator notifications</strong> — inbox message when someone plays their game</li>
   <li>✅ <strong>Diagonal Idea prizes</strong> — 3 levels (Spark 1000, Idea 5000, Vision 10000), admin-configurable</li>
+  <li>✅ <strong>Multiplication tables trainer</strong> — tables 2-12, tracks struggles across sessions in Firestore, prioritizes weak facts</li>
+  <li>✅ <strong>How to Play updated</strong> — new builder flow, criteria lights, token system, Diagonal Idea prizes</li>
+  <li>✅ <strong>Hint Card rename</strong> — "Math Moment" renamed to "Hint Card" in UI</li>
 </ul>
 
 <h2>12. Sources & References</h2>
@@ -344,7 +347,7 @@
   <li><del>Wire fonts into games</del> — DONE</li>
   <li><del>Criteria lights in builder</del> — DONE</li>
   <li><del>Win condition required</del> — DONE</li>
-  <li><strong>Multiplication tables trainer:</strong> While the game is building (~3s), show multiplication flash cards. Track which ones the learner gets wrong and repeat those until all are mastered.</li>
+  <li><del>Multiplication tables trainer</del> — DONE: tables 2-12, Firestore tracking, prioritizes struggles</li>
   <li><strong>Item recommendations per game option:</strong> 2-3 suggested items based on the game option, learner can browse all.</li>
   <li><strong>Hardcode "This is about..." for all 535 standards</strong> (currently AI-generated per visit).</li>
 </ul>
@@ -545,6 +548,7 @@
 
 <table>
   <tr><th>Date</th><th>Who</th><th>What changed</th></tr>
+  <tr><td>Apr 11, 11pm ET</td><td>Barbara + Claude</td><td>Multiplication tables trainer (2-12, Firestore tracking, prioritizes struggles), How to Play updated (builder flow, criteria, tokens, Diagonal Idea prizes), renamed Math Moment to Hint Card.</td></tr>
   <tr><td>Apr 11, 10pm ET</td><td>Barbara + Claude</td><td>Criteria lights in builder (3 lights), win condition required, token-per-play (10/unique), lifetime tokens for ranking, Diagonal Idea prizes (3 levels: Spark/Idea/Vision), creator inbox notifications, admin token editor expanded.</td></tr>
   <tr><td>Apr 11, 9pm ET</td><td>Barbara + Claude</td><td>Removed vibe system (Kawaii/Stickman/C64), wired Space Grotesk + Lexend fonts into all 19 engines. Removed vibe picker from build screen.</td></tr>
   <tr><td>Apr 11, 8pm ET</td><td>Barbara + Claude</td><td>Full pending work overhaul: PostHog analytics, multiplication trainer, Diagonal Idea prizes, tokens-from-plays, ranking discussion, hardcoded hints, criteria lights, font decision (Lexend/Space Grotesk/Nunito), vibe removal, For Review tab with mechanic-to-standards mapping.</td></tr>
