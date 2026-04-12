@@ -37,6 +37,27 @@ export const SPRITE_BACKGROUNDS = [
   { id: "jungle", label: "Jungle", keywords: ["tropical", "vine", "explorer", "adventure", "wild"] },
 ] as const
 
+// Categories for organizing sprites (including community uploads)
+export const CHARACTER_CATEGORIES: Record<string, string[]> = {
+  "Adventurers": ["pirate", "astronaut", "explorer", "diver"],
+  "Warriors": ["knight", "ninja"],
+  "Magic": ["wizard", "ghost"],
+  "Professionals": ["chef", "robot"],
+}
+
+export const BACKGROUND_CATEGORIES: Record<string, string[]> = {
+  "Nature": ["forest", "jungle", "arctic"],
+  "Water": ["underwater"],
+  "Built": ["castle", "kitchen", "city"],
+  "Extreme": ["volcano", "cave", "space"],
+}
+
+export const ITEM_CATEGORIES: Record<string, string[]> = {
+  "Treasure": ["coin", "gem", "treasure-chest", "key"],
+  "Magic": ["crystal", "potion", "star"],
+  "Nature": ["fruit", "shell", "mushroom"],
+}
+
 export type SpriteId = typeof SPRITE_CHARACTERS[number]["id"]
 export type ItemSpriteId = typeof SPRITE_ITEMS[number]["id"]
 export type BackgroundId = typeof SPRITE_BACKGROUNDS[number]["id"]
