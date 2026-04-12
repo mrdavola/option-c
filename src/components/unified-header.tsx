@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Compass, Zap, Gamepad2, LayoutDashboard, Search, HelpCircle } from "lucide-react"
+import { RulesPopover } from "./rules-popover"
 import { useAuth } from "@/lib/auth"
 import { UserMenu } from "./user-menu"
 import { Logo } from "./logo"
@@ -62,7 +63,7 @@ export function UnifiedHeader() {
           <div className="flex items-center gap-2 shrink-0">
             <LearnerStats />
             <SearchToggle />
-            <HowToPlayButton />
+            <RulesPopover />
             <UserMenu />
           </div>
         </div>
@@ -165,14 +166,3 @@ function SearchToggle() {
   )
 }
 
-function HowToPlayButton() {
-  return (
-    <Link
-      href="/?howtoplay=1"
-      className="p-1.5 rounded-md text-zinc-500 hover:text-zinc-300 transition-colors"
-      title="How to play"
-    >
-      <HelpCircle className="size-4" />
-    </Link>
-  )
-}
