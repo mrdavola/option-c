@@ -32,7 +32,7 @@
 
 <h1>Diagonally Blueprint</h1>
 <p style="color: #f87171; font-size: 12px; margin-bottom: 4px;">INTERNAL — DO NOT SHARE OUTSIDE THE TEAM</p>
-<p class="date">Last updated: April 11, 2026, 9:00 PM ET</p>
+<p class="date">Last updated: April 11, 2026, 10:00 PM ET</p>
 
 <div class="latest-update">
   <strong>Latest update</strong>
@@ -121,10 +121,18 @@
 
 <table>
   <tr><th>Term</th><th>Definition</th></tr>
-  <tr><td>Tokens</td><td>In-app currency. +2000 per approved game (configurable by admin). +100 per mastered skill (configurable). Shown in top bar.</td></tr>
+  <tr><td>Tokens</td><td>In-app currency. Two balances tracked:
+    <br>• <strong>Lifetime Tokens</strong> — total tokens ever earned. Never decreases. Used for leaderboard ranking.
+    <br>• <strong>Spendable Tokens</strong> — available balance (will be spendable on future features).
+    <br>Sources: +2000 per approved game, +100 per mastered skill, +10 per unique play of your game (all admin-configurable).</td></tr>
   <tr><td>Hint Card</td><td>Practice mode. When playing a game, the learner chooses "Play with Hint Card" — a side panel shows the math concept, steps, and encouragement. Wins don't count toward mastery/tokens. After winning, prompted: "Ready to play for real?"</td></tr>
   <tr><td>Game Library</td><td>All approved games. Tabs: For My Grade, All Games, Ranking. Learners play others' games to master skills.</td></tr>
-  <tr><td>Ranking / Leaderboard</td><td>Top learners by token count. Top-3 podium + per-grade top 10.</td></tr>
+  <tr><td>Ranking / Leaderboard</td><td>Top learners by lifetime token count (not spendable balance). Top-3 podium + per-grade top 10.</td></tr>
+  <tr><td>Diagonal Idea Prizes</td><td>Awarded by admin when a learner submits a practical, implementable idea via the feedback button. Three levels:
+    <br>• <strong>Diagonal Spark</strong> — a good, practical idea (1,000 tokens)
+    <br>• <strong>Diagonal Idea</strong> — a really impactful idea (5,000 tokens)
+    <br>• <strong>Diagonal Vision</strong> — a transformative idea (10,000 tokens)
+    <br>Learners can win each level multiple times. All amounts admin-configurable.</td></tr>
   <tr><td>Weekly Progress Chart</td><td>Line graph showing skills demonstrated over time. Available on guide's Learners tab (all learners) and learner's My Stuff (self vs classmates).</td></tr>
 </table>
 
@@ -288,6 +296,12 @@
   <li>✅ <strong>Sprite library integrated</strong> — 30 SVGs (10 backgrounds, 10 characters, 10 items) built into builder</li>
   <li>✅ <strong>Vibe system removed</strong> — Kawaii/Stickman/C64 replaced with unified visual style</li>
   <li>✅ <strong>Fonts wired into games</strong> — Space Grotesk (titles) + Lexend (body) in all 19 engines</li>
+  <li>✅ <strong>Criteria lights in builder</strong> — 3 lights (Math Well Applied, Math Essential, Playable Game) illuminate as criteria are met</li>
+  <li>✅ <strong>Win condition required</strong> — must fill 5/5 components to build</li>
+  <li>✅ <strong>Token per play</strong> — game creator earns 10 tokens per unique player (admin-configurable)</li>
+  <li>✅ <strong>Lifetime tokens</strong> — tracked separately from spendable, used for leaderboard ranking</li>
+  <li>✅ <strong>Creator notifications</strong> — inbox message when someone plays their game</li>
+  <li>✅ <strong>Diagonal Idea prizes</strong> — 3 levels (Spark 1000, Idea 5000, Vision 10000), admin-configurable</li>
 </ul>
 
 <h2>12. Sources & References</h2>
@@ -327,9 +341,9 @@
 <h3>Next Up — Builder &amp; UX</h3>
 <ul>
   <li><del>Remove vibe system</del> — DONE</li>
-  <li><del>Wire fonts into games</del> — DONE: Space Grotesk (titles) + Lexend (body) in all engines</li>
-  <li><strong>Bring back Game Criteria lights:</strong> Three indicator lights inside the Circuit Board Builder that illuminate as criteria are met (Playable Game, Math Well Applied, Math Essential). When all 3 light up, the builder "closes" (ready to build). See criteria-progress.tsx.</li>
-  <li><strong>Hardcode hint card content:</strong> The ? button inside games currently shows AI-generated help. Hardcode the math explanation for each standard so it's instant and reliable. (Add to For Review tab for verification.)</li>
+  <li><del>Wire fonts into games</del> — DONE</li>
+  <li><del>Criteria lights in builder</del> — DONE</li>
+  <li><del>Win condition required</del> — DONE</li>
   <li><strong>Multiplication tables trainer:</strong> While the game is building (~3s), show multiplication flash cards. Track which ones the learner gets wrong and repeat those until all are mastered.</li>
   <li><strong>Item recommendations per game option:</strong> 2-3 suggested items based on the game option, learner can browse all.</li>
   <li><strong>Hardcode "This is about..." for all 535 standards</strong> (currently AI-generated per visit).</li>
@@ -337,14 +351,16 @@
 
 <h3>Next Up — Analytics &amp; Data</h3>
 <ul>
-  <li><strong>PostHog integration:</strong> Record learner usage data — unsuccessful game attempts (= math concept not mastered), time spent, game options chosen, standards attempted. Unsuccessful attempts should flag the guide to consider moving the learner back to prerequisite skills.</li>
-  <li><strong>Tokens from plays:</strong> Learners earn tokens when OTHER learners play their game. Show play count and rating on each game card in the Library.</li>
-  <li><strong>Ranking = tokens to date:</strong> Leaderboard/podium should show total tokens ever earned (not spendable balance). Needs discussion: should tokens be spendable or just a score?</li>
+  <li><strong>PostHog integration:</strong> Record learner usage data — unsuccessful game attempts (= math concept not mastered), time spent, game options chosen, standards attempted. Unsuccessful attempts should flag the guide to consider moving the learner back to prerequisite skills. <em>(Mike to set up)</em></li>
+  <li><del>Tokens from plays</del> — DONE: 10 tokens per unique player, inbox notification to creator</li>
+  <li><del>Ranking = lifetime tokens</del> — DONE: leaderboard uses lifetimeTokens field</li>
 </ul>
 
 <h3>Next Up — Engagement</h3>
 <ul>
-  <li><strong>"Diagonal Thinker" badge:</strong> If a learner submits an exceptionally good idea or suggestion via the feedback button, they earn a special "Diagonal Thinker" badge on their My Stuff page + 5,000 tokens. Add explanation to How to Play: "If your idea or suggestion is exceptionally good, you could earn the Diagonal Thinker badge and 5,000 tokens!"</li>
+  <li><del>Diagonal Idea prizes (3 levels)</del> — DONE: Spark (1,000), Idea (5,000), Vision (10,000). Admin-configurable in Token Economy panel. Admin awards via feedback system.</li>
+  <li><strong>"I had a Diagonal Idea!" button:</strong> Add to How to Play card explaining the prize system. Requirement: idea must be good enough and practical enough to implement. Learners can win multiple times.</li>
+  <li><strong>Prize badges on My Stuff:</strong> Show earned Diagonal Spark/Idea/Vision badges next to learner name.</li>
 </ul>
 
 <h3>Game Engines</h3>
@@ -529,6 +545,7 @@
 
 <table>
   <tr><th>Date</th><th>Who</th><th>What changed</th></tr>
+  <tr><td>Apr 11, 10pm ET</td><td>Barbara + Claude</td><td>Criteria lights in builder (3 lights), win condition required, token-per-play (10/unique), lifetime tokens for ranking, Diagonal Idea prizes (3 levels: Spark/Idea/Vision), creator inbox notifications, admin token editor expanded.</td></tr>
   <tr><td>Apr 11, 9pm ET</td><td>Barbara + Claude</td><td>Removed vibe system (Kawaii/Stickman/C64), wired Space Grotesk + Lexend fonts into all 19 engines. Removed vibe picker from build screen.</td></tr>
   <tr><td>Apr 11, 8pm ET</td><td>Barbara + Claude</td><td>Full pending work overhaul: PostHog analytics, multiplication trainer, Diagonal Idea prizes, tokens-from-plays, ranking discussion, hardcoded hints, criteria lights, font decision (Lexend/Space Grotesk/Nunito), vibe removal, For Review tab with mechanic-to-standards mapping.</td></tr>
   <tr><td>Apr 11, PM ET</td><td>Barbara + Claude</td><td>Moon card redesign + Circuit Board Builder wired in. Full Blueprint audit — corrected outdated glossary, auth, generation flow, sprite selection. Marked orphaned files (game-card-builder, genie-chat, artwork-picker).</td></tr>
