@@ -3,7 +3,7 @@
 import type { ThemeConfig, MathParams, GameEngine, GameOption, RoundData } from "./engine-types"
 import { balanceSystemsPhaserEngine } from "./balance-systems-phaser"
 import { riseFallEngine } from "./rise-fall"
-import { scoreRankEngine } from "./score-rank"
+import { scoringRankingPhaserEngine } from "./scoring-ranking-phaser"
 import { collectManagePhaserEngine } from "./collect-manage-phaser"
 import { plotExploreEngine } from "./plot-explore"
 import { scaleTransformEngine } from "./scale-transform"
@@ -33,7 +33,7 @@ const ENGINE_REGISTRY: Record<string, GameEngine> = {
   "constraint-puzzles": solveEliminateEngine,
   "strategy-economy": growCompoundEngine,
   "measurement-challenges": measureCompareEngine,
-  "scoring-ranking": scoreRankEngine,
+  "scoring-ranking": scoringRankingPhaserEngine,
   "timing-rhythm": patternRepeatEngine,
   "scaling-resizing": scaleTransformEngine,
   "inventory-crafting": craftCombineEngine,
