@@ -296,5 +296,156 @@ function startGame() {
 </script>
 `
 
+  // VARIANT B: Mystery Side — one side hidden, figure out its value
+  if (variant === "variantB") {
+    const variantBContent = `
+<div class="intro-overlay" id="intro"><div class="intro-box">
+  <h2>${config.title} — Mystery Mode</h2>
+  <p>One side of the scale is hidden! Figure out the mystery value by looking at the tokens available, then balance it.</p>
+  <button class="intro-start" onclick="document.getElementById('intro').remove(); startGame()">Play →</button>
+</div></div>
+<div id="helpPanel" class="help-panel"><div class="help-content">
+  <h3>How to play</h3><p>The left side shows "?" — you need to figure out what it is. Use the available tokens as clues. Once you know the value, drag tokens to match it on the right side.</p>
+  <button class="help-close" onclick="document.getElementById('helpPanel').classList.remove('open')">Got it</button>
+</div></div>
+<div class="game-header"><div class="game-title">${config.title} — Mystery</div>
+  <div class="game-stats"><span>Score: <strong id="scoreDisplay">0</strong></span><div class="round-dots" id="roundDots"></div></div>
+</div>
+<div class="game-area" id="gameArea">
+  <div style="text-align: center; width: 90%; max-width: 500px;">
+    <div style="display: flex; justify-content: center; gap: 40px; margin-bottom: 20px;">
+      <div><div style="font-size: 14px; opacity: 0.6;">Left side</div><div id="leftVal" style="font-size: 48px; font-weight: 700; color: ${c.danger};">?</div></div>
+      <div style="font-size: 36px; color: ${c.text}33; align-self: center;">=</div>
+      <div><div style="font-size: 14px; opacity: 0.6;">Your side</div><div id="rightVal" style="font-size: 48px; font-weight: 700; color: ${c.primary};">0</div></div>
+    </div>
+    <div style="font-size: 13px; opacity: 0.5; margin-bottom: 12px;">Click ${config.itemName} to add to your side. Click again to remove.</div>
+    <div id="tokenBank" style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; min-height: 60px; margin-bottom: 16px;"></div>
+    <button id="checkBtn" onclick="checkMystery()" style="padding: 10px 32px; background: ${c.primary}; color: ${config.vibe === "kawaii" ? "#fff" : c.bg}; border: none; border-radius: 8px; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer;">Check Balance</button>
+    <button onclick="revealHint()" style="margin-left: 8px; padding: 10px 16px; background: ${c.secondary}33; color: ${c.text}; border: 1px solid ${c.secondary}; border-radius: 8px; font-family: inherit; cursor: pointer;">Hint</button>
+    <div id="hintArea" style="margin-top: 8px; font-size: 13px; color: ${c.accent}; min-height: 20px;"></div>
+  </div>
+</div>
+<script>
+const TOTAL_ROUNDS = 5; let currentRound = 0, mysteryVal = 0, rightTotal = 0, selected = new Set();
+function createToken(val, idx) {
+  const el = document.createElement('div');
+  el.style.cssText = 'width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; cursor: pointer; transition: all 0.15s; border: 2px solid ${c.primary}44; background: ${c.primary}11; color: ${c.text};';
+  el.textContent = val; el.dataset.val = val; el.dataset.idx = idx;
+  el.onclick = () => toggleToken(el, parseInt(el.dataset.val), parseInt(el.dataset.idx));
+  return el;
+}
+function toggleToken(el, val, idx) {
+  if (selected.has(idx)) { selected.delete(idx); rightTotal -= val; el.style.background = '${c.primary}11'; el.style.borderColor = '${c.primary}44'; }
+  else { selected.add(idx); rightTotal += val; el.style.background = '${c.accent}'; el.style.borderColor = '${c.accent}'; el.style.color = '${config.vibe === "kawaii" ? "#fff" : c.bg}'; }
+  document.getElementById('rightVal').textContent = rightTotal;
+}
+function revealHint() {
+  const hints = ['The mystery number is ' + (mysteryVal > 15 ? 'more than 15' : 'less than 15'), 'It is ' + (mysteryVal % 2 === 0 ? 'even' : 'odd'), 'It is between ' + (mysteryVal - 3) + ' and ' + (mysteryVal + 3)];
+  document.getElementById('hintArea').textContent = hints[Math.floor(Math.random() * hints.length)];
+}
+function checkMystery() {
+  if (rightTotal === mysteryVal) {
+    document.getElementById('leftVal').textContent = mysteryVal; document.getElementById('leftVal').style.color = '${c.accent}';
+    window.gameScore += 10*(currentRound+1); document.getElementById('scoreDisplay').textContent = window.gameScore;
+    const area = document.getElementById('gameArea'); const rect = area.getBoundingClientRect();
+    spawnParticles(rect.left+rect.width/2, rect.top+rect.height/2, '${c.accent}', 12); addCombo();
+    showScorePopup(rect.left+rect.width/2, rect.top+50, '+'+(10*(currentRound+1)));
+    const dots = document.querySelectorAll('.round-dot'); if(dots[currentRound]) dots[currentRound].classList.add('done');
+    currentRound++; if(currentRound>=TOTAL_ROUNDS){setTimeout(()=>showVictory('${config.winMessage}'),500);}else{setTimeout(startRound,800);}
+  } else { screenShake(); resetCombo(); trackFail();
+    showScorePopup(window.innerWidth/2, window.innerHeight/2, rightTotal > mysteryVal ? 'Too much!' : 'Not enough!');
+  }
+}
+function startRound() { resetFails(); rightTotal = 0; selected = new Set();
+  document.getElementById('rightVal').textContent = '0';
+  document.getElementById('leftVal').textContent = '?'; document.getElementById('leftVal').style.color = '${c.danger}';
+  document.getElementById('hintArea').textContent = '';
+  const maxVal = currentRound < 2 ? 12 : currentRound < 4 ? 20 : 30;
+  mysteryVal = Math.floor(Math.random()*(maxVal-3))+4;
+  const tokens = []; const a = Math.floor(Math.random()*(mysteryVal-1))+1; tokens.push(a, mysteryVal-a);
+  while(tokens.length < (currentRound < 2 ? 5 : 7)) tokens.push(Math.floor(Math.random()*maxVal)+1);
+  for(let i=tokens.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[tokens[i],tokens[j]]=[tokens[j],tokens[i]];}
+  const bank = document.getElementById('tokenBank'); bank.innerHTML = '';
+  tokens.forEach((v,i) => bank.appendChild(createToken(v,i)));
+  const dots = document.querySelectorAll('.round-dot'); dots.forEach((d,i)=>{d.classList.remove('current');if(i===currentRound)d.classList.add('current');});
+}
+function startGame(){const dc=document.getElementById('roundDots');dc.innerHTML='';for(let i=0;i<TOTAL_ROUNDS;i++){const d=document.createElement('div');d.className='round-dot';dc.appendChild(d);}startRound();}
+</script>`
+    return baseTemplate(config, variantBContent, variant, 60)
+  }
+
+  // VARIANT C: Chain Scales — balance 3 connected scales
+  if (variant === "variantC") {
+    const variantCContent = `
+<div class="intro-overlay" id="intro"><div class="intro-box">
+  <h2>${config.title} — Chain Mode</h2>
+  <p>Balance 3 connected scales! The result of each scale feeds into the next one.</p>
+  <button class="intro-start" onclick="document.getElementById('intro').remove(); startGame()">Play →</button>
+</div></div>
+<div id="helpPanel" class="help-panel"><div class="help-content">
+  <h3>How to play</h3><p>Three scales appear in a chain. Balance the first, its result becomes one side of the second, and so on. Get all 3 balanced to win the round!</p>
+  <button class="help-close" onclick="document.getElementById('helpPanel').classList.remove('open')">Got it</button>
+</div></div>
+<div class="game-header"><div class="game-title">${config.title} — Chain</div>
+  <div class="game-stats"><span>Score: <strong id="scoreDisplay">0</strong></span><span>Round: <strong id="roundDisplay">1</strong>/3</span></div>
+</div>
+<div class="game-area" id="gameArea">
+  <div style="text-align: center; width: 90%; max-width: 500px;">
+    <div style="font-size: 14px; opacity: 0.6; margin-bottom: 8px;">Scale <span id="scaleNum">1</span> of 3</div>
+    <div style="display: flex; justify-content: center; gap: 40px; margin-bottom: 16px;">
+      <div><div style="font-size: 12px; opacity: 0.5;">Left</div><div id="leftVal" style="font-size: 40px; font-weight: 700; color: ${c.primary};"></div></div>
+      <div style="font-size: 28px; color: ${c.text}33; align-self: center;">=</div>
+      <div><div style="font-size: 12px; opacity: 0.5;">Right</div><div id="rightVal" style="font-size: 40px; font-weight: 700; color: ${c.accent};">0</div></div>
+    </div>
+    <div id="tokenBank" style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px;"></div>
+    <button onclick="checkChain()" style="padding: 10px 32px; background: ${c.primary}; color: ${config.vibe === "kawaii" ? "#fff" : c.bg}; border: none; border-radius: 8px; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer;">Balance!</button>
+  </div>
+</div>
+<script>
+let currentScale = 0, currentRound = 0, leftVal = 0, rightTotal = 0, selected = new Set(), chainValues = [];
+function createToken(val, idx) {
+  const el = document.createElement('div');
+  el.style.cssText = 'width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.15s; border: 2px solid ${c.primary}44; background: ${c.primary}11; color: ${c.text};';
+  el.textContent = val; el.dataset.val = val; el.dataset.idx = idx;
+  el.onclick = () => { if(selected.has(idx)){selected.delete(idx);rightTotal-=val;el.style.background='${c.primary}11';el.style.borderColor='${c.primary}44';el.style.color='${c.text}';}else{selected.add(idx);rightTotal+=val;el.style.background='${c.accent}';el.style.borderColor='${c.accent}';el.style.color='${config.vibe === "kawaii" ? "#fff" : c.bg}';} document.getElementById('rightVal').textContent=rightTotal; };
+  return el;
+}
+function checkChain() {
+  if (rightTotal === leftVal) {
+    spawnParticles(window.innerWidth/2, window.innerHeight/2, '${c.accent}', 8); addCombo();
+    currentScale++;
+    if (currentScale >= 3) {
+      window.gameScore += 30*(currentRound+1); document.getElementById('scoreDisplay').textContent = window.gameScore;
+      showScorePopup(window.innerWidth/2, 100, 'Chain complete! +'+(30*(currentRound+1)));
+      currentRound++; document.getElementById('roundDisplay').textContent = currentRound+1;
+      if (currentRound >= 3) { setTimeout(()=>showVictory('${config.winMessage}'),500); }
+      else { setTimeout(startRound, 800); }
+    } else { setTimeout(startScale, 500); }
+  } else { screenShake(); resetCombo(); trackFail();
+    showScorePopup(window.innerWidth/2, window.innerHeight/2, rightTotal>leftVal?'Too much!':'Not enough!');
+  }
+}
+function startScale() {
+  rightTotal = 0; selected = new Set();
+  document.getElementById('scaleNum').textContent = currentScale+1;
+  leftVal = currentScale === 0 ? chainValues[0] : chainValues[currentScale];
+  document.getElementById('leftVal').textContent = leftVal;
+  document.getElementById('rightVal').textContent = '0';
+  const tokens = []; const a = Math.floor(Math.random()*(leftVal-1))+1; tokens.push(a, leftVal-a);
+  while(tokens.length < 5) tokens.push(Math.floor(Math.random()*15)+1);
+  for(let i=tokens.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[tokens[i],tokens[j]]=[tokens[j],tokens[i]];}
+  const bank = document.getElementById('tokenBank'); bank.innerHTML = '';
+  tokens.forEach((v,i) => bank.appendChild(createToken(v,i)));
+}
+function startRound() { resetFails(); currentScale = 0;
+  const base = Math.floor(Math.random()*8)+4;
+  chainValues = [base, base + Math.floor(Math.random()*5)+2, base + Math.floor(Math.random()*8)+5];
+  startScale();
+}
+function startGame() { startRound(); }
+</script>`
+    return baseTemplate(config, variantCContent, variant, 60)
+  }
+
   return baseTemplate(config, gameContent, variant, 60)
 }

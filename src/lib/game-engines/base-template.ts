@@ -399,27 +399,11 @@ ${variant !== "classic" ? `<div style="position: fixed; top: 44px; left: 50%; tr
 
 ${gameContent}
 
-${variant === "timed" ? `
-<script>
-// TIMED VARIANT — wrap startGame to add countdown
-const _originalStartGame = window.startGame || startGame;
-window.startGame = startGame = function() {
-  _originalStartGame();
-  startTimer(${timerSeconds});
-};
-// Stop timer on victory
-const _originalShowVictory = showVictory;
-showVictory = function(msg) { stopTimer(); _originalShowVictory(msg); };
-</script>
-` : ""}
 
-${variant === "challenge" ? `
 <script>
-// CHALLENGE VARIANT — harder rules applied by each engine
-// Flag available for engine code to check
-window.challengeMode = true;
+// Game engine variant: ${variant}
+window.gameVariant = '${variant}';
 </script>
-` : ""}
 
 </body>
 </html>`

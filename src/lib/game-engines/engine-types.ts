@@ -37,8 +37,11 @@ export interface ThemeConfigRequest {
   dare?: string
 }
 
-// Game variants — each engine supports 3 modes
-export type GameVariant = "classic" | "timed" | "challenge"
+// Game engine variants — each engine supports 3 genuinely different gameplay modes
+// classic = variant A (core gameplay)
+// variantB = alternative interaction mode
+// variantC = creative/advanced mode
+export type GameVariant = "classic" | "timed" | "challenge" | "variantB" | "variantC"
 
 // Each engine exports this function signature
 export type GameEngine = (config: ThemeConfig, mathParams: MathParams, variant?: GameVariant) => string
