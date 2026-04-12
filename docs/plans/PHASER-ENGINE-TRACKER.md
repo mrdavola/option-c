@@ -26,7 +26,7 @@
 
 | # | Mechanic | Mechanic ID | Options | Status |
 |---|---|---|---|---|
-| 3 | Balance & Equalize | `balance-systems` | free-balance, mystery-side, chain-scales | Not Started |
+| 3 | Balance & Equalize | `balance-systems` | free-balance, mystery-side, chain-scales | In Progress — Claude |
 | 12 | Score & Rank | `scoring-ranking` | sorting-lane, number-line-drop, leaderboard-fix | Not Started |
 | 15 | Craft & Combine | `inventory-crafting` | recipe-mixer, potion-lab, assembly-line | Not Started |
 
