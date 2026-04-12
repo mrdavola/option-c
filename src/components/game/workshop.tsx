@@ -1,12 +1,12 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState } from "react"
 import type { GameDesignDoc } from "@/lib/game-types"
 import { doc, setDoc, collection, getDoc } from "firebase/firestore"
 import { db } from "@/lib/firebase"
 import { GameIframe } from "./game-iframe"
 import { MathMomentOverlay } from "./math-moment-overlay"
-import { Send, ArrowLeft, MessageCircle, X } from "lucide-react"
+import { ArrowLeft, MessageCircle, X, Wrench, Pencil, RotateCcw } from "lucide-react"
 import { useAuth } from "@/lib/auth"
 import { sanitizeGameHtml } from "@/lib/html-sanitizer"
 import posthog from "posthog-js"
@@ -19,11 +19,6 @@ interface WorkshopProps {
   onSendForReview: (html: string, gameId: string | null) => void
 }
 
-interface ChatMessage {
-  role: "user" | "assistant"
-  text: string
-}
-
 export function Workshop({
   initialHtml,
   designDoc,
@@ -33,12 +28,6 @@ export function Workshop({
 }: WorkshopProps) {
   const { activeProfile } = useAuth()
   const [html, setHtml] = useState(initialHtml)
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
-    {
-      role: "assistant",
-      text: `Your game "${designDoc.title}" is ready! Play it on the left, then tell me what you want to change.`,
-    },
-  ])
   const [input, setInput] = useState("")
   const [isRefining, setIsRefining] = useState(false)
   // Track whether the learner has won their own game at least once.
@@ -52,16 +41,6 @@ export function Workshop({
   const [currentGameId] = useState<string>(() => gameId ?? doc(collection(db, "games")).id)
   const [mobileChat, setMobileChat] = useState(false)
   const [showMathMoment, setShowMathMoment] = useState(false)
-  const chatScrollRef = useRef<HTMLDivElement>(null)
-  const hasInteracted = useRef(false)
-
-  // Auto-scroll chat
-  useEffect(() => {
-    chatScrollRef.current?.scrollTo({
-      top: chatScrollRef.current.scrollHeight,
-      behavior: "smooth",
-    })
-  }, [chatMessages])
 
   // Auto-save draft to Firebase. Uses the stable currentGameId (locked
   // in on mount) so every save targets the same Firestore doc. createdAt
@@ -111,61 +90,6 @@ export function Workshop({
     }
   }
 
-  const handleSend = async () => {
-    if (!input.trim() || isRefining) return
-    hasInteracted.current = true
-
-    const userMessage = input.trim()
-    setInput("")
-    setChatMessages((prev) => [...prev, { role: "user", text: userMessage }])
-    setIsRefining(true)
-
-    try {
-      const res = await fetch("/api/game/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          currentHtml: html,
-          message: userMessage,
-          designDoc,
-          chatHistory: chatMessages,
-        }),
-      })
-      const data = await res.json()
-
-      if (data.html) {
-        setHtml(data.html)
-        setChatMessages((prev) => [
-          ...prev,
-          { role: "assistant", text: data.reply || "Done! I updated the game. Take a look." },
-        ])
-        saveDraft(data.html)
-      } else if (data.reply) {
-        // AI answered a question without changing the game
-        setChatMessages((prev) => [...prev, { role: "assistant", text: data.reply }])
-      } else {
-        setChatMessages((prev) => [
-          ...prev,
-          { role: "assistant", text: "Something went wrong. Try describing the change differently." },
-        ])
-      }
-    } catch {
-      setChatMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          text: "Connection error. Please try again.",
-        },
-      ])
-    } finally {
-      setIsRefining(false)
-    }
-  }
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    handleSend()
-  }
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-zinc-950">
@@ -209,7 +133,7 @@ export function Workshop({
           </button>
         </div>
 
-        {/* Chat panel — 35% on desktop, overlay on mobile */}
+        {/* Testing Lab panel — 35% on desktop, overlay on mobile */}
         <div
           className={`${
             mobileChat
@@ -220,63 +144,141 @@ export function Workshop({
           {/* Mobile close */}
           {mobileChat && (
             <div className="md:hidden flex items-center justify-between px-4 py-2 border-b border-zinc-800">
-              <span className="text-sm text-white font-medium">Refine</span>
-              <button
-                onClick={() => setMobileChat(false)}
-                className="text-zinc-400 hover:text-white"
-              >
+              <span className="text-sm text-white font-medium">Game Testing Lab</span>
+              <button onClick={() => setMobileChat(false)} className="text-zinc-400 hover:text-white">
                 <X className="size-5" />
               </button>
             </div>
           )}
 
-          {/* Chat messages */}
-          <div
-            ref={chatScrollRef}
-            className="flex-1 overflow-y-auto p-4 space-y-3"
-          >
-            {chatMessages.map((msg, i) => (
-              <div
-                key={i}
-                className={`max-w-[90%] rounded-lg px-3 py-2 text-sm ${
-                  msg.role === "user"
-                    ? "self-end ml-auto bg-zinc-800 text-zinc-100"
-                    : "bg-zinc-900 text-zinc-300"
-                }`}
-              >
-                {msg.text}
-              </div>
-            ))}
-            {isRefining && (
-              <div className="text-sm text-zinc-400 animate-pulse">Thinking...</div>
-            )}
-          </div>
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <h3 className="text-sm font-semibold text-white">Game Testing Lab</h3>
+            <p className="text-xs text-zinc-400">Play your game on the left. If something&apos;s wrong, fix it below.</p>
 
-          {/* Chat input */}
-          <form
-            onSubmit={handleSubmit}
-            className="p-3 border-t border-zinc-800"
-          >
-            <div className="flex gap-2">
+            {/* Fix something — category buttons */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-xs text-zinc-400">
+                <Wrench className="size-3.5" />
+                <span className="font-semibold uppercase tracking-wide">Fix something</span>
+              </div>
+              {isRefining ? (
+                <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 text-center">
+                  <RotateCcw className="size-5 text-emerald-400 animate-spin mx-auto mb-2" />
+                  <p className="text-sm text-zinc-300">Rebuilding your game...</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-1.5">
+                  {[
+                    { label: "Game is not showing", issue: "The game is not rendering or showing a blank screen. Regenerate the game HTML making sure it renders properly." },
+                    { label: "Can't click or tap anything", issue: "The interactive elements (buttons, draggable items) are not responding to clicks or taps. Fix the event handlers and make sure all interactive elements work." },
+                    { label: "Game doesn't make sense", issue: "The game logic is confusing or broken. The rounds, scoring, or win/lose conditions don't work properly. Regenerate with clearer game logic." },
+                    { label: "Game gives you the answer", issue: "The game reveals the correct answer before the player solves it, or the answer is obvious without doing math. Fix so the player must figure out the answer." },
+                  ].map((fix) => (
+                    <button
+                      key={fix.label}
+                      onClick={async () => {
+                        setIsRefining(true)
+                        posthog.capture("fix_this_clicked", { game_id: currentGameId, issue: fix.label })
+                        try {
+                          const res = await fetch("/api/game/chat", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              currentHtml: html,
+                              message: fix.issue,
+                              designDoc,
+                              chatHistory: [],
+                            }),
+                          })
+                          const data = await res.json()
+                          if (data.html) {
+                            setHtml(data.html)
+                            saveDraft(data.html)
+                          }
+                        } catch {}
+                        setIsRefining(false)
+                      }}
+                      className="w-full text-left px-3 py-2.5 rounded-lg bg-zinc-900 border border-zinc-800 hover:border-zinc-600 text-sm text-zinc-300 transition-colors"
+                    >
+                      {fix.label}
+                    </button>
+                  ))}
+                  {/* Other — write-in */}
+                  <div className="mt-1">
+                    <input
+                      type="text"
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      placeholder="Other issue..."
+                      className="w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-zinc-600 focus:outline-none"
+                      onKeyDown={async (e) => {
+                        if (e.key === "Enter" && input.trim()) {
+                          setIsRefining(true)
+                          posthog.capture("fix_this_clicked", { game_id: currentGameId, issue: "other: " + input })
+                          try {
+                            const res = await fetch("/api/game/chat", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({
+                                currentHtml: html,
+                                message: input.trim(),
+                                designDoc,
+                                chatHistory: [],
+                              }),
+                            })
+                            const data = await res.json()
+                            if (data.html) { setHtml(data.html); saveDraft(data.html) }
+                          } catch {}
+                          setInput("")
+                          setIsRefining(false)
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Change something — write-in */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-xs text-zinc-400">
+                <Pencil className="size-3.5" />
+                <span className="font-semibold uppercase tracking-wide">I want to change something</span>
+              </div>
               <input
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="What should I change?"
+                placeholder="Describe what you want different..."
                 disabled={isRefining}
-                className="flex-1 rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-zinc-600 focus:outline-none disabled:opacity-50"
+                className="w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-zinc-600 focus:outline-none disabled:opacity-50"
+                onKeyDown={async (e) => {
+                  if (e.key === "Enter" && input.trim() && !isRefining) {
+                    setIsRefining(true)
+                    posthog.capture("change_request", { game_id: currentGameId, request: input })
+                    try {
+                      const res = await fetch("/api/game/chat", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          currentHtml: html,
+                          message: input.trim(),
+                          designDoc,
+                          chatHistory: [],
+                        }),
+                      })
+                      const data = await res.json()
+                      if (data.html) { setHtml(data.html); saveDraft(data.html) }
+                    } catch {}
+                    setInput("")
+                    setIsRefining(false)
+                  }
+                }}
               />
-              <button
-                type="submit"
-                disabled={isRefining || !input.trim()}
-                className="rounded-lg bg-zinc-800 p-2 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-200 disabled:opacity-50 transition-colors"
-              >
-                <Send className="size-4" />
-              </button>
             </div>
-          </form>
+          </div>
 
-          {/* Send for Review — gated until the learner wins their own game */}
+          {/* Send for Review — gated until the learner wins */}
           <div className="p-3 border-t border-zinc-700">
             <p className="text-xs text-zinc-400 text-center mb-2">
               {hasWon
@@ -292,7 +294,7 @@ export function Workshop({
               className="w-full py-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:bg-zinc-800 disabled:text-zinc-500 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
               title={!hasWon ? "Win your own game first" : undefined}
             >
-              {hasWon ? "Send for Review" : "🔒 Win your game first"}
+              {hasWon ? "Send for Review" : "Win your game first"}
             </button>
           </div>
 
