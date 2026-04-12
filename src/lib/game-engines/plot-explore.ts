@@ -178,5 +178,67 @@ function startGame() {
 </script>
 `
 
+  // VARIANT B: Battleship — call coordinates to sink hidden items
+  if (variant === "variantB") {
+    const vB = `
+<div class="intro-overlay" id="intro"><div class="intro-box"><h2>${config.title} — Battleship</h2><p>Hidden ${config.itemName} are on the grid! Call coordinates to find them.</p><button class="intro-start" onclick="document.getElementById('intro').remove(); startGame()">Play →</button></div></div>
+<div id="helpPanel" class="help-panel"><div class="help-content"><h3>How to play</h3><p>Click grid squares to search. Green = hit, red = miss. Find all 5!</p><button class="help-close" onclick="document.getElementById('helpPanel').classList.remove('open')">Got it</button></div></div>
+<div class="game-header"><div class="game-title">${config.title} — Battleship</div><div class="game-stats"><span>Shots: <strong id="shotCount">0</strong></span><span>Found: <strong id="hitCount">0</strong>/5</span></div></div>
+<div class="game-area" id="gameArea">
+  <div style="text-align: center;"><div id="grid" style="display: inline-grid; gap: 2px;"></div></div>
+</div>
+<script>
+let gSize=6,ships=new Set(),revealed=new Set(),shots=0,hits=0;
+function cid(x,y){return x+','+y}
+function render(){const g=document.getElementById('grid');g.style.gridTemplateColumns='repeat('+(gSize+1)+',34px)';g.innerHTML='';
+const c0=document.createElement('div');c0.style.cssText='width:34px;height:34px;';g.appendChild(c0);
+for(let x=0;x<gSize;x++){const h=document.createElement('div');h.style.cssText='width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:11px;color:${c.text}80;';h.textContent=x;g.appendChild(h);}
+for(let y=0;y<gSize;y++){const l=document.createElement('div');l.style.cssText='width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:11px;color:${c.text}80;';l.textContent=y;g.appendChild(l);
+for(let x=0;x<gSize;x++){const cell=document.createElement('button');const id=cid(x,y);
+let bg=revealed.has(id)?(ships.has(id)?'${c.accent}44':'${c.danger}22'):'${c.primary}11';
+cell.style.cssText='width:34px;height:34px;border-radius:4px;border:1px solid ${c.primary}33;background:'+bg+';cursor:'+(revealed.has(id)?'default':'pointer')+';font-size:14px;';
+if(revealed.has(id))cell.textContent=ships.has(id)?'✓':'·';
+if(!revealed.has(id))cell.onclick=()=>{revealed.add(id);shots++;document.getElementById('shotCount').textContent=shots;
+if(ships.has(id)){hits++;document.getElementById('hitCount').textContent=hits;spawnParticles(window.innerWidth/2,window.innerHeight/2,'${c.accent}',8);addCombo();
+if(hits>=5){window.gameScore=Math.max(10,100-shots*5);setTimeout(()=>showVictory('${config.winMessage}'),500);}}else{resetCombo();}render();};
+g.appendChild(cell);}}}
+function startGame(){ships=new Set();revealed=new Set();shots=0;hits=0;document.getElementById('hitCount').textContent='0';document.getElementById('shotCount').textContent='0';
+while(ships.size<5)ships.add(cid(Math.floor(Math.random()*gSize),Math.floor(Math.random()*gSize)));render();}
+</script>`
+    return baseTemplate(config, vB, variant, 40)
+  }
+
+  // VARIANT C: Treasure Trail — follow coordinate clues
+  if (variant === "variantC") {
+    const vC = `
+<div class="intro-overlay" id="intro"><div class="intro-box"><h2>${config.title} — Trail</h2><p>Follow the clues! Each one gives you coordinates to click.</p><button class="intro-start" onclick="document.getElementById('intro').remove(); startGame()">Play →</button></div></div>
+<div id="helpPanel" class="help-panel"><div class="help-content"><h3>How to play</h3><p>A clue says "Go to (3,4)". Click that spot on the grid. 5 correct clicks = treasure found!</p><button class="help-close" onclick="document.getElementById('helpPanel').classList.remove('open')">Got it</button></div></div>
+<div class="game-header"><div class="game-title">${config.title} — Trail</div><div class="game-stats"><span>Score: <strong id="scoreDisplay">0</strong></span><span>Step: <strong id="stepD">1</strong>/5</span></div></div>
+<div class="game-area" id="gameArea">
+  <div style="display:flex;gap:24px;align-items:center;">
+    <canvas id="tg" width="260" height="260" style="border:2px solid ${c.secondary};border-radius:8px;cursor:crosshair;"></canvas>
+    <div style="text-align:center;"><div style="font-size:12px;opacity:.5;">CLUE</div><div id="clue" style="font-size:20px;font-weight:700;color:${c.accent};margin:8px 0;"></div><div id="trail" style="font-size:11px;color:${c.text}80;text-align:left;"></div></div>
+  </div>
+</div>
+<script>
+let step=0,tgts=[],gS=7;const cv=document.getElementById('tg'),cx=cv.getContext('2d');
+function draw(){cx.clearRect(0,0,260,260);const cl=260/(gS+1);cx.strokeStyle='${c.secondary}33';cx.lineWidth=1;
+for(let i=0;i<=gS;i++){const p=(i+.5)*cl;cx.beginPath();cx.moveTo(p,0);cx.lineTo(p,260);cx.stroke();cx.beginPath();cx.moveTo(0,p);cx.lineTo(260,p);cx.stroke();}
+cx.fillStyle='${c.text}';cx.font='10px sans-serif';cx.textAlign='center';
+for(let i=0;i<=gS;i++){cx.fillText(i+'',(i+.5)*cl,256);cx.fillText(i+'',8,260-(i+.5)*cl+3);}
+for(let i=0;i<step;i++){const t=tgts[i];cx.fillStyle='${c.accent}44';cx.beginPath();cx.arc((t.x+.5)*cl,260-(t.y+.5)*cl,7,0,Math.PI*2);cx.fill();}}
+cv.addEventListener('click',(e)=>{const r=cv.getBoundingClientRect(),cl=260/(gS+1);const mx=e.clientX-r.left,my=e.clientY-r.top;
+const x=Math.round(mx/cl-.5),y=Math.round((260-my)/cl-.5);const t=tgts[step];
+if(x===t.x&&y===t.y){step++;document.getElementById('stepD').textContent=Math.min(step+1,5);window.gameScore+=10;document.getElementById('scoreDisplay').textContent=window.gameScore;
+spawnParticles(e.clientX,e.clientY,'${c.accent}',8);addCombo();draw();
+if(step>=5){setTimeout(()=>showVictory('${config.winMessage}'),500);}
+else{document.getElementById('clue').textContent='Go to ('+tgts[step].x+', '+tgts[step].y+')';}}
+else{screenShake();resetCombo();trackFail();}});
+function startGame(){step=0;tgts=[];for(let i=0;i<5;i++)tgts.push({x:Math.floor(Math.random()*gS),y:Math.floor(Math.random()*gS)});
+document.getElementById('clue').textContent='Go to ('+tgts[0].x+', '+tgts[0].y+')';document.getElementById('stepD').textContent='1';draw();}
+</script>`
+    return baseTemplate(config, vC, variant, 40)
+  }
+
   return baseTemplate(config, gameContent, variant, 40)
 }

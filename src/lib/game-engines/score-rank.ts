@@ -270,5 +270,129 @@ function startGame() {
 </script>
 `
 
+  // VARIANT B: Number Line Drop — drop numbers onto correct position on a number line
+  if (variant === "variantB") {
+    const vB = `
+<div class="intro-overlay" id="intro"><div class="intro-box"><h2>${config.title} — Number Line</h2><p>Drop each number onto the correct spot on the number line!</p><button class="intro-start" onclick="document.getElementById('intro').remove(); startGame()">Play →</button></div></div>
+<div id="helpPanel" class="help-panel"><div class="help-content"><h3>How to play</h3><p>A number appears. Click where it belongs on the number line. Get close enough to score!</p><button class="help-close" onclick="document.getElementById('helpPanel').classList.remove('open')">Got it</button></div></div>
+<div class="game-header"><div class="game-title">${config.title} — Number Line</div><div class="game-stats"><span>Score: <strong id="scoreDisplay">0</strong></span><div class="round-dots" id="roundDots"></div></div></div>
+<div class="game-area" id="gameArea">
+  <div style="text-align: center; width: 90%; max-width: 500px;">
+    <div style="font-size: 14px; opacity: 0.6; margin-bottom: 8px;">Place this number on the line</div>
+    <div id="targetNum" style="font-size: 48px; font-weight: 700; color: ${c.accent}; margin-bottom: 20px;"></div>
+    <div style="position: relative; height: 60px; margin: 0 auto;">
+      <canvas id="numLine" width="460" height="60" style="cursor: crosshair; border-radius: 8px;"></canvas>
+    </div>
+    <div id="feedback" style="margin-top: 12px; font-size: 14px; min-height: 20px;"></div>
+  </div>
+</div>
+<script>
+const TOTAL_ROUNDS = 5; let currentRound = 0, target = 0, rangeMin = 0, rangeMax = 10;
+const canvas = document.getElementById('numLine'); const ctx = canvas.getContext('2d');
+function drawLine() {
+  ctx.clearRect(0,0,460,60); ctx.strokeStyle = '${c.secondary}'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(20,30); ctx.lineTo(440,30); ctx.stroke();
+  for (let i = rangeMin; i <= rangeMax; i++) {
+    const x = 20 + (i - rangeMin) / (rangeMax - rangeMin) * 420;
+    ctx.beginPath(); ctx.moveTo(x,22); ctx.lineTo(x,38); ctx.stroke();
+    ctx.fillStyle = '${c.text}'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(i.toString(), x, 52);
+  }
+}
+canvas.addEventListener('click', (e) => {
+  const rect = canvas.getBoundingClientRect(); const mx = e.clientX - rect.left;
+  const clickVal = rangeMin + (mx - 20) / 420 * (rangeMax - rangeMin);
+  const rounded = Math.round(clickVal);
+  if (rounded === target) {
+    window.gameScore += 10*(currentRound+1); document.getElementById('scoreDisplay').textContent = window.gameScore;
+    spawnParticles(e.clientX, e.clientY, '${c.accent}', 10); addCombo();
+    showScorePopup(e.clientX, e.clientY-20, '+'+(10*(currentRound+1)));
+    // Draw marker
+    const tx = 20 + (target - rangeMin) / (rangeMax - rangeMin) * 420;
+    ctx.fillStyle = '${c.accent}'; ctx.beginPath(); ctx.arc(tx, 30, 8, 0, Math.PI*2); ctx.fill();
+    const dots = document.querySelectorAll('.round-dot'); if(dots[currentRound]) dots[currentRound].classList.add('done');
+    currentRound++; if(currentRound>=TOTAL_ROUNDS){setTimeout(()=>showVictory('${config.winMessage}'),600);}else{setTimeout(startRound,800);}
+  } else { screenShake(); resetCombo(); trackFail();
+    document.getElementById('feedback').style.color = '${c.danger}';
+    document.getElementById('feedback').textContent = 'You clicked ' + rounded + ' — try again!';
+    setTimeout(()=>{document.getElementById('feedback').textContent='';},1200);
+  }
+});
+function startRound() { resetFails();
+  if (currentRound < 2) { rangeMin = 0; rangeMax = 10; }
+  else if (currentRound < 4) { rangeMin = -10; rangeMax = 10; }
+  else { rangeMin = -20; rangeMax = 20; }
+  target = rangeMin + Math.floor(Math.random()*(rangeMax-rangeMin+1));
+  document.getElementById('targetNum').textContent = target;
+  document.getElementById('feedback').textContent = '';
+  drawLine();
+  const dots = document.querySelectorAll('.round-dot'); dots.forEach((d,i)=>{d.classList.remove('current');if(i===currentRound)d.classList.add('current');});
+}
+function startGame(){const dc=document.getElementById('roundDots');dc.innerHTML='';for(let i=0;i<TOTAL_ROUNDS;i++){const d=document.createElement('div');d.className='round-dot';dc.appendChild(d);}startRound();}
+</script>`
+    return baseTemplate(config, vB, variant, 50)
+  }
+
+  // VARIANT C: Leaderboard Fix — a scoreboard has errors, drag names to fix the ranking
+  if (variant === "variantC") {
+    const vC = `
+<div class="intro-overlay" id="intro"><div class="intro-box"><h2>${config.title} — Fix the Board</h2><p>The leaderboard is scrambled! Click to swap entries until the ranking is correct.</p><button class="intro-start" onclick="document.getElementById('intro').remove(); startGame()">Play →</button></div></div>
+<div id="helpPanel" class="help-panel"><div class="help-content"><h3>How to play</h3><p>Scores should go from highest (top) to lowest (bottom). Click two entries to swap them. Fix the whole board!</p><button class="help-close" onclick="document.getElementById('helpPanel').classList.remove('open')">Got it</button></div></div>
+<div class="game-header"><div class="game-title">${config.title} — Fix It</div><div class="game-stats"><span>Score: <strong id="scoreDisplay">0</strong></span><span>Swaps: <strong id="swapCount">0</strong></span><div class="round-dots" id="roundDots"></div></div></div>
+<div class="game-area" id="gameArea">
+  <div style="text-align: center; width: 90%; max-width: 360px;">
+    <div style="font-size: 14px; opacity: 0.6; margin-bottom: 12px;">Fix the leaderboard — highest score on top!</div>
+    <div id="board" style="display: flex; flex-direction: column; gap: 4px;"></div>
+    <button onclick="checkBoard()" style="margin-top: 16px; padding: 10px 32px; background: ${c.primary}; color: ${config.vibe === "kawaii" ? "#fff" : c.bg}; border: none; border-radius: 8px; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer;">Check!</button>
+  </div>
+</div>
+<script>
+const TOTAL_ROUNDS = 5; let currentRound = 0, boardData = [], selectedIdx = -1, swaps = 0;
+const NAMES = ['Alex','Sam','Jordan','Casey','Riley','Morgan','Taylor','Quinn','Avery','Blake'];
+function renderBoard() {
+  const board = document.getElementById('board'); board.innerHTML = '';
+  boardData.forEach((entry, i) => {
+    const row = document.createElement('button');
+    row.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; border-radius: 8px; cursor: pointer; transition: all 0.15s; font-family: inherit; width: 100%; border: 2px solid ' + (selectedIdx === i ? '${c.accent}' : '${c.primary}44') + '; background: ' + (selectedIdx === i ? '${c.accent}22' : '${c.primary}08') + ';';
+    row.innerHTML = '<span style="font-size: 14px; color: ${c.text};">#' + (i+1) + ' ' + entry.name + '</span><span style="font-size: 18px; font-weight: 700; color: ${c.accent};">' + entry.score + '</span>';
+    row.onclick = () => { if (selectedIdx === -1) { selectedIdx = i; renderBoard(); } else if (selectedIdx === i) { selectedIdx = -1; renderBoard(); } else {
+      [boardData[selectedIdx], boardData[i]] = [boardData[i], boardData[selectedIdx]];
+      selectedIdx = -1; swaps++; document.getElementById('swapCount').textContent = swaps; renderBoard();
+    }};
+    board.appendChild(row);
+  });
+}
+function checkBoard() {
+  let sorted = true;
+  for (let i = 1; i < boardData.length; i++) { if (boardData[i].score > boardData[i-1].score) { sorted = false; break; } }
+  if (sorted) {
+    window.gameScore += Math.max(5, 20 - swaps) * (currentRound+1); document.getElementById('scoreDisplay').textContent = window.gameScore;
+    const area = document.getElementById('gameArea'); const rect = area.getBoundingClientRect();
+    spawnParticles(rect.left+rect.width/2, rect.top+rect.height/2, '${c.accent}', 12); addCombo();
+    showScorePopup(rect.left+rect.width/2, rect.top+50, swaps <= 3 ? 'Perfect!' : 'Fixed!');
+    const dots = document.querySelectorAll('.round-dot'); if(dots[currentRound]) dots[currentRound].classList.add('done');
+    currentRound++; if(currentRound>=TOTAL_ROUNDS){setTimeout(()=>showVictory('${config.winMessage}'),500);}else{setTimeout(startRound,800);}
+  } else { screenShake(); resetCombo(); trackFail(); showScorePopup(window.innerWidth/2, window.innerHeight/2, 'Not in order yet!'); }
+}
+function startRound() { resetFails(); selectedIdx = -1; swaps = 0; document.getElementById('swapCount').textContent = '0';
+  const count = currentRound < 2 ? 4 : currentRound < 4 ? 5 : 6;
+  const maxScore = currentRound < 2 ? 50 : 200;
+  boardData = [];
+  const usedNames = new Set();
+  for (let i = 0; i < count; i++) {
+    let name; do { name = NAMES[Math.floor(Math.random()*NAMES.length)]; } while (usedNames.has(name));
+    usedNames.add(name);
+    boardData.push({ name, score: Math.floor(Math.random()*maxScore)+1 });
+  }
+  // Scramble
+  for (let i = boardData.length-1; i > 0; i--) { const j = Math.floor(Math.random()*(i+1)); [boardData[i],boardData[j]] = [boardData[j],boardData[i]]; }
+  renderBoard();
+  const dots = document.querySelectorAll('.round-dot'); dots.forEach((d,i)=>{d.classList.remove('current');if(i===currentRound)d.classList.add('current');});
+}
+function startGame(){const dc=document.getElementById('roundDots');dc.innerHTML='';for(let i=0;i<TOTAL_ROUNDS;i++){const d=document.createElement('div');d.className='round-dot';dc.appendChild(d);}startRound();}
+</script>`
+    return baseTemplate(config, vC, variant, 50)
+  }
+
   return baseTemplate(config, gameContent, variant, 50)
 }
