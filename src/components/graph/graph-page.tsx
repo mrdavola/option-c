@@ -495,6 +495,7 @@ export function GraphPage({ data }: GraphPageProps) {
 
   // Mini-map: click planet
   const handleMiniMapClick = useCallback((planetId: string) => {
+    posthog.capture("galaxy_minimap_used", { planet_id: planetId })
     if (viewMode === "galaxy") {
       setCurrentPlanetId(planetId)
     } else {
@@ -542,6 +543,7 @@ export function GraphPage({ data }: GraphPageProps) {
         if (allMastered) {
           // Delay slightly so the wave effect plays first
           setTimeout(() => {
+            posthog.capture("supernova_triggered", { planet_id: planet.id })
             setMasteryEvent({ planetName: planet.domainName, planetColor: planet.color, tokenGain: 0 })
           }, 800)
         }
@@ -615,6 +617,7 @@ export function GraphPage({ data }: GraphPageProps) {
       // Give the camera a moment to land, then trigger the supernova
       if (fillsPlanet && planet) {
         setTimeout(() => {
+          posthog.capture("supernova_triggered", { planet_id: planet.id })
           setMasteryEvent({
             planetName: planet.domainName,
             planetColor: planet.color,
@@ -888,6 +891,7 @@ export function GraphPage({ data }: GraphPageProps) {
             <button
               onClick={() => {
                 if (gameName.trim()) {
+                  posthog.capture("game_named", { game_id: currentGameId, standard_id: currentDesignDoc?.standardId })
                   setCurrentDesignDoc({ ...currentDesignDoc, title: gameName.trim(), dare: gameDare.trim() || undefined } as any)
                 }
                 setBuildMode("workshop")
@@ -1037,7 +1041,12 @@ export function GraphPage({ data }: GraphPageProps) {
                 <input
                   type="text"
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value)
+                    if (e.target.value.trim() && searchResults.length > 0) {
+                      posthog.capture("galaxy_search_initiated", { search_query: e.target.value.trim(), results_count: searchResults.length })
+                    }
+                  }}
                   placeholder="Search skills, standards, topics..."
                   className="flex-1 bg-transparent text-sm text-white placeholder:text-zinc-500 focus:outline-none"
                   autoFocus
