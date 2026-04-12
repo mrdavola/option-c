@@ -16,7 +16,6 @@ import moonNames from "@/data/moon-names.json"
 import type { StandardsGraph } from "@/lib/graph-types"
 import { isClusterNode, buildDuplicateParentSet, isValidMoon } from "@/lib/galaxy-utils"
 import { Logo } from "@/components/logo"
-import { LearnerNav } from "@/components/learner-nav"
 import { InfoButton } from "@/components/info-button"
 import { WeeklyProgressChart } from "@/components/weekly-progress-chart"
 

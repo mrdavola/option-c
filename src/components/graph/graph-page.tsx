@@ -18,7 +18,6 @@ import type { GameDesignDoc } from "@/lib/game-types"
 import { doc, setDoc, getDoc, updateDoc, collection } from "firebase/firestore"
 import { db } from "@/lib/firebase"
 import { useAuth } from "@/lib/auth"
-import { LearnerNav } from "@/components/learner-nav"
 import { FeedbackButton } from "@/components/feedback/feedback-button"
 import { UserMenu } from "@/components/user-menu"
 import { GalaxySettingsPopover } from "./galaxy-settings-popover"
@@ -919,7 +918,7 @@ export function GraphPage({ data }: GraphPageProps) {
       )}
 
       {/* Student navigation — galaxy view only (planet view has Back to Galaxy) */}
-      {buildMode === "idle" && viewMode === "galaxy" && <LearnerNav />}
+      {/* LearnerNav removed — unified header handles navigation */}
 
       {/* Main view (hidden when building) */}
       {buildMode === "idle" && (
