@@ -61,7 +61,7 @@ export function UnifiedHeader() {
       {/* Row 2: Navigation */}
       <div className={`${isGalaxy ? "bg-zinc-900/40" : "bg-zinc-900/80"} backdrop-blur-sm border-b border-zinc-800/30 px-4 py-1.5`}>
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide">
             <NavLink href="/" active={isExplore} icon={<Compass className="size-3.5" />} label="Explore" />
             <NavLink href="/build" active={isBuild} icon={<Zap className="size-3.5" />} label="Build NOW!" highlight />
             <NavLink href="/library" active={isLibrary} icon={<Gamepad2 className="size-3.5" />} label="Game Library" />
@@ -149,7 +149,10 @@ function SearchToggle() {
           onKeyDown={(e) => {
             if (e.key === "Escape") setOpen(false)
             if (e.key === "Enter" && (e.target as HTMLInputElement).value.trim()) {
-              window.location.href = `/?search=${encodeURIComponent((e.target as HTMLInputElement).value.trim())}`
+              const q = (e.target as HTMLInputElement).value.trim()
+              // Navigate to galaxy with search query — will fly to the moon
+              window.location.href = `/?search=${encodeURIComponent(q)}`
+              setOpen(false)
             }
           }}
         />
