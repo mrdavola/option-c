@@ -220,12 +220,30 @@
 
 <p><strong>Bottom line:</strong> The game itself (how you play, how you win, how you lose) is 100% built by us and always works. AI decides what things are called, what colors and sprites to use, and generates math problems matched to the specific standard.</p>
 
-<h3>Game Variants (3 per engine = 57 total)</h3>
+<h3>Game Engine Variants (3 per engine = 57 total)</h3>
+<p>Each mechanic has 3 genuinely different gameplay modes — not just difficulty tweaks. Each game engine variant is a different way to interact with the same math.</p>
+
 <table>
-  <tr><th>Variant</th><th>What changes</th><th>How to unlock</th></tr>
-  <tr><td>Classic</td><td>Standard gameplay (default)</td><td>Available immediately</td></tr>
-  <tr><td>⏱ Timed</td><td>Same game + countdown timer (30-60s depending on engine)</td><td>Unlocked after winning classic</td></tr>
-  <tr><td>💀 Challenge</td><td>Harder rules (window.challengeMode flag for engines)</td><td>Unlocked after winning timed</td></tr>
+  <tr><th>#</th><th>Mechanic</th><th>Variant A</th><th>Variant B</th><th>Variant C</th></tr>
+  <tr><td>1</td><td>Collect &amp; Manage</td><td><strong>Free collect</strong> — click items to hit exact target sum</td><td><strong>Conveyor belt</strong> — items scroll past, grab the right ones before they disappear</td><td><strong>Split the loot</strong> — divide items into 2 bins, each must hit its own target</td></tr>
+  <tr><td>2</td><td>Split &amp; Share</td><td><strong>Cut the bar</strong> — cut a bar into equal parts, shade the fraction</td><td><strong>Pour the liquid</strong> — drag slider to pour the right fraction into a glass</td><td><strong>Share the pizza</strong> — drag slices to plates so everyone gets equal amounts</td></tr>
+  <tr><td>3</td><td>Balance &amp; Equalize</td><td><strong>Free balance</strong> — drag weights onto both sides to match</td><td><strong>Mystery side</strong> — one side is hidden, figure out its value</td><td><strong>Chain scales</strong> — balance 3 connected scales, each feeds into the next</td></tr>
+  <tr><td>4</td><td>Fit &amp; Rotate</td><td><strong>Rotate to match</strong> — rotate shape to match target</td><td><strong>Tangram fill</strong> — drag and rotate multiple pieces to fill an outline</td><td><strong>Mirror puzzle</strong> — place shape so it mirrors across a line</td></tr>
+  <tr><td>5</td><td>Roll &amp; Predict</td><td><strong>Find the stat</strong> — identify mode, median, or mean</td><td><strong>Bet the spinner</strong> — see weighted spinner, bet on most likely outcome</td><td><strong>Build the chart</strong> — drag bars to build histogram matching given stats</td></tr>
+  <tr><td>6</td><td>Navigate &amp; Optimize</td><td><strong>Shortest route</strong> — pick route with smallest total</td><td><strong>Map builder</strong> — draw path through nodes under a limit</td><td><strong>Delivery run</strong> — visit all stops minimizing total distance</td></tr>
+  <tr><td>7</td><td>Build &amp; Measure</td><td><strong>Stack to target</strong> — click blocks to reach exact height</td><td><strong>Fill the floor</strong> — drag tiles to cover area exactly</td><td><strong>Box packer</strong> — fit blocks into container, fill volume exactly</td></tr>
+  <tr><td>8</td><td>Race &amp; Calculate</td><td><strong>Launch to target</strong> — set speed to hit target distance</td><td><strong>Speed trap</strong> — object passes checkpoints, calculate speed</td><td><strong>Catch up</strong> — set right speed to catch the leader in time</td></tr>
+  <tr><td>9</td><td>Solve &amp; Eliminate</td><td><strong>Elimination grid</strong> — use clues to eliminate wrong answers</td><td><strong>20 questions</strong> — ask yes/no to narrow down the number</td><td><strong>Logic chain</strong> — each clue eliminates options AND reveals next clue</td></tr>
+  <tr><td>10</td><td>Grow &amp; Compound</td><td><strong>Investment sim</strong> — pick multipliers to reach target</td><td><strong>Population boom</strong> — choose growth rate, don't overshoot</td><td><strong>Doubling maze</strong> — each step doubles or triples your value</td></tr>
+  <tr><td>11</td><td>Measure &amp; Compare</td><td><strong>Size picker</strong> — compare two items, pick bigger/smaller</td><td><strong>Ruler race</strong> — measure objects, type the measurement</td><td><strong>Unit converter</strong> — convert units to find which is bigger</td></tr>
+  <tr><td>12</td><td>Score &amp; Rank</td><td><strong>Sorting lane</strong> — drag items into ascending order</td><td><strong>Number line drop</strong> — drop numbers onto correct position</td><td><strong>Leaderboard fix</strong> — fix errors in a scoreboard ranking</td></tr>
+  <tr><td>13</td><td>Pattern &amp; Repeat</td><td><strong>Sequence builder</strong> — find next number in pattern</td><td><strong>Pattern machine</strong> — set the rule, watch it generate</td><td><strong>Broken pattern</strong> — find which number is WRONG</td></tr>
+  <tr><td>14</td><td>Scale &amp; Transform</td><td><strong>Resize tool</strong> — drag slider to resize to target ratio</td><td><strong>Recipe scaler</strong> — scale recipe from 4 servings to 6/8/12</td><td><strong>Map distance</strong> — use map scale to find real distances</td></tr>
+  <tr><td>15</td><td>Craft &amp; Combine</td><td><strong>Recipe mixer</strong> — set amounts to match recipe</td><td><strong>Potion lab</strong> — combine ingredients with multiplied factors</td><td><strong>Assembly line</strong> — combine groups to hit target count</td></tr>
+  <tr><td>16</td><td>Plot &amp; Explore</td><td><strong>Coordinate hunter</strong> — click (x,y) to find targets</td><td><strong>Battleship</strong> — call coordinates to sink hidden ships</td><td><strong>Treasure trail</strong> — follow coordinate instructions to find treasure</td></tr>
+  <tr><td>17</td><td>Bid &amp; Estimate</td><td><strong>Auction house</strong> — estimate value, bid within 20%</td><td><strong>Price is Right</strong> — guess without going over</td><td><strong>Round and win</strong> — round to nearest 10/100, closest wins</td></tr>
+  <tr><td>18</td><td>Rise &amp; Fall</td><td><strong>Depth navigator</strong> — move to target on number line</td><td><strong>Temperature swing</strong> — add/subtract to stay in target zone</td><td><strong>Elevator operator</strong> — pick up passengers at +/- floors</td></tr>
+  <tr><td>19</td><td>Build a Structure</td><td><strong>Shape matcher</strong> — pick shapes to match blueprint</td><td><strong>Free build</strong> — build using N shapes, match target perimeter</td><td><strong>Shape decomposer</strong> — break complex shape into basic shapes</td></tr>
 </table>
 
 <!-- ============================================ -->
