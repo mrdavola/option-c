@@ -145,7 +145,7 @@ function ReturningStep({
     <div className="flex flex-col items-center gap-5">
       <h1 className="text-3xl font-bold text-white text-center">Welcome back!</h1>
       <p className="text-zinc-400 text-sm text-center">
-        Enter your name and personal code.
+        Enter your name and your personal code (the one you saved, like STAR-742).
       </p>
       <form
         onSubmit={(e) => {
@@ -177,6 +177,9 @@ function ReturningStep({
         </Button>
       </form>
       {error && <p className="text-red-400 text-sm text-center">{error}</p>}
+      <p className="text-zinc-600 text-xs text-center">
+        Forgot your code? Ask your teacher — they can look it up for you.
+      </p>
       <button
         onClick={onBack}
         className="text-zinc-500 text-xs hover:text-zinc-300 transition-colors"
