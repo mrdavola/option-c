@@ -47,7 +47,7 @@ export function MathMomentOverlay({ concept, interests, onDismiss }: MathMomentO
           <div className="flex items-center gap-2">
             <Sparkles className="size-4 text-amber-400 shrink-0" />
             <span className="text-xs font-medium text-amber-400 uppercase tracking-wide">
-              Math Moment
+              Hint Card
             </span>
           </div>
           <button

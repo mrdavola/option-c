@@ -358,7 +358,7 @@ function stopTimer() { if (timerInterval) clearInterval(timerInterval); }
 
 // === FAIL TRACKER ===
 // Engines can call trackFail() on wrong answers.
-// After 3 fails in a round, triggers gameLose + math moment.
+// After 3 fails in a round, triggers gameLose + hint card.
 let failCount = 0;
 const MAX_FAILS = 3;
 function trackFail() {

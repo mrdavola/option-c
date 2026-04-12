@@ -3,25 +3,16 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { useAuth } from "@/lib/auth"
 import { Coins } from "lucide-react"
+import { doc, getDoc, setDoc } from "firebase/firestore"
+import { db } from "@/lib/firebase"
 
-// Mini-game shown next to the funny stick figure during the
-// "generating" phase of the BuildScreen, while the AI is taking its
-// time to build the kid's actual game.
+// Multiplication tables trainer (2-12) shown during the build wait.
+// Tracks which facts the learner gets wrong and repeats those.
+// Progress is saved to Firestore so guides can see mastery detail.
 //
-// Goal: turn the wait time into productive practice. Kids do simple
-// math facts (addition, subtraction, multiplication depending on
-// grade) and earn 1 token per correct answer. No time limit, no
-// session cap. They can do as many or as few as they want.
-//
-// The math difficulty is chosen by grade:
-//   K, 1, 2     → simple addition + subtraction (sums up to 20)
-//   3, 4        → addition + subtraction up to 100, simple multiplication tables (×1-10)
-//   5, 6, 7     → multiplication (×2-12), simple division
-//   8, HS       → multiplication (×2-15), 2-digit addition
-//
-// We persist the per-session correct count in component state only.
-// Tokens go to Firestore via the existing updateTokens auth method,
-// same one used by the +2000 game-approved bonus.
+// Firestore path: multiplicationProgress/{uid}
+// Fields: mastered (array of "AxB" strings), struggles (array of "AxB" strings),
+//         totalCorrect, totalAttempts, lastPracticed
 
 interface BuildWaitMiniGameProps {
   grade?: string
@@ -30,84 +21,146 @@ interface BuildWaitMiniGameProps {
 interface Problem {
   question: string
   answer: number
-  // The choices the learner picks from. 4 options, one is correct.
+  a: number
+  b: number
   choices: number[]
 }
 
+// All multiplication facts from 2x2 to 12x12
+function allFacts(): Array<[number, number]> {
+  const facts: Array<[number, number]> = []
+  for (let a = 2; a <= 12; a++) {
+    for (let b = 2; b <= 12; b++) {
+      facts.push([a, b])
+    }
+  }
+  return facts
+}
+
 export function BuildWaitMiniGame({ grade }: BuildWaitMiniGameProps) {
-  const { updateTokens } = useAuth()
+  const { activeProfile, updateTokens } = useAuth()
   const [problem, setProblem] = useState<Problem | null>(null)
   const [feedback, setFeedback] = useState<"correct" | "wrong" | null>(null)
   const [sessionCorrect, setSessionCorrect] = useState(0)
   const [sessionTotal, setSessionTotal] = useState(0)
   const [savingToken, setSavingToken] = useState(false)
-  // Track whether the kid has actually started playing — we don't
-  // award tokens until they make their first attempt, to avoid
-  // accidentally awarding tokens just for opening the screen.
-  const hasStartedRef = useRef(false)
+  // Track struggles this session to prioritize them
+  const strugglesRef = useRef<Set<string>>(new Set())
+  const masteredRef = useRef<Set<string>>(new Set())
+  const loadedRef = useRef(false)
 
-  // Generate a fresh problem matching the learner's grade.
+  // Load progress from Firestore
+  useEffect(() => {
+    if (!activeProfile?.uid || loadedRef.current) return
+    loadedRef.current = true
+    getDoc(doc(db, "multiplicationProgress", activeProfile.uid))
+      .then((snap) => {
+        if (snap.exists()) {
+          const data = snap.data()
+          if (Array.isArray(data.struggles)) {
+            data.struggles.forEach((s: string) => strugglesRef.current.add(s))
+          }
+          if (Array.isArray(data.mastered)) {
+            data.mastered.forEach((s: string) => masteredRef.current.add(s))
+          }
+        }
+      })
+      .catch(() => {})
+  }, [activeProfile?.uid])
+
+  // Generate a problem, prioritizing facts the learner struggles with
   const newProblem = useCallback((): Problem => {
-    // Always times tables 1-10 — the essential multiplication facts
-    const a = Math.floor(Math.random() * 10) + 1 // 1-10
-    const b = Math.floor(Math.random() * 10) + 1 // 1-10
-    const op: "+" | "-" | "×" = "×"
+    let a: number, b: number
+
+    // 40% chance: pick from struggles if any
+    const struggles = Array.from(strugglesRef.current)
+    if (struggles.length > 0 && Math.random() < 0.4) {
+      const pick = struggles[Math.floor(Math.random() * struggles.length)]
+      const [pa, pb] = pick.split("x").map(Number)
+      a = pa
+      b = pb
+    } else {
+      // Pick a random fact from 2-12, avoiding mastered ones when possible
+      const facts = allFacts()
+      const unmastered = facts.filter(([fa, fb]) => !masteredRef.current.has(`${fa}x${fb}`))
+      const pool = unmastered.length > 0 ? unmastered : facts
+      const [pa, pb] = pool[Math.floor(Math.random() * pool.length)]
+      a = pa
+      b = pb
+    }
+
     const answer = a * b
 
-    // Generate 3 wrong choices from the same multiplication table
-    // so kids practice distinguishing actual products, not nearby numbers.
+    // Generate wrong choices from nearby products
     const wrongs = new Set<number>()
     while (wrongs.size < 3) {
-      // Pick a different multiplier from the same table
-      const altB = Math.floor(Math.random() * 10) + 1
+      const altB = Math.floor(Math.random() * 11) + 2
       const candidate = a * altB
       if (candidate !== answer && candidate > 0) wrongs.add(candidate)
-      // Also try the other factor's table as fallback
       if (wrongs.size < 3) {
-        const altA = Math.floor(Math.random() * 10) + 1
+        const altA = Math.floor(Math.random() * 11) + 2
         const candidate2 = altA * b
         if (candidate2 !== answer && candidate2 > 0) wrongs.add(candidate2)
       }
     }
     const choices = [answer, ...Array.from(wrongs)]
-    // Shuffle
     for (let i = choices.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1))
       ;[choices[i], choices[j]] = [choices[j], choices[i]]
     }
 
-    return {
-      question: `${a} ${op} ${b} = ?`,
-      answer,
-      choices,
-    }
-  }, [grade])
+    return { question: `${a} \u00d7 ${b} = ?`, answer, a, b, choices }
+  }, [])
 
-  // Initialize first problem on mount.
   useEffect(() => {
     setProblem(newProblem())
   }, [newProblem])
 
+  // Save progress to Firestore (debounced — save on unmount or every 5 answers)
+  const saveProgressRef = useRef<(() => void) | undefined>(undefined)
+  saveProgressRef.current = () => {
+    if (!activeProfile?.uid) return
+    setDoc(doc(db, "multiplicationProgress", activeProfile.uid), {
+      struggles: Array.from(strugglesRef.current),
+      mastered: Array.from(masteredRef.current),
+      totalCorrect: sessionCorrect,
+      totalAttempts: sessionTotal,
+      lastPracticed: Date.now(),
+    }, { merge: true }).catch(() => {})
+  }
+
+  // Save on unmount
+  useEffect(() => {
+    return () => { saveProgressRef.current?.() }
+  }, [])
+
   const handleAnswer = async (choice: number) => {
     if (!problem || feedback !== null) return
-    hasStartedRef.current = true
+    const factKey = `${problem.a}x${problem.b}`
     setSessionTotal((n) => n + 1)
+
     if (choice === problem.answer) {
       setFeedback("correct")
       setSessionCorrect((n) => n + 1)
-      // Award 1 token. updateTokens persists to Firestore + updates
-      // the auth-provider's local state so other components reflect
-      // the new total. Don't block the UI on the network roundtrip.
+      // Remove from struggles, add to mastered after 3 correct in a row
+      // (simplified: remove from struggles on correct)
+      strugglesRef.current.delete(factKey)
+      masteredRef.current.add(factKey)
+
       setSavingToken(true)
-      updateTokens(1)
-        .catch(() => {
-          // Silent fail — kid still sees the visual feedback
-        })
-        .finally(() => setSavingToken(false))
+      updateTokens(1).catch(() => {}).finally(() => setSavingToken(false))
     } else {
       setFeedback("wrong")
+      // Add to struggles, remove from mastered
+      strugglesRef.current.add(factKey)
+      masteredRef.current.delete(factKey)
     }
-    // Move to next problem after a beat
+
+    // Save every 5 attempts
+    if ((sessionTotal + 1) % 5 === 0) {
+      saveProgressRef.current?.()
+    }
+
     setTimeout(() => {
       setFeedback(null)
       setProblem(newProblem())
@@ -116,11 +169,14 @@ export function BuildWaitMiniGame({ grade }: BuildWaitMiniGameProps) {
 
   if (!problem) return null
 
+  const totalFacts = 11 * 11 // 2-12 = 11 values, 11x11 = 121 facts
+  const masteredCount = masteredRef.current.size
+
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 space-y-3">
       <div className="flex items-center justify-between">
         <p className="text-xs text-zinc-400 uppercase tracking-wide font-medium">
-          Math practice while you wait
+          Times Tables (2-12)
         </p>
         <div className="flex items-center gap-1.5 text-amber-400 text-xs font-mono">
           <Coins className="size-3.5" />
@@ -131,14 +187,12 @@ export function BuildWaitMiniGame({ grade }: BuildWaitMiniGameProps) {
         </div>
       </div>
 
-      {/* Problem */}
       <div className="text-center py-3">
         <p className="text-3xl font-mono font-bold text-white">
           {problem.question}
         </p>
       </div>
 
-      {/* Choices */}
       <div className="grid grid-cols-2 gap-2">
         {problem.choices.map((c) => {
           const isCorrect = c === problem.answer
@@ -164,11 +218,11 @@ export function BuildWaitMiniGame({ grade }: BuildWaitMiniGameProps) {
         })}
       </div>
 
-      {/* Session score */}
       {sessionTotal > 0 && (
-        <p className="text-[11px] text-zinc-500 text-center">
-          {sessionCorrect}/{sessionTotal} correct this session
-        </p>
+        <div className="flex items-center justify-between text-[11px] text-zinc-500">
+          <span>{sessionCorrect}/{sessionTotal} correct</span>
+          <span>{masteredCount}/{totalFacts} facts mastered</span>
+        </div>
       )}
     </div>
   )

@@ -50,24 +50,24 @@ export const APP_RULES: RulesByRole = {
     {
       heading: "How to demonstrate a skill",
       body: [
-        "1. Click a blue moon. Read about the concept.",
-        "2. Click 'I have a game idea'. Tell the AI what you want your game to be about.",
-        "3. The AI will ask questions to help you nail down the rules. Submit the design when it's ready.",
-        "4. Build the game (the AI generates it from your visual concept).",
-        "5. Submit your game for review. Your guide will approve or send it back with feedback.",
-        "6. When the guide approves, you earn 2000 tokens — but the moon is still YELLOW.",
-        "7. Open the moon again and play your own game. Win 3 times IN A ROW. The moon turns GREEN.",
+        "1. Click a blue moon. Read \"This is about...\" and \"Where you'll use this\".",
+        "2. Click \"Build Your Game\" to open the Circuit Board Builder.",
+        "3. Pick your components: Background, Character, Game Option, Items, and Win Condition.",
+        "4. Watch the 3 criteria lights — when all 3 are lit, click \"Build my game\".",
+        "5. Name your game and write an optional dare. Test it in the Workshop.",
+        "6. Submit for review. Your guide will approve or send it back with feedback.",
+        "7. When approved, you earn tokens — but the moon is still YELLOW.",
+        "8. Play your own game and win 3 times IN A ROW. The moon turns GREEN.",
       ],
     },
     {
       heading: "The 3 game criteria",
       body: [
-        "Every game you build must meet 3 criteria before you can submit it. As you chat with the AI to design your game, these light up one by one.",
-        "🎮 PLAYABLE GAME — Clear idea, clear goal, clear win/lose. A kid can open this, understand the rules in 10 seconds, and know if they won or lost.",
-        "🧠 MATH WELL APPLIED — The math skill is used like in the real world. Not simplified, not faked, not just numbers sprinkled on top.",
-        "💎 MATH ESSENTIAL — Knowing the math skill is essential to win. Remove the math and the game breaks — the math IS the game.",
-        "If you pick one of the game mechanics suggested when you open a moon, MATH WELL APPLIED and MATH ESSENTIAL are already checked for you — those mechanics were designed to embody the math. You only need to work on PLAYABLE GAME.",
-        "If you describe your own game from scratch, the AI will check all 3 criteria with you in the chat.",
+        "As you fill the Circuit Board Builder, 3 criteria lights illuminate one by one:",
+        "🧠 MATH WELL APPLIED — Lights up when you pick a Game Option. The math is built into the game mechanic.",
+        "💎 MATH ESSENTIAL — Lights up when you pick a Game Option AND set a Win Condition. The math is essential to winning.",
+        "🎮 PLAYABLE GAME — Lights up when all 5 components are filled (Background, Character, Game Option, Items, Win Condition).",
+        "When all 3 lights are on, your game is ready to build!",
       ],
     },
     {
@@ -81,9 +81,23 @@ export const APP_RULES: RulesByRole = {
     {
       heading: "Tokens",
       body: [
-        "+2000 tokens when your guide approves a game you built.",
+        "You have two token balances: Lifetime Tokens (total ever earned, used for ranking) and Spendable Tokens (available to use).",
+        "+2,000 tokens when your guide approves a game you built.",
         "+100 tokens when you master a skill (3 wins on others' games).",
+        "+10 tokens every time a unique learner plays your game.",
         "Tokens persist across sessions when you sign back in with your personal code.",
+      ],
+    },
+    {
+      heading: "\"I had a Diagonal Idea!\"",
+      body: [
+        "See something that could make Diagonally better? Click the blue feedback button and share your idea!",
+        "If your idea is practical enough for us to build, you win a Diagonal Idea prize:",
+        "Diagonal Spark — a good, practical idea (1,000 tokens).",
+        "Diagonal Idea — a really impactful idea (5,000 tokens).",
+        "Diagonal Vision — a transformative idea (10,000 tokens).",
+        "You can win prizes multiple times. Your prizes show up as badges next to your name on My Stuff.",
+        "The key: your idea needs to be something we can actually build into the app!",
       ],
     },
     {
