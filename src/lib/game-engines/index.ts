@@ -19,6 +19,7 @@ import { probabilitySystemsPhaserEngine } from "./probability-systems-phaser"
 import { spatialPuzzlesPhaserEngine } from "./spatial-puzzles-phaser"
 import { navigateOptimizeEngine } from "./navigate-optimize"
 import { raceCalculateEngine } from "./race-calculate"
+import { motionSimulationPhaserEngine } from "./motion-simulation-phaser"
 import { buildStructureEngine } from "./build-structure"
 
 const ENGINE_REGISTRY: Record<string, GameEngine> = {
@@ -29,7 +30,7 @@ const ENGINE_REGISTRY: Record<string, GameEngine> = {
   "probability-systems": probabilitySystemsPhaserEngine,
   "path-optimization": navigateOptimizeEngine,
   "construction-systems": constructionSystemsPhaserEngine,
-  "motion-simulation": raceCalculateEngine,
+  "motion-simulation": motionSimulationPhaserEngine,
   "constraint-puzzles": solveEliminateEngine,
   "strategy-economy": growCompoundEngine,
   "measurement-challenges": measurementChallengesPhaserEngine,
