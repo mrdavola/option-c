@@ -15,7 +15,7 @@ import { measurementChallengesPhaserEngine } from "./measurement-challenges-phas
 import { growCompoundEngine } from "./grow-compound"
 import { solveEliminateEngine } from "./solve-eliminate"
 import { partitioningPhaserEngine } from "./partitioning-phaser"
-import { rollPredictEngine } from "./roll-predict"
+import { probabilitySystemsPhaserEngine } from "./probability-systems-phaser"
 import { spatialPuzzlesPhaserEngine } from "./spatial-puzzles-phaser"
 import { navigateOptimizeEngine } from "./navigate-optimize"
 import { raceCalculateEngine } from "./race-calculate"
@@ -26,7 +26,7 @@ const ENGINE_REGISTRY: Record<string, GameEngine> = {
   "partitioning": partitioningPhaserEngine,
   "balance-systems": balanceSystemsPhaserEngine,
   "spatial-puzzles": spatialPuzzlesPhaserEngine,
-  "probability-systems": rollPredictEngine,
+  "probability-systems": probabilitySystemsPhaserEngine,
   "path-optimization": navigateOptimizeEngine,
   "construction-systems": constructionSystemsPhaserEngine,
   "motion-simulation": raceCalculateEngine,
