@@ -292,7 +292,7 @@ class StackToTargetScene extends Phaser.Scene {
       // Correct!
       gameScore += 10 * (this.round + 1);
       this.scoreLbl.setText('Score: ' + gameScore);
-      this.cameras.main.flash(200, 34, 197, 94);
+      this.cameras.main.flash(200, 34, 197, 94); heroCheer(this, this.hero);
       this._burstParticles(this.towerX, this.towerBaseY - this.currentHeight * this.pixelsPerUnit, 16);
       this.round++;
       if (this.round >= TOTAL_ROUNDS) {
@@ -304,7 +304,7 @@ class StackToTargetScene extends Phaser.Scene {
       // Wrong
       this.lives--;
       this._rh();
-      this.cameras.main.shake(200, 0.01);
+      this.cameras.main.shake(200, 0.01); heroShake(this, this.hero);
       if (this.lives <= 0) {
         this.time.delayedCall(500, () => this.scene.start('LoseScene', { score: gameScore }));
       }
@@ -449,7 +449,7 @@ class FillTheFloorScene extends Phaser.Scene {
       // Correct!
       gameScore += 10 * (this.round + 1);
       this.scoreLbl.setText('Score: ' + gameScore);
-      this.cameras.main.flash(200, 34, 197, 94);
+      this.cameras.main.flash(200, 34, 197, 94); heroCheer(this, this.hero);
       this._burstParticles(this.W / 2, this.H * 0.4, 18);
       this.round++;
       if (this.round >= TOTAL_ROUNDS) {
@@ -461,7 +461,7 @@ class FillTheFloorScene extends Phaser.Scene {
       // Wrong
       this.lives--;
       this._rh();
-      this.cameras.main.shake(200, 0.01);
+      this.cameras.main.shake(200, 0.01); heroShake(this, this.hero);
       if (this.lives <= 0) {
         this.time.delayedCall(500, () => this.scene.start('LoseScene', { score: gameScore }));
       }
@@ -671,7 +671,7 @@ class BoxPackerScene extends Phaser.Scene {
       // Correct!
       gameScore += 10 * (this.round + 1);
       this.scoreLbl.setText('Score: ' + gameScore);
-      this.cameras.main.flash(200, 34, 197, 94);
+      this.cameras.main.flash(200, 34, 197, 94); heroCheer(this, this.hero);
       this._burstParticles(this.W * 0.45, this.H * 0.38, 20);
       this.round++;
       if (this.round >= TOTAL_ROUNDS) {
@@ -683,7 +683,7 @@ class BoxPackerScene extends Phaser.Scene {
       // Wrong
       this.lives--;
       this._rh();
-      this.cameras.main.shake(200, 0.01);
+      this.cameras.main.shake(200, 0.01); heroShake(this, this.hero);
       this.inputText = '';
       this.inputLbl.setText('Volume: _');
       if (this.lives <= 0) {

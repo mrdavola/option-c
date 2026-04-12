@@ -98,6 +98,7 @@ class RecipeMixerScene extends Phaser.Scene {
 
     this._buildBackground();
     this._buildUI();
+    this.hero = addCharacter(this, this.W * 0.85, this.H * 0.35, 0.4);
     this.startRound();
   }
 
@@ -214,7 +215,7 @@ class RecipeMixerScene extends Phaser.Scene {
     if (correct) {
       gameScore += 10 * (this.round + 1);
       this.scoreLbl.setText('Score: ' + gameScore);
-      this.cameras.main.flash(200, 34, 197, 94);
+      this.cameras.main.flash(200, 34, 197, 94); heroCheer(this, this.hero);
       this.round++;
       if (this.round >= TOTAL_ROUNDS) {
         this.time.delayedCall(600, () => this.scene.start('VictoryScene', { score: gameScore }));
@@ -224,7 +225,7 @@ class RecipeMixerScene extends Phaser.Scene {
     } else {
       this.lives--;
       this._redrawHearts();
-      this.cameras.main.shake(200, 0.01);
+      this.cameras.main.shake(200, 0.01); heroShake(this, this.hero);
       if (this.lives <= 0) {
         this.time.delayedCall(500, () => this.scene.start('LoseScene', { score: gameScore }));
       }
@@ -245,6 +246,7 @@ class PotionLabScene extends Phaser.Scene {
     this.lives = MAX_LIVES;
     this._buildBackground();
     this._buildUI();
+    this.hero = addCharacter(this, this.W * 0.85, this.H * 0.35, 0.4);
     this.startRound();
   }
 
@@ -333,7 +335,7 @@ class PotionLabScene extends Phaser.Scene {
     if (answer === this.correctResult) {
       gameScore += 10 * (this.round + 1);
       this.scoreLbl.setText('Score: ' + gameScore);
-      this.cameras.main.flash(200, 34, 197, 94);
+      this.cameras.main.flash(200, 34, 197, 94); heroCheer(this, this.hero);
       this.round++;
       if (this.round >= TOTAL_ROUNDS) {
         this.time.delayedCall(600, () => this.scene.start('VictoryScene', { score: gameScore }));
@@ -343,7 +345,7 @@ class PotionLabScene extends Phaser.Scene {
     } else {
       this.lives--;
       this._redrawHearts();
-      this.cameras.main.shake(200, 0.01);
+      this.cameras.main.shake(200, 0.01); heroShake(this, this.hero);
       this.inputText = '';
       this.inputLbl.setText('_');
       if (this.lives <= 0) {
@@ -368,6 +370,7 @@ class AssemblyLineScene extends Phaser.Scene {
     this.groupsGrabbed = 0;
     this._buildBackground();
     this._buildUI();
+    this.hero = addCharacter(this, this.W * 0.85, this.H * 0.35, 0.4);
     this.startRound();
   }
 
@@ -453,7 +456,7 @@ class AssemblyLineScene extends Phaser.Scene {
         if (this.collected === this.targetTotal) {
           gameScore += 10 * (this.round + 1);
           this.scoreLbl.setText('Score: ' + gameScore);
-          this.cameras.main.flash(200, 34, 197, 94);
+          this.cameras.main.flash(200, 34, 197, 94); heroCheer(this, this.hero);
           this.round++;
           if (this.round >= TOTAL_ROUNDS) {
             this.time.delayedCall(600, () => this.scene.start('VictoryScene', { score: gameScore }));
@@ -464,7 +467,7 @@ class AssemblyLineScene extends Phaser.Scene {
           // Over — lose a life and reset
           this.lives--;
           this._redrawHearts();
-          this.cameras.main.shake(200, 0.01);
+          this.cameras.main.shake(200, 0.01); heroShake(this, this.hero);
           this.collected = 0;
           this.groupsGrabbed = 0;
           this.collectedLbl.setText('Collected: 0 (too many!)');

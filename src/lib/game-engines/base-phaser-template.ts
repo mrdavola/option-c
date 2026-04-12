@@ -180,6 +180,28 @@ function hexToNum(hex) {
   return parseInt(hex.replace('#', ''), 16);
 }
 
+// Place the character sprite in a scene. Returns the sprite so scenes can tween it.
+// Call in create(): this.hero = addCharacter(this, x, y, scale)
+function addCharacter(scene, x, y, scale) {
+  const hero = scene.add.image(x, y, 'character').setScale(scale || 0.5).setDepth(20).setAlpha(0.9);
+  // Gentle idle bob
+  scene.tweens.add({ targets: hero, y: y - 4, duration: 1200, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+  return hero;
+}
+
+// Character reacts to correct answer — jump + scale
+function heroCheer(scene, hero) {
+  if (!hero) return;
+  scene.tweens.add({ targets: hero, y: hero.y - 20, scaleX: 0.55, scaleY: 0.55, duration: 200, yoyo: true, ease: 'Back.easeOut' });
+}
+
+// Character reacts to wrong answer — shake head
+function heroShake(scene, hero) {
+  if (!hero) return;
+  const ox = hero.x;
+  scene.tweens.add({ targets: hero, x: ox - 8, duration: 60, yoyo: true, repeat: 3, ease: 'Sine.easeInOut', onComplete: () => { hero.x = ox; } });
+}
+
 // ─── State ───────────────────────────────────────────────────────────────────
 let gameScore = 0;
 let gameStarted = false;

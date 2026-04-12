@@ -167,11 +167,11 @@ class ShapeMatcherScene extends Phaser.Scene {
       if ((this.blueprint[selKeys[i]] || 0) !== this.selected[selKeys[i]]) { correct = false; break; }
     }
     if (correct) {
-      gameScore += 10 * (this.round + 1); this.scoreLbl.setText('Score: ' + gameScore); this.cameras.main.flash(200, 34, 197, 94);
+      gameScore += 10 * (this.round + 1); this.scoreLbl.setText('Score: ' + gameScore); this.cameras.main.flash(200, 34, 197, 94); heroCheer(this, this.hero);
       this.round++; if (this.round >= TOTAL_ROUNDS) this.time.delayedCall(600, () => this.scene.start('VictoryScene', {score: gameScore}));
       else this.time.delayedCall(800, () => this.startRound());
     } else {
-      this.lives--; this._rh(); this.cameras.main.shake(200, 0.01);
+      this.lives--; this._rh(); this.cameras.main.shake(200, 0.01); heroShake(this, this.hero);
       if (this.lives <= 0) this.time.delayedCall(500, () => this.scene.start('LoseScene', {score: gameScore}));
     }
   }
@@ -223,11 +223,11 @@ class FreeBuildScene extends Phaser.Scene {
     this.rg.add(this.add.text(W*0.7, H*0.7, 'Check', {fontSize:'13px',color:'#fff',fontFamily:"'Lexend', system-ui",fontStyle:'bold'}).setOrigin(0.5).setDepth(11));
     check.on('pointerdown', () => {
       if (this.totalSides === this.target) {
-        gameScore += 10 * (this.round + 1); this.scoreLbl.setText('Score: ' + gameScore); this.cameras.main.flash(200, 34, 197, 94);
+        gameScore += 10 * (this.round + 1); this.scoreLbl.setText('Score: ' + gameScore); this.cameras.main.flash(200, 34, 197, 94); heroCheer(this, this.hero);
         this.round++; if (this.round >= TOTAL_ROUNDS) this.time.delayedCall(600, () => this.scene.start('VictoryScene', {score: gameScore}));
         else this.time.delayedCall(800, () => this.startRound());
       } else {
-        this.lives--; this._rh(); this.cameras.main.shake(200, 0.01);
+        this.lives--; this._rh(); this.cameras.main.shake(200, 0.01); heroShake(this, this.hero);
         if (this.lives <= 0) this.time.delayedCall(500, () => this.scene.start('LoseScene', {score: gameScore}));
       }
     });
@@ -309,15 +309,15 @@ class ShapeDecomposerScene extends Phaser.Scene {
     let sum = 0;
     for (let i = 0; i < this.partInputs.length; i++) {
       const v = parseInt(this.partInputs[i].val);
-      if (isNaN(v)) { this.lives--; this._rh(); this.cameras.main.shake(200, 0.01); if(this.lives<=0)this.time.delayedCall(500,()=>this.scene.start('LoseScene',{score:gameScore})); return; }
+      if (isNaN(v)) { this.lives--; this._rh(); this.cameras.main.shake(200, 0.01); heroShake(this, this.hero); if(this.lives<=0)this.time.delayedCall(500,()=>this.scene.start('LoseScene',{score:gameScore})); return; }
       sum += v;
     }
     if (sum === this.totalArea) {
-      gameScore += 10 * (this.round + 1); this.scoreLbl.setText('Score: ' + gameScore); this.cameras.main.flash(200, 34, 197, 94);
+      gameScore += 10 * (this.round + 1); this.scoreLbl.setText('Score: ' + gameScore); this.cameras.main.flash(200, 34, 197, 94); heroCheer(this, this.hero);
       this.round++; if (this.round >= TOTAL_ROUNDS) this.time.delayedCall(600, () => this.scene.start('VictoryScene', {score: gameScore}));
       else this.time.delayedCall(800, () => this.startRound());
     } else {
-      this.lives--; this._rh(); this.cameras.main.shake(200, 0.01);
+      this.lives--; this._rh(); this.cameras.main.shake(200, 0.01); heroShake(this, this.hero);
       if (this.lives <= 0) this.time.delayedCall(500, () => this.scene.start('LoseScene', {score: gameScore}));
     }
   }

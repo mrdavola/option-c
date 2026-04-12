@@ -116,11 +116,11 @@ class InvestmentSimScene extends Phaser.Scene {
     const diff = Math.abs(this.currentVal - this.target);
     const tolerance = this.target * 0.1;
     if (diff <= tolerance) {
-      gameScore += 10 * (this.round + 1); this.scoreLbl.setText('Score: ' + gameScore); this.cameras.main.flash(200, 34, 197, 94);
+      gameScore += 10 * (this.round + 1); this.scoreLbl.setText('Score: ' + gameScore); this.cameras.main.flash(200, 34, 197, 94); heroCheer(this, this.hero);
       this.round++; if (this.round >= TOTAL_ROUNDS) this.time.delayedCall(600, () => this.scene.start('VictoryScene', {score: gameScore}));
       else this.time.delayedCall(800, () => this.startRound());
     } else {
-      this.lives--; this._rh(); this.cameras.main.shake(200, 0.01);
+      this.lives--; this._rh(); this.cameras.main.shake(200, 0.01); heroShake(this, this.hero);
       if (this.lives <= 0) this.time.delayedCall(500, () => this.scene.start('LoseScene', {score: gameScore}));
     }
   }
@@ -159,7 +159,7 @@ class PopulationBoomScene extends Phaser.Scene {
         this.popLbl.setText(String(this.pop));
         this.turnsLbl.setText('Turns left: ' + this.turnsLeft);
         if (this.pop > this.cap) {
-          this.lives--; this._rh(); this.cameras.main.shake(200, 0.01);
+          this.lives--; this._rh(); this.cameras.main.shake(200, 0.01); heroShake(this, this.hero);
           this.popLbl.setColor(COL_DANGER);
           if (this.lives <= 0) { this.time.delayedCall(500, () => this.scene.start('LoseScene', {score: gameScore})); return; }
           this.time.delayedCall(800, () => this.startRound());
@@ -167,11 +167,11 @@ class PopulationBoomScene extends Phaser.Scene {
         }
         if (this.turnsLeft <= 0) {
           if (this.pop >= this.targetMin && this.pop <= this.targetMax) {
-            gameScore += 10 * (this.round + 1); this.scoreLbl.setText('Score: ' + gameScore); this.cameras.main.flash(200, 34, 197, 94);
+            gameScore += 10 * (this.round + 1); this.scoreLbl.setText('Score: ' + gameScore); this.cameras.main.flash(200, 34, 197, 94); heroCheer(this, this.hero);
             this.round++; if (this.round >= TOTAL_ROUNDS) this.time.delayedCall(600, () => this.scene.start('VictoryScene', {score: gameScore}));
             else this.time.delayedCall(800, () => this.startRound());
           } else {
-            this.lives--; this._rh(); this.cameras.main.shake(200, 0.01);
+            this.lives--; this._rh(); this.cameras.main.shake(200, 0.01); heroShake(this, this.hero);
             if (this.lives <= 0) this.time.delayedCall(500, () => this.scene.start('LoseScene', {score: gameScore}));
             else this.time.delayedCall(800, () => this.startRound());
           }
@@ -226,11 +226,11 @@ class DoublingMazeScene extends Phaser.Scene {
 
   _check() {
     if (this.currentVal === this.target) {
-      gameScore += 10 * (this.round + 1); this.scoreLbl.setText('Score: ' + gameScore); this.cameras.main.flash(200, 34, 197, 94);
+      gameScore += 10 * (this.round + 1); this.scoreLbl.setText('Score: ' + gameScore); this.cameras.main.flash(200, 34, 197, 94); heroCheer(this, this.hero);
       this.round++; if (this.round >= TOTAL_ROUNDS) this.time.delayedCall(600, () => this.scene.start('VictoryScene', {score: gameScore}));
       else this.time.delayedCall(800, () => this.startRound());
     } else {
-      this.lives--; this._rh(); this.cameras.main.shake(200, 0.01);
+      this.lives--; this._rh(); this.cameras.main.shake(200, 0.01); heroShake(this, this.hero);
       if (this.lives <= 0) this.time.delayedCall(500, () => this.scene.start('LoseScene', {score: gameScore}));
       else this.time.delayedCall(800, () => this.startRound());
     }

@@ -121,11 +121,11 @@ class EliminationGridScene extends Phaser.Scene {
     const btn = this.numBtns[idx];
     if (btn.eliminated) return;
     if (btn.val === this.answer) {
-      gameScore += 10 * (this.round + 1); this.scoreLbl.setText('Score: ' + gameScore); this.cameras.main.flash(200, 34, 197, 94);
+      gameScore += 10 * (this.round + 1); this.scoreLbl.setText('Score: ' + gameScore); this.cameras.main.flash(200, 34, 197, 94); heroCheer(this, this.hero);
       this.round++; if (this.round >= TOTAL_ROUNDS) this.time.delayedCall(600, () => this.scene.start('VictoryScene', {score: gameScore}));
       else this.time.delayedCall(800, () => this.startRound());
     } else {
-      this.lives--; this._rh(); this.cameras.main.shake(200, 0.01);
+      this.lives--; this._rh(); this.cameras.main.shake(200, 0.01); heroShake(this, this.hero);
       btn.bg.setFillStyle(hexToNum(COL_DANGER), 0.3); btn.lbl.setColor(COL_DANGER); btn.eliminated = true;
       if (this.lives <= 0) this.time.delayedCall(500, () => this.scene.start('LoseScene', {score: gameScore}));
     }
@@ -194,11 +194,11 @@ class TwentyQuestionsScene extends Phaser.Scene {
     if (isNaN(g)) return;
     if (g === this.hidden) {
       const bonus = Math.max(1, 6 - this.questionsAsked);
-      gameScore += bonus * (this.round + 1); this.scoreLbl.setText('Score: ' + gameScore); this.cameras.main.flash(200, 34, 197, 94);
+      gameScore += bonus * (this.round + 1); this.scoreLbl.setText('Score: ' + gameScore); this.cameras.main.flash(200, 34, 197, 94); heroCheer(this, this.hero);
       this.round++; if (this.round >= TOTAL_ROUNDS) this.time.delayedCall(600, () => this.scene.start('VictoryScene', {score: gameScore}));
       else this.time.delayedCall(800, () => this.startRound());
     } else {
-      this.lives--; this._rh(); this.cameras.main.shake(200, 0.01);
+      this.lives--; this._rh(); this.cameras.main.shake(200, 0.01); heroShake(this, this.hero);
       this.guess = ''; this.guessLbl.setText('Guess: _');
       if (this.lives <= 0) this.time.delayedCall(500, () => this.scene.start('LoseScene', {score: gameScore}));
     }

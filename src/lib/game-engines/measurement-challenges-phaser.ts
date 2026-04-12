@@ -76,7 +76,7 @@ class SizePickerScene extends Phaser.Scene {
   create() {
     this.W = this.scale.width; this.H = this.scale.height;
     this.round = 0; this.lives = MAX_LIVES;
-    this._buildBackground(); this._buildUI(); this.startRound();
+    this._buildBackground(); this._buildUI(); this.hero = addCharacter(this, this.W * 0.85, this.H * 0.35, 0.4); this.startRound();
   }
 
   _buildBackground() {
@@ -128,12 +128,12 @@ class SizePickerScene extends Phaser.Scene {
   _pick(choice) {
     if (choice === this.correctAnswer) {
       gameScore += 10 * (this.round + 1); this.scoreLbl.setText('Score: ' + gameScore);
-      this.cameras.main.flash(200, 34, 197, 94);
+      this.cameras.main.flash(200, 34, 197, 94); heroCheer(this, this.hero);
       this.round++;
       if (this.round >= TOTAL_ROUNDS) { this.time.delayedCall(600, () => this.scene.start('VictoryScene', { score: gameScore })); }
       else { this.time.delayedCall(600, () => this.startRound()); }
     } else {
-      this.lives--; this._redrawHearts(); this.cameras.main.shake(200, 0.01);
+      this.lives--; this._redrawHearts(); this.cameras.main.shake(200, 0.01); heroShake(this, this.hero);
       if (this.lives <= 0) { this.time.delayedCall(500, () => this.scene.start('LoseScene', { score: gameScore })); }
     }
   }
@@ -148,7 +148,7 @@ class RulerRaceScene extends Phaser.Scene {
   create() {
     this.W = this.scale.width; this.H = this.scale.height;
     this.round = 0; this.lives = MAX_LIVES;
-    this._buildBackground(); this._buildUI(); this.startRound();
+    this._buildBackground(); this._buildUI(); this.hero = addCharacter(this, this.W * 0.85, this.H * 0.35, 0.4); this.startRound();
   }
 
   _buildBackground() { const bg = this.add.image(this.W / 2, this.H / 2, 'bg'); bg.setScale(Math.max(this.W / bg.width, this.H / bg.height)); this.add.rectangle(this.W / 2, this.H / 2, this.W, this.H, 0x000000, 0.48); }
@@ -202,11 +202,11 @@ class RulerRaceScene extends Phaser.Scene {
   _check() {
     if (parseInt(this.inputText) === this.correctLength) {
       gameScore += 10 * (this.round + 1); this.scoreLbl.setText('Score: ' + gameScore);
-      this.cameras.main.flash(200, 34, 197, 94); this.round++;
+      this.cameras.main.flash(200, 34, 197, 94); heroCheer(this, this.hero); this.round++;
       if (this.round >= TOTAL_ROUNDS) { this.time.delayedCall(600, () => this.scene.start('VictoryScene', { score: gameScore })); }
       else { this.time.delayedCall(800, () => this.startRound()); }
     } else {
-      this.lives--; this._redrawHearts(); this.cameras.main.shake(200, 0.01); this.inputText = ''; this.inputLbl.setText('_');
+      this.lives--; this._redrawHearts(); this.cameras.main.shake(200, 0.01); heroShake(this, this.hero); this.inputText = ''; this.inputLbl.setText('_');
       if (this.lives <= 0) { this.time.delayedCall(500, () => this.scene.start('LoseScene', { score: gameScore })); }
     }
   }
@@ -221,7 +221,7 @@ class UnitConverterScene extends Phaser.Scene {
   create() {
     this.W = this.scale.width; this.H = this.scale.height;
     this.round = 0; this.lives = MAX_LIVES;
-    this._buildBackground(); this._buildUI(); this.startRound();
+    this._buildBackground(); this._buildUI(); this.hero = addCharacter(this, this.W * 0.85, this.H * 0.35, 0.4); this.startRound();
   }
 
   _buildBackground() { const bg = this.add.image(this.W / 2, this.H / 2, 'bg'); bg.setScale(Math.max(this.W / bg.width, this.H / bg.height)); this.add.rectangle(this.W / 2, this.H / 2, this.W, this.H, 0x000000, 0.48); }
@@ -269,11 +269,11 @@ class UnitConverterScene extends Phaser.Scene {
   _check() {
     if (parseInt(this.inputText) === this.correctAnswer) {
       gameScore += 10 * (this.round + 1); this.scoreLbl.setText('Score: ' + gameScore);
-      this.cameras.main.flash(200, 34, 197, 94); this.round++;
+      this.cameras.main.flash(200, 34, 197, 94); heroCheer(this, this.hero); this.round++;
       if (this.round >= TOTAL_ROUNDS) { this.time.delayedCall(600, () => this.scene.start('VictoryScene', { score: gameScore })); }
       else { this.time.delayedCall(800, () => this.startRound()); }
     } else {
-      this.lives--; this._redrawHearts(); this.cameras.main.shake(200, 0.01); this.inputText = ''; this.inputLbl.setText('_');
+      this.lives--; this._redrawHearts(); this.cameras.main.shake(200, 0.01); heroShake(this, this.hero); this.inputText = ''; this.inputLbl.setText('_');
       if (this.lives <= 0) { this.time.delayedCall(500, () => this.scene.start('LoseScene', { score: gameScore })); }
     }
   }

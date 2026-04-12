@@ -73,6 +73,7 @@ class CutTheBarScene extends Phaser.Scene {
     this.lives = MAX_LIVES;
     this._buildBackground();
     this._buildUI();
+    this.hero = addCharacter(this, this.W * 0.85, this.H * 0.35, 0.4);
     this.startRound();
   }
 
@@ -170,7 +171,7 @@ class CutTheBarScene extends Phaser.Scene {
     if (this.shadedCount === this.targetNumer) {
       gameScore += 10 * (this.round + 1);
       this.scoreLbl.setText('Score: ' + gameScore);
-      this.cameras.main.flash(200, 34, 197, 94);
+      this.cameras.main.flash(200, 34, 197, 94); heroCheer(this, this.hero);
       this.round++;
       if (this.round >= TOTAL_ROUNDS) {
         this.time.delayedCall(600, () => this.scene.start('VictoryScene', { score: gameScore }));
@@ -180,7 +181,7 @@ class CutTheBarScene extends Phaser.Scene {
     } else {
       this.lives--;
       this._redrawHearts();
-      this.cameras.main.shake(200, 0.01);
+      this.cameras.main.shake(200, 0.01); heroShake(this, this.hero);
       if (this.lives <= 0) {
         this.time.delayedCall(500, () => this.scene.start('LoseScene', { score: gameScore }));
       }
@@ -201,6 +202,7 @@ class PourTheLiquidScene extends Phaser.Scene {
     this.lives = MAX_LIVES;
     this._buildBackground();
     this._buildUI();
+    this.hero = addCharacter(this, this.W * 0.85, this.H * 0.35, 0.4);
     this.startRound();
   }
 
@@ -308,7 +310,7 @@ class PourTheLiquidScene extends Phaser.Scene {
     if (Math.abs(this.currentFrac - this.targetFrac) < 0.01) {
       gameScore += 10 * (this.round + 1);
       this.scoreLbl.setText('Score: ' + gameScore);
-      this.cameras.main.flash(200, 34, 197, 94);
+      this.cameras.main.flash(200, 34, 197, 94); heroCheer(this, this.hero);
       this.round++;
       if (this.round >= TOTAL_ROUNDS) {
         this.time.delayedCall(600, () => this.scene.start('VictoryScene', { score: gameScore }));
@@ -318,7 +320,7 @@ class PourTheLiquidScene extends Phaser.Scene {
     } else {
       this.lives--;
       this._redrawHearts();
-      this.cameras.main.shake(200, 0.01);
+      this.cameras.main.shake(200, 0.01); heroShake(this, this.hero);
       if (this.lives <= 0) {
         this.time.delayedCall(500, () => this.scene.start('LoseScene', { score: gameScore }));
       }
@@ -339,6 +341,7 @@ class ShareThePizzaScene extends Phaser.Scene {
     this.lives = MAX_LIVES;
     this._buildBackground();
     this._buildUI();
+    this.hero = addCharacter(this, this.W * 0.85, this.H * 0.35, 0.4);
     this.startRound();
   }
 
@@ -467,7 +470,7 @@ class ShareThePizzaScene extends Phaser.Scene {
     if (allEqual) {
       gameScore += 10 * (this.round + 1);
       this.scoreLbl.setText('Score: ' + gameScore);
-      this.cameras.main.flash(200, 34, 197, 94);
+      this.cameras.main.flash(200, 34, 197, 94); heroCheer(this, this.hero);
       this.round++;
       if (this.round >= TOTAL_ROUNDS) {
         this.time.delayedCall(600, () => this.scene.start('VictoryScene', { score: gameScore }));
@@ -477,7 +480,7 @@ class ShareThePizzaScene extends Phaser.Scene {
     } else {
       this.lives--;
       this._redrawHearts();
-      this.cameras.main.shake(200, 0.01);
+      this.cameras.main.shake(200, 0.01); heroShake(this, this.hero);
       if (this.lives <= 0) {
         this.time.delayedCall(500, () => this.scene.start('LoseScene', { score: gameScore }));
       }

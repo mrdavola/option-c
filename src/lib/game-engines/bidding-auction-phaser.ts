@@ -59,7 +59,7 @@ class AuctionHouseScene extends Phaser.Scene {
   constructor() { super('AuctionHouseScene'); }
   create() {
     this.W = this.scale.width; this.H = this.scale.height; this.round = 0; this.lives = MAX_LIVES;
-    this._bg(); this._ui(); this.startRound();
+    this._bg(); this._ui(); this.hero = addCharacter(this, this.W * 0.85, this.H * 0.35, 0.4); this.startRound();
   }
   _bg() { const bg = this.add.image(this.W/2,this.H/2,'bg'); bg.setScale(Math.max(this.W/bg.width,this.H/bg.height)); this.add.rectangle(this.W/2,this.H/2,this.W,this.H,0x000000,0.48); }
   _ui() { this.scoreLbl = this.add.text(this.W-14,14,'Score: 0',{fontSize:'16px',color:COL_ACCENT,fontFamily:"'Lexend', system-ui",fontStyle:'bold'}).setOrigin(1,0).setDepth(10); this.hg = this.add.group(); this._rh(); this.dg = this.add.group(); this._rd(); }

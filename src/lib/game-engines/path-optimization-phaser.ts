@@ -124,11 +124,11 @@ class ShortestRouteScene extends Phaser.Scene {
 
   _pickRoute(ri) {
     if (ri === this.best) {
-      gameScore += 10 * (this.round + 1); this.scoreLbl.setText('Score: ' + gameScore); this.cameras.main.flash(200, 34, 197, 94);
+      gameScore += 10 * (this.round + 1); this.scoreLbl.setText('Score: ' + gameScore); this.cameras.main.flash(200, 34, 197, 94); heroCheer(this, this.hero);
       this.round++; if (this.round >= TOTAL_ROUNDS) this.time.delayedCall(600, () => this.scene.start('VictoryScene', {score: gameScore}));
       else this.time.delayedCall(800, () => this.startRound());
     } else {
-      this.lives--; this._rh(); this.cameras.main.shake(200, 0.01);
+      this.lives--; this._rh(); this.cameras.main.shake(200, 0.01); heroShake(this, this.hero);
       if (this.lives <= 0) this.time.delayedCall(500, () => this.scene.start('LoseScene', {score: gameScore}));
     }
   }
@@ -214,11 +214,11 @@ class MapBuilderScene extends Phaser.Scene {
       }
     }
     if (visited[this.endNode] && this.totalCost <= this.budget) {
-      gameScore += 10 * (this.round + 1); this.scoreLbl.setText('Score: ' + gameScore); this.cameras.main.flash(200, 34, 197, 94);
+      gameScore += 10 * (this.round + 1); this.scoreLbl.setText('Score: ' + gameScore); this.cameras.main.flash(200, 34, 197, 94); heroCheer(this, this.hero);
       this.round++; if (this.round >= TOTAL_ROUNDS) this.time.delayedCall(600, () => this.scene.start('VictoryScene', {score: gameScore}));
       else this.time.delayedCall(800, () => this.startRound());
     } else {
-      this.lives--; this._rh(); this.cameras.main.shake(200, 0.01);
+      this.lives--; this._rh(); this.cameras.main.shake(200, 0.01); heroShake(this, this.hero);
       if (this.lives <= 0) this.time.delayedCall(500, () => this.scene.start('LoseScene', {score: gameScore}));
     }
   }
@@ -294,11 +294,11 @@ class DeliveryRunScene extends Phaser.Scene {
       // Compute optimal (brute force for small N)
       const optDist = this._bruteForceOptimal();
       if (this.totalDist <= optDist * 1.3) {
-        gameScore += 10 * (this.round + 1); this.scoreLbl.setText('Score: ' + gameScore); this.cameras.main.flash(200, 34, 197, 94);
+        gameScore += 10 * (this.round + 1); this.scoreLbl.setText('Score: ' + gameScore); this.cameras.main.flash(200, 34, 197, 94); heroCheer(this, this.hero);
         this.round++; if (this.round >= TOTAL_ROUNDS) this.time.delayedCall(600, () => this.scene.start('VictoryScene', {score: gameScore}));
         else this.time.delayedCall(800, () => this.startRound());
       } else {
-        this.lives--; this._rh(); this.cameras.main.shake(200, 0.01);
+        this.lives--; this._rh(); this.cameras.main.shake(200, 0.01); heroShake(this, this.hero);
         if (this.lives <= 0) this.time.delayedCall(500, () => this.scene.start('LoseScene', {score: gameScore}));
         else this.time.delayedCall(800, () => this.startRound());
       }
