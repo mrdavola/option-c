@@ -55,14 +55,14 @@
 | 4 | Fit & Rotate | `spatial-puzzles` | rotate-to-match, tangram-fill, mirror-puzzle | DONE |
 | 5 | Roll & Predict | `probability-systems` | find-the-stat, bet-the-spinner, build-the-chart | DONE |
 | 8 | Race & Calculate | `motion-simulation` | launch-to-target, speed-trap, catch-up | DONE |
-| 10 | Grow & Compound | `strategy-economy` | investment-sim, population-boom, doubling-maze | Not Started |
+| 10 | Grow & Compound | `strategy-economy` | investment-sim, population-boom, doubling-maze | DONE |
 
 ## Phase 6: Logic & Graph Heavy
 
 | # | Mechanic | Mechanic ID | Options | Status |
 |---|---|---|---|---|
-| 9 | Solve & Eliminate | `constraint-puzzles` | elimination-grid, twenty-questions, logic-chain | Not Started |
-| 6 | Navigate & Optimize | `path-optimization` | shortest-route, map-builder, delivery-run | Not Started |
-| 19 | Build a Structure | `build-structure` | shape-matcher, free-build, shape-decomposer | Not Started |
+| 9 | Solve & Eliminate | `constraint-puzzles` | elimination-grid, twenty-questions, logic-chain | DONE |
+| 6 | Navigate & Optimize | `path-optimization` | shortest-route, map-builder, delivery-run | DONE |
+| 19 | Build a Structure | `build-structure` | shape-matcher, free-build, shape-decomposer | DONE |
 
-## Progress: 15/19 mechanics done (45/57 game options)
+## Progress: 19/19 mechanics done (57/57 game options) ✅ COMPLETE

@@ -12,15 +12,15 @@ import { timingRhythmPhaserEngine } from "./timing-rhythm-phaser"
 import { inventoryCraftingPhaserEngine } from "./inventory-crafting-phaser"
 import { biddingAuctionPhaserEngine } from "./bidding-auction-phaser"
 import { measurementChallengesPhaserEngine } from "./measurement-challenges-phaser"
-import { growCompoundEngine } from "./grow-compound"
-import { solveEliminateEngine } from "./solve-eliminate"
+import { strategyEconomyPhaserEngine } from "./strategy-economy-phaser"
+import { constraintPuzzlesPhaserEngine } from "./constraint-puzzles-phaser"
 import { partitioningPhaserEngine } from "./partitioning-phaser"
 import { probabilitySystemsPhaserEngine } from "./probability-systems-phaser"
 import { spatialPuzzlesPhaserEngine } from "./spatial-puzzles-phaser"
-import { navigateOptimizeEngine } from "./navigate-optimize"
+import { pathOptimizationPhaserEngine } from "./path-optimization-phaser"
 import { raceCalculateEngine } from "./race-calculate"
 import { motionSimulationPhaserEngine } from "./motion-simulation-phaser"
-import { buildStructureEngine } from "./build-structure"
+import { buildStructurePhaserEngine } from "./build-structure-phaser"
 
 const ENGINE_REGISTRY: Record<string, GameEngine> = {
   "resource-management": collectManagePhaserEngine,
@@ -28,11 +28,11 @@ const ENGINE_REGISTRY: Record<string, GameEngine> = {
   "balance-systems": balanceSystemsPhaserEngine,
   "spatial-puzzles": spatialPuzzlesPhaserEngine,
   "probability-systems": probabilitySystemsPhaserEngine,
-  "path-optimization": navigateOptimizeEngine,
+  "path-optimization": pathOptimizationPhaserEngine,
   "construction-systems": constructionSystemsPhaserEngine,
   "motion-simulation": motionSimulationPhaserEngine,
-  "constraint-puzzles": solveEliminateEngine,
-  "strategy-economy": growCompoundEngine,
+  "constraint-puzzles": constraintPuzzlesPhaserEngine,
+  "strategy-economy": strategyEconomyPhaserEngine,
   "measurement-challenges": measurementChallengesPhaserEngine,
   "scoring-ranking": scoringRankingPhaserEngine,
   "timing-rhythm": timingRhythmPhaserEngine,
@@ -41,7 +41,7 @@ const ENGINE_REGISTRY: Record<string, GameEngine> = {
   "terrain-generation": terrainGenerationPhaserEngine,
   "bidding-auction": biddingAuctionPhaserEngine,
   "above-below-zero": aboveBelowZeroPhaserEngine,
-  "build-structure": buildStructureEngine,
+  "build-structure": buildStructurePhaserEngine,
 }
 
 export function hasEngine(mechanicId: string): boolean {
