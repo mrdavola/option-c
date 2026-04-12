@@ -41,35 +41,29 @@ export function UnifiedHeader() {
           <span className="font-medium">Viewing as {impersonating.name}</span>
         </div>
       )}
-      {/* Row 1: Logo + stats + user */}
-      <div className={`${isGalaxy ? "bg-zinc-950/60" : "bg-zinc-950/90"} backdrop-blur-sm border-b border-zinc-800/50 px-4 py-2`}>
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Logo size={24} className="text-blue-400" />
-            <span className="text-sm font-bold text-white hidden sm:inline">Diagonally</span>
-            <span className="text-[10px] bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded-full font-medium">
-              Learner
-            </span>
-          </div>
-          <div className="flex items-center gap-4">
-            <LearnerStats />
-            <UserMenu />
-          </div>
-        </div>
-      </div>
+      {/* Single row: Logo + Nav + Stats + Search + User */}
+      <div className={`${isGalaxy ? "bg-zinc-950/60" : "bg-zinc-950/90"} backdrop-blur-sm border-b border-zinc-800/50 px-4 py-1.5`}>
+        <div className="max-w-7xl mx-auto flex items-center gap-3">
+          {/* Left: Logo + name */}
+          <Link href="/" className="flex items-center gap-2 shrink-0">
+            <Logo size={22} className="text-blue-400" />
+            <span className="text-sm font-bold text-white hidden md:inline">Diagonally</span>
+          </Link>
 
-      {/* Row 2: Navigation */}
-      <div className={`${isGalaxy ? "bg-zinc-900/40" : "bg-zinc-900/80"} backdrop-blur-sm border-b border-zinc-800/30 px-4 py-1.5`}>
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide">
+          {/* Center: Nav tabs */}
+          <div className="flex items-center gap-0.5 overflow-x-auto scrollbar-hide flex-1 min-w-0">
             <NavLink href="/" active={isExplore} icon={<Compass className="size-3.5" />} label="Explore" />
             <NavLink href="/build" active={isBuild} icon={<Zap className="size-3.5" />} label="Build NOW!" highlight />
-            <NavLink href="/library" active={isLibrary} icon={<Gamepad2 className="size-3.5" />} label="Game Library" />
+            <NavLink href="/library" active={isLibrary} icon={<Gamepad2 className="size-3.5" />} label="Library" />
             <NavLink href="/learner" active={isDashboard} icon={<LayoutDashboard className="size-3.5" />} label="My Stuff" />
           </div>
-          <div className="flex items-center gap-2">
+
+          {/* Right: Stats + Search + Help + User */}
+          <div className="flex items-center gap-2 shrink-0">
+            <LearnerStats />
             <SearchToggle />
             <HowToPlayButton />
+            <UserMenu />
           </div>
         </div>
       </div>
