@@ -199,5 +199,164 @@ document.addEventListener('keydown', (e) => {
 </script>
 `
 
+  // VARIANT B: Temperature Swing — add/subtract to keep temperature in a target zone
+  if (variant === "variantB") {
+    const vB = `
+<div class="intro-overlay" id="intro"><div class="intro-box">
+  <h2>${config.title} — Temperature Zone</h2>
+  <p>Keep the temperature in the target zone! Add heat or cold each turn.</p>
+  <button class="intro-start" onclick="document.getElementById('intro').remove(); startGame()">Play →</button>
+</div></div>
+<div id="helpPanel" class="help-panel"><div class="help-content"><h3>How to play</h3><p>A target zone is shown (e.g. 3 to 7). The temperature starts at 0. Each turn, pick how much to add or subtract. Stay in the zone for 5 turns to win!</p><button class="help-close" onclick="document.getElementById('helpPanel').classList.remove('open')">Got it</button></div></div>
+<div class="game-header"><div class="game-title">${config.title} — Temp Zone</div><div class="game-stats"><span>Score: <strong id="scoreDisplay">0</strong></span><span>Turn: <strong id="turnDisplay">0</strong>/5</span></div></div>
+<div class="game-area" id="gameArea">
+  <div style="text-align: center; width: 90%; max-width: 400px;">
+    <div style="font-size: 14px; opacity: 0.6; margin-bottom: 4px;">Keep temperature in the zone</div>
+    <div id="zoneDisplay" style="font-size: 20px; font-weight: 700; color: ${c.accent}; margin-bottom: 16px;"></div>
+    <div style="position: relative; height: 200px; width: 40px; margin: 0 auto; border: 2px solid ${c.secondary}; border-radius: 8px; background: linear-gradient(to top, ${c.danger}22, ${c.primary}22);">
+      <div id="zoneBar" style="position: absolute; left: -4px; right: -4px; background: ${c.accent}22; border: 1px solid ${c.accent};"></div>
+      <div id="tempMarker" style="position: absolute; left: -8px; right: -8px; height: 4px; background: ${c.primary}; border-radius: 2px; transition: bottom 0.3s;"></div>
+    </div>
+    <div id="tempVal" style="font-size: 36px; font-weight: 700; color: ${c.primary}; margin: 12px 0;">0</div>
+    <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;" id="choices"></div>
+  </div>
+</div>
+<script>
+const TOTAL_TURNS = 5; let turn = 0, temp = 0, zoneMin = 0, zoneMax = 0, roundNum = 0;
+function pxFromVal(v) { return Math.max(0, Math.min(196, (v + 15) / 30 * 196)); }
+function updateDisplay() {
+  document.getElementById('tempVal').textContent = temp;
+  document.getElementById('tempMarker').style.bottom = pxFromVal(temp) + 'px';
+  document.getElementById('tempVal').style.color = (temp >= zoneMin && temp <= zoneMax) ? '${c.accent}' : '${c.danger}';
+}
+function pickChange(delta) {
+  temp += delta; turn++;
+  document.getElementById('turnDisplay').textContent = turn;
+  updateDisplay();
+  if (temp < zoneMin || temp > zoneMax) { screenShake(); resetCombo(); trackFail();
+    showScorePopup(window.innerWidth/2, window.innerHeight/2, 'Out of zone!');
+    if (turn >= TOTAL_TURNS) { setTimeout(()=>showDefeat('${config.loseMessage}'), 500); return; }
+  } else { addCombo(); spawnParticles(window.innerWidth/2, window.innerHeight/3, '${c.accent}', 6); }
+  if (turn >= TOTAL_TURNS && temp >= zoneMin && temp <= zoneMax) {
+    window.gameScore += 20*(roundNum+1); document.getElementById('scoreDisplay').textContent = window.gameScore;
+    roundNum++; if (roundNum >= 3) { setTimeout(()=>showVictory('${config.winMessage}'), 500); }
+    else { turn = 0; temp = 0; setTimeout(startRound, 800); }
+  } else { generateChoices(); }
+}
+function generateChoices() {
+  const ch = document.getElementById('choices'); ch.innerHTML = '';
+  const options = [-3,-2,-1,1,2,3].filter(d => { const r = temp+d; return r >= -15 && r <= 15; });
+  options.forEach(d => {
+    const btn = document.createElement('button');
+    btn.textContent = (d > 0 ? '+' : '') + d;
+    btn.style.cssText = 'width: 50px; height: 50px; border-radius: 50%; font-size: 18px; font-weight: 700; cursor: pointer; border: 2px solid ${c.primary}; background: ${c.primary}22; color: ${c.text}; font-family: inherit;';
+    btn.onclick = () => pickChange(d);
+    ch.appendChild(btn);
+  });
+}
+function startRound() { resetFails(); turn = 0; temp = 0;
+  const range = roundNum < 1 ? 4 : roundNum < 2 ? 3 : 2;
+  const center = Math.floor(Math.random()*11) - 5;
+  zoneMin = center - range; zoneMax = center + range;
+  document.getElementById('zoneDisplay').textContent = zoneMin + ' to ' + zoneMax;
+  document.getElementById('zoneBar').style.bottom = pxFromVal(zoneMin) + 'px';
+  document.getElementById('zoneBar').style.height = (pxFromVal(zoneMax) - pxFromVal(zoneMin)) + 'px';
+  document.getElementById('turnDisplay').textContent = '0';
+  updateDisplay(); generateChoices();
+}
+function startGame() { startRound(); }
+</script>`
+    return baseTemplate(config, vB, variant, 45)
+  }
+
+  // VARIANT C: Elevator Operator — pick up passengers at positive/negative floors
+  if (variant === "variantC") {
+    const vC = `
+<div class="intro-overlay" id="intro"><div class="intro-box">
+  <h2>${config.title} — Elevator</h2>
+  <p>You drive the elevator! Pick up passengers and deliver them to their floor.</p>
+  <button class="intro-start" onclick="document.getElementById('intro').remove(); startGame()">Play →</button>
+</div></div>
+<div id="helpPanel" class="help-panel"><div class="help-content"><h3>How to play</h3><p>Passengers wait at different floors (positive = up, negative = down). Move the elevator to pick them up, then to their destination. Complete all deliveries!</p><button class="help-close" onclick="document.getElementById('helpPanel').classList.remove('open')">Got it</button></div></div>
+<div class="game-header"><div class="game-title">${config.title} — Elevator</div><div class="game-stats"><span>Score: <strong id="scoreDisplay">0</strong></span><span>Delivered: <strong id="deliveredCount">0</strong>/<strong id="totalPassengers">0</strong></span></div></div>
+<div class="game-area" id="gameArea">
+  <div style="display: flex; gap: 40px; align-items: center;">
+    <div style="position: relative; width: 60px; height: 320px;">
+      <div style="position: absolute; left: 50%; top: 0; bottom: 0; width: 3px; background: ${c.secondary}; transform: translateX(-50%);"></div>
+      <div id="elevator" style="position: absolute; left: 50%; width: 40px; height: 30px; background: ${c.primary}; border: 2px solid ${c.accent}; border-radius: 6px; transform: translate(-50%, -50%); transition: top 0.4s; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: ${config.vibe === "kawaii" ? "#fff" : c.bg};">E</div>
+      <div id="floorLabels"></div>
+    </div>
+    <div style="text-align: center;">
+      <div style="font-size: 14px; opacity: 0.6;">Current floor</div>
+      <div id="floorDisplay" style="font-size: 48px; font-weight: 700; color: ${c.primary};">0</div>
+      <div id="task" style="font-size: 14px; color: ${c.accent}; margin: 8px 0; min-height: 40px;"></div>
+      <div style="display: flex; gap: 8px; justify-content: center;">
+        <button onclick="moveElev(1)" style="width: 50px; height: 40px; background: ${c.primary}; color: ${config.vibe === "kawaii" ? "#fff" : c.bg}; border: none; border-radius: 8px; font-size: 20px; cursor: pointer;">↑</button>
+        <button onclick="moveElev(-1)" style="width: 50px; height: 40px; background: ${c.primary}; color: ${config.vibe === "kawaii" ? "#fff" : c.bg}; border: none; border-radius: 8px; font-size: 20px; cursor: pointer;">↓</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+let floor = 0, passengers = [], currentP = 0, carrying = false, delivered = 0, totalP = 0;
+const RANGE = 8;
+function floorToTop(f) { return (RANGE - f) / (RANGE * 2) * 310 + 5; }
+function moveElev(dir) {
+  floor += dir; floor = Math.max(-RANGE, Math.min(RANGE, floor));
+  document.getElementById('elevator').style.top = floorToTop(floor) + 'px';
+  document.getElementById('floorDisplay').textContent = floor > 0 ? '+' + floor : '' + floor;
+  checkFloor();
+}
+function checkFloor() {
+  const p = passengers[currentP]; if (!p) return;
+  if (!carrying && floor === p.pickup) {
+    carrying = true; spawnParticles(window.innerWidth/3, window.innerHeight/2, '${c.accent}', 6);
+    document.getElementById('task').textContent = 'Deliver to floor ' + (p.dest > 0 ? '+' : '') + p.dest;
+    document.getElementById('elevator').textContent = '👤';
+  } else if (carrying && floor === p.dest) {
+    carrying = false; delivered++;
+    document.getElementById('deliveredCount').textContent = delivered;
+    document.getElementById('elevator').textContent = 'E';
+    window.gameScore += 10; document.getElementById('scoreDisplay').textContent = window.gameScore;
+    spawnParticles(window.innerWidth/3, window.innerHeight/2, '${c.accent}', 10); addCombo();
+    currentP++;
+    if (currentP >= totalP) { setTimeout(()=>showVictory('${config.winMessage}'), 500); }
+    else { showNextPassenger(); }
+  }
+}
+function showNextPassenger() {
+  const p = passengers[currentP];
+  document.getElementById('task').textContent = 'Pick up at floor ' + (p.pickup > 0 ? '+' : '') + p.pickup;
+}
+function startGame() {
+  totalP = 5; passengers = [];
+  for (let i = 0; i < totalP; i++) {
+    let pickup = Math.floor(Math.random()*(RANGE*2+1))-RANGE;
+    let dest = Math.floor(Math.random()*(RANGE*2+1))-RANGE;
+    while (dest === pickup) dest = Math.floor(Math.random()*(RANGE*2+1))-RANGE;
+    passengers.push({ pickup, dest });
+  }
+  document.getElementById('totalPassengers').textContent = totalP;
+  document.getElementById('deliveredCount').textContent = '0';
+  floor = 0; currentP = 0; carrying = false; delivered = 0;
+  document.getElementById('elevator').style.top = floorToTop(0) + 'px';
+  document.getElementById('floorDisplay').textContent = '0';
+  // Floor labels
+  const labels = document.getElementById('floorLabels'); labels.innerHTML = '';
+  for (let i = -RANGE; i <= RANGE; i++) {
+    if (i % 2 !== 0 && i !== 0) continue;
+    const l = document.createElement('div');
+    l.style.cssText = 'position: absolute; right: -20px; font-size: 10px; color: ${c.text}66; transform: translateY(-50%);';
+    l.style.top = floorToTop(i) + 'px';
+    l.textContent = i > 0 ? '+' + i : '' + i;
+    labels.appendChild(l);
+  }
+  showNextPassenger();
+}
+document.addEventListener('keydown', (e) => { if(e.key==='ArrowUp'){e.preventDefault();moveElev(1);}if(e.key==='ArrowDown'){e.preventDefault();moveElev(-1);} });
+</script>`
+    return baseTemplate(config, vC, variant, 45)
+  }
+
   return baseTemplate(config, gameContent, variant, 45)
 }
