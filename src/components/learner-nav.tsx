@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Compass, LayoutDashboard, Gamepad2 } from "lucide-react"
+import { Compass, LayoutDashboard, Gamepad2, Zap } from "lucide-react"
 import { useAuth } from "@/lib/auth"
 
 export function LearnerNav() {
@@ -14,6 +14,7 @@ export function LearnerNav() {
   if (pathname.startsWith("/guide") || pathname.startsWith("/admin")) return null
 
   const isExplore = pathname === "/"
+  const isBuild = pathname === "/build"
   const isDashboard = pathname === "/learner" || pathname === "/student"
   const isLibrary = pathname.startsWith("/library")
 
@@ -33,6 +34,15 @@ export function LearnerNav() {
       >
         <Compass className="size-3.5" />
         Explore
+      </Link>
+      <Link
+        href="/build"
+        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-semibold transition-colors ${
+          isBuild ? "bg-emerald-600 text-white" : "bg-emerald-600/20 text-emerald-300 hover:bg-emerald-600/30"
+        }`}
+      >
+        <Zap className="size-3.5" />
+        Build NOW!
       </Link>
       <Link
         href="/library"
