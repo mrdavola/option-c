@@ -32,7 +32,7 @@
 
 <h1>Diagonally Blueprint</h1>
 <p style="color: #f87171; font-size: 12px; margin-bottom: 4px;">INTERNAL — DO NOT SHARE OUTSIDE THE TEAM</p>
-<p class="date">Last updated: April 11, 2026, 8:00 PM ET</p>
+<p class="date">Last updated: April 11, 2026, 9:00 PM ET</p>
 
 <div class="latest-update">
   <strong>Latest update</strong>
@@ -286,6 +286,8 @@
   <li>✅ <strong>Moon card redesign</strong> — Title → "This is about..." → "Where you'll use this" → "Learn more" → "Build Your Game"</li>
   <li>✅ <strong>Circuit Board Builder</strong> — replaces old card builder + GenieChat; sprite grids, 57 game options grouped by mechanic</li>
   <li>✅ <strong>Sprite library integrated</strong> — 30 SVGs (10 backgrounds, 10 characters, 10 items) built into builder</li>
+  <li>✅ <strong>Vibe system removed</strong> — Kawaii/Stickman/C64 replaced with unified visual style</li>
+  <li>✅ <strong>Fonts wired into games</strong> — Space Grotesk (titles) + Lexend (body) in all 19 engines</li>
 </ul>
 
 <h2>12. Sources & References</h2>
@@ -324,8 +326,8 @@
 
 <h3>Next Up — Builder &amp; UX</h3>
 <ul>
-  <li><strong>Remove vibe system:</strong> Remove Kawaii/Stickman/C64 auto-detection and VIBE_PALETTES. All games use one visual style with the 3 chosen fonts (Nunito, Space Grotesk, Lexend).</li>
-  <li><strong>Wire fonts into games:</strong> Replace per-vibe fonts in base-template.ts with Space Grotesk (titles) + Lexend (body).</li>
+  <li><del>Remove vibe system</del> — DONE</li>
+  <li><del>Wire fonts into games</del> — DONE: Space Grotesk (titles) + Lexend (body) in all engines</li>
   <li><strong>Bring back Game Criteria lights:</strong> Three indicator lights inside the Circuit Board Builder that illuminate as criteria are met (Playable Game, Math Well Applied, Math Essential). When all 3 light up, the builder "closes" (ready to build). See criteria-progress.tsx.</li>
   <li><strong>Hardcode hint card content:</strong> The ? button inside games currently shows AI-generated help. Hardcode the math explanation for each standard so it's instant and reliable. (Add to For Review tab for verification.)</li>
   <li><strong>Multiplication tables trainer:</strong> While the game is building (~3s), show multiplication flash cards. Track which ones the learner gets wrong and repeat those until all are mastered.</li>
@@ -527,7 +529,8 @@
 
 <table>
   <tr><th>Date</th><th>Who</th><th>What changed</th></tr>
-  <tr><td>Apr 11, 8pm ET</td><td>Barbara + Claude</td><td>Full pending work overhaul: PostHog analytics, multiplication trainer, Diagonal Thinker badge, tokens-from-plays, ranking discussion, hardcoded hints, criteria lights, font decision (Lexend/Space Grotesk/Nunito), vibe removal, For Review tab with mechanic-to-standards mapping.</td></tr>
+  <tr><td>Apr 11, 9pm ET</td><td>Barbara + Claude</td><td>Removed vibe system (Kawaii/Stickman/C64), wired Space Grotesk + Lexend fonts into all 19 engines. Removed vibe picker from build screen.</td></tr>
+  <tr><td>Apr 11, 8pm ET</td><td>Barbara + Claude</td><td>Full pending work overhaul: PostHog analytics, multiplication trainer, Diagonal Idea prizes, tokens-from-plays, ranking discussion, hardcoded hints, criteria lights, font decision (Lexend/Space Grotesk/Nunito), vibe removal, For Review tab with mechanic-to-standards mapping.</td></tr>
   <tr><td>Apr 11, PM ET</td><td>Barbara + Claude</td><td>Moon card redesign + Circuit Board Builder wired in. Full Blueprint audit — corrected outdated glossary, auth, generation flow, sprite selection. Marked orphaned files (game-card-builder, genie-chat, artwork-picker).</td></tr>
   <tr><td>Apr 11, PM ET</td><td>Mike</td><td>Phaser-based Collect &amp; Manage engine, sprite library (30 SVG assets), artwork picker UI, math-standard-aware round generation, search by mechanic name, next-gen engine design docs</td></tr>
   <tr><td>Apr 11, PM ET</td><td>Barbara + Claude</td><td>All 19 simple engines + 3 variants (57 total), fail tracking, variant UI (unlock badges), gameplay polish, themed visuals, theme-specific backgrounds</td></tr>
