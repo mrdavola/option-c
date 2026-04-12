@@ -61,7 +61,7 @@ export function riseFallEngine(config: ThemeConfig, math: MathParams, variant: G
       </div>
       <!-- Target marker -->
       <div id="target" style="position: absolute; left: calc(50% - 35px); top: 50%; transform: translateY(-50%); transition: top 0.3s; z-index: 5;">
-        <div style="width: 20px; height: 20px; background: ${c.accent}; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: ${config.vibe === "kawaii" ? "#fff" : c.bg};">★</div>
+        <div style="width: 20px; height: 20px; background: ${c.accent}; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: ${c.bg};">★</div>
       </div>
     </div>
 
@@ -77,10 +77,10 @@ export function riseFallEngine(config: ThemeConfig, math: MathParams, variant: G
       </div>
       <!-- Arrow buttons -->
       <div style="display: flex; flex-direction: column; gap: 8px;">
-        <button onclick="move(1)" style="width: 60px; height: 40px; background: ${c.primary}; color: ${config.vibe === "kawaii" ? "#fff" : c.bg}; border: none; border-radius: 8px; font-size: 20px; cursor: pointer;">↑</button>
-        <button onclick="move(-1)" style="width: 60px; height: 40px; background: ${c.primary}; color: ${config.vibe === "kawaii" ? "#fff" : c.bg}; border: none; border-radius: 8px; font-size: 20px; cursor: pointer;">↓</button>
+        <button onclick="move(1)" style="width: 60px; height: 40px; background: ${c.primary}; color: ${c.bg}; border: none; border-radius: 8px; font-size: 20px; cursor: pointer;">↑</button>
+        <button onclick="move(-1)" style="width: 60px; height: 40px; background: ${c.primary}; color: ${c.bg}; border: none; border-radius: 8px; font-size: 20px; cursor: pointer;">↓</button>
       </div>
-      <button onclick="checkPosition()" style="padding: 8px 24px; background: ${c.accent}; color: ${config.vibe === "kawaii" ? "#fff" : c.bg}; border: none; border-radius: 8px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer;">
+      <button onclick="checkPosition()" style="padding: 8px 24px; background: ${c.accent}; color: ${c.bg}; border: none; border-radius: 8px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer;">
         Lock In
       </button>
     </div>
@@ -283,7 +283,7 @@ function startGame() { startRound(); }
   <div style="display: flex; gap: 40px; align-items: center;">
     <div style="position: relative; width: 60px; height: 320px;">
       <div style="position: absolute; left: 50%; top: 0; bottom: 0; width: 3px; background: ${c.secondary}; transform: translateX(-50%);"></div>
-      <div id="elevator" style="position: absolute; left: 50%; width: 40px; height: 30px; background: ${c.primary}; border: 2px solid ${c.accent}; border-radius: 6px; transform: translate(-50%, -50%); transition: top 0.4s; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: ${config.vibe === "kawaii" ? "#fff" : c.bg};">E</div>
+      <div id="elevator" style="position: absolute; left: 50%; width: 40px; height: 30px; background: ${c.primary}; border: 2px solid ${c.accent}; border-radius: 6px; transform: translate(-50%, -50%); transition: top 0.4s; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: ${c.bg};">E</div>
       <div id="floorLabels"></div>
     </div>
     <div style="text-align: center;">
@@ -291,8 +291,8 @@ function startGame() { startRound(); }
       <div id="floorDisplay" style="font-size: 48px; font-weight: 700; color: ${c.primary};">0</div>
       <div id="task" style="font-size: 14px; color: ${c.accent}; margin: 8px 0; min-height: 40px;"></div>
       <div style="display: flex; gap: 8px; justify-content: center;">
-        <button onclick="moveElev(1)" style="width: 50px; height: 40px; background: ${c.primary}; color: ${config.vibe === "kawaii" ? "#fff" : c.bg}; border: none; border-radius: 8px; font-size: 20px; cursor: pointer;">↑</button>
-        <button onclick="moveElev(-1)" style="width: 50px; height: 40px; background: ${c.primary}; color: ${config.vibe === "kawaii" ? "#fff" : c.bg}; border: none; border-radius: 8px; font-size: 20px; cursor: pointer;">↓</button>
+        <button onclick="moveElev(1)" style="width: 50px; height: 40px; background: ${c.primary}; color: ${c.bg}; border: none; border-radius: 8px; font-size: 20px; cursor: pointer;">↑</button>
+        <button onclick="moveElev(-1)" style="width: 50px; height: 40px; background: ${c.primary}; color: ${c.bg}; border: none; border-radius: 8px; font-size: 20px; cursor: pointer;">↓</button>
       </div>
     </div>
   </div>

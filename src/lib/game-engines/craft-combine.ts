@@ -44,7 +44,7 @@ export function craftCombineEngine(config: ThemeConfig, math: MathParams, varian
     <div style="text-align: center;">
       <div style="font-size: 14px; opacity: 0.6; margin-bottom: 12px;">Set the right amounts</div>
       <div id="mixers" style="display: flex; flex-direction: column; gap: 12px;"></div>
-      <button onclick="checkRecipe()" style="margin-top: 20px; padding: 10px 32px; background: ${c.primary}; color: ${config.vibe === "kawaii" ? "#fff" : c.bg}; border: none; border-radius: 8px; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer;">
+      <button onclick="checkRecipe()" style="margin-top: 20px; padding: 10px 32px; background: ${c.primary}; color: ${c.bg}; border: none; border-radius: 8px; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer;">
         Mix!
       </button>
     </div>
@@ -215,7 +215,7 @@ function startGame() {
       <button onclick="clearCauldron()" style="padding: 10px 20px; background: ${c.secondary}33; color: ${c.text}; border: 1px solid ${c.secondary}; border-radius: 8px; font-family: inherit; font-size: 14px; cursor: pointer;">
         Empty cauldron
       </button>
-      <button onclick="brewPotion()" style="padding: 10px 28px; background: ${c.primary}; color: ${config.vibe === "kawaii" ? "#fff" : c.bg}; border: none; border-radius: 8px; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer;">
+      <button onclick="brewPotion()" style="padding: 10px 28px; background: ${c.primary}; color: ${c.bg}; border: none; border-radius: 8px; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer;">
         Brew! 🧪
       </button>
     </div>
@@ -438,7 +438,7 @@ function startGame() {
     <div style="font-size: 12px; opacity: 0.5; margin-bottom: 4px;">Your groups</div>
     <div id="grabbed" style="display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; min-height: 36px; margin-bottom: 16px;"></div>
 
-    <button onclick="submitOrder()" style="padding: 10px 32px; background: ${c.primary}; color: ${config.vibe === "kawaii" ? "#fff" : c.bg}; border: none; border-radius: 8px; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer;">
+    <button onclick="submitOrder()" style="padding: 10px 32px; background: ${c.primary}; color: ${c.bg}; border: none; border-radius: 8px; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer;">
       Fill order! 📦
     </button>
   </div>
@@ -458,7 +458,7 @@ function spawnGroup() {
 
   const el = document.createElement('div');
   el.style.cssText = 'position: absolute; right: -70px; top: 50%; transform: translateY(-50%); padding: 8px 16px; background: ' + '${c.primary}' + '; border-radius: 12px; cursor: pointer; transition: opacity 0.15s; display: flex; align-items: center; gap: 6px;';
-  el.innerHTML = '<span style="font-size: 20px; font-weight: 700; color: ' + '${config.vibe === "kawaii" ? "#fff" : c.bg}' + ';">' + groupSize + '</span><span style="font-size: 11px; color: ' + '${config.vibe === "kawaii" ? "#fff" : c.bg}' + '80;">items</span>';
+  el.innerHTML = '<span style="font-size: 20px; font-weight: 700; color: ' + '${c.bg}' + ';">' + groupSize + '</span><span style="font-size: 11px; color: ' + '${c.bg}' + '80;">items</span>';
 
   el.addEventListener('click', () => {
     grabbedGroups.push(groupSize);

@@ -81,7 +81,7 @@ function startGame(){
   <canvas id="mapCanvas" width="400" height="280" style="border:2px solid ${c.secondary};border-radius:8px;cursor:pointer;"></canvas>
   <div style="margin-top:12px;display:flex;gap:8px;justify-content:center;">
     <button onclick="undoNode()" style="padding:8px 16px;background:${c.secondary}33;color:${c.text};border:1px solid ${c.secondary};border-radius:8px;font-family:inherit;cursor:pointer;">Undo</button>
-    <button onclick="checkPath()" style="padding:8px 24px;background:${c.primary};color:${config.vibe === "kawaii" ? "#fff" : c.bg};border:none;border-radius:8px;font-family:inherit;font-weight:700;cursor:pointer;">Check path!</button>
+    <button onclick="checkPath()" style="padding:8px 24px;background:${c.primary};color:${c.bg};border:none;border-radius:8px;font-family:inherit;font-weight:700;cursor:pointer;">Check path!</button>
   </div>
 </div></div>
 <script>
@@ -98,7 +98,7 @@ function draw(){cx.clearRect(0,0,400,280);cx.fillStyle='${c.bg}';cx.fillRect(0,0
   for(let i=1;i<path.length;i++){cx.lineTo(nodes[path[i]].x,nodes[path[i]].y);}cx.stroke();}
   // Draw nodes
   nodes.forEach((n,i)=>{cx.fillStyle=path.includes(i)?'${c.accent}':'${c.primary}';cx.beginPath();cx.arc(n.x,n.y,12,0,Math.PI*2);cx.fill();
-  cx.fillStyle='${config.vibe === "kawaii" ? "#fff" : c.bg}';cx.font='bold 12px sans-serif';cx.textAlign='center';cx.fillText(String.fromCharCode(65+i),n.x,n.y+4);});}
+  cx.fillStyle='${c.bg}';cx.font='bold 12px sans-serif';cx.textAlign='center';cx.fillText(String.fromCharCode(65+i),n.x,n.y+4);});}
 cv.addEventListener('click',(e)=>{const rect=cv.getBoundingClientRect();const mx=e.clientX-rect.left;const my=e.clientY-rect.top;
   for(let i=0;i<nodes.length;i++){if(Math.sqrt((mx-nodes[i].x)**2+(my-nodes[i].y)**2)<15&&!path.includes(i)){
   if(path.length>0){const d=dist(nodes[path[path.length-1]],nodes[i]);totalDist+=d;}
@@ -137,7 +137,7 @@ function startGame(){const dc=document.getElementById('roundDots');dc.innerHTML=
   <div style="margin-bottom:12px;"><span style="opacity:.6;">Your distance: </span><strong id="myDist" style="color:${c.primary};font-size:20px;">0</strong></div>
   <div id="stops" style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:12px;"></div>
   <div id="route" style="font-size:14px;color:${c.text}80;min-height:20px;margin-bottom:12px;"></div>
-  <button onclick="checkRoute()" style="padding:10px 32px;background:${c.primary};color:${config.vibe === "kawaii" ? "#fff" : c.bg};border:none;border-radius:8px;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;">Done!</button>
+  <button onclick="checkRoute()" style="padding:10px 32px;background:${c.primary};color:${c.bg};border:none;border-radius:8px;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;">Done!</button>
 </div></div>
 <script>
 const TR=5;let cr=0,stopNames=[],dists=[],visitOrder=[],myTotal=0,optimalTotal=0;
@@ -145,7 +145,7 @@ function visitStop(idx){if(visitOrder.includes(idx))return;
   if(visitOrder.length>0){const last=visitOrder[visitOrder.length-1];myTotal+=dists[last][idx];}
   visitOrder.push(idx);document.getElementById('myDist').textContent=myTotal;
   document.getElementById('route').textContent='Route: '+visitOrder.map(i=>stopNames[i]).join(' → ');
-  const btns=document.querySelectorAll('#stops button');btns[idx].style.background='${c.accent}';btns[idx].style.color='${config.vibe === "kawaii" ? "#fff" : c.bg}';btns[idx].style.cursor='default';
+  const btns=document.querySelectorAll('#stops button');btns[idx].style.background='${c.accent}';btns[idx].style.color='${c.bg}';btns[idx].style.cursor='default';
   spawnParticles(window.innerWidth/2,window.innerHeight/2,'${c.primary}',4);}
 function checkRoute(){if(visitOrder.length<stopNames.length){showScorePopup(window.innerWidth/2,window.innerHeight/2,'Visit all stops!');return;}
   const efficiency=optimalTotal/Math.max(1,myTotal);const points=Math.round(efficiency*20)*(cr+1);

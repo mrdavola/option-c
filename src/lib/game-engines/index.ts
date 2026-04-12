@@ -63,4 +63,4 @@ export function getAvailableEngines(): string[] {
 }
 
 export type { ThemeConfig, MathParams, GameEngine, RoundData }
-export { VIBE_PALETTES } from "./engine-types"
+export { DEFAULT_PALETTE } from "./engine-types"

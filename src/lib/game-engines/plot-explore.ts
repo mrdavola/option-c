@@ -94,7 +94,7 @@ function drawGrid() {
 
   // Labels
   ctx.fillStyle = '${c.text}';
-  ctx.font = '11px ${config.vibe === "kawaii" ? "Quicksand" : config.vibe === "c64" ? "VT323" : "Patrick Hand"}';
+  ctx.font = '11px Lexend, sans-serif';
   ctx.textAlign = 'center';
   for (let i = 0; i <= gridSize; i++) {
     // X labels (bottom)

@@ -43,7 +43,7 @@ export function solveEliminateEngine(config: ThemeConfig, math: MathParams, vari
     <!-- Grid -->
     <div id="grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; max-width: 300px; margin: 0 auto;"></div>
     <div style="margin-top: 16px;">
-      <button onclick="submitAnswer()" style="padding: 10px 32px; background: ${c.primary}; color: ${config.vibe === "kawaii" ? "#fff" : c.bg}; border: none; border-radius: 8px; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer;">
+      <button onclick="submitAnswer()" style="padding: 10px 32px; background: ${c.primary}; color: ${c.bg}; border: none; border-radius: 8px; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer;">
         That's my answer!
       </button>
       <div style="font-size: 11px; opacity: 0.4; margin-top: 4px;">Click when only the answer remains</div>
@@ -164,7 +164,7 @@ function startGame() {
   <div id="qs" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:16px;"></div>
   <div style="display:flex;gap:8px;justify-content:center;align-items:center;">
     <input type="number" id="gI" style="width:80px;font-size:24px;font-weight:700;text-align:center;background:${c.bg};color:${c.text};border:3px solid ${c.accent};border-radius:12px;padding:8px;font-family:inherit;outline:none;" placeholder="?">
-    <button onclick="mg()" style="padding:10px 20px;background:${c.accent};color:${config.vibe === "kawaii" ? "#fff" : c.bg};border:none;border-radius:8px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;">Guess!</button>
+    <button onclick="mg()" style="padding:10px 20px;background:${c.accent};color:${c.bg};border:none;border-radius:8px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;">Guess!</button>
   </div>
 </div></div>
 <script>
@@ -200,8 +200,8 @@ document.addEventListener('keydown',(e)=>{if(e.key==='Enter')mg();});
   </div>
   <div style="font-size:12px;opacity:.5;margin-bottom:8px;">Click numbers that DON'T match</div>
   <div id="grid" style="display:grid;gap:6px;max-width:320px;margin:0 auto;margin-bottom:16px;"></div>
-  <button id="nB" onclick="nc()" style="padding:10px 28px;background:${c.primary};color:${config.vibe === "kawaii" ? "#fff" : c.bg};border:none;border-radius:8px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;display:none;">Next clue →</button>
-  <button id="gB" onclick="fg()" style="padding:10px 28px;background:${c.accent};color:${config.vibe === "kawaii" ? "#fff" : c.bg};border:none;border-radius:8px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;display:none;">That's my answer!</button>
+  <button id="nB" onclick="nc()" style="padding:10px 28px;background:${c.primary};color:${c.bg};border:none;border-radius:8px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;display:none;">Next clue →</button>
+  <button id="gB" onclick="fg()" style="padding:10px 28px;background:${c.accent};color:${c.bg};border:none;border-radius:8px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;display:none;">That's my answer!</button>
 </div></div>
 <script>
 const TR=5;let cr=0,ans=0,ci=0,cls=[],elim=new Set(),nums=[],nC=3;

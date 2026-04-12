@@ -623,14 +623,12 @@ export function GraphPage({ data }: GraphPageProps) {
     }, 1500)
   }, [data, planets, saveProgress, progressMap])
 
-  // Vibe and mechanic ID from the card builder (or null for GenieChat path)
-  const [selectedVibe, setSelectedVibe] = useState<string | null>(null)
+  // Mechanic ID from the circuit board builder
   const [selectedMechanicId, setSelectedMechanicId] = useState<string | null>(null)
 
-  // Handle "Build my Game" from card builder or Genie chat
-  const handleBuildGame = useCallback((designDoc: GameDesignDoc, _chatHistory?: string, vibe?: string, mechanicId?: string) => {
+  // Handle "Build my Game" from circuit board builder
+  const handleBuildGame = useCallback((designDoc: GameDesignDoc, _chatHistory?: string, _vibe?: string, mechanicId?: string) => {
     setCurrentDesignDoc(designDoc)
-    setSelectedVibe(vibe || null)
     setSelectedMechanicId(mechanicId || null)
     setPanelOpen(false)
     setBuildMode("building")
@@ -838,7 +836,7 @@ export function GraphPage({ data }: GraphPageProps) {
         <BuildScreen
           designDoc={currentDesignDoc}
           onComplete={handleBuildComplete}
-          preSelectedVibe={selectedVibe || undefined}
+          preSelectedVibe="default"
           mechanicId={selectedMechanicId || undefined}
         />
       )}

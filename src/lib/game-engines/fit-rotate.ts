@@ -21,8 +21,8 @@ export function fitRotateEngine(config: ThemeConfig, math: MathParams, variant: 
     <div style="text-align: center;"><div style="font-size: 12px; opacity: 0.5; margin-bottom: 8px;">YOUR SHAPE</div>
       <svg id="playerSvg" width="120" height="120" viewBox="0 0 120 120" style="transition: transform 0.3s;"></svg>
       <div style="margin-top: 12px; display: flex; gap: 8px; justify-content: center;">
-        <button onclick="rotateShape()" style="padding: 8px 20px; background: ${c.primary}; color: ${config.vibe === "kawaii" ? "#fff" : c.bg}; border: none; border-radius: 8px; font-family: inherit; font-weight: 700; cursor: pointer;">↻ Rotate 90°</button>
-        <button onclick="checkRotation()" style="padding: 8px 20px; background: ${c.accent}; color: ${config.vibe === "kawaii" ? "#fff" : c.bg}; border: none; border-radius: 8px; font-family: inherit; font-weight: 700; cursor: pointer;">Lock In</button>
+        <button onclick="rotateShape()" style="padding: 8px 20px; background: ${c.primary}; color: ${c.bg}; border: none; border-radius: 8px; font-family: inherit; font-weight: 700; cursor: pointer;">↻ Rotate 90°</button>
+        <button onclick="checkRotation()" style="padding: 8px 20px; background: ${c.accent}; color: ${c.bg}; border: none; border-radius: 8px; font-family: inherit; font-weight: 700; cursor: pointer;">Lock In</button>
       </div>
     </div>
   </div>
@@ -76,7 +76,7 @@ function startGame(){
   <div id="pieces" style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:16px;"></div>
   <div style="display:flex;gap:8px;justify-content:center;">
     <button onclick="undoPiece()" style="padding:8px 16px;background:${c.secondary}33;color:${c.text};border:1px solid ${c.secondary};border-radius:8px;font-family:inherit;cursor:pointer;">Undo</button>
-    <button onclick="checkFill()" style="padding:8px 24px;background:${c.primary};color:${config.vibe === "kawaii" ? "#fff" : c.bg};border:none;border-radius:8px;font-family:inherit;font-weight:700;cursor:pointer;">Check!</button>
+    <button onclick="checkFill()" style="padding:8px 24px;background:${c.primary};color:${c.bg};border:none;border-radius:8px;font-family:inherit;font-weight:700;cursor:pointer;">Check!</button>
   </div>
 </div></div>
 <script>

@@ -62,7 +62,7 @@ export function collectManageEngine(config: ThemeConfig, math: MathParams, varia
     </div>
     <!-- Check button -->
     <div style="margin-top: 16px;">
-      <button onclick="checkCollection()" style="padding: 10px 32px; background: ${c.primary}; color: ${config.vibe === "kawaii" ? "#fff" : c.bg}; border: none; border-radius: 8px; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer;">
+      <button onclick="checkCollection()" style="padding: 10px 32px; background: ${c.primary}; color: ${c.bg}; border: none; border-radius: 8px; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer;">
         Done!
       </button>
     </div>
@@ -81,7 +81,7 @@ function createItem(value, inGrid) {
   const size = inGrid ? 56 : 40;
   el.style.cssText = 'width: '+size+'px; height: '+size+'px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: '+(inGrid?18:14)+'px; font-weight: 700; cursor: pointer; transition: transform 0.15s, opacity 0.15s;';
   el.style.background = inGrid ? '${c.primary}' : '${c.accent}';
-  el.style.color = '${config.vibe === "kawaii" ? "#fff" : c.bg}';
+  el.style.color = '${c.bg}';
   el.textContent = value;
   el.dataset.value = value;
 
@@ -221,13 +221,13 @@ function startGame() {
     <div style="margin-bottom:12px;"><div style="font-size:14px;opacity:.6;">Target</div><div id="targetVal" style="font-size:48px;font-weight:700;color:${c.accent};"></div></div>
     <div style="margin-bottom:12px;"><span style="font-size:14px;opacity:.6;">Collected: </span><span id="totalVal" style="font-size:24px;font-weight:700;color:${c.primary};">0</span></div>
     <div id="belt" style="position:relative;height:80px;border:2px solid ${c.secondary}33;border-radius:8px;overflow:hidden;margin-bottom:16px;"></div>
-    <button onclick="checkC()" style="padding:10px 32px;background:${c.primary};color:${config.vibe === "kawaii" ? "#fff" : c.bg};border:none;border-radius:8px;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;">Done!</button>
+    <button onclick="checkC()" style="padding:10px 32px;background:${c.primary};color:${c.bg};border:none;border-radius:8px;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;">Done!</button>
   </div>
 </div>
 <script>
 const TOTAL_ROUNDS=5;let cr=0,tv=0,col=0,bi=null;
 function spawnItem(){const v=Math.floor(Math.random()*(cr<2?8:15))+1;const el=document.createElement('div');
-el.style.cssText='position:absolute;right:-50px;top:50%;transform:translateY(-50%);width:46px;height:46px;border-radius:50%;background:${c.primary};display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:${config.vibe === "kawaii" ? "#fff" : c.bg};cursor:pointer;';
+el.style.cssText='position:absolute;right:-50px;top:50%;transform:translateY(-50%);width:46px;height:46px;border-radius:50%;background:${c.primary};display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:${c.bg};cursor:pointer;';
 el.textContent=v;el.onclick=()=>{col+=v;document.getElementById('totalVal').textContent=col;el.remove();spawnParticles(window.innerWidth/2,window.innerHeight/2,'${c.accent}',4);};
 document.getElementById('belt').appendChild(el);let p=-50;const mi=setInterval(()=>{p+=2;el.style.right='auto';el.style.left=p+'px';if(p>520){clearInterval(mi);el.remove();}},30);}
 function checkC(){if(col===tv){window.gameScore+=10*(cr+1);document.getElementById('scoreDisplay').textContent=window.gameScore;
@@ -257,13 +257,13 @@ function startGame(){const dc=document.getElementById('roundDots');dc.innerHTML=
       <div><div style="font-size:12px;opacity:.5;">Bin B target</div><div id="tB" style="font-size:32px;font-weight:700;color:${c.accent};"></div><div style="font-size:14px;color:${c.accent};">Got: <strong id="gB">0</strong></div></div>
     </div>
     <div id="items" style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:16px;"></div>
-    <button onclick="checkS()" style="padding:10px 32px;background:${c.primary};color:${config.vibe === "kawaii" ? "#fff" : c.bg};border:none;border-radius:8px;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;">Check!</button>
+    <button onclick="checkS()" style="padding:10px 32px;background:${c.primary};color:${c.bg};border:none;border-radius:8px;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;">Check!</button>
   </div>
 </div>
 <script>
 const TOTAL_ROUNDS=5;let cr=0,tAv=0,tBv=0,asgn={};
 function recalc(){let a=0,b=0;Object.entries(asgn).forEach(([i,bin])=>{const el=document.querySelector('[data-i="'+i+'"]');if(el){const v=parseInt(el.dataset.v);if(bin==='A')a+=v;if(bin==='B')b+=v;}});document.getElementById('gA').textContent=a;document.getElementById('gB').textContent=b;return{a,b};}
-function cycle(el,v,i){const cur=asgn[i]||'n';if(cur==='n'){asgn[i]='A';el.style.background='${c.primary}';el.style.color='${config.vibe === "kawaii" ? "#fff" : c.bg}';}else if(cur==='A'){asgn[i]='B';el.style.background='${c.accent}';el.style.color='${config.vibe === "kawaii" ? "#fff" : c.bg}';}else{asgn[i]='n';el.style.background='${c.secondary}11';el.style.color='${c.text}';}recalc();}
+function cycle(el,v,i){const cur=asgn[i]||'n';if(cur==='n'){asgn[i]='A';el.style.background='${c.primary}';el.style.color='${c.bg}';}else if(cur==='A'){asgn[i]='B';el.style.background='${c.accent}';el.style.color='${c.bg}';}else{asgn[i]='n';el.style.background='${c.secondary}11';el.style.color='${c.text}';}recalc();}
 function checkS(){const{a,b}=recalc();if(a===tAv&&b===tBv){window.gameScore+=10*(cr+1);document.getElementById('scoreDisplay').textContent=window.gameScore;
 spawnParticles(window.innerWidth/2,window.innerHeight/2,'${c.accent}',12);addCombo();
 const dots=document.querySelectorAll('.round-dot');if(dots[cr])dots[cr].classList.add('done');

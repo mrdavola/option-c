@@ -1,7 +1,7 @@
 // Generate a game using a pre-built engine instead of AI HTML generation.
-// Takes the design doc + mechanic ID + vibe and returns themed HTML instantly.
+// Takes the design doc + mechanic ID and returns themed HTML instantly.
 
-import { hasEngine, generateWithEngine, VIBE_PALETTES } from "@/lib/game-engines"
+import { hasEngine, generateWithEngine, DEFAULT_PALETTE } from "@/lib/game-engines"
 import type { ThemeConfig, MathParams, RoundData } from "@/lib/game-engines"
 import Anthropic from "@anthropic-ai/sdk"
 
@@ -11,7 +11,7 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
 export async function POST(req: Request) {
   const body = await req.json()
-  const { designDoc, mechanicId, vibe, standardId, standardDescription, grade, cardChoices, sprites } = body
+  const { designDoc, mechanicId, standardId, standardDescription, grade, cardChoices, sprites } = body
 
   if (!mechanicId || !hasEngine(mechanicId)) {
     return Response.json({ error: "No engine for this mechanic", hasEngine: false }, { status: 400 })
@@ -40,7 +40,6 @@ Character: ${cardChoices?.character || designDoc.concept || "player"}
 Player Action: ${cardChoices?.action || "play the game"}
 Win condition: ${cardChoices?.win || designDoc.winCondition || "complete all rounds"}
 Math: ${designDoc.mathRole || standardDescription}
-Vibe: ${vibe || "stickman"}
 
 Return JSON:
 {
@@ -66,10 +65,8 @@ Return JSON:
     const end = cleaned.lastIndexOf("}")
     const parsed = JSON.parse(cleaned.slice(start, end + 1))
 
-    const palette = VIBE_PALETTES[vibe || "stickman"] || VIBE_PALETTES.stickman
-
     // Override background with theme-specific colors if provided
-    const themedPalette = { ...palette }
+    const themedPalette = { ...DEFAULT_PALETTE }
     if (parsed.bgColor1 && parsed.bgColor2) {
       themedPalette.bg = parsed.bgColor1
     }
@@ -81,7 +78,6 @@ Return JSON:
       targetName: parsed.targetName || "target",
       worldName: parsed.worldName || "the world",
       colors: themedPalette,
-      vibe: (vibe || "stickman") as ThemeConfig["vibe"],
       winMessage: parsed.winMessage || "You did it!",
       loseMessage: parsed.loseMessage || "Try again!",
       dare: designDoc.dare,
@@ -91,15 +87,13 @@ Return JSON:
     }
   } catch {
     // Fallback config
-    const palette = VIBE_PALETTES[vibe || "stickman"] || VIBE_PALETTES.stickman
     themeConfig = {
       title: designDoc.title || "Math Game",
       character: "player",
       itemName: "items",
       targetName: "target",
       worldName: "the world",
-      colors: palette,
-      vibe: (vibe || "stickman") as ThemeConfig["vibe"],
+      colors: { ...DEFAULT_PALETTE },
       winMessage: "You did it!",
       loseMessage: "Try again!",
       dare: designDoc.dare,

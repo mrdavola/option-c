@@ -46,7 +46,7 @@ export function bidEstimateEngine(config: ThemeConfig, math: MathParams, variant
       <div style="font-size: 14px; opacity: 0.6; margin-bottom: 8px;">Your estimate</div>
       <input type="number" id="bidInput" style="width: 160px; text-align: center; font-size: 32px; font-weight: 700; background: ${c.bg}; color: ${c.text}; border: 3px solid ${c.primary}; border-radius: 12px; padding: 8px; font-family: inherit; outline: none;" placeholder="?">
     </div>
-    <button onclick="placeBid()" style="padding: 12px 40px; background: ${c.accent}; color: ${config.vibe === "kawaii" ? "#fff" : c.bg}; border: none; border-radius: 8px; font-family: inherit; font-size: 18px; font-weight: 700; cursor: pointer;">
+    <button onclick="placeBid()" style="padding: 12px 40px; background: ${c.accent}; color: ${c.bg}; border: none; border-radius: 8px; font-family: inherit; font-size: 18px; font-weight: 700; cursor: pointer;">
       Bid!
     </button>
     <div id="result" style="margin-top: 16px; font-size: 16px; min-height: 24px;"></div>
@@ -173,7 +173,7 @@ document.addEventListener('keydown', (e) => { if (e.key === 'Enter') placeBid();
     <input type="number" id="guessInput" style="width: 160px; text-align: center; font-size: 36px; font-weight: 700; background: ${c.bg}; color: ${c.text}; border: 3px solid ${c.accent}; border-radius: 12px; padding: 8px; font-family: inherit; outline: none;" placeholder="?">
 
     <div style="margin-top: 16px;">
-      <button onclick="makeGuess()" style="padding: 12px 40px; background: ${c.accent}; color: ${config.vibe === "kawaii" ? "#fff" : c.bg}; border: none; border-radius: 8px; font-family: inherit; font-size: 18px; font-weight: 700; cursor: pointer;">
+      <button onclick="makeGuess()" style="padding: 12px 40px; background: ${c.accent}; color: ${c.bg}; border: none; border-radius: 8px; font-family: inherit; font-size: 18px; font-weight: 700; cursor: pointer;">
         Lock it in!
       </button>
     </div>
@@ -323,7 +323,7 @@ function pickAnswer(value, el) {
     window.gameScore += 10 * (currentRound + 1);
     document.getElementById('scoreDisplay').textContent = window.gameScore;
     el.style.background = '${c.accent}';
-    el.style.color = '${config.vibe === "kawaii" ? "#fff" : c.bg}';
+    el.style.color = '${c.bg}';
     el.style.borderColor = '${c.accent}';
     spawnParticles(window.innerWidth / 2, window.innerHeight / 2, '${c.accent}', 12);
     addCombo();

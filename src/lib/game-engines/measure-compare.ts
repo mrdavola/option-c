@@ -168,7 +168,7 @@ function startGame() {
       <span style="font-size: 16px; color: ${c.text}80;">cm</span>
     </div>
 
-    <button onclick="checkMeasure()" style="padding: 12px 36px; background: ${c.primary}; color: ${config.vibe === "kawaii" ? "#fff" : c.bg}; border: none; border-radius: 8px; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer;">
+    <button onclick="checkMeasure()" style="padding: 12px 36px; background: ${c.primary}; color: ${c.bg}; border: none; border-radius: 8px; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer;">
       Check ✓
     </button>
     <div id="feedback" style="margin-top: 12px; font-size: 14px; min-height: 20px;"></div>

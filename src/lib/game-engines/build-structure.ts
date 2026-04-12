@@ -29,7 +29,7 @@ export function buildStructureEngine(config: ThemeConfig, math: MathParams, vari
     <div id="bank" style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;"></div>
     <div style="margin-top: 12px; display: flex; gap: 8px; justify-content: center;">
       <button onclick="undoBuild()" style="padding: 8px 16px; background: ${c.secondary}33; color: ${c.text}; border: 1px solid ${c.secondary}; border-radius: 8px; font-family: inherit; cursor: pointer;">Undo</button>
-      <button onclick="checkBuild()" style="padding: 8px 24px; background: ${c.primary}; color: ${config.vibe === "kawaii" ? "#fff" : c.bg}; border: none; border-radius: 8px; font-family: inherit; font-weight: 700; cursor: pointer;">Check!</button>
+      <button onclick="checkBuild()" style="padding: 8px 24px; background: ${c.primary}; color: ${c.bg}; border: none; border-radius: 8px; font-family: inherit; font-weight: 700; cursor: pointer;">Check!</button>
     </div>
   </div>
 </div>
@@ -109,7 +109,7 @@ function startGame(){
   <div id="built" style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;min-height:40px;margin-bottom:16px;"></div>
   <div style="display:flex;gap:8px;justify-content:center;">
     <button onclick="undoShape()" style="padding:8px 16px;background:${c.secondary}33;color:${c.text};border:1px solid ${c.secondary};border-radius:8px;font-family:inherit;cursor:pointer;">Undo</button>
-    <button onclick="checkBuild()" style="padding:8px 24px;background:${c.primary};color:${config.vibe === "kawaii" ? "#fff" : c.bg};border:none;border-radius:8px;font-family:inherit;font-weight:700;cursor:pointer;">Check!</button>
+    <button onclick="checkBuild()" style="padding:8px 24px;background:${c.primary};color:${c.bg};border:none;border-radius:8px;font-family:inherit;font-weight:700;cursor:pointer;">Check!</button>
   </div>
 </div></div>
 <script>
@@ -157,7 +157,7 @@ function startGame(){const dc=document.getElementById('roundDots');dc.innerHTML=
   <div id="shapeChoices" style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:16px;"></div>
   <div style="display:flex;gap:8px;justify-content:center;">
     <button onclick="undoP()" style="padding:8px 16px;background:${c.secondary}33;color:${c.text};border:1px solid ${c.secondary};border-radius:8px;font-family:inherit;cursor:pointer;">Undo</button>
-    <button onclick="checkD()" style="padding:8px 24px;background:${c.primary};color:${config.vibe === "kawaii" ? "#fff" : c.bg};border:none;border-radius:8px;font-family:inherit;font-weight:700;cursor:pointer;">Check!</button>
+    <button onclick="checkD()" style="padding:8px 24px;background:${c.primary};color:${c.bg};border:none;border-radius:8px;font-family:inherit;font-weight:700;cursor:pointer;">Check!</button>
   </div>
 </div></div>
 <script>

@@ -14,7 +14,6 @@ export interface ThemeConfig {
     danger: string        // wrong/failure color
     text: string          // text color
   }
-  vibe: "kawaii" | "stickman" | "c64"
   winMessage: string      // shown on victory
   loseMessage: string     // shown on defeat
   dare?: string           // optional dare from the learner
@@ -24,7 +23,7 @@ export interface ThemeConfig {
   backgroundImage?: string   // sprite library ID or upload URL
 }
 
-// What the AI generates from the card builder choices
+// What the AI generates from the circuit board builder choices
 export interface ThemeConfigRequest {
   mechanic: string
   theme: string
@@ -32,7 +31,6 @@ export interface ThemeConfigRequest {
   action: string
   winCondition: string
   mathSkill: string
-  vibe: "kawaii" | "stickman" | "c64"
   title: string
   dare?: string
 }
@@ -63,30 +61,12 @@ export interface MathParams {
   rounds?: RoundData[]    // AI-generated rounds tailored to the specific standard
 }
 
-// Color palettes per vibe
-export const VIBE_PALETTES: Record<string, ThemeConfig["colors"]> = {
-  kawaii: {
-    bg: "#fff1f2",
-    primary: "#f9a8d4",
-    secondary: "#c4b5fd",
-    accent: "#fbbf24",
-    danger: "#f87171",
-    text: "#6b21a8",
-  },
-  stickman: {
-    bg: "#18181b",
-    primary: "#60a5fa",
-    secondary: "#e4e4e7",
-    accent: "#fbbf24",
-    danger: "#ef4444",
-    text: "#e4e4e7",
-  },
-  c64: {
-    bg: "#4040E0",
-    primary: "#FFFFFF",
-    secondary: "#FFFF99",
-    accent: "#88FF88",
-    danger: "#FF7777",
-    text: "#FFFFFF",
-  },
+// Default color palette for all games
+export const DEFAULT_PALETTE: ThemeConfig["colors"] = {
+  bg: "#18181b",
+  primary: "#60a5fa",
+  secondary: "#e4e4e7",
+  accent: "#fbbf24",
+  danger: "#ef4444",
+  text: "#e4e4e7",
 }

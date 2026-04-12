@@ -35,9 +35,7 @@ function buildNarrationSequence(designDoc: GameDesignDoc): NarrationItem[] {
   ]
 }
 
-type Phase = "narration" | "visualConcept" | "vibe" | "generating" | "done"
-
-type Vibe = "arcade" | "c64" | "kawaii" | "stickman"
+type Phase = "narration" | "visualConcept" | "generating" | "done"
 
 // The standardized Game Card structure. Same 5 fields for every game,
 // rendered with fixed labels and icons in the BuildScreen UI. The
@@ -62,7 +60,7 @@ export function BuildScreen({ designDoc, onComplete, preSelectedVibe, mechanicId
   const [conceptLoading, setConceptLoading] = useState(false)
   const [conceptError, setConceptError] = useState<string | null>(null)
   const [generatedHtml, setGeneratedHtml] = useState<string | null>(null)
-  const [vibe, setVibe] = useState<Vibe | null>((preSelectedVibe as Vibe) || null)
+  const [vibe] = useState<string>("default")
   const visualBulletsRef = useRef<string[]>([])
   const designChoicesRef = useRef<Record<string, string>>({})
   const startGenTimeRef = useRef<number>(0)
@@ -114,8 +112,8 @@ export function BuildScreen({ designDoc, onComplete, preSelectedVibe, mechanicId
     }
   }, [designDoc])
 
-  // Kick off code generation. Uses the approved visual bullets + vibe.
-  const startGeneration = useCallback(async (approvedBullets: string[], pickedVibe: Vibe) => {
+  // Kick off code generation.
+  const startGeneration = useCallback(async (approvedBullets: string[], pickedVibe?: string) => {
     startGenTimeRef.current = Date.now()
     try {
       const res = await fetch("/api/game/generate", {
@@ -125,7 +123,7 @@ export function BuildScreen({ designDoc, onComplete, preSelectedVibe, mechanicId
           designDoc,
           designChoices: designChoicesRef.current,
           visualConcept: approvedBullets.join("\n"),
-          vibe: pickedVibe,
+          vibe: pickedVibe || "default",
         }),
       })
       const data = await res.json()
@@ -178,7 +176,7 @@ export function BuildScreen({ designDoc, onComplete, preSelectedVibe, mechanicId
                 designDoc.winCondition ? `Win condition: ${designDoc.winCondition}` : "",
                 designDoc.mathRole ? `Math role: ${designDoc.mathRole}` : "",
               ].filter(Boolean)
-              startGeneration(bullets, preSelectedVibe as Vibe)
+              startGeneration(bullets, "default")
             }
           })
           .catch(() => {
@@ -188,7 +186,7 @@ export function BuildScreen({ designDoc, onComplete, preSelectedVibe, mechanicId
               designDoc.winCondition ? `Win condition: ${designDoc.winCondition}` : "",
               designDoc.mathRole ? `Math role: ${designDoc.mathRole}` : "",
             ].filter(Boolean)
-            startGeneration(bullets, preSelectedVibe as Vibe)
+            startGeneration(bullets, "default")
           })
       } else {
         // No mechanic ID — use AI generation
@@ -197,7 +195,7 @@ export function BuildScreen({ designDoc, onComplete, preSelectedVibe, mechanicId
           designDoc.winCondition ? `Win condition: ${designDoc.winCondition}` : "",
           designDoc.mathRole ? `Math role: ${designDoc.mathRole}` : "",
         ].filter(Boolean)
-        startGeneration(bullets, preSelectedVibe as Vibe)
+        startGeneration(bullets, "default")
       }
     }
   }, [preSelectedVibe, mechanicId, designDoc, startGeneration])
@@ -237,15 +235,8 @@ export function BuildScreen({ designDoc, onComplete, preSelectedVibe, mechanicId
   }, [phase, generatedHtml, onComplete])
 
   const handleConceptApprove = () => {
-    // After approving the visual concept, the learner picks a vibe
-    // (Arcade or Commodore 64). Generation starts after the pick.
-    setPhase("vibe")
-  }
-
-  const handleVibePick = (pickedVibe: Vibe) => {
-    setVibe(pickedVibe)
     setPhase("generating")
-    startGeneration(visualBullets, pickedVibe)
+    startGeneration(visualBullets, "default")
   }
 
 
@@ -269,7 +260,6 @@ export function BuildScreen({ designDoc, onComplete, preSelectedVibe, mechanicId
             <h2 className="text-2xl font-bold text-white mb-1">
               {phase === "narration" && "Building your game"}
               {phase === "visualConcept" && "Game Specs"}
-              {phase === "vibe" && "Pick the look"}
               {phase === "generating" && "Building your game"}
               {phase === "done" && "Done!"}
             </h2>
@@ -349,64 +339,6 @@ export function BuildScreen({ designDoc, onComplete, preSelectedVibe, mechanicId
             </div>
           )}
 
-          {/* Phase: vibe picker */}
-          {phase === "vibe" && (
-            <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-1">
-              <p className="text-center text-sm text-zinc-300">
-                Pick the look you want for your game.
-              </p>
-              {/* Retro */}
-              <button
-                onClick={() => handleVibePick("c64")}
-                className="w-full p-4 rounded-xl border-2 border-blue-400/40 bg-blue-950 hover:border-blue-300 transition-all text-left"
-                style={{ fontFamily: "monospace" }}
-              >
-                <div className="flex items-center gap-3 mb-1">
-                  <span className="text-2xl">👾</span>
-                  <div>
-                    <p className="text-sm font-bold text-white">Retro</p>
-                    <p className="text-xs text-blue-200">Blocky pixel art, classic game feel</p>
-                  </div>
-                </div>
-              </button>
-              {/* Cute */}
-              <button
-                onClick={() => handleVibePick("kawaii")}
-                className="w-full p-4 rounded-xl border-2 border-pink-300/60 hover:border-pink-300 transition-all text-left"
-                style={{
-                  background: "linear-gradient(135deg, #fef9c3 0%, #ffe4e6 100%)",
-                  fontFamily: "'Quicksand', sans-serif",
-                  boxShadow: "0 4px 12px rgba(244, 114, 182, 0.2)",
-                }}
-              >
-                <div className="flex items-center gap-3 mb-1">
-                  <span className="text-2xl">🥹</span>
-                  <div>
-                    <p className="text-sm font-bold" style={{ color: "#9d174d" }}>Cute</p>
-                    <p className="text-xs" style={{ color: "#831843" }}>Soft pastels, chubby characters</p>
-                  </div>
-                </div>
-              </button>
-              {/* Stick Man (was: Sketch) */}
-              <button
-                onClick={() => handleVibePick("stickman")}
-                className="w-full p-4 rounded-xl border-2 border-zinc-600 hover:border-zinc-400 transition-all text-left"
-                style={{
-                  background: "#18181b",
-                  fontFamily: "'Patrick Hand', cursive",
-                }}
-              >
-                <div className="flex items-center gap-3 mb-1">
-                  <span className="text-2xl">✏️</span>
-                  <div>
-                    <p className="text-sm font-bold" style={{ color: "#e4e4e7" }}>Stick Man</p>
-                    <p className="text-xs" style={{ color: "#a1a1aa" }}>Faceless stick figures on dark zinc</p>
-                  </div>
-                </div>
-              </button>
-            </div>
-          )}
-
           {/* Phase: generating */}
           {phase === "generating" && (
             <div className="space-y-3">
@@ -416,7 +348,7 @@ export function BuildScreen({ designDoc, onComplete, preSelectedVibe, mechanicId
                     Game Card
                   </p>
                   <p className="text-[10px] text-zinc-500 uppercase tracking-wide">
-                    {vibe === "c64" ? "Retro" : vibe === "kawaii" ? "Cute" : vibe === "stickman" ? "Stick Man" : vibe || ""} style
+                    Building
                   </p>
                 </div>
                 <div className="p-3 space-y-2">

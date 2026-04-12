@@ -98,7 +98,7 @@ function createToken(value, draggable) {
   const el = document.createElement('div');
   el.style.cssText = 'width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; cursor: ' + (draggable ? 'grab' : 'default') + ';';
   el.style.background = draggable ? '${c.accent}' : '${c.primary}';
-  el.style.color = '${config.vibe === "kawaii" ? "#fff" : c.bg}';
+  el.style.color = '${c.bg}';
   el.textContent = value;
   if (draggable) {
     el.draggable = true;
@@ -320,7 +320,7 @@ function startGame() {
     </div>
     <div style="font-size: 13px; opacity: 0.5; margin-bottom: 12px;">Click ${config.itemName} to add to your side. Click again to remove.</div>
     <div id="tokenBank" style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; min-height: 60px; margin-bottom: 16px;"></div>
-    <button id="checkBtn" onclick="checkMystery()" style="padding: 10px 32px; background: ${c.primary}; color: ${config.vibe === "kawaii" ? "#fff" : c.bg}; border: none; border-radius: 8px; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer;">Check Balance</button>
+    <button id="checkBtn" onclick="checkMystery()" style="padding: 10px 32px; background: ${c.primary}; color: ${c.bg}; border: none; border-radius: 8px; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer;">Check Balance</button>
     <button onclick="revealHint()" style="margin-left: 8px; padding: 10px 16px; background: ${c.secondary}33; color: ${c.text}; border: 1px solid ${c.secondary}; border-radius: 8px; font-family: inherit; cursor: pointer;">Hint</button>
     <div id="hintArea" style="margin-top: 8px; font-size: 13px; color: ${c.accent}; min-height: 20px;"></div>
   </div>
@@ -336,7 +336,7 @@ function createToken(val, idx) {
 }
 function toggleToken(el, val, idx) {
   if (selected.has(idx)) { selected.delete(idx); rightTotal -= val; el.style.background = '${c.primary}11'; el.style.borderColor = '${c.primary}44'; }
-  else { selected.add(idx); rightTotal += val; el.style.background = '${c.accent}'; el.style.borderColor = '${c.accent}'; el.style.color = '${config.vibe === "kawaii" ? "#fff" : c.bg}'; }
+  else { selected.add(idx); rightTotal += val; el.style.background = '${c.accent}'; el.style.borderColor = '${c.accent}'; el.style.color = '${c.bg}'; }
   document.getElementById('rightVal').textContent = rightTotal;
 }
 function revealHint() {
@@ -398,7 +398,7 @@ function startGame(){const dc=document.getElementById('roundDots');dc.innerHTML=
       <div><div style="font-size: 12px; opacity: 0.5;">Right</div><div id="rightVal" style="font-size: 40px; font-weight: 700; color: ${c.accent};">0</div></div>
     </div>
     <div id="tokenBank" style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px;"></div>
-    <button onclick="checkChain()" style="padding: 10px 32px; background: ${c.primary}; color: ${config.vibe === "kawaii" ? "#fff" : c.bg}; border: none; border-radius: 8px; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer;">Balance!</button>
+    <button onclick="checkChain()" style="padding: 10px 32px; background: ${c.primary}; color: ${c.bg}; border: none; border-radius: 8px; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer;">Balance!</button>
   </div>
 </div>
 <script>
@@ -407,7 +407,7 @@ function createToken(val, idx) {
   const el = document.createElement('div');
   el.style.cssText = 'width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.15s; border: 2px solid ${c.primary}44; background: ${c.primary}11; color: ${c.text};';
   el.textContent = val; el.dataset.val = val; el.dataset.idx = idx;
-  el.onclick = () => { if(selected.has(idx)){selected.delete(idx);rightTotal-=val;el.style.background='${c.primary}11';el.style.borderColor='${c.primary}44';el.style.color='${c.text}';}else{selected.add(idx);rightTotal+=val;el.style.background='${c.accent}';el.style.borderColor='${c.accent}';el.style.color='${config.vibe === "kawaii" ? "#fff" : c.bg}';} document.getElementById('rightVal').textContent=rightTotal; };
+  el.onclick = () => { if(selected.has(idx)){selected.delete(idx);rightTotal-=val;el.style.background='${c.primary}11';el.style.borderColor='${c.primary}44';el.style.color='${c.text}';}else{selected.add(idx);rightTotal+=val;el.style.background='${c.accent}';el.style.borderColor='${c.accent}';el.style.color='${c.bg}';} document.getElementById('rightVal').textContent=rightTotal; };
   return el;
 }
 function checkChain() {

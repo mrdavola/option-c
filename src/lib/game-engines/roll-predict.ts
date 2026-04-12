@@ -46,7 +46,7 @@ function createChoice(v) {
 function pickAnswer(v, el) {
   if (v === correctAnswer) {
     window.gameScore += 10 * (currentRound + 1); document.getElementById('scoreDisplay').textContent = window.gameScore;
-    el.style.background = '${c.accent}'; el.style.color = '${config.vibe === "kawaii" ? "#fff" : c.bg}';
+    el.style.background = '${c.accent}'; el.style.color = '${c.bg}';
     const rect = el.getBoundingClientRect(); spawnParticles(rect.left+32, rect.top+32, '${c.accent}', 10); addCombo();
     showScorePopup(rect.left+32, rect.top-10, '+' + (10*(currentRound+1)));
     const dots = document.querySelectorAll('.round-dot'); if (dots[currentRound]) dots[currentRound].classList.add('done');
@@ -101,7 +101,7 @@ function startGame(){
   <!-- Betting -->
   <div style="font-size:14px;opacity:.6;margin-bottom:8px;">Which color will it land on?</div>
   <div id="bets" style="display:flex;gap:12px;justify-content:center;margin-bottom:16px;"></div>
-  <button id="spinBtn" onclick="spin()" style="padding:12px 36px;background:${c.accent};color:${config.vibe === "kawaii" ? "#fff" : c.bg};border:none;border-radius:8px;font-family:inherit;font-size:18px;font-weight:700;cursor:pointer;display:none;">SPIN! 🎡</button>
+  <button id="spinBtn" onclick="spin()" style="padding:12px 36px;background:${c.accent};color:${c.bg};border:none;border-radius:8px;font-family:inherit;font-size:18px;font-weight:700;cursor:pointer;display:none;">SPIN! 🎡</button>
 </div></div>
 <script>
 const TR=5;let cr=0,coins=10,bet='',sections=[],spinAngle=0;
@@ -148,12 +148,12 @@ function startGame(){coins=10;cr=0;document.getElementById('scoreDisplay').textC
   <div id="chart" style="display:flex;gap:8px;align-items:flex-end;justify-content:center;height:160px;margin-bottom:16px;border-bottom:2px solid ${c.secondary};padding-bottom:4px;"></div>
   <div style="font-size:12px;opacity:.5;margin-bottom:8px;">Click a bar to increase it. Right-click to decrease.</div>
   <div style="margin-bottom:8px;"><span style="opacity:.6;">Current values: </span><strong id="barVals" style="color:${c.primary};"></strong></div>
-  <button onclick="checkChart()" style="padding:10px 32px;background:${c.primary};color:${config.vibe === "kawaii" ? "#fff" : c.bg};border:none;border-radius:8px;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;">Check!</button>
+  <button onclick="checkChart()" style="padding:10px 32px;background:${c.primary};color:${c.bg};border:none;border-radius:8px;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;">Check!</button>
 </div></div>
 <script>
 const TR=5;let cr=0,targetStat='',targetVal=0,bars=[];const NUM_BARS=5;const MAX_HEIGHT=10;
 function renderBars(){const ch=document.getElementById('chart');ch.innerHTML='';
-  bars.forEach((v,i)=>{const bar=document.createElement('div');bar.style.cssText='width:48px;background:${c.primary};border-radius:6px 6px 0 0;cursor:pointer;display:flex;align-items:flex-start;justify-content:center;padding-top:4px;font-size:14px;font-weight:700;color:${config.vibe === "kawaii" ? "#fff" : c.bg};transition:height .2s;';
+  bars.forEach((v,i)=>{const bar=document.createElement('div');bar.style.cssText='width:48px;background:${c.primary};border-radius:6px 6px 0 0;cursor:pointer;display:flex;align-items:flex-start;justify-content:center;padding-top:4px;font-size:14px;font-weight:700;color:${c.bg};transition:height .2s;';
   bar.style.height=Math.max(4,v*15)+'px';bar.textContent=v;
   bar.onclick=()=>{if(bars[i]<MAX_HEIGHT){bars[i]++;renderBars();}};
   bar.oncontextmenu=(e)=>{e.preventDefault();if(bars[i]>0){bars[i]--;renderBars();}};

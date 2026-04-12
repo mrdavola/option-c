@@ -51,7 +51,7 @@ export function scoreRankEngine(config: ThemeConfig, math: MathParams, variant: 
     <div id="itemBank" style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; min-height: 70px;">
     </div>
     <div style="text-align: center; margin-top: 16px;">
-      <button id="checkBtn" onclick="checkOrder()" style="padding: 10px 32px; background: ${c.primary}; color: ${config.vibe === "kawaii" ? "#fff" : c.bg}; border: none; border-radius: 8px; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer;">
+      <button id="checkBtn" onclick="checkOrder()" style="padding: 10px 32px; background: ${c.primary}; color: ${c.bg}; border: none; border-radius: 8px; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer;">
         Check Order
       </button>
     </div>
@@ -71,7 +71,7 @@ function createItem(value) {
   const el = document.createElement('div');
   el.style.cssText = 'width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; cursor: grab; transition: transform 0.15s;';
   el.style.background = '${c.primary}';
-  el.style.color = '${config.vibe === "kawaii" ? "#fff" : c.bg}';
+  el.style.color = '${c.bg}';
   el.style.border = '2px solid ${c.primary}';
   el.textContent = value;
   el.dataset.value = value;
@@ -343,7 +343,7 @@ function startGame(){const dc=document.getElementById('roundDots');dc.innerHTML=
   <div style="text-align: center; width: 90%; max-width: 360px;">
     <div style="font-size: 14px; opacity: 0.6; margin-bottom: 12px;">Fix the leaderboard — highest score on top!</div>
     <div id="board" style="display: flex; flex-direction: column; gap: 4px;"></div>
-    <button onclick="checkBoard()" style="margin-top: 16px; padding: 10px 32px; background: ${c.primary}; color: ${config.vibe === "kawaii" ? "#fff" : c.bg}; border: none; border-radius: 8px; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer;">Check!</button>
+    <button onclick="checkBoard()" style="margin-top: 16px; padding: 10px 32px; background: ${c.primary}; color: ${c.bg}; border: none; border-radius: 8px; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer;">Check!</button>
   </div>
 </div>
 <script>

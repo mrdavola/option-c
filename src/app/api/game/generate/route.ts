@@ -453,9 +453,9 @@ export async function POST(req: Request) {
   const remaining = () => TIMEOUT_MS - (Date.now() - startTime)
 
   try {
-    const { designDoc, visualConcept, vibe } = await req.json()
+    const { designDoc, visualConcept } = await req.json()
 
-    const vibePreset = VIBE_PRESETS[vibe as string] ?? VIBE_PRESETS.arcade
+    const vibePreset = VIBE_PRESETS.stickman ?? VIBE_PRESETS.arcade
     const systemPrompt = buildSystemPrompt(vibePreset, visualConcept)
     const baseUserPrompt = buildUserPrompt(designDoc, vibePreset, visualConcept)
 

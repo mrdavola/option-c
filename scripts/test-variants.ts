@@ -1,9 +1,9 @@
-import { generateWithEngine, getAvailableEngines, VIBE_PALETTES } from "../src/lib/game-engines/index"
+import { generateWithEngine, getAvailableEngines, DEFAULT_PALETTE } from "../src/lib/game-engines/index"
 import type { ThemeConfig, MathParams } from "../src/lib/game-engines/engine-types"
 
 const cfg: ThemeConfig = {
   title: "T", character: "c", itemName: "i", targetName: "t", worldName: "w",
-  colors: VIBE_PALETTES.stickman, vibe: "stickman", winMessage: "W", loseMessage: "L",
+  colors: DEFAULT_PALETTE, winMessage: "W", loseMessage: "L",
 }
 const math: MathParams = { grade: "6", standardId: "x", standardDescription: "x", difficulty: "medium" }
 

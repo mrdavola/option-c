@@ -6,17 +6,9 @@ import type { ThemeConfig, GameVariant } from "./engine-types"
 
 export function baseTemplate(config: ThemeConfig, gameContent: string, variant: GameVariant = "classic", timerSeconds: number = 45): string {
   const c = config.colors
-  const isLight = config.vibe === "kawaii"
-  const fontImport = config.vibe === "kawaii"
-    ? "@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap');"
-    : config.vibe === "c64"
-      ? "@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');"
-      : "@import url('https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap');"
-  const fontFamily = config.vibe === "kawaii"
-    ? "'Quicksand', sans-serif"
-    : config.vibe === "c64"
-      ? "'VT323', monospace"
-      : "'Patrick Hand', cursive"
+  const fontImport = "@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&family=Lexend:wght@400;600;700&display=swap');"
+  const fontFamily = "'Lexend', sans-serif"
+  const titleFont = "'Space Grotesk', sans-serif"
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -45,9 +37,9 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 2px solid ${isLight ? "#e4e4e7" : "#333"};
+  border-bottom: 2px solid #333;
 }
-.game-title { font-size: 20px; font-weight: 700; }
+.game-title { font-size: 20px; font-weight: 700; font-family: ${titleFont}; }
 .game-variant-badge { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
 .game-stats { display: flex; gap: 16px; align-items: center; font-size: 14px; }
 .game-area {
@@ -62,7 +54,7 @@ body {
   padding: 8px 16px;
   text-align: center;
   font-size: 13px;
-  color: ${isLight ? "#71717a" : "#71717a"};
+  color: #71717a;
 }
 
 /* Round indicator */
@@ -159,7 +151,7 @@ button:active:not(:disabled) { transform: scale(0.97); }
 .victory-btn {
   padding: 12px 32px;
   background: ${c.primary};
-  color: ${isLight ? "#fff" : c.bg};
+  color: ${c.bg};
   border: none; border-radius: 8px;
   font-family: ${fontFamily};
   font-size: 16px; font-weight: 700;
@@ -175,7 +167,7 @@ button:active:not(:disabled) { transform: scale(0.97); }
 .help-btn {
   position: fixed; top: 8px; right: 8px;
   width: 28px; height: 28px;
-  background: ${isLight ? "#e4e4e7" : "#333"};
+  background: #333;
   color: ${c.text};
   border: none; border-radius: 50%;
   font-size: 16px; font-weight: 700;
@@ -200,7 +192,7 @@ button:active:not(:disabled) { transform: scale(0.97); }
   display: block; margin-top: 12px;
   padding: 8px 24px;
   background: ${c.primary};
-  color: ${isLight ? "#fff" : c.bg};
+  color: ${c.bg};
   border: none; border-radius: 6px;
   font-family: ${fontFamily};
   font-size: 14px; cursor: pointer;
@@ -221,11 +213,11 @@ button:active:not(:disabled) { transform: scale(0.97); }
   text-align: center;
 }
 .intro-box h2 { font-size: 24px; margin-bottom: 8px; }
-.intro-box p { font-size: 14px; margin-bottom: 16px; line-height: 1.5; color: ${isLight ? "#4c1d95" : "#a1a1aa"}; }
+.intro-box p { font-size: 14px; margin-bottom: 16px; line-height: 1.5; color: #a1a1aa; }
 .intro-start {
   padding: 12px 32px;
   background: ${c.primary};
-  color: ${isLight ? "#fff" : c.bg};
+  color: ${c.bg};
   border: none; border-radius: 8px;
   font-family: ${fontFamily};
   font-size: 18px; font-weight: 700;
@@ -234,17 +226,7 @@ button:active:not(:disabled) { transform: scale(0.97); }
 </style>
 </head>
 <body>
-<!-- Themed background decorations -->
-${config.vibe === "kawaii" ? `
-<div style="position: fixed; inset: 0; pointer-events: none; z-index: -1; overflow: hidden;">
-  <svg width="100%" height="100%" opacity="0.1">
-    <circle cx="10%" cy="20%" r="30" fill="${c.primary}"><animate attributeName="cy" values="20%;22%;20%" dur="4s" repeatCount="indefinite"/></circle>
-    <circle cx="85%" cy="15%" r="20" fill="${c.secondary}"><animate attributeName="cy" values="15%;17%;15%" dur="3s" repeatCount="indefinite"/></circle>
-    <circle cx="70%" cy="80%" r="25" fill="${c.accent}"><animate attributeName="cy" values="80%;82%;80%" dur="5s" repeatCount="indefinite"/></circle>
-    <circle cx="20%" cy="75%" r="15" fill="${c.primary}"><animate attributeName="cy" values="75%;77%;75%" dur="3.5s" repeatCount="indefinite"/></circle>
-  </svg>
-</div>` : config.vibe === "c64" ? `
-<div style="position: fixed; inset: 0; pointer-events: none; z-index: -1; border: 12px solid #7878F8;"></div>` : `
+<!-- Subtle background decoration -->
 <div style="position: fixed; inset: 0; pointer-events: none; z-index: -1; overflow: hidden;">
   <svg width="100%" height="100%" opacity="0.04">
     <line x1="0" y1="30%" x2="100%" y2="30%" stroke="${c.secondary}" stroke-width="1" stroke-dasharray="8,12"/>
@@ -252,7 +234,7 @@ ${config.vibe === "kawaii" ? `
     <line x1="30%" y1="0" x2="30%" y2="100%" stroke="${c.secondary}" stroke-width="1" stroke-dasharray="8,12"/>
     <line x1="70%" y1="0" x2="70%" y2="100%" stroke="${c.secondary}" stroke-width="1" stroke-dasharray="8,12"/>
   </svg>
-</div>`}
+</div>
 
 <button class="help-btn" onclick="document.getElementById('helpPanel').classList.add('open')">?</button>
 

@@ -38,7 +38,7 @@ export function splitShareEngine(config: ThemeConfig, math: MathParams, variant:
     <div style="display: flex; gap: 8px; justify-content: center;">
       <button onclick="addCut()" style="padding: 8px 20px; background: ${c.secondary}33; color: ${c.text}; border: 1px solid ${c.secondary}; border-radius: 8px; font-family: inherit; cursor: pointer;">+ Add Cut</button>
       <button onclick="removeCut()" style="padding: 8px 20px; background: ${c.secondary}33; color: ${c.text}; border: 1px solid ${c.secondary}; border-radius: 8px; font-family: inherit; cursor: pointer;">− Remove Cut</button>
-      <button onclick="checkFraction()" style="padding: 8px 24px; background: ${c.primary}; color: ${config.vibe === "kawaii" ? "#fff" : c.bg}; border: none; border-radius: 8px; font-family: inherit; font-weight: 700; cursor: pointer;">Check!</button>
+      <button onclick="checkFraction()" style="padding: 8px 24px; background: ${c.primary}; color: ${c.bg}; border: none; border-radius: 8px; font-family: inherit; font-weight: 700; cursor: pointer;">Check!</button>
     </div>
   </div>
 </div>
@@ -54,7 +54,7 @@ function renderBar() {
     const part = document.createElement('div');
     part.style.cssText = 'flex: 1; height: 100%; border-right: ' + (i < parts - 1 ? '2px dashed ${c.secondary}' : 'none') + '; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; cursor: pointer; transition: background 0.2s;';
     part.style.background = shaded.has(i) ? '${c.accent}88' : 'transparent';
-    part.style.color = shaded.has(i) ? '${config.vibe === "kawaii" ? "#fff" : c.bg}' : '${c.text}44';
+    part.style.color = shaded.has(i) ? '${c.bg}' : '${c.text}44';
     part.textContent = (i + 1);
     part.onclick = () => { if (shaded.has(i)) shaded.delete(i); else shaded.add(i); renderBar(); document.getElementById('shadeCount').textContent = shaded.size; };
     bar.appendChild(part);
@@ -127,7 +127,7 @@ function startGame() {
       <div id="pourPercent" style="font-size:14px;color:${c.text};margin-top:4px;">0%</div>
     </div>
   </div>
-  <button onclick="checkPour()" style="padding:10px 32px;background:${c.primary};color:${config.vibe === "kawaii" ? "#fff" : c.bg};border:none;border-radius:8px;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;">Lock in!</button>
+  <button onclick="checkPour()" style="padding:10px 32px;background:${c.primary};color:${c.bg};border:none;border-radius:8px;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;">Lock in!</button>
 </div></div>
 <script>
 const TR=5;let cr=0,tNum=0,tDen=0;
@@ -161,7 +161,7 @@ function startGame(){const dc=document.getElementById('roundDots');dc.innerHTML=
   <!-- Items to share -->
   <div style="font-size:12px;opacity:.5;margin-bottom:8px;">Click an item, then click a plate to place it</div>
   <div id="items" style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:16px;"></div>
-  <button onclick="checkShare()" style="padding:10px 32px;background:${c.primary};color:${config.vibe === "kawaii" ? "#fff" : c.bg};border:none;border-radius:8px;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;">Check!</button>
+  <button onclick="checkShare()" style="padding:10px 32px;background:${c.primary};color:${c.bg};border:none;border-radius:8px;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;">Check!</button>
 </div></div>
 <script>
 const TR=5;let cr=0,totalItems=0,numPlates=0,perPlate=0,plateCounts=[],selectedItem=null;

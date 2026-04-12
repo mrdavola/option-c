@@ -53,7 +53,7 @@ export function buildMeasureEngine(config: ThemeConfig, math: MathParams, varian
       <div id="blockChoices" style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; max-width: 200px;"></div>
       <div style="margin-top: 16px; display: flex; gap: 8px; justify-content: center;">
         <button onclick="undoBlock()" style="padding: 8px 16px; background: ${c.secondary}33; color: ${c.text}; border: 1px solid ${c.secondary}; border-radius: 8px; font-family: inherit; cursor: pointer;">Undo</button>
-        <button onclick="checkTower()" style="padding: 8px 20px; background: ${c.primary}; color: ${config.vibe === "kawaii" ? "#fff" : c.bg}; border: none; border-radius: 8px; font-family: inherit; font-weight: 700; cursor: pointer;">Done!</button>
+        <button onclick="checkTower()" style="padding: 8px 20px; background: ${c.primary}; color: ${c.bg}; border: none; border-radius: 8px; font-family: inherit; font-weight: 700; cursor: pointer;">Done!</button>
       </div>
     </div>
   </div>
@@ -80,7 +80,7 @@ function renderTower() {
   tower.innerHTML = '';
   stackedBlocks.forEach((v, i) => {
     const block = document.createElement('div');
-    block.style.cssText = 'width: 100%; height: ' + (v * PX_PER_UNIT) + 'px; background: ' + BLOCK_COLORS[i % BLOCK_COLORS.length] + '; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; color: ${config.vibe === "kawaii" ? "#fff" : c.bg}; border-radius: 4px; margin-top: 2px;';
+    block.style.cssText = 'width: 100%; height: ' + (v * PX_PER_UNIT) + 'px; background: ' + BLOCK_COLORS[i % BLOCK_COLORS.length] + '; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; color: ${c.bg}; border-radius: 4px; margin-top: 2px;';
     block.textContent = v;
     tower.appendChild(block);
   });
@@ -151,7 +151,7 @@ function startGame() {
   </div>
   <div style="display:flex;gap:8px;justify-content:center;margin-bottom:16px;" id="tileChoices"></div>
   <button onclick="undoTile()" style="margin-right:8px;padding:8px 16px;background:${c.secondary}33;color:${c.text};border:1px solid ${c.secondary};border-radius:8px;font-family:inherit;cursor:pointer;">Undo</button>
-  <button onclick="checkArea()" style="padding:8px 24px;background:${c.primary};color:${config.vibe === "kawaii" ? "#fff" : c.bg};border:none;border-radius:8px;font-family:inherit;font-weight:700;cursor:pointer;">Check!</button>
+  <button onclick="checkArea()" style="padding:8px 24px;background:${c.primary};color:${c.bg};border:none;border-radius:8px;font-family:inherit;font-weight:700;cursor:pointer;">Check!</button>
 </div></div>
 <script>
 const TR=5;let cr=0,target=0,placed=0,tiles=[];
@@ -191,7 +191,7 @@ function startGame(){const dc=document.getElementById('roundDots');dc.innerHTML=
   </div>
   <div id="blockChoices" style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:16px;"></div>
   <button onclick="undoBlock()" style="margin-right:8px;padding:8px 16px;background:${c.secondary}33;color:${c.text};border:1px solid ${c.secondary};border-radius:8px;font-family:inherit;cursor:pointer;">Undo</button>
-  <button onclick="checkVol()" style="padding:8px 24px;background:${c.primary};color:${config.vibe === "kawaii" ? "#fff" : c.bg};border:none;border-radius:8px;font-family:inherit;font-weight:700;cursor:pointer;">Check!</button>
+  <button onclick="checkVol()" style="padding:8px 24px;background:${c.primary};color:${c.bg};border:none;border-radius:8px;font-family:inherit;font-weight:700;cursor:pointer;">Check!</button>
 </div></div>
 <script>
 const TR=5;let cr=0,targetV=0,packed=0,blocks=[];

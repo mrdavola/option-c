@@ -1,11 +1,11 @@
 // Quick test: generate HTML from each engine and check for critical elements
-import { generateWithEngine, getAvailableEngines, VIBE_PALETTES } from "../src/lib/game-engines/index"
+import { generateWithEngine, getAvailableEngines, DEFAULT_PALETTE } from "../src/lib/game-engines/index"
 import type { ThemeConfig, MathParams } from "../src/lib/game-engines/engine-types"
 
 const cfg: ThemeConfig = {
   title: "Test Game", character: "test hero", itemName: "test items",
   targetName: "test target", worldName: "test world",
-  colors: VIBE_PALETTES.stickman, vibe: "stickman",
+  colors: DEFAULT_PALETTE,
   winMessage: "You won!", loseMessage: "Try again!",
 }
 const math: MathParams = { grade: "6", standardId: "6.EE.B.7", standardDescription: "Solve equations", difficulty: "medium" }

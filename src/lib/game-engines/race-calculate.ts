@@ -29,7 +29,7 @@ export function raceCalculateEngine(config: ThemeConfig, math: MathParams, varia
       <div style="font-size: 24px; font-weight: 700; color: ${c.primary};"><span id="speedVal">5</span> per sec</div>
       <div style="font-size: 14px; opacity: 0.5;">Distance = <span id="speedVal2">5</span> × <span id="timeVal2">?</span> = <strong id="calcDist">?</strong></div>
     </div>
-    <button id="launchBtn" onclick="launch()" style="padding: 12px 40px; background: ${c.accent}; color: ${config.vibe === "kawaii" ? "#fff" : c.bg}; border: none; border-radius: 8px; font-family: inherit; font-size: 18px; font-weight: 700; cursor: pointer;">Launch!</button>
+    <button id="launchBtn" onclick="launch()" style="padding: 12px 40px; background: ${c.accent}; color: ${c.bg}; border: none; border-radius: 8px; font-family: inherit; font-size: 18px; font-weight: 700; cursor: pointer;">Launch!</button>
   </div>
 </div>
 <script>
@@ -103,7 +103,7 @@ function startGame(){
       <input type="number" id="speedAnswer" style="width:80px;font-size:28px;font-weight:700;text-align:center;background:${c.bg};color:${c.text};border:3px solid ${c.secondary};border-radius:12px;padding:8px;font-family:inherit;outline:none;" placeholder="?">
     </div>
   </div>
-  <button onclick="checkSpeed()" style="padding:12px 36px;background:${c.primary};color:${config.vibe === "kawaii" ? "#fff" : c.bg};border:none;border-radius:8px;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;">Check!</button>
+  <button onclick="checkSpeed()" style="padding:12px 36px;background:${c.primary};color:${c.bg};border:none;border-radius:8px;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;">Check!</button>
   <div id="feedback" style="margin-top:12px;font-size:14px;min-height:20px;"></div>
 </div></div>
 <script>
@@ -140,7 +140,7 @@ document.addEventListener('keydown',(e)=>{if(e.key==='Enter')checkSpeed();});
     <input type="number" id="speedIn" style="width:100px;font-size:28px;font-weight:700;text-align:center;background:${c.bg};color:${c.text};border:3px solid ${c.primary};border-radius:12px;padding:8px;font-family:inherit;outline:none;" placeholder="?">
     <span style="font-size:16px;color:${c.text}80;">per second</span>
   </div>
-  <button onclick="checkCatch()" style="padding:12px 36px;background:${c.accent};color:${config.vibe === "kawaii" ? "#fff" : c.bg};border:none;border-radius:8px;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;">Go!</button>
+  <button onclick="checkCatch()" style="padding:12px 36px;background:${c.accent};color:${c.bg};border:none;border-radius:8px;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;">Go!</button>
   <div id="feedback" style="margin-top:12px;font-size:14px;min-height:20px;"></div>
 </div></div>
 <script>

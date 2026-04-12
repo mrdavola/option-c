@@ -63,7 +63,7 @@ export function scaleTransformEngine(config: ThemeConfig, math: MathParams, vari
     <div style="font-size: 24px; font-weight: 700; color: ${c.primary}; margin-top: 8px;">
       <span id="scalePercent">100</span>%
     </div>
-    <button onclick="checkScale()" style="margin-top: 12px; padding: 10px 32px; background: ${c.primary}; color: ${config.vibe === "kawaii" ? "#fff" : c.bg}; border: none; border-radius: 8px; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer;">
+    <button onclick="checkScale()" style="margin-top: 12px; padding: 10px 32px; background: ${c.primary}; color: ${c.bg}; border: none; border-radius: 8px; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer;">
       Lock In
     </button>
   </div>
@@ -160,7 +160,7 @@ function startGame() {
   <div style="font-size:14px;opacity:.6;">Recipe for 4. Scale to:</div>
   <div id="ts" style="font-size:48px;font-weight:700;color:${c.accent};margin:8px 0;"></div>
   <div id="ings" style="text-align:left;margin-bottom:16px;"></div>
-  <button onclick="chk()" style="padding:10px 32px;background:${c.primary};color:${config.vibe === "kawaii" ? "#fff" : c.bg};border:none;border-radius:8px;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;">Check!</button>
+  <button onclick="chk()" style="padding:10px 32px;background:${c.primary};color:${c.bg};border:none;border-radius:8px;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;">Check!</button>
 </div></div>
 <script>
 const TR=5;let cr=0,ans=[];const NM=['flour','sugar','eggs','butter','milk'];
@@ -190,7 +190,7 @@ function startGame(){const dc=document.getElementById('roundDots');dc.innerHTML=
   <div style="display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:16px;">
     <input id="a" type="number" style="width:100px;font-size:24px;font-weight:700;text-align:center;background:${c.bg};border:2px solid ${c.primary};border-radius:8px;padding:8px;color:${c.text};font-family:inherit;" placeholder="?">
     <span style="color:${c.text}80;">km</span></div>
-  <button onclick="chk()" style="padding:10px 32px;background:${c.primary};color:${config.vibe === "kawaii" ? "#fff" : c.bg};border:none;border-radius:8px;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;">Check!</button>
+  <button onclick="chk()" style="padding:10px 32px;background:${c.primary};color:${c.bg};border:none;border-radius:8px;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;">Check!</button>
 </div></div>
 <script>
 const TR=5;let cr=0,ca=0;

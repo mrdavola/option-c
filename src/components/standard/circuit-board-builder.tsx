@@ -104,16 +104,6 @@ export function CircuitBoardBuilder({
   const allFilled = selectedBackground && selectedCharacter && selectedGameOption && selectedItem
   const filledCount = [selectedBackground, selectedCharacter, selectedGameOption, selectedItem].filter(Boolean).length
 
-  // Auto-detect vibe from background
-  const autoVibe = useMemo(() => {
-    if (!selectedBackground) return "stickman"
-    const darkBgs = ["underwater", "space", "cave", "volcano", "city"]
-    const lightBgs = ["kitchen", "forest", "jungle"]
-    if (darkBgs.includes(selectedBackground)) return "stickman"
-    if (lightBgs.includes(selectedBackground)) return "kawaii"
-    return "c64"
-  }, [selectedBackground])
-
   const handleBuild = async () => {
     if (!allFilled || !selectedGameOption) return
     setBuilding(true)
@@ -150,7 +140,7 @@ Math: ${standardDescription}`
       }
       ;(designDoc as any).gameVariant = selectedGameOption.variantKey
 
-      onBuildGame(designDoc, summary, autoVibe, selectedGameOption.mechanicId)
+      onBuildGame(designDoc, summary, "default", selectedGameOption.mechanicId)
     } catch {
       // Fallback
     } finally {

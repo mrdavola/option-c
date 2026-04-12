@@ -80,7 +80,7 @@ function pickAnswer(value, el) {
     window.gameScore += 10 * (currentRound + 1);
     document.getElementById('scoreDisplay').textContent = window.gameScore;
     el.style.background = '${c.accent}';
-    el.style.color = '${config.vibe === "kawaii" ? "#fff" : c.bg}';
+    el.style.color = '${c.bg}';
     const rect = el.getBoundingClientRect();
     spawnParticles(rect.left + rect.width/2, rect.top + rect.height/2, '${c.accent}', 10);
     addCombo();
