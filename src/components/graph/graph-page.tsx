@@ -977,32 +977,9 @@ export function GraphPage({ data }: GraphPageProps) {
         </button>
       )}
 
-      {/* Top-right toolbar — single horizontal strip */}
-      <div className={`absolute ${impersonating ? "top-14" : "top-4"} right-4 z-10 flex items-center gap-2 flex-wrap justify-end max-w-[calc(100vw-8rem)]`}>
-        {/* Compact status strip */}
-        <div className="flex items-center gap-2 bg-zinc-900/85 backdrop-blur-sm border border-zinc-700 rounded-lg px-3 py-1.5 text-xs">
-          {studentData?.grade && <span className="text-zinc-400 font-semibold">G{studentData.grade}</span>}
-          <span className="text-zinc-700">·</span>
-          <span className="flex items-center gap-1">
-            <span className="text-emerald-400 font-mono font-bold">{counts.unlocked}</span>
-            <span className="text-zinc-400">skills</span>
-          </span>
-          <span className="text-zinc-700">·</span>
-          <span className="flex items-center gap-1">
-            <span className="text-amber-400">⬡</span>
-            <span className="text-amber-300 font-mono font-bold">{tokens}</span>
-            <span className="text-zinc-400">tokens</span>
-          </span>
-        </div>
-
-        {/* Rules / help */}
-        <RulesPopover />
-
-        {/* User menu (name + sign out) */}
-        <UserMenu />
-
-        {/* Settings popover — last so its dropdown hugs the right edge */}
-        {viewMode === "galaxy" && (
+      {/* Galaxy settings — top right (stats, rules, user menu moved to unified header) */}
+      {viewMode === "galaxy" && (
+        <div className={`absolute ${impersonating ? "top-14" : "top-4"} right-4 z-10`}>
           <GalaxySettingsPopover
             colorMode={colorMode}
             onColorModeChange={setColorMode}
@@ -1011,12 +988,12 @@ export function GraphPage({ data }: GraphPageProps) {
             showGradeFilter={!!studentData?.grade}
             showOtherGradeSwatch={!!studentData?.grade && gradeFilter === "all"}
           />
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Search bar — galaxy view only */}
       {viewMode === "galaxy" && (
-        <div className={`absolute ${impersonating ? "top-24" : "top-14"} left-4 z-20`}>
+        <div className={`absolute ${impersonating ? "top-24" : "top-4"} left-4 z-20`}>
           {searchOpen ? (
             <div className="w-72">
               <div className="flex items-center gap-2 bg-zinc-900/95 backdrop-blur-sm border border-zinc-700 rounded-lg px-3 py-2">

@@ -32,16 +32,17 @@ export function UnifiedHeader() {
   const isBuild = pathname === "/build"
   const isLibrary = pathname.startsWith("/library")
   const isDashboard = pathname === "/learner" || pathname === "/student"
+  const isGalaxy = isExplore // Galaxy page — header overlays the 3D view
 
   return (
-    <>
+    <div className={isGalaxy ? "absolute top-0 left-0 right-0 z-40" : ""}>
       {impersonating && (
         <div className="bg-amber-500/90 text-black px-4 py-1.5 flex items-center justify-between text-sm">
           <span className="font-medium">Viewing as {impersonating.name}</span>
         </div>
       )}
       {/* Row 1: Logo + stats + user */}
-      <div className="bg-zinc-950/90 backdrop-blur-sm border-b border-zinc-800/50 px-4 py-2">
+      <div className={`${isGalaxy ? "bg-zinc-950/60" : "bg-zinc-950/90"} backdrop-blur-sm border-b border-zinc-800/50 px-4 py-2`}>
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Logo size={24} className="text-blue-400" />
@@ -58,7 +59,7 @@ export function UnifiedHeader() {
       </div>
 
       {/* Row 2: Navigation */}
-      <div className="bg-zinc-900/80 backdrop-blur-sm border-b border-zinc-800/30 px-4 py-1.5">
+      <div className={`${isGalaxy ? "bg-zinc-900/40" : "bg-zinc-900/80"} backdrop-blur-sm border-b border-zinc-800/30 px-4 py-1.5`}>
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-1">
             <NavLink href="/" active={isExplore} icon={<Compass className="size-3.5" />} label="Explore" />
@@ -72,7 +73,7 @@ export function UnifiedHeader() {
           </div>
         </div>
       </div>
-    </>
+    </div>
   )
 }
 
