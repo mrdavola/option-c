@@ -167,7 +167,10 @@ function MoonCardView({
       <div className="flex items-center justify-between px-6 py-3 border-b border-zinc-800 bg-zinc-900 shrink-0">
         <div>
           <p className="text-xs text-blue-400 font-medium uppercase tracking-wide">{planetLabel}</p>
-          <h2 className="text-lg font-bold text-white">{moonName}</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-bold text-white">{moonName}</h2>
+            <span className="text-[10px] text-zinc-600 font-mono">{standard.id}</span>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -258,14 +261,9 @@ function MoonCardView({
                 Open Game Assembler →
               </button>
 
-              {onImportHtml && (
-                <button
-                  onClick={onImportHtml}
-                  className="w-full py-3 rounded-lg border-2 border-dashed border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-500 text-sm font-medium transition-colors"
-                >
-                  Or paste your own HTML game →
-                </button>
-              )}
+              <div className="w-full py-3 rounded-lg border-2 border-dashed border-zinc-800 text-zinc-600 text-sm font-medium text-center cursor-not-allowed">
+                Paste your own HTML game — Coming soon!
+              </div>
             </>
           ) : null}
         </div>

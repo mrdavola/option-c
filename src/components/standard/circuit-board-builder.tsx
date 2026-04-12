@@ -85,7 +85,7 @@ export function CircuitBoardBuilder({
   const [selectedGameOption, setSelectedGameOption] = useState<GameOptionInfo | null>(null)
   const [selectedItem, setSelectedItem] = useState<string | null>(null)
   const [building, setBuilding] = useState(false)
-  const [expandedMechanic, setExpandedMechanic] = useState<string | null>(mechanics[0]?.id || null)
+  const [expandedMechanic, setExpandedMechanic] = useState<string | null>(null)
 
   // Eureka mode state
   const [eurekaIdea, setEurekaIdea] = useState("")
@@ -391,7 +391,7 @@ Math: ${effectiveStandardDesc}`
             categories={ITEM_CATEGORIES}
             selected={selectedItem}
             onSelect={setSelectedItem}
-            recommended={selectedGameOption ? getRecommendedItems(selectedGameOption.mechanicId) : []}
+            recommended={[]}
           />
         </SlotSection>
 
