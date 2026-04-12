@@ -52,13 +52,23 @@ function generateBalanceRound(round) {
 
   const leftValue = Math.floor(Math.random() * (maxVal - 4)) + 5;
   const weights = [];
-  // Ensure at least one valid combination that sums to leftValue
-  const a = Math.floor(Math.random() * (leftValue - 1)) + 1;
-  weights.push(a, leftValue - a);
-  // Add distractors
+  // Ensure at least one valid combination that sums to leftValue (2-3 weights)
+  // Force at least 2 weights so no single weight = target
+  const a = Math.floor(Math.random() * Math.floor(leftValue / 2)) + 1;
+  const remainder = leftValue - a;
+  if (remainder > maxVal * 0.7 && remainder > 3) {
+    // Split remainder further so no single weight is too close to target
+    const b = Math.floor(Math.random() * (remainder - 1)) + 1;
+    weights.push(a, b, remainder - b);
+  } else {
+    weights.push(a, remainder);
+  }
+  // Add distractors — never equal to leftValue, never equal to any existing weight
+  const usedValues = new Set(weights);
+  usedValues.add(leftValue);
   while (weights.length < weightCount) {
     const v = Math.floor(Math.random() * maxVal) + 1;
-    if (v !== leftValue) weights.push(v);
+    if (!usedValues.has(v)) { weights.push(v); usedValues.add(v); }
   }
   // Shuffle
   for (let i = weights.length - 1; i > 0; i--) {

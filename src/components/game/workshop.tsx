@@ -45,6 +45,8 @@ export function Workshop({
   const [currentGameId] = useState<string>(() => gameId ?? doc(collection(db, "games")).id)
   const [mobileChat, setMobileChat] = useState(false)
   const [showMathMoment, setShowMathMoment] = useState(false)
+  const [selectedFix, setSelectedFix] = useState<{ label: string; issue: string } | null>(null)
+  const [fixDetails, setFixDetails] = useState("")
 
   // Auto-save draft to Firebase. Uses the stable currentGameId (locked
   // in on mount) so every save targets the same Firestore doc. createdAt
@@ -146,10 +148,10 @@ export function Workshop({
             </div>
           )}
 
-          {/* Hint mode banner */}
+          {/* Hint mode banner — not absolute, pushes game content down */}
           {hintMode === "hint" && (
-            <div className="absolute top-0 left-0 right-0 z-20 bg-blue-600/90 text-white text-center py-1.5 text-xs font-medium">
-              Practice mode — wins don&apos;t count. Hint Card is available!
+            <div className="bg-blue-600/80 text-white text-center py-1 text-[11px] font-medium shrink-0">
+              Practice mode — wins don&apos;t count
             </div>
           )}
 
@@ -218,40 +220,61 @@ export function Workshop({
               {isRefining ? (
                 <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 text-center">
                   <RotateCcw className="size-5 text-emerald-400 animate-spin mx-auto mb-2" />
-                  <p className="text-sm text-zinc-300">Rebuilding your game...</p>
+                  <p className="text-sm text-zinc-300">Fixing your game...</p>
+                </div>
+              ) : selectedFix ? (
+                <div className="space-y-2">
+                  <div className="bg-zinc-800 rounded-lg px-3 py-2 flex items-center justify-between">
+                    <span className="text-sm text-zinc-300">{selectedFix.label}</span>
+                    <button onClick={() => { setSelectedFix(null); setFixDetails(""); }} className="text-xs text-zinc-500 hover:text-zinc-300">Change</button>
+                  </div>
+                  <textarea
+                    value={fixDetails}
+                    onChange={(e) => setFixDetails(e.target.value)}
+                    placeholder="Describe exactly what's wrong so we can fix just that part..."
+                    className="w-full h-20 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:outline-none resize-none"
+                    autoFocus
+                  />
+                  <button
+                    onClick={async () => {
+                      setIsRefining(true)
+                      const fullIssue = selectedFix.issue + (fixDetails.trim() ? " Details from learner: " + fixDetails.trim() : "")
+                      posthog.capture("fix_this_submitted", { game_id: currentGameId, issue: selectedFix.label, details: fixDetails })
+                      try {
+                        const res = await fetch("/api/game/chat", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            currentHtml: html,
+                            message: "FIX THIS SPECIFIC ISSUE (do NOT regenerate the entire game, only fix the problem): " + fullIssue,
+                            designDoc,
+                            chatHistory: [],
+                          }),
+                        })
+                        const data = await res.json()
+                        if (data.html) { setHtml(data.html); saveDraft(data.html) }
+                      } catch {}
+                      setIsRefining(false)
+                      setSelectedFix(null)
+                      setFixDetails("")
+                    }}
+                    disabled={!fixDetails.trim()}
+                    className="w-full py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-30 text-white text-sm font-semibold transition-colors"
+                  >
+                    Fix this!
+                  </button>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 gap-1.5">
                   {[
-                    { label: "Game is not showing", issue: "The game is not rendering or showing a blank screen. Regenerate the game HTML making sure it renders properly." },
-                    { label: "Can't click or tap anything", issue: "The interactive elements (buttons, draggable items) are not responding to clicks or taps. Fix the event handlers and make sure all interactive elements work." },
-                    { label: "Game doesn't make sense", issue: "The game logic is confusing or broken. The rounds, scoring, or win/lose conditions don't work properly. Regenerate with clearer game logic." },
-                    { label: "Game gives you the answer", issue: "The game reveals the correct answer before the player solves it, or the answer is obvious without doing math. Fix so the player must figure out the answer." },
+                    { label: "Game is not showing", issue: "The game is not rendering or showing a blank screen." },
+                    { label: "Can't click or tap anything", issue: "The interactive elements are not responding to clicks or taps." },
+                    { label: "Game doesn't make sense", issue: "The game logic is confusing or broken." },
+                    { label: "Game gives you the answer", issue: "The answer is obvious without doing math." },
                   ].map((fix) => (
                     <button
                       key={fix.label}
-                      onClick={async () => {
-                        setIsRefining(true)
-                        posthog.capture("fix_this_clicked", { game_id: currentGameId, issue: fix.label })
-                        try {
-                          const res = await fetch("/api/game/chat", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({
-                              currentHtml: html,
-                              message: fix.issue,
-                              designDoc,
-                              chatHistory: [],
-                            }),
-                          })
-                          const data = await res.json()
-                          if (data.html) {
-                            setHtml(data.html)
-                            saveDraft(data.html)
-                          }
-                        } catch {}
-                        setIsRefining(false)
-                      }}
+                      onClick={() => setSelectedFix(fix)}
                       className="w-full text-left px-3 py-2.5 rounded-lg bg-zinc-900 border border-zinc-800 hover:border-zinc-600 text-sm text-zinc-300 transition-colors"
                     >
                       {fix.label}
