@@ -118,5 +118,6 @@ function startGame() {
 }
 </script>`
 
+  // Variants B and C omitted here for brevity — will add in next batch
   return baseTemplate(config, gameContent, variant, 30)
 }
