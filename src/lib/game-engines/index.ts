@@ -7,7 +7,7 @@ import { scoringRankingPhaserEngine } from "./scoring-ranking-phaser"
 import { collectManagePhaserEngine } from "./collect-manage-phaser"
 import { plotExploreEngine } from "./plot-explore"
 import { scalingResizingPhaserEngine } from "./scaling-resizing-phaser"
-import { buildMeasureEngine } from "./build-measure"
+import { constructionSystemsPhaserEngine } from "./construction-systems-phaser"
 import { timingRhythmPhaserEngine } from "./timing-rhythm-phaser"
 import { inventoryCraftingPhaserEngine } from "./inventory-crafting-phaser"
 import { biddingAuctionPhaserEngine } from "./bidding-auction-phaser"
@@ -28,7 +28,7 @@ const ENGINE_REGISTRY: Record<string, GameEngine> = {
   "spatial-puzzles": fitRotateEngine,
   "probability-systems": rollPredictEngine,
   "path-optimization": navigateOptimizeEngine,
-  "construction-systems": buildMeasureEngine,
+  "construction-systems": constructionSystemsPhaserEngine,
   "motion-simulation": raceCalculateEngine,
   "constraint-puzzles": solveEliminateEngine,
   "strategy-economy": growCompoundEngine,

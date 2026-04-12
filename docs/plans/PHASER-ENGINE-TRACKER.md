@@ -44,8 +44,8 @@
 | # | Mechanic | Mechanic ID | Options | Status |
 |---|---|---|---|---|
 | 13 | Pattern & Repeat | `timing-rhythm` | sequence-builder, pattern-machine, broken-pattern | DONE |
-| 18 | Rise & Fall | `above-below-zero` | depth-navigator, temperature-swing, elevator-operator | In Progress — Claude |
-| 7 | Build & Measure | `construction-systems` | stack-to-target, fill-the-floor, box-packer | Not Started |
+| 18 | Rise & Fall | `above-below-zero` | depth-navigator, temperature-swing, elevator-operator | DONE |
+| 7 | Build & Measure | `construction-systems` | stack-to-target, fill-the-floor, box-packer | DONE |
 | 16 | Plot & Explore | `terrain-generation` | coordinate-hunter, battleship, treasure-trail | Not Started |
 
 ## Phase 5: Complex Phaser Features
@@ -65,4 +65,4 @@
 | 6 | Navigate & Optimize | `path-optimization` | shortest-route, map-builder, delivery-run | Not Started |
 | 19 | Build a Structure | `build-structure` | shape-matcher, free-build, shape-decomposer | Not Started |
 
-## Progress: 9/19 mechanics done (27/57 game options)
+## Progress: 11/19 mechanics done (33/57 game options)
