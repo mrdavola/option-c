@@ -6,7 +6,7 @@ import { riseFallEngine } from "./rise-fall"
 import { scoringRankingPhaserEngine } from "./scoring-ranking-phaser"
 import { collectManagePhaserEngine } from "./collect-manage-phaser"
 import { plotExploreEngine } from "./plot-explore"
-import { scaleTransformEngine } from "./scale-transform"
+import { scalingResizingPhaserEngine } from "./scaling-resizing-phaser"
 import { buildMeasureEngine } from "./build-measure"
 import { patternRepeatEngine } from "./pattern-repeat"
 import { inventoryCraftingPhaserEngine } from "./inventory-crafting-phaser"
@@ -35,7 +35,7 @@ const ENGINE_REGISTRY: Record<string, GameEngine> = {
   "measurement-challenges": measureCompareEngine,
   "scoring-ranking": scoringRankingPhaserEngine,
   "timing-rhythm": patternRepeatEngine,
-  "scaling-resizing": scaleTransformEngine,
+  "scaling-resizing": scalingResizingPhaserEngine,
   "inventory-crafting": inventoryCraftingPhaserEngine,
   "terrain-generation": plotExploreEngine,
   "bidding-auction": bidEstimateEngine,
