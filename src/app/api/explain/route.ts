@@ -39,11 +39,11 @@ You MUST respond with ONLY a valid JSON object — no markdown, no code fences, 
 The JSON must have exactly these four keys:
 - "whatIsThis": string — 2-3 sentences explaining the concept at the right reading level
 - "commonMistakes": array of strings — 2-4 items, each a specific concrete mistake students make with THIS concept (one sentence each)
-- "realWorldUse": string — 2-3 sentences showing SPECIFICALLY where THIS math concept shows up in real life, not generic math. Be concrete and specific to the concept.
+- "realWorldUse": string — 3-4 SHORT examples of WHO uses this math and WHAT FOR, separated by periods. Each example: "[Person/role] uses this to [specific action]." Be concrete. Example: "A chef uses this to double a recipe. An architect uses this to scale building plans. A nurse uses this to calculate medicine doses."
 - "formula": string — the key formula for this concept in plain text, or "" if none applies
 
 Example of correct format:
-{"whatIsThis":"Fractions show a part of a whole...","commonMistakes":["Students add the denominators instead of keeping them the same.","They forget to simplify at the end."],"realWorldUse":"You use fractions when splitting a pizza into equal slices or measuring half a cup of flour in a recipe.","formula":"part/whole"}`,
+{"whatIsThis":"Fractions show a part of a whole...","commonMistakes":["Students add the denominators instead of keeping them the same.","They forget to simplify at the end."],"realWorldUse":"A chef uses fractions to measure half a cup of flour. A carpenter cuts wood into equal parts. Kids use fractions when splitting pizza fairly.","formula":"part/whole"}`,
       messages: [{
         role: "user",
         content: `Explain this math concept: "${description}" (Standard ${standardId}, Grade ${grade})`,

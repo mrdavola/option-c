@@ -199,10 +199,17 @@ function MoonCardView({
                 <p className="text-sm text-zinc-200 leading-relaxed">{explanation.whatIsThis}</p>
               </div>
 
-              {/* Where you'll use this */}
+              {/* Real-world applications */}
               <div className="rounded-xl border border-zinc-700 bg-zinc-900 p-4">
-                <p className="text-xs text-zinc-500 uppercase tracking-wide font-semibold mb-2">Where you&apos;ll use this</p>
-                <p className="text-sm text-zinc-200 leading-relaxed">{explanation.realWorldUse}</p>
+                <p className="text-xs text-zinc-500 uppercase tracking-wide font-semibold mb-3">Real-world applications of this math</p>
+                <div className="space-y-2">
+                  {explanation.realWorldUse.split(/[.!]/).filter(s => s.trim()).slice(0, 4).map((use, i) => (
+                    <div key={i} className="flex items-start gap-2.5">
+                      <span className="text-emerald-400 text-sm mt-0.5 shrink-0">{["🏗️", "🍳", "💰", "🎯"][i % 4]}</span>
+                      <p className="text-sm text-zinc-300 leading-relaxed">{use.trim()}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               {/* Learn more — expandable */}
