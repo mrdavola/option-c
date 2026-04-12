@@ -28,10 +28,10 @@ import { LearnerEditModal } from "@/components/learner-edit-modal"
 import { UserMenu } from "@/components/user-menu"
 import { Logo } from "@/components/logo"
 import { GameIframe } from "@/components/game/game-iframe"
-import { Play, Bug } from "lucide-react"
+import { Play, Bug, FileText } from "lucide-react"
 import { getTokenConfig, saveTokenConfig, TOKEN_DEFAULTS, type TokenConfig } from "@/lib/token-config"
 
-type Tab = "overview" | "guides" | "classes" | "students" | "games" | "feedback" | "tokens" | "broadcast"
+type Tab = "overview" | "guides" | "classes" | "students" | "games" | "feedback" | "tokens" | "broadcast" | "blueprint"
 
 interface GuideRow {
   uid: string
@@ -556,6 +556,7 @@ export default function AdminDashboardPage() {
     { key: "feedback", label: `Feedback${feedbackCount > 0 ? ` (${feedbackCount})` : ""}`, icon: <MessageCircle className="size-4" /> },
     { key: "tokens", label: "Tokens", icon: <Coins className="size-4" /> },
     { key: "broadcast", label: "Broadcast", icon: <Megaphone className="size-4" /> },
+    { key: "blueprint", label: "Blueprint", icon: <FileText className="size-4" /> },
   ]
 
   return (
@@ -878,6 +879,29 @@ export default function AdminDashboardPage() {
 
             {/* Broadcast Tab — send message to all users */}
             {tab === "broadcast" && <BroadcastPanel senderUid={profile?.uid || ""} senderName={profile?.name || "Admin"} />}
+
+            {tab === "blueprint" && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-semibold">Diagonally Blueprint</h2>
+                  <a
+                    href="/blueprint.html"
+                    target="_blank"
+                    rel="noopener"
+                    className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                  >
+                    Open in new tab
+                  </a>
+                </div>
+                <div className="rounded-xl border border-zinc-800 overflow-hidden" style={{ height: "calc(100vh - 180px)" }}>
+                  <iframe
+                    src="/blueprint.html"
+                    className="w-full h-full border-0"
+                    title="Diagonally Blueprint"
+                  />
+                </div>
+              </div>
+            )}
 
             {/* Games Tab */}
             {tab === "games" && (
