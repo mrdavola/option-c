@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import type { GameDesignDoc } from "@/lib/game-types"
 import { doc, setDoc, collection, getDoc } from "firebase/firestore"
 import { db } from "@/lib/firebase"
@@ -113,8 +113,15 @@ export function Workshop({
 
       {/* Main content */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Game iframe — 65% on desktop, full on mobile */}
-        <div className="flex-1 md:w-[65%] md:flex-none relative">
+        {/* Hint Card panel — always visible in practice mode */}
+        {hintMode === "hint" && designDoc.concept && (
+          <div className="hidden md:flex md:w-[20%] flex-col border-r border-zinc-800 bg-zinc-900/50 p-3 overflow-y-auto">
+            <p className="text-[10px] text-blue-400 uppercase tracking-wide font-semibold mb-2">Hint Card</p>
+            <HintCardPanel concept={designDoc.concept} />
+          </div>
+        )}
+        {/* Game iframe */}
+        <div className="flex-1 md:flex-none relative" style={{ width: hintMode === "hint" && designDoc.concept ? '45%' : '65%' }}>
           {/* Prompt to play for real after winning in hint mode */}
           {hintMode === "prompt_real" && (
             <div className="absolute inset-0 z-30 bg-zinc-950/90 flex items-center justify-center">
@@ -347,6 +354,43 @@ export function Workshop({
 
         </div>
       </div>
+    </div>
+  )
+}
+
+function HintCardPanel({ concept }: { concept: string }) {
+  const [hint, setHint] = useState<{ heading?: string; problem?: string; steps?: string[]; encouragement?: string } | null>(null)
+
+  useEffect(() => {
+    fetch("/api/game/math-moment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ concept }),
+    })
+      .then(r => r.json())
+      .then(data => setHint(data))
+      .catch(() => {})
+  }, [concept])
+
+  if (!hint) return <p className="text-xs text-zinc-500 animate-pulse">Loading hint...</p>
+
+  return (
+    <div className="space-y-3">
+      {hint.heading && <p className="text-sm font-bold text-white">{hint.heading}</p>}
+      {hint.problem && <p className="text-xs text-zinc-300 leading-relaxed">{hint.problem}</p>}
+      {hint.steps && hint.steps.length > 0 && (
+        <div className="space-y-1">
+          {hint.steps.map((s, i) => (
+            <p key={i} className="text-xs text-zinc-400 flex gap-2">
+              <span className="text-emerald-400 shrink-0">{i + 1}.</span>
+              {s}
+            </p>
+          ))}
+        </div>
+      )}
+      {hint.encouragement && (
+        <p className="text-xs text-amber-300 italic">{hint.encouragement}</p>
+      )}
     </div>
   )
 }
