@@ -9,7 +9,7 @@ import { plotExploreEngine } from "./plot-explore"
 import { scaleTransformEngine } from "./scale-transform"
 import { buildMeasureEngine } from "./build-measure"
 import { patternRepeatEngine } from "./pattern-repeat"
-import { craftCombineEngine } from "./craft-combine"
+import { inventoryCraftingPhaserEngine } from "./inventory-crafting-phaser"
 import { bidEstimateEngine } from "./bid-estimate"
 import { measureCompareEngine } from "./measure-compare"
 import { growCompoundEngine } from "./grow-compound"
@@ -36,7 +36,7 @@ const ENGINE_REGISTRY: Record<string, GameEngine> = {
   "scoring-ranking": scoringRankingPhaserEngine,
   "timing-rhythm": patternRepeatEngine,
   "scaling-resizing": scaleTransformEngine,
-  "inventory-crafting": craftCombineEngine,
+  "inventory-crafting": inventoryCraftingPhaserEngine,
   "terrain-generation": plotExploreEngine,
   "bidding-auction": bidEstimateEngine,
   "above-below-zero": riseFallEngine,

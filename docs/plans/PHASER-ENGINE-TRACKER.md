@@ -28,7 +28,7 @@
 |---|---|---|---|---|
 | 3 | Balance & Equalize | `balance-systems` | free-balance, mystery-side, chain-scales | DONE |
 | 12 | Score & Rank | `scoring-ranking` | sorting-lane, number-line-drop, leaderboard-fix | DONE |
-| 15 | Craft & Combine | `inventory-crafting` | recipe-mixer, potion-lab, assembly-line | Not Started |
+| 15 | Craft & Combine | `inventory-crafting` | recipe-mixer, potion-lab, assembly-line | DONE |
 
 ## Phase 3: Medium Complexity
 
@@ -65,4 +65,4 @@
 | 6 | Navigate & Optimize | `path-optimization` | shortest-route, map-builder, delivery-run | Not Started |
 | 19 | Build a Structure | `build-structure` | shape-matcher, free-build, shape-decomposer | Not Started |
 
-## Progress: 3/19 mechanics done (9/57 game options)
+## Progress: 4/19 mechanics done (12/57 game options)
