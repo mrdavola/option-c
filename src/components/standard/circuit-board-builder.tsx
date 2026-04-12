@@ -7,6 +7,7 @@ import { matchMechanics } from "@/lib/mechanic-animations"
 import { MECHANIC_OPTIONS_MAP } from "@/lib/mechanic-card-options"
 import { SPRITE_CHARACTERS, SPRITE_ITEMS, SPRITE_BACKGROUNDS } from "@/lib/sprite-library"
 import { getGameOptions } from "@/lib/game-engines/game-option-registry"
+import { getRecommendedItems } from "@/lib/item-recommendations"
 import type { GameDesignDoc } from "@/lib/game-types"
 
 // The circuit board game builder.
@@ -296,28 +297,18 @@ Math: ${standardDescription}`
           selected={selectedItem}
           onClear={() => setSelectedItem(null)}
         >
-          <div className="grid grid-cols-5 gap-2">
-            {(ITEMS.length > 0 ? ITEMS : [
-              { id: "coin", name: "Coin" }, { id: "gem", name: "Gem" },
-              { id: "treasure-chest", name: "Chest" }, { id: "crystal", name: "Crystal" },
-              { id: "potion", name: "Potion" }, { id: "fruit", name: "Fruit" },
-              { id: "star", name: "Star" }, { id: "shell", name: "Shell" },
-              { id: "mushroom", name: "Mushroom" }, { id: "key", name: "Key" },
-            ]).map((item: any) => (
-              <button
-                key={item.id}
-                onClick={() => setSelectedItem(item.id)}
-                className={`p-2 rounded-lg border-2 text-center transition-all ${
-                  selectedItem === item.id
-                    ? "border-blue-500 bg-blue-500/10"
-                    : "border-zinc-700 bg-zinc-800/50 hover:border-zinc-600"
-                }`}
-              >
-                <img src={`/sprites/items/${item.id}.svg`} alt={item.label || item.name || item.id} className="w-8 h-8 mx-auto mb-1" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
-                <span className="text-[10px] text-zinc-300">{item.label || item.name || item.id}</span>
-              </button>
-            ))}
-          </div>
+          <ItemGrid
+            items={ITEMS.length > 0 ? [...ITEMS] : [
+              { id: "coin", label: "Coin" }, { id: "gem", label: "Gem" },
+              { id: "treasure-chest", label: "Chest" }, { id: "crystal", label: "Crystal" },
+              { id: "potion", label: "Potion" }, { id: "fruit", label: "Fruit" },
+              { id: "star", label: "Star" }, { id: "shell", label: "Shell" },
+              { id: "mushroom", label: "Mushroom" }, { id: "key", label: "Key" },
+            ]}
+            recommended={selectedGameOption ? getRecommendedItems(selectedGameOption.mechanicId) : []}
+            selected={selectedItem}
+            onSelect={setSelectedItem}
+          />
         </SlotSection>
 
       </div>
@@ -394,6 +385,49 @@ function CriteriaLight({ lit, label, icon }: { lit: boolean; label: string; icon
       <span className={`text-[10px] font-semibold uppercase tracking-wide ${lit ? "text-emerald-300" : "text-zinc-600"}`}>
         {label}
       </span>
+    </div>
+  )
+}
+
+function ItemGrid({ items, recommended, selected, onSelect }: {
+  items: Array<{ id: string; label?: string; name?: string }>
+  recommended: string[]
+  selected: string | null
+  onSelect: (id: string) => void
+}) {
+  // Sort: recommended items first, then the rest
+  const sorted = [...items].sort((a, b) => {
+    const aRec = recommended.includes(a.id) ? 0 : 1
+    const bRec = recommended.includes(b.id) ? 0 : 1
+    return aRec - bRec
+  })
+
+  return (
+    <div>
+      {recommended.length > 0 && (
+        <p className="text-[10px] text-emerald-400/70 mb-1.5">Recommended for this game option:</p>
+      )}
+      <div className="grid grid-cols-5 gap-2">
+        {sorted.map((item) => {
+          const isRec = recommended.includes(item.id)
+          return (
+            <button
+              key={item.id}
+              onClick={() => onSelect(item.id)}
+              className={`p-2 rounded-lg border-2 text-center transition-all ${
+                selected === item.id
+                  ? "border-blue-500 bg-blue-500/10"
+                  : isRec
+                    ? "border-emerald-500/30 bg-emerald-500/5 hover:border-emerald-500/50"
+                    : "border-zinc-700 bg-zinc-800/50 hover:border-zinc-600"
+              }`}
+            >
+              <img src={`/sprites/items/${item.id}.svg`} alt={item.label || item.name || item.id} className="w-8 h-8 mx-auto mb-1" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+              <span className="text-[10px] text-zinc-300">{item.label || item.name || item.id}</span>
+            </button>
+          )
+        })}
+      </div>
     </div>
   )
 }
