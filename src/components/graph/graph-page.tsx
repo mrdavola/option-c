@@ -220,7 +220,12 @@ export function GraphPage({ data }: GraphPageProps) {
       setViewMode("galaxy")
       setCurrentPlanetId(null)
     }
-  }, [searchParams])
+    // Handle ?search= from unified header
+    if (hasSearch && onboardingComplete) {
+      setSearchQuery(hasSearch)
+      setSearchOpen(true)
+    }
+  }, [searchParams, onboardingComplete])
 
   useEffect(() => {
     if (!onboardingComplete || moonParamHandled.current) return
@@ -989,79 +994,45 @@ export function GraphPage({ data }: GraphPageProps) {
 
       {/* Galaxy settings — hidden for now, unified header handles everything */}
 
-      {/* Galaxy search — hidden, unified header handles search */}
-      {viewMode === "galaxy" && false && (
-        <div className={`absolute ${impersonating ? "top-32" : "top-14"} left-4 z-20`}>
-          {searchOpen ? (
-            <div className="w-72">
-              <div className="flex items-center gap-2 bg-zinc-900/95 backdrop-blur-sm border border-zinc-700 rounded-lg px-3 py-2">
-                <Search className="size-4 text-zinc-500 shrink-0" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value)
-                    if (e.target.value.trim() && searchResults.length > 0) {
-                      posthog.capture("galaxy_search_initiated", { search_query: e.target.value.trim(), results_count: searchResults.length })
-                    }
-                  }}
-                  placeholder="Search skills, standards, topics..."
-                  className="flex-1 bg-transparent text-sm text-white placeholder:text-zinc-500 focus:outline-none"
-                  autoFocus
-                />
-                <button onClick={() => { setSearchOpen(false); setSearchQuery("") }} className="text-zinc-500 hover:text-white">
-                  <X className="size-4" />
-                </button>
-              </div>
-              {searchResults.length > 0 && (
-                <div className="mt-1 bg-zinc-900/95 backdrop-blur-sm border border-zinc-700 rounded-lg overflow-hidden max-h-64 overflow-y-auto">
-                  {searchResults.map((r) => (
-                    <button
-                      key={r.id}
-                      onClick={() => {
-                        setSearchOpen(false)
-                        setSearchQuery("")
-                        // Navigate to the planet, then open the moon
-                        setViewMode("planet")
-                        setCurrentPlanetId(r.planetId)
-                        const node = data.nodes.find(n => n.id === r.id)
-                        if (node) {
-                          setTimeout(() => {
-                            setSelectedStandard(node)
-                            setPanelOpen(true)
-                          }, 300)
-                        }
-                      }}
-                      className="w-full text-left px-3 py-2 hover:bg-zinc-800 transition-colors border-b border-zinc-800 last:border-0"
-                    >
-                      <p className="text-sm text-white truncate">{r.name}</p>
-                      <div className="flex items-center gap-1.5">
-                        <p className="text-xs text-zinc-500">{r.id} · {r.planetName}</p>
-                        {r.mechanic && (
-                          <span className="text-[10px] bg-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded-full flex items-center gap-1">
-                            <Gamepad2 className="size-2.5" />{r.mechanic}
-                          </span>
-                        )}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              )}
-              {searchQuery.trim() && searchResults.length === 0 && (
-                <div className="mt-1 bg-zinc-900/95 backdrop-blur-sm border border-zinc-700 rounded-lg px-3 py-3 text-center">
-                  <p className="text-sm text-zinc-500">No results</p>
-                </div>
-              )}
+      {/* Search results dropdown — triggered by unified header ?search= param */}
+      {searchOpen && searchQuery.trim() && (
+        <div className={`absolute ${impersonating ? "top-20" : "top-14"} left-4 z-20 w-80`}>
+          <div className="bg-zinc-900/95 backdrop-blur-sm border border-zinc-700 rounded-lg overflow-hidden">
+            <div className="flex items-center justify-between px-3 py-2 border-b border-zinc-800">
+              <p className="text-xs text-zinc-400">Results for &quot;{searchQuery}&quot;</p>
+              <button onClick={() => { setSearchOpen(false); setSearchQuery(""); window.history.replaceState({}, "", "/") }} className="text-zinc-500 hover:text-white">
+                <X className="size-3.5" />
+              </button>
             </div>
-          ) : (
-            <button
-              onClick={() => setSearchOpen(true)}
-              className="flex items-center gap-2 bg-zinc-900/85 backdrop-blur-sm border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-300 hover:text-white hover:border-zinc-600 transition-colors"
-            >
-              <Search className="size-4" />
-              <span>Search</span>
-            </button>
-          )}
+            {searchResults.length > 0 ? (
+              <div className="max-h-64 overflow-y-auto">
+                {searchResults.map((r) => (
+                  <button
+                    key={r.id}
+                    onClick={() => {
+                      setSearchOpen(false)
+                      setSearchQuery("")
+                      window.history.replaceState({}, "", "/")
+                      setViewMode("planet")
+                      setCurrentPlanetId(r.planetId)
+                      const node = data.nodes.find(n => n.id === r.id)
+                      if (node) {
+                        setTimeout(() => { setSelectedStandard(node); setPanelOpen(true) }, 300)
+                      }
+                    }}
+                    className="w-full text-left px-3 py-2 hover:bg-zinc-800 transition-colors border-b border-zinc-800/50 last:border-0"
+                  >
+                    <p className="text-sm text-white truncate">{r.name}</p>
+                    <p className="text-xs text-zinc-500">{r.id} · {r.planetName}</p>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="px-3 py-4 text-center">
+                <p className="text-sm text-zinc-500">No results</p>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
