@@ -1,15 +1,26 @@
 "use client"
 
+import { useState, useCallback } from "react"
 import { useAuth } from "@/lib/auth"
 import { CircuitBoardBuilder } from "@/components/standard/circuit-board-builder"
+import { BuildScreen } from "@/components/game/build-screen"
+import { Workshop } from "@/components/game/workshop"
 import type { GameDesignDoc } from "@/lib/game-types"
+import { doc, setDoc, collection, getDoc } from "firebase/firestore"
+import { db } from "@/lib/firebase"
 
 // Eureka / "Build NOW!" page.
-// Uses the same Game Assembler as the moon pathway, but in eureka mode:
-// the Game Option slot has a write-in field instead of a picker.
+// Uses the same Game Assembler as the moon pathway, but in eureka mode.
+
+type BuildMode = "assembler" | "building" | "workshop"
 
 export default function BuildPage() {
   const { activeProfile } = useAuth()
+  const [buildMode, setBuildMode] = useState<BuildMode>("assembler")
+  const [currentDesignDoc, setCurrentDesignDoc] = useState<GameDesignDoc | null>(null)
+  const [currentGameHtml, setCurrentGameHtml] = useState("")
+  const [currentGameId, setCurrentGameId] = useState<string | null>(null)
+  const [selectedMechanicId, setSelectedMechanicId] = useState<string | null>(null)
 
   if (!activeProfile) {
     return (
@@ -20,12 +31,89 @@ export default function BuildPage() {
   }
 
   const handleBuildGame = (designDoc: GameDesignDoc, summary: string, vibe: string, mechanicId: string) => {
-    // Navigate to the galaxy with the standard pre-selected to trigger the build flow
-    const stdId = (designDoc as any).standardId || ""
-    const gameOption = (designDoc as any).gameOption || ""
-    window.location.href = `/?moon=${encodeURIComponent(stdId)}&mechanic=${encodeURIComponent(mechanicId)}&option=${encodeURIComponent(gameOption)}`
+    setCurrentDesignDoc(designDoc)
+    setSelectedMechanicId(mechanicId)
+    setBuildMode("building")
   }
 
+  const handleBuildComplete = (html: string) => {
+    setCurrentGameHtml(html)
+    setCurrentGameId(null)
+    setBuildMode("workshop")
+  }
+
+  const handleBackToPlanet = async (html: string, gameId: string | null) => {
+    // Save draft
+    try {
+      const gamesRef = collection(db, "games")
+      const id = gameId || doc(gamesRef).id
+      const ref = doc(db, "games", id)
+      const safeDoc = currentDesignDoc ? JSON.parse(JSON.stringify(currentDesignDoc)) : {}
+      await setDoc(ref, {
+        id,
+        title: currentDesignDoc?.title || "Untitled",
+        designerName: activeProfile?.name || "Learner",
+        authorUid: activeProfile?.uid || "",
+        classId: activeProfile?.classId || "",
+        standardId: currentDesignDoc?.standardId || "",
+        gameHtml: html,
+        designDoc: safeDoc,
+        status: "draft",
+        updatedAt: Date.now(),
+      }, { merge: true })
+    } catch {}
+    setBuildMode("assembler")
+  }
+
+  const handleSendForReview = async (html: string, gameId: string | null) => {
+    try {
+      const gamesRef = collection(db, "games")
+      const id = gameId || doc(gamesRef).id
+      const ref = doc(db, "games", id)
+      const safeDoc = currentDesignDoc ? JSON.parse(JSON.stringify(currentDesignDoc)) : {}
+      await setDoc(ref, {
+        id,
+        title: currentDesignDoc?.title || "Untitled",
+        designerName: activeProfile?.name || "Learner",
+        authorUid: activeProfile?.uid || "",
+        classId: activeProfile?.classId || "",
+        standardId: currentDesignDoc?.standardId || "",
+        gameHtml: html,
+        designDoc: safeDoc,
+        status: "pending_review",
+        updatedAt: Date.now(),
+      }, { merge: true })
+    } catch {}
+    // Go back to assembler after submit
+    setBuildMode("assembler")
+  }
+
+  // Building phase
+  if (buildMode === "building" && currentDesignDoc) {
+    return (
+      <BuildScreen
+        designDoc={currentDesignDoc}
+        onComplete={(html) => handleBuildComplete(html)}
+        preSelectedVibe="default"
+        mechanicId={selectedMechanicId || undefined}
+      />
+    )
+  }
+
+  // Workshop/testing phase
+  if (buildMode === "workshop" && currentDesignDoc) {
+    return (
+      <Workshop
+        initialHtml={currentGameHtml}
+        designDoc={currentDesignDoc}
+        gameId={currentGameId}
+        onBackToPlanet={handleBackToPlanet}
+        onSendForReview={handleSendForReview}
+      />
+    )
+  }
+
+  // Assembler
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
       <div className="max-w-2xl mx-auto px-6 py-4">

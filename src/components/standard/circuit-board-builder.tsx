@@ -317,20 +317,18 @@ Math: ${effectiveStandardDesc}`
                   ))}
                 </div>
               )}
-              {/* Show matched standard + personalized explanation */}
+              {/* Show matched standard + game summary */}
               {selectedGameOption && eurekaStandardDesc && (
                 <div className="space-y-2">
                   <div className="bg-zinc-800/50 rounded-lg p-3 border border-zinc-700">
                     <p className="text-xs text-blue-400 uppercase tracking-wide font-semibold mb-1">The math behind this</p>
-                    <p className="text-sm text-zinc-200">{eurekaStandardDesc}</p>
-                    <p className="text-[10px] text-zinc-600 mt-1">{eurekaStandardId}</p>
+                    <p className="text-sm text-zinc-200">{eurekaStandardDesc.split(".")[0]}.</p>
                   </div>
                   <div className="bg-emerald-500/5 rounded-lg p-3 border border-emerald-500/20">
-                    <p className="text-xs text-emerald-400 uppercase tracking-wide font-semibold mb-1">In YOUR game...</p>
+                    <p className="text-xs text-emerald-400 uppercase tracking-wide font-semibold mb-1">In your game</p>
                     <p className="text-sm text-zinc-300">
                       Your {selectedCharacter || "character"} in {selectedBackground || "the world"} will use{" "}
-                      {selectedItem ? selectedItem + "s" : "items"} to {selectedGameOption.optionDescription.toLowerCase()}.{" "}
-                      The math ({eurekaStandardDesc.split(".")[0].toLowerCase()}) is what makes it possible to win!
+                      {selectedItem ? selectedItem + "s" : "items"} to {selectedGameOption.optionDescription.toLowerCase()}.
                     </p>
                   </div>
                 </div>
