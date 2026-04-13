@@ -28,9 +28,9 @@ export const STANDARD_GAME_OPTIONS: Record<string, string[]> = {
   // ═══════════════════════════════════════════════════════════════
 
   // K.CC — Counting & Cardinality
-  "K.CC.A.1": ["sorting-lane", "number-line-drop"],                         // Count to 100 by ones and tens
-  "K.CC.A.2": ["sorting-lane", "number-line-drop"],                         // Count forward from a given number
-  "K.CC.A.3": ["number-line-drop", "sorting-lane"],                         // Write numbers 0-20
+  "K.CC.A.1": ["number-line-drop"],                                          // Count to 100 by ones and tens
+  "K.CC.A.2": ["number-line-drop"],                                          // Count forward from a given number
+  "K.CC.A.3": ["elimination-grid", "logic-chain"],                          // Write numbers 0-20 (GAP: no game tests numeral writing; using deduction as placeholder)
   "K.CC.B.4a": ["sorting-lane", "free-collect"],                            // Counting objects one-to-one
   "K.CC.B.4b": ["free-collect", "assembly-line"],                           // Last number = count
   "K.CC.B.4c": ["number-line-drop", "sorting-lane"],                       // Each successive number is one larger
@@ -88,7 +88,7 @@ export const STANDARD_GAME_OPTIONS: Record<string, string[]> = {
   // 1.MD — Measurement & Data
   "1.MD.A.1": ["sorting-lane", "size-picker"],                               // Order three objects by length
   "1.MD.A.2": ["ruler-race", "size-picker"],                                 // Measure length in whole units
-  "1.MD.B.3": ["number-line-drop", "sorting-lane"],                          // Tell time in hours and half-hours
+  "1.MD.B.3": ["size-picker"],                                               // Tell time in hours and half-hours (GAP: no game tests clock-reading; size-picker as placeholder for comparing time values)
   "1.MD.C.4": ["build-the-chart", "find-the-stat"],                          // Organize/interpret data, up to 3 categories
 
   // 1.G — Geometry
@@ -125,8 +125,8 @@ export const STANDARD_GAME_OPTIONS: Record<string, string[]> = {
   "2.MD.A.4": ["ruler-race", "size-picker"],                                  // How much longer is one object
   "2.MD.B.5": ["free-collect", "ruler-race", "free-balance"],                 // Add/subtract within 100 with lengths
   "2.MD.B.6": ["number-line-drop", "free-collect"],                           // Number line sums/differences within 100
-  "2.MD.C.7": ["number-line-drop", "sorting-lane"],                           // Tell time to nearest 5 min
-  "2.MD.C.8": ["free-collect", "recipe-mixer"],                               // Word problems with coins/bills
+  "2.MD.C.7": ["size-picker"],                                                // Tell time to nearest 5 min (GAP: no game tests clock-reading; size-picker as placeholder for comparing time values)
+  "2.MD.C.8": ["free-collect"],                                               // Word problems with coins/bills
   "2.MD.D.9": ["build-the-chart", "ruler-race"],                              // Measurement data → line plot
   "2.MD.D.10": ["build-the-chart", "find-the-stat"],                          // Picture/bar graph with up to 4 categories
 
@@ -165,7 +165,7 @@ export const STANDARD_GAME_OPTIONS: Record<string, string[]> = {
   "3.NF.A.3d": ["sorting-lane", "size-picker", "cut-the-bar"],                // Compare fractions same numerator/denominator
 
   // 3.MD — Measurement & Data
-  "3.MD.A.1": ["number-line-drop", "ruler-race"],                              // Tell time to nearest minute
+  "3.MD.A.1": ["size-picker"],                                                 // Tell time to nearest minute (GAP: no game tests clock-reading; size-picker as placeholder for comparing time values)
   "3.MD.A.2": ["ruler-race", "size-picker", "unit-converter"],                 // Measure liquid volumes/masses
   "3.MD.B.3": ["build-the-chart", "find-the-stat"],                            // Scaled picture/bar graph
   "3.MD.B.4": ["ruler-race", "build-the-chart"],                               // Measure lengths with fractions → line plot
@@ -194,7 +194,7 @@ export const STANDARD_GAME_OPTIONS: Record<string, string[]> = {
   "4.OA.C.5": ["sequence-builder", "pattern-machine", "broken-pattern"],       // Number/shape patterns
 
   // 4.NBT — Number & Operations in Base Ten
-  "4.NBT.A.1": ["investment-sim", "potion-lab"],                               // Digit represents 10× place to right
+  "4.NBT.A.1": ["auction-house", "round-and-win"],                             // Digit represents 10× place to right (estimation/rounding tests place value understanding)
   "4.NBT.A.2": ["sorting-lane", "size-picker", "leaderboard-fix"],             // Read/write/compare multi-digit numbers
   "4.NBT.A.3": ["round-and-win", "auction-house", "price-is-right"],           // Round multi-digit numbers
   "4.NBT.B.4": ["free-collect", "conveyor-belt", "split-the-loot"],            // Fluently add/subtract multi-digit
@@ -240,7 +240,7 @@ export const STANDARD_GAME_OPTIONS: Record<string, string[]> = {
   "5.OA.B.3": ["sequence-builder", "pattern-machine", "coordinate-hunter"],      // Two numerical patterns → coordinate plane
 
   // 5.NBT — Number & Operations in Base Ten
-  "5.NBT.A.1": ["investment-sim", "potion-lab"],                                 // Digit = 10× place to right, 1/10 place to left
+  "5.NBT.A.1": ["auction-house", "round-and-win"],                               // Digit = 10× place to right, 1/10 place to left (estimation/rounding tests place value understanding)
   "5.NBT.A.2": ["investment-sim", "population-boom", "potion-lab"],              // Powers of 10, zeros in products
   "5.NBT.A.3a": ["number-line-drop", "sorting-lane"],                            // Read/write decimals to thousandths
   "5.NBT.A.3b": ["sorting-lane", "size-picker", "leaderboard-fix"],              // Compare decimals to thousandths
@@ -447,14 +447,14 @@ export const STANDARD_GAME_OPTIONS: Record<string, string[]> = {
   "N-Q.A.3": ["auction-house", "round-and-win", "ruler-race"],                           // Level of accuracy in measurement
 
   // N-CN — Complex Numbers
-  "N-CN.A.1": ["depth-navigator", "number-line-drop"],                                  // Complex number i; a+bi
-  "N-CN.A.2": ["potion-lab", "recipe-mixer"],                                            // Add/subtract/multiply complex numbers
-  "N-CN.A.3": ["potion-lab", "elimination-grid"],                                        // Conjugate; moduli; quotients
-  "N-CN.B.4": ["coordinate-hunter", "number-line-drop"],                                 // Complex plane, rectangular/polar
-  "N-CN.B.5": ["coordinate-hunter", "rotate-to-match"],                                  // Complex operations geometrically
-  "N-CN.B.6": ["coordinate-hunter", "map-distance"],                                     // Distance/midpoint in complex plane
+  "N-CN.A.1": ["elimination-grid", "logic-chain"],                                      // Complex number i; a+bi (no game tests complex numbers; deduction-based placeholder)
+  "N-CN.A.2": ["elimination-grid", "logic-chain"],                                      // Add/subtract/multiply complex numbers (no game tests complex numbers; deduction-based placeholder)
+  "N-CN.A.3": ["elimination-grid", "logic-chain"],                                      // Conjugate; moduli; quotients (no game tests complex numbers; deduction-based placeholder)
+  "N-CN.B.4": ["elimination-grid", "logic-chain"],                                      // Complex plane, rectangular/polar (no game tests complex numbers; deduction-based placeholder)
+  "N-CN.B.5": ["elimination-grid", "logic-chain"],                                      // Complex operations geometrically (no game tests complex numbers; deduction-based placeholder)
+  "N-CN.B.6": ["map-distance", "elimination-grid", "logic-chain"],                       // Distance/midpoint in complex plane (coordinate-hunter removed: tests real plane not complex; deduction-based fallbacks added)
   "N-CN.C.7": ["mystery-side", "free-balance"],                                          // Quadratics with complex solutions
-  "N-CN.C.8": ["pattern-machine", "mystery-side"],                                       // Polynomial identities → complex
+  "N-CN.C.8": ["elimination-grid", "logic-chain"],                                      // Polynomial identities → complex (no game tests complex numbers; deduction-based placeholder)
   "N-CN.C.9": ["elimination-grid", "logic-chain"],                                       // Fundamental Theorem of Algebra
 
   // N-VM — Vector & Matrix Quantities
@@ -493,8 +493,8 @@ export const STANDARD_GAME_OPTIONS: Record<string, string[]> = {
   "A-APR.B.3": ["coordinate-hunter", "elimination-grid", "mystery-side"],                // Zeros of polynomials → graph
   "A-APR.C.4": ["pattern-machine", "logic-chain"],                                       // Polynomial identities
   "A-APR.C.5": ["sequence-builder", "pattern-machine", "investment-sim"],                // Binomial Theorem
-  "A-APR.D.6": ["share-the-pizza", "pattern-machine"],                                   // Rewrite rational expressions
-  "A-APR.D.7": ["cut-the-bar", "potion-lab"],                                            // Operations on rational expressions
+  "A-APR.D.6": ["free-balance", "mystery-side", "pattern-machine"],                      // Rewrite rational expressions (equation solving is closest match for symbolic algebra)
+  "A-APR.D.7": ["free-balance", "mystery-side", "potion-lab"],                            // Operations on rational expressions (equation solving is closest match for symbolic algebra)
 
   // A-CED — Creating Equations
   "A-CED.A.1": ["mystery-side", "free-balance", "chain-scales"],                         // Create equations/inequalities in one variable
