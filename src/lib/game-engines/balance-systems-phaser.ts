@@ -196,18 +196,18 @@ class FreeBalanceScene extends Phaser.Scene {
     this.rightTotal = 0;
     this.placedWeights = [];
     this.rightLbl.setText('0');
-    const data = generateBalanceRound(this.round);
-    this.currentLeft = data.leftValue;
-    this.leftLbl.setText(String(data.leftValue));
-    this.promptLbl.setText(data.prompt || 'Make both sides equal!');
+    const data = getRound(this.round);
+    this.currentLeft = data.target;
+    this.leftLbl.setText(String(data.target));
+    this.promptLbl.setText(data.prompt);
     this._redrawDots();
     // Remove old weight buttons
     if (this.weightButtons) this.weightButtons.forEach(b => b.destroy());
     this.weightButtons = [];
     // Create weight buttons
     const startX = this.W * 0.15;
-    const gap = Math.min(70, (this.W * 0.7) / data.weights.length);
-    data.weights.forEach((val, i) => {
+    const gap = Math.min(70, (this.W * 0.7) / data.items.length);
+    data.items.forEach((val, i) => {
       const x = startX + i * gap;
       const y = this.H * 0.3;
       const bg = this.add.rectangle(x, y, 50, 36, hexToNum(COL_SECONDARY), 0.3)
@@ -379,20 +379,11 @@ class MysterySideScene extends Phaser.Scene {
   startRound() {
     this.inputText = '';
     this.inputLbl.setText('Your answer: _');
-    const data = generateMysteryRound(this.round);
-    this.mysteryValue = data.mystery;
+    const data = getRound(this.round);
+    this.mysteryValue = data.target;
     this.mysteryLbl.setText('?');
-    // Show some visible weights on right side
-    const visibleCount = this.round < 2 ? 2 : 3;
-    const parts = [];
-    let rem = data.mystery;
-    for (let i = 0; i < visibleCount - 1; i++) {
-      const v = Math.floor(Math.random() * (rem - 1)) + 1;
-      parts.push(v);
-      rem -= v;
-    }
-    parts.push(rem);
-    this.rightLbl.setText(parts.join(' + '));
+    // Show visible weights on right side from items
+    this.rightLbl.setText(data.items.join(' + '));
     this._redrawDots();
   }
 
@@ -486,8 +477,8 @@ class ChainScalesScene extends Phaser.Scene {
     this.answers = [0, 0, 0];
     if (this.scaleGroup) this.scaleGroup.clear(true, true);
     this.scaleGroup = this.add.group();
-    const data = generateChainRound(this.round);
-    this.targetValues = data.values;
+    const data = getRound(this.round);
+    this.targetValues = data.items.length >= 3 ? data.items.slice(0, 3) : [data.target, data.target, data.target];
     this._drawScales();
     this._drawInput();
     this._redrawDots();

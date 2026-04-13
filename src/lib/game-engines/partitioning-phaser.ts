@@ -116,9 +116,9 @@ class CutTheBarScene extends Phaser.Scene {
   startRound() {
     if (this.barGroup) this.barGroup.clear(true, true);
     this.barGroup = this.add.group();
-    const data = generateFractionRound(this.round);
-    this.targetNumer = data.numerator;
-    this.targetDenom = data.denominator;
+    const data = getRound(this.round);
+    this.targetNumer = data.target;
+    this.targetDenom = data.items[0] || 4;
     this.shadedCount = 0;
     this.promptLbl.setText(data.prompt);
     this._redrawDots();

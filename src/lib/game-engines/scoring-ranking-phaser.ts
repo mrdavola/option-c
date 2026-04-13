@@ -152,11 +152,11 @@ class SortingLaneScene extends Phaser.Scene {
   startRound() {
     if (this.slotGroup) this.slotGroup.clear(true, true);
     this.slotGroup = this.add.group();
-    const data = generateSortRound(this.round);
+    const data = getRound(this.round);
     this.promptLbl.setText(data.prompt);
-    this.correctOrder = [...data.values].sort((a, b) => a - b);
+    this.correctOrder = [...data.items].sort((a, b) => a - b);
     this.userOrder = [];
-    this.remaining = [...data.values];
+    this.remaining = [...data.items];
     this._redrawDots();
     this._drawItems();
     this._drawSlots();
@@ -324,10 +324,10 @@ class NumberLineDropScene extends Phaser.Scene {
     if (this.lineGroup) this.lineGroup.clear(true, true);
     this.lineGroup = this.add.group();
     this.placedCount = 0;
-    const data = generateNumberLineRound(this.round);
-    this.nlMin = data.min;
-    this.nlMax = data.max;
-    this.nlValues = data.values;
+    const data = getRound(this.round);
+    this.nlMin = data.items.length >= 2 ? Math.min(...data.items) - 2 : 0;
+    this.nlMax = data.items.length >= 2 ? Math.max(...data.items) + 2 : 20;
+    this.nlValues = data.items;
     this.currentIdx = 0;
     this._redrawDots();
     this._drawNumberLine();
@@ -480,10 +480,15 @@ class LeaderboardFixScene extends Phaser.Scene {
   startRound() {
     if (this.boardGroup) this.boardGroup.clear(true, true);
     this.boardGroup = this.add.group();
-    const data = generateLeaderboardRound(this.round);
-    this.boardData = data;
+    const data = getRound(this.round);
+    // Build leaderboard data from getRound: items are the display order, target is the count of errors
+    const display = data.items.slice();
+    const correct = [...display].sort((a, b) => b - a);
+    const errorPositions = new Set();
+    for (let i = 0; i < display.length; i++) { if (display[i] !== correct[i]) errorPositions.add(i); }
+    this.boardData = { display, correct, errorPositions };
     this.foundErrors = new Set();
-    this.totalErrors = data.errorPositions.size;
+    this.totalErrors = errorPositions.size;
     this._redrawDots();
     this._drawBoard();
   }

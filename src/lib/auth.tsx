@@ -326,14 +326,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     // 2. Find the existing student by personal code
+    // Accept both formats: with dash (STAR-42) and without (STAR42)
     const normalizedCode = personalCode.trim().toUpperCase()
-    const codeQuery = query(
-      collection(db, "users"),
-      where("personalCode", "==", normalizedCode)
-    )
-    const codeSnap = await getDocs(codeQuery)
+    const withoutDash = normalizedCode.replace(/-/g, "")
+    const withDash = normalizedCode.includes("-") ? normalizedCode : normalizedCode.replace(/(\D+)(\d+)/, "$1-$2")
+
+    let codeSnap = await getDocs(query(collection(db, "users"), where("personalCode", "==", normalizedCode)))
+    if (codeSnap.empty && withoutDash !== normalizedCode) {
+      codeSnap = await getDocs(query(collection(db, "users"), where("personalCode", "==", withoutDash)))
+    }
+    if (codeSnap.empty && withDash !== normalizedCode) {
+      codeSnap = await getDocs(query(collection(db, "users"), where("personalCode", "==", withDash)))
+    }
     if (codeSnap.empty) {
-      throw new Error("We don't know that code. Check the code or use your class code instead.")
+      throw new Error("We don't recognize that password. Check it or use your class code instead.")
     }
     const existingDoc = codeSnap.docs[0]
     const existingData = existingDoc.data() as UserProfile

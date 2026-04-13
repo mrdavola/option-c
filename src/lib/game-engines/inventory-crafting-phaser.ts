@@ -141,9 +141,9 @@ class RecipeMixerScene extends Phaser.Scene {
   startRound() {
     if (this.ingredientGroup) this.ingredientGroup.clear(true, true);
     this.ingredientGroup = this.add.group();
-    const data = generateRecipeRound(this.round);
-    this.recipeAmounts = data.ingredients;
-    this.playerAmounts = new Array(data.ingredients.length).fill(0);
+    const data = getRound(this.round);
+    this.recipeAmounts = data.items;
+    this.playerAmounts = new Array(data.items.length).fill(0);
     this.promptLbl.setText(data.prompt);
     this._redrawDots();
     this._drawRecipe();
@@ -285,18 +285,18 @@ class PotionLabScene extends Phaser.Scene {
   startRound() {
     if (this.roundGroup) this.roundGroup.clear(true, true);
     this.roundGroup = this.add.group();
-    const data = generatePotionRound(this.round);
-    this.correctResult = data.result;
+    const data = getRound(this.round);
+    this.correctResult = data.target;
     this._redrawDots();
     const W = this.W, H = this.H;
     // Cauldron visual
     this.roundGroup.add(this.add.circle(W / 2, H * 0.35, 60, hexToNum(COL_SECONDARY), 0.2).setStrokeStyle(3, hexToNum(COL_PRIMARY), 0.6).setDepth(5));
     this.roundGroup.add(this.add.text(W / 2, H * 0.25, 'Cauldron', { fontSize: '12px', color: COL_TEXT, fontFamily: "'Lexend', system-ui", alpha: 0.5 }).setOrigin(0.5).setDepth(6));
-    // Show the multiplication
-    this.roundGroup.add(this.add.text(W / 2, H * 0.35, data.base + ' × ' + data.multiplier + ' = ?', {
+    // Show the prompt
+    this.roundGroup.add(this.add.text(W / 2, H * 0.35, data.prompt, {
       fontSize: '28px', color: COL_ACCENT, fontFamily: "'Space Grotesk', sans-serif", fontStyle: 'bold'
     }).setOrigin(0.5).setDepth(6));
-    this.roundGroup.add(this.add.text(W / 2, H * 0.48, 'The cauldron multiplies! What comes out?', {
+    this.roundGroup.add(this.add.text(W / 2, H * 0.48, data.hint || 'The cauldron multiplies! What comes out?', {
       fontSize: '13px', color: COL_TEXT, fontFamily: "'Lexend', system-ui"
     }).setOrigin(0.5).setDepth(6));
     // Number pad
@@ -411,14 +411,14 @@ class AssemblyLineScene extends Phaser.Scene {
     this.roundGroup = this.add.group();
     this.collected = 0;
     this.groupsGrabbed = 0;
-    const data = generateAssemblyRound(this.round);
+    const data = getRound(this.round);
     this.targetTotal = data.target;
-    this.correctGroupSize = data.correctGroupSize;
-    this.correctGroupCount = data.correctGroupCount;
+    this.correctGroupSize = data.items[0] || 3;
+    this.correctGroupCount = Math.round(data.target / (data.items[0] || 3));
     this._redrawDots();
     const W = this.W, H = this.H;
     // Target display
-    this.roundGroup.add(this.add.text(W / 2, H * 0.15, 'Order: ' + data.target + ' ' + ITEM_NAME, {
+    this.roundGroup.add(this.add.text(W / 2, H * 0.15, data.prompt, {
       fontSize: '18px', color: COL_ACCENT, fontFamily: "'Space Grotesk', sans-serif", fontStyle: 'bold'
     }).setOrigin(0.5).setDepth(6));
     this.roundGroup.add(this.add.text(W / 2, H * 0.22, 'Click groups to grab them', {
@@ -430,9 +430,10 @@ class AssemblyLineScene extends Phaser.Scene {
     }).setOrigin(0.5).setDepth(6);
     this.roundGroup.add(this.collectedLbl);
     // Group buttons — conveyor style
-    const gap = Math.min(90, (W * 0.8) / data.groupOptions.length);
-    const startX = W / 2 - ((data.groupOptions.length - 1) * gap) / 2;
-    data.groupOptions.forEach((size, i) => {
+    const groupOptions = data.items;
+    const gap = Math.min(90, (W * 0.8) / groupOptions.length);
+    const startX = W / 2 - ((groupOptions.length - 1) * gap) / 2;
+    groupOptions.forEach((size, i) => {
       const x = startX + i * gap;
       const y = H * 0.5;
       const btn = this.add.rectangle(x, y, 70, 50, hexToNum(COL_SECONDARY), 0.3)

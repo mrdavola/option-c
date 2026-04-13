@@ -279,7 +279,7 @@ export function FeedbackButton({ targetGame }: FeedbackButtonProps) {
                 />
                 <div className="flex items-center gap-1 text-[10px] text-zinc-500 flex-1 min-w-0 truncate">
                   <Link2 className="size-3 shrink-0" />
-                  <span className="truncate">{pageUrl}</span>
+                  <span className="truncate">Page info will be included automatically</span>
                 </div>
               </div>
 

@@ -279,7 +279,7 @@ Math: ${effectiveStandardDesc}`
         {isEureka && (
           <SlotSection
             icon="⭐"
-            label="Items"
+            label="Item"
             selected={selectedItem}
             onClear={() => setSelectedItem(null)}
           >
@@ -414,7 +414,7 @@ Math: ${effectiveStandardDesc}`
         {!isEureka && (
           <SlotSection
             icon="⭐"
-            label="Items"
+            label="Item"
             selected={selectedItem}
             onClear={() => setSelectedItem(null)}
           >
