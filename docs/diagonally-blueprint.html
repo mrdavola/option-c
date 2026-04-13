@@ -692,50 +692,53 @@ function scrollToSection(id) {
 <h2 id="sec-pending" class="section-group">16. Pending Work</h2>
 <!-- ============================================ -->
 
-<h3>Bugs</h3>
+<h3>Completed Recently (Apr 12)</h3>
 <ul>
-  <li><strong>BUG: "Failed to submit" on Send for Review:</strong> A working game that the user won shows "Failed to submit" when clicking Send for Review. The error is caught generically — needs better logging to diagnose. Likely a Firestore permission or field validation issue.</li>
+  <li><del>Submit bug</del> — DONE: sanitized designDoc, detailed error messages</li>
+  <li><del>Galaxy cleanup</del> — DONE: 466 moons, 65 planets, removed clusters/practices/duplicates</li>
+  <li><del>Arrow colors</del> — DONE: yellow for unlocked targets</li>
+  <li><del>Remove planet ring</del> — DONE</li>
+  <li><del>Naming screen removed</del> — DONE: goes straight to workshop</li>
+  <li><del>Eureka page</del> — DONE: /build with reverse flow</li>
+  <li><del>SpritePicker</del> — DONE: categories + upload + favorites, wired into builder</li>
+  <li><del>All 19 Phaser engines</del> — DONE (57/57 game options)</li>
+  <li><del>Per-standard game option mapping</del> — DONE (466 moons individually mapped)</li>
+  <li><del>AI validation + retry</del> — DONE</li>
+  <li><del>Unified single-row header</del> — DONE</li>
+  <li><del>Phase 1 visual polish</del> — DONE (glow, gradient, transitions)</li>
+  <li><del>Game Console animation</del> — DONE (bezel, LEDs, circuit traces)</li>
+  <li><del>Character sprites in games</del> — DONE (idle bob, cheer, shake)</li>
+  <li><del>Dynamic help text</del> — DONE (per-standard from AI rounds)</li>
+  <li><del>Practice mode hint card panel</del> — DONE</li>
+  <li><del>Fix This two-step flow</del> — DONE</li>
+  <li><del>Login simplification</del> — DONE (username + password, no dash)</li>
+  <li><del>Feedback button on every page</del> — DONE</li>
+  <li><del>Mini-map planet navigation</del> — DONE</li>
 </ul>
 
-<h3>Galaxy &amp; Navigation</h3>
+<h3>Math Alignment (Critical)</h3>
 <ul>
-  <li><strong>Galaxy cleanup:</strong> Remove 183 cluster headers, 43 duplicate parents, 8 math practices from galaxy view. Verify edges. Update mini-map, How to Play, Blueprint. Final target: 466 moons, 65 planets. (See Section 14 for full details.)</li>
-  <li><strong>Arrow colors:</strong> Prerequisite arrows between planets are always grey. Change to: slightly yellow for arrows pointing to unlocked planets, grey for arrows pointing to locked planets.</li>
-  <li><strong>Remove white ring around planets:</strong> Currently planets have a white ring. Remove it.</li>
+  <li><strong>Engines use AI_ROUNDS only:</strong> All 54 game scenes being updated to use getRound() from base template. No self-generated math. (In progress)</li>
+  <li><strong>Math teacher audit:</strong> Review all 466 mappings for PERFECT/SO-SO/WRONG matches. Remove wrong matches, research so-so ones. (In progress)</li>
+  <li><strong>Strict validation:</strong> If AI rounds don't match standard, retry once then flag for admin review.</li>
 </ul>
 
-<h3>Game Builder (Arcade Cabinet)</h3>
+<h3>Game Builder</h3>
 <ul>
-  <li><strong>Arcade cabinet animation:</strong> The Circuit Board Builder should look like an arcade cabinet opening up, with components visible as gears/chips that slot in. When all 3 criteria lights are lit, the cabinet closes and building starts. (Currently just a flat form with buttons.)</li>
-  <li><strong>All parts visible:</strong> The opened arcade should show all components clearly, especially the 3 math criteria lights — they should be prominent, not hidden.</li>
-  <li><strong>Remove "Your game is ready" screen:</strong> The naming screen (game name + dare) looks like the login screen and doesn't make sense. Remove it entirely — move naming + dare into the Workshop or skip it.</li>
-  <li><del>"Build NOW!" Eureka page</del> — DONE: /build page with reverse flow (background → character → describe → AI match → build). Nav button added. Filters to undemonstrated standards at learner's grade.</li>
-  <li><del>Upload button + sprite categories + favorites</del> — DONE: SpritePicker component with categories (Adventurers, Warriors, etc.), community uploads (SVG/PNG to Firebase Storage), heart favorites. Not yet wired into builder (pending arcade redesign).</li>
-</ul>
-
-<h3>Content</h3>
-<ul>
-  <li><del>Item recommendations per game option</del> — DONE: 2-3 recommended items per mechanic, shown first with green border</li>
-  <li><strong>Hardcode "This is about..." for all 466 standards</strong> (currently AI-generated per visit).</li>
-</ul>
-
-<h3>Analytics &amp; Data</h3>
-<ul>
-  <li><strong>PostHog integration:</strong> Record learner usage data — unsuccessful game attempts (= math concept not mastered), time spent, game options chosen, standards attempted. Unsuccessful attempts should flag the guide to consider moving the learner back to prerequisite skills. <em>(Mike setting up now.)</em></li>
-</ul>
-
-<h3>Game Engines</h3>
-<ul>
-  <li>Hybrid approach: ship HTML engines now, Mike replaces with Phaser over time</li>
-  <li>Add math-standard-aware round generation to all engines (currently only Phaser)</li>
-  <li>Create stick figures for each game option (57 animations)</li>
+  <li><strong>Console animation polish:</strong> Exploding/reassembling device with beam (Eventually — design discussed, basic version done)</li>
 </ul>
 
 <h3>Visuals &amp; UX</h3>
 <ul>
   <li>Expand sprite library (more backgrounds, characters + upload your own)</li>
+  <li>Less busy backgrounds (overlay darkened to 65%)</li>
   <li>Mobile layout polish</li>
   <li>Clickable info buttons on more elements</li>
+</ul>
+
+<h3>Analytics &amp; Data</h3>
+<ul>
+  <li><del>PostHog integration</del> — DONE (Mike)</li>
 </ul>
 
 <h3>Cleanup</h3>
