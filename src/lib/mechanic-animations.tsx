@@ -1,5 +1,7 @@
 "use client"
 
+import { getAllowedMechanics } from "@/lib/standard-mechanic-map"
+
 // Pre-built game mechanic SVG animations.
 // Each one demonstrates a core game loop that uses a specific math domain.
 // The stick figure ITSELF moves (arms, legs, body) — not just the props.
@@ -1195,8 +1197,7 @@ export const MECHANIC_ANIMATIONS: MechanicAnimation[] = [
 // as substrings since they already disambiguate themselves.
 export function matchMechanics(description: string, domainCode: string): MechanicAnimation[] {
   // FIRST: try hardcoded domain → mechanic mapping (most reliable)
-  const { getAllowedMechanics } = require("@/lib/standard-mechanic-map")
-  const allowed = getAllowedMechanics(domainCode) as string[] | null
+  const allowed = getAllowedMechanics(domainCode)
   if (allowed && allowed.length > 0) {
     const result = allowed
       .map(id => MECHANIC_ANIMATIONS.find(m => m.id === id))
