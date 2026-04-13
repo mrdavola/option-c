@@ -616,6 +616,25 @@ export default function GuideDashboard() {
             <div className="flex items-center gap-2">
               {previewGame.status === "pending_review" && (
                 <>
+                  <Button variant="outline" className="text-red-400 border-red-500/30 hover:bg-red-500/10"
+                    onClick={async () => {
+                      if (!confirm("Flag this game as math mismatch? This will notify the admin.")) return
+                      try {
+                        await updateDoc(doc(db, "games", previewGame.id), { mathAligned: false, updatedAt: Date.now() })
+                        // Notify admin
+                        const fbRef = doc(collection(db, "feedback"))
+                        await setDoc(fbRef, {
+                          id: fbRef.id, fromUid: profile?.uid || "", fromName: profile?.name || "Guide",
+                          toUid: "admin", target: "game", type: "math-mismatch",
+                          message: `Math mismatch flagged on "${previewGame.title}" (${previewGame.standardId}). The game's math doesn't match the standard.`,
+                          gameId: previewGame.id, gameTitle: previewGame.title,
+                          status: "unread", createdAt: Date.now(), updatedAt: Date.now(), replies: [],
+                        })
+                        alert("Flagged! Admin has been notified.")
+                      } catch { alert("Failed to flag") }
+                    }}>
+                    Math doesn&apos;t match
+                  </Button>
                   <Button variant="outline" className="text-amber-400 border-amber-500/30 hover:bg-amber-500/10"
                     onClick={() => setFeedbackGameId(feedbackGameId === previewGame.id ? null : previewGame.id)}>
                     <Bug className="size-3.5 mr-1" /> Needs Fix
