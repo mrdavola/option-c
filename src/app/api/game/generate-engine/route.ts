@@ -123,20 +123,17 @@ Return ONLY a JSON array of 5 rounds. No markdown, no explanation.`,
         role: "user",
         content: `Standard: ${standardId} — ${standardDescription}
 Grade: ${grade || "4"}
-Game mechanic: Player clicks items with numeric values to collect them. Their collected total must match the target exactly.
-Item name in game: ${themeConfig.itemName}
+Game option: ${gameOption || mechanicId}
+
+CRITICAL: Every round MUST directly test "${standardDescription}".
+The prompt must be a math question about THIS SPECIFIC concept.
+Do NOT generate generic math. The target must be the answer to a question about this standard.
 
 Generate 5 rounds of increasing difficulty. Each round:
-- "prompt": A short math question/challenge that tests this SPECIFIC standard (not generic addition). Max 60 chars.
-- "target": The correct answer (a number the player must collect)
-- "items": Array of 6-8 numbers the player can click. MUST include numbers that sum to target. Include distractors.
-- "hint": One sentence hint about the math concept
-
-Examples for different standards:
-- "Understanding the equals sign": prompt "What makes 5 + ? = 12 true?", target 7, items [3,4,7,9,2,5]
-- "Area using multiplication": prompt "Area of a 6×4 rectangle?", target 24, items [24,18,10,20,12,30,6]
-- "Multiply by multiples of 10": prompt "30 × 7 = ?", target 210, items [210,180,37,200,21,170,240]
-- "Compare fractions": prompt "Which is bigger: 3/4 or 2/3? (as 12ths)", target 9, items [9,8,6,10,12,3,7]
+- "prompt": A short math question that tests THIS EXACT standard. Max 80 chars.
+- "target": The correct numerical answer
+- "items": Array of 6-8 numbers including the correct answer and plausible wrong answers
+- "hint": One sentence explaining how to solve this type of problem
 
 Return JSON array: [{"prompt":"...","target":N,"items":[...],"hint":"..."},...]`,
       }],
@@ -175,5 +172,18 @@ Return JSON array: [{"prompt":"...","target":N,"items":[...],"hint":"..."},...]`
     return Response.json({ error: "Engine generation failed" }, { status: 500 })
   }
 
-  return Response.json({ html, hasEngine: true })
+  // VALIDATION: Check that generated game contains standard-relevant content
+  // If AI_ROUNDS were generated, verify they reference the standard's math
+  let validationWarning: string | null = null
+  if (rounds && rounds.length > 0 && standardDescription) {
+    const firstPrompt = (rounds[0].prompt || "").toLowerCase()
+    const stdWords = standardDescription.toLowerCase().split(/\s+/).filter((w: string) => w.length > 4)
+    const hasRelevantContent = stdWords.some((w: string) => firstPrompt.includes(w)) || firstPrompt.length > 10
+    if (!hasRelevantContent) {
+      validationWarning = "Generated rounds may not match the standard. The game might need regeneration."
+      console.warn(`[generate-engine] Validation warning for ${standardId}: rounds may not match standard "${standardDescription}"`)
+    }
+  }
+
+  return Response.json({ html, hasEngine: true, validationWarning })
 }

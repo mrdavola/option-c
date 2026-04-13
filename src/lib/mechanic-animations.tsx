@@ -1194,6 +1194,17 @@ export const MECHANIC_ANIMATIONS: MechanicAnimation[] = [
 // "additional". Multi-word keywords (e.g. "complex plane") are matched
 // as substrings since they already disambiguate themselves.
 export function matchMechanics(description: string, domainCode: string): MechanicAnimation[] {
+  // FIRST: try hardcoded domain → mechanic mapping (most reliable)
+  const { getAllowedMechanics } = require("@/lib/standard-mechanic-map")
+  const allowed = getAllowedMechanics(domainCode) as string[] | null
+  if (allowed && allowed.length > 0) {
+    const result = allowed
+      .map(id => MECHANIC_ANIMATIONS.find(m => m.id === id))
+      .filter(Boolean) as MechanicAnimation[]
+    if (result.length > 0) return result.slice(0, 3)
+  }
+
+  // FALLBACK: keyword matching (only if no hardcoded mapping)
   const desc = description.toLowerCase()
   const code = domainCode.toUpperCase()
   const scored = MECHANIC_ANIMATIONS.map((m) => {
@@ -1209,7 +1220,6 @@ export function matchMechanics(description: string, domainCode: string): Mechani
     return { mechanic: m, score }
   })
   scored.sort((a, b) => b.score - a.score)
-  // Drop zero-scoring mechanics so we don't return random fallbacks.
   return scored.filter((s) => s.score > 0).slice(0, 3).map((s) => s.mechanic)
 }
 
