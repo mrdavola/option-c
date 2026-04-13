@@ -50,5 +50,16 @@
 10. **Guide/Admin unified headers** — guide/admin pages keep their own headers for now
 11. **Less busy backgrounds** — darkened overlay helps, could also add simpler SVG backgrounds
 
+### Game option gaps (76 standards need new options)
+The audit found 76 standards (~16%) with no PERFECT game option match. Biggest gaps:
+- **Trigonometry** (9 standards) — need a trig game option (unit circle, sine/cosine)
+- **Complex numbers** (9 standards) — need a complex plane game option
+- **Vectors/matrices** (6 standards) — need a matrix game option
+- **Time-telling** (3 standards) — need a clock-reading game option
+- **Writing/notation** (several) — "write numbers 0-20" has no game equivalent
+- **Proof-based** (several) — "prove the Pythagorean theorem" can't be a click game
+
+**Question 8:** Should we (a) build new game options for the biggest gaps (trig, complex, time), (b) flag these standards as "no game available" and skip them for now, or (c) keep the SO-SO match with a note?
+
 ### Recommendation
 Clear the explanation cache today (button is on Admin → Tokens tab). This will make all moon card explanations regenerate in the new bullet-point format with emoji icons.
