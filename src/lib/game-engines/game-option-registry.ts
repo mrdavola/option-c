@@ -1,4 +1,4 @@
-// Game Option Registry — all 57 game options across 19 mechanics.
+// Game Option Registry — all 65 game options across 23 mechanics.
 // Each option is a genuinely different gameplay mode, not just a difficulty tweak.
 // This registry feeds the Circuit Board Builder UI and engine routing.
 
@@ -580,6 +580,74 @@ export const GAME_OPTIONS: GameOptionDef[] = [
     description: "Calculate how much time has passed",
     introText: "Two clocks show start and end times. Calculate how many hours and minutes passed between them!",
     helpText: "Count the time.\n\nFrom the start time to end time, count hours first, then minutes.\n\n✅ 2:00 to 4:30 = 2 hours 30 minutes\n❌ Don't forget to count the minutes part!",
+  },
+
+  // ─── 22. Singapore CPA (singapore-cpa) ───
+  {
+    id: "bar-model",
+    mechanicId: "singapore-cpa",
+    name: "Bar Model",
+    description: "Drag colored bars to represent parts and whole in a word problem",
+    introText: "A word problem appears at the top. Colored bars show the known parts. Find the missing value represented by the gap. Type your answer on the number pad!",
+    helpText: "Use the bar model to find the missing value.\n\nKnown parts are shown as colored bars. The gap is the unknown.\n\n✅ Parts are 12 and 8, whole is 20 → gap = 20 - 12 - 8 = 0? No — if gap IS the answer, compute it!\n❌ Read the prompt carefully to know what's missing!",
+  },
+  {
+    id: "place-value-discs",
+    mechanicId: "singapore-cpa",
+    name: "Place Value Discs",
+    description: "Add colored discs to a place value mat — 10 in a column auto-trades up",
+    introText: "A place value mat has Ones, Tens, and Hundreds columns. Click + to add discs. When 10 pile up in a column they automatically trade into 1 disc in the next column!",
+    helpText: "Build the target number with discs.\n\nAdd discs to columns. 10 ones → 1 ten. 10 tens → 1 hundred.\n\n✅ Target 234 → 2 hundreds + 3 tens + 4 ones\n❌ Total 243 ≠ 234 — check each column!",
+  },
+  {
+    id: "number-bonds",
+    mechanicId: "singapore-cpa",
+    name: "Number Bonds",
+    description: "Find the missing part or whole in a part-part-whole circle diagram",
+    introText: "A number bond diagram shows a whole at the top connected to two parts below. One value is missing — marked with '?'. Figure out the missing number and type it!",
+    helpText: "Find the missing number in the bond.\n\nWhole = Part A + Part B\n\n✅ Whole = 15, Part A = 7 → Part B = 8\n✅ Part A = 6, Part B = 9 → Whole = 15\n❌ 15 - 7 = 8, not 7!",
+  },
+  {
+    id: "cuisenaire-rods",
+    mechanicId: "singapore-cpa",
+    name: "Cuisenaire Rods",
+    description: "Pick colored rods of lengths 1-10 to hit a target sum with exact rod count",
+    introText: "Colored rods have lengths 1 through 10. Select exactly the right number of rods whose lengths add up to the target. Click rods to add them, then check!",
+    helpText: "Make the target length with the exact number of rods.\n\nEach rod color = a length (1-10).\n\n✅ Target 7 with 3 rods → pick 3 + 2 + 2 = 7\n❌ 3 + 4 = 7 but that's only 2 rods, not 3!",
+  },
+
+  // ─── 23. Standard Pedagogy (standard-pedagogy) ───
+  {
+    id: "expression-transformer",
+    mechanicId: "standard-pedagogy",
+    name: "Expression Transformer",
+    description: "Algebra tiles — click opposite pairs to cancel zero pairs, then simplify",
+    introText: "Colored tiles represent numbers and variables. Green square = +1, red = -1, blue rectangle = x. Click a tile to cancel it with its opposite (zero pair). Then type the simplified answer!",
+    helpText: "Simplify by cancelling zero pairs.\n\nGreen (+1) and Red (-1) cancel each other.\n\n✅ 3 greens + 2 reds → cancel 2 pairs → answer is 1\n❌ Don't forget to cancel all possible pairs!",
+  },
+  {
+    id: "factor-finder",
+    mechanicId: "standard-pedagogy",
+    name: "Factor Finder",
+    description: "Build a factor tree by clicking composite numbers to split them",
+    introText: "A number appears at the top. Click it to split into two factors. Keep splitting until all leaves are prime (green). The factor tree must be complete to check!",
+    helpText: "Split composites until only primes remain.\n\nClick a number to split it into its smallest factor and the remainder.\n\n✅ 12 → 2 × 6 → 2 × 2 × 3 (all prime!)\n❌ 6 is not prime — keep splitting!",
+  },
+  {
+    id: "category-sort",
+    mechanicId: "standard-pedagogy",
+    name: "Category Sort",
+    description: "Drag objects into labeled bins, then count a bin",
+    introText: "Objects with numbers are scattered in the middle. Drag each one into the correct bin (Bin A or Bin B) based on the rule in the prompt. Then type the count for Bin A!",
+    helpText: "Sort items into the right bins.\n\nDrag items based on the sorting rule.\n\n✅ Sort even/odd: 4, 6, 8 → Bin A (even), 3, 5 → Bin B (odd)\n❌ Miscounted? Recount items in Bin A!",
+  },
+  {
+    id: "measure-and-plot",
+    mechanicId: "standard-pedagogy",
+    name: "Measure & Plot",
+    description: "Read a ruler, see data on a line plot, answer questions",
+    introText: "A ruler shows an object to measure. Below, a line plot displays data points as X marks. Read the measurements and answer the question — it might ask about the data!",
+    helpText: "Measure and read the line plot.\n\nThe ruler shows object length. X marks on the plot show data.\n\n✅ 3 X marks at value 5 → three items measured 5\n❌ Count carefully — stacked X marks are easy to miscount!",
   },
 ]
 

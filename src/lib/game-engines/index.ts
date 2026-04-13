@@ -1,4 +1,4 @@
-// Game engine registry — all 19 engines.
+// Game engine registry — all 21 engines.
 
 import type { ThemeConfig, MathParams, GameEngine, GameOption, RoundData } from "./engine-types"
 import { balanceSystemsPhaserEngine } from "./balance-systems-phaser"
@@ -23,6 +23,8 @@ import { motionSimulationPhaserEngine } from "./motion-simulation-phaser"
 import { buildStructurePhaserEngine } from "./build-structure-phaser"
 import { measurementTimePhaserEngine } from "./measurement-time-phaser"
 import { montessoriPhaserEngine } from "./montessori-phaser"
+import { singaporeCpaPhaserEngine } from "./singapore-cpa-phaser"
+import { standardPedagogyPhaserEngine } from "./standard-pedagogy-phaser"
 
 const ENGINE_REGISTRY: Record<string, GameEngine> = {
   "resource-management": collectManagePhaserEngine,
@@ -46,6 +48,8 @@ const ENGINE_REGISTRY: Record<string, GameEngine> = {
   "build-structure": buildStructurePhaserEngine,
   "measurement-time": measurementTimePhaserEngine,
   "montessori-materials": montessoriPhaserEngine,
+  "singapore-cpa": singaporeCpaPhaserEngine,
+  "standard-pedagogy": standardPedagogyPhaserEngine,
 }
 
 export function hasEngine(mechanicId: string): boolean {
