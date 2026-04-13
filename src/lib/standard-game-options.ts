@@ -28,12 +28,12 @@ export const STANDARD_GAME_OPTIONS: Record<string, string[]> = {
   // ═══════════════════════════════════════════════════════════════
 
   // K.CC — Counting & Cardinality
-  "K.CC.A.1": ["number-line-drop"],                                          // Count to 100 by ones and tens
-  "K.CC.A.2": ["number-line-drop"],                                          // Count forward from a given number
+  "K.CC.A.1": ["hundred-board"],                                          // Count to 100 by ones and tens
+  "K.CC.A.2": ["hundred-board"],                                          // Count forward from a given number
   "K.CC.A.3": ["elimination-grid", "logic-chain"],                          // Write numbers 0-20 (GAP: no game tests numeral writing; using deduction as placeholder)
   "K.CC.B.4a": ["sorting-lane", "free-collect"],                            // Counting objects one-to-one
   "K.CC.B.4b": ["free-collect", "assembly-line"],                           // Last number = count
-  "K.CC.B.4c": ["number-line-drop", "sorting-lane"],                       // Each successive number is one larger
+  "K.CC.B.4c": ["hundred-board"],                       // Each successive number is one larger
   "K.CC.B.5": ["free-collect", "assembly-line"],                            // Count to answer "how many?"
   "K.CC.C.6": ["sorting-lane", "size-picker", "leaderboard-fix"],          // Compare groups: greater/less/equal
   "K.CC.C.7": ["sorting-lane", "size-picker", "leaderboard-fix"],          // Compare two written numerals 1-10
@@ -46,12 +46,12 @@ export const STANDARD_GAME_OPTIONS: Record<string, string[]> = {
   "K.OA.A.5": ["free-collect", "conveyor-belt"],                            // Fluently add/subtract within 5
 
   // K.NBT — Number & Operations in Base Ten
-  "K.NBT.A.1": ["free-collect", "split-the-loot"],                         // Compose/decompose 11-19 into ten ones + more
+  "K.NBT.A.1": ["golden-beads"],                         // Compose/decompose 11-19 into ten ones + more
 
   // K.MD — Measurement & Data
   "K.MD.A.1": ["size-picker", "ruler-race"],                                // Describe measurable attributes
   "K.MD.A.2": ["size-picker", "ruler-race"],                                // Directly compare two objects
-  "K.MD.B.3": ["sorting-lane", "build-the-chart"],                          // Classify and count by category
+  "K.MD.B.3": ["category-sort"],                          // Classify and count by category
 
   // K.G — Geometry
   "K.G.A.1": ["shape-matcher", "coordinate-hunter"],                        // Describe shapes and positions
@@ -77,9 +77,9 @@ export const STANDARD_GAME_OPTIONS: Record<string, string[]> = {
 
   // 1.NBT — Number & Operations in Base Ten
   "1.NBT.A.1": ["number-line-drop", "sorting-lane"],                         // Count to 120
-  "1.NBT.B.2a": ["free-collect", "split-the-loot"],                          // 10 as a bundle of ten ones
-  "1.NBT.B.2b": ["free-collect", "split-the-loot"],                          // 11-19 = ten + ones
-  "1.NBT.B.2c": ["number-line-drop", "sorting-lane"],                        // Multiples of 10
+  "1.NBT.B.2a": ["golden-beads"],                          // 10 as a bundle of ten ones
+  "1.NBT.B.2b": ["golden-beads"],                          // 11-19 = ten + ones
+  "1.NBT.B.2c": ["golden-beads"],                        // Multiples of 10
   "1.NBT.B.3": ["sorting-lane", "size-picker", "leaderboard-fix"],           // Compare two-digit numbers
   "1.NBT.C.4": ["free-collect", "conveyor-belt", "recipe-mixer"],            // Add within 100
   "1.NBT.C.5": ["number-line-drop", "free-collect"],                         // Mentally find 10 more/less
@@ -107,16 +107,16 @@ export const STANDARD_GAME_OPTIONS: Record<string, string[]> = {
   "2.OA.C.4": ["fill-the-floor", "recipe-mixer", "assembly-line"],            // Rectangular arrays, equal addends
 
   // 2.NBT — Number & Operations in Base Ten
-  "2.NBT.A.1a": ["free-collect", "split-the-loot"],                           // 100 = bundle of ten tens
-  "2.NBT.A.1b": ["number-line-drop", "sorting-lane"],                         // Hundreds (100-900)
+  "2.NBT.A.1a": ["golden-beads"],                           // 100 = bundle of ten tens
+  "2.NBT.A.1b": ["golden-beads"],                         // Hundreds (100-900)
   "2.NBT.A.2": ["sequence-builder", "number-line-drop"],                      // Skip-count by 5s, 10s, 100s
-  "2.NBT.A.3": ["number-line-drop", "sorting-lane"],                          // Read/write numbers to 1000
+  "2.NBT.A.3": ["stamp-game"],                          // Read/write numbers to 1000
   "2.NBT.A.4": ["sorting-lane", "size-picker", "leaderboard-fix"],            // Compare three-digit numbers
   "2.NBT.B.5": ["free-collect", "conveyor-belt", "split-the-loot"],           // Add/subtract within 100 fluently
   "2.NBT.B.6": ["free-collect", "recipe-mixer", "assembly-line"],             // Add up to four two-digit numbers
   "2.NBT.B.7": ["free-collect", "conveyor-belt"],                             // Add/subtract within 1000
-  "2.NBT.B.8": ["number-line-drop", "free-collect"],                          // Mentally add/subtract 10 or 100
-  "2.NBT.B.9": ["free-balance", "free-collect"],                              // Explain add/subtract strategies
+  "2.NBT.B.8": ["stamp-game"],                          // Mentally add/subtract 10 or 100
+  "2.NBT.B.9": ["stamp-game"],                              // Explain add/subtract strategies
 
   // 2.MD — Measurement & Data
   "2.MD.A.1": ["ruler-race", "size-picker"],                                  // Measure with rulers, yardsticks
@@ -199,7 +199,7 @@ export const STANDARD_GAME_OPTIONS: Record<string, string[]> = {
   "4.NBT.A.3": ["round-and-win", "auction-house", "price-is-right"],           // Round multi-digit numbers
   "4.NBT.B.4": ["free-collect", "conveyor-belt", "split-the-loot"],            // Fluently add/subtract multi-digit
   "4.NBT.B.5": ["potion-lab", "recipe-mixer", "fill-the-floor"],               // Multiply up to 4-digit × 1-digit
-  "4.NBT.B.6": ["share-the-pizza", "split-the-loot", "mystery-side"],          // Divide with up to 4-digit dividends
+  "4.NBT.B.6": ["checkerboard-multiply"],          // Divide with up to 4-digit dividends
 
   // 4.NF — Number & Operations—Fractions
   "4.NF.A.1": ["cut-the-bar", "pour-the-liquid", "resize-tool"],               // Equivalent fractions (n×a)/(n×b)
@@ -211,7 +211,7 @@ export const STANDARD_GAME_OPTIONS: Record<string, string[]> = {
   "4.NF.B.4a": ["cut-the-bar", "pour-the-liquid"],                             // Fraction a/b as multiple of 1/b
   "4.NF.B.4b": ["potion-lab", "cut-the-bar", "recipe-scaler"],                 // Multiply fraction by whole number
   "4.NF.B.4c": ["recipe-scaler", "potion-lab", "cut-the-bar"],                 // Word problems: fraction × whole number
-  "4.NF.C.5": ["cut-the-bar", "pour-the-liquid"],                              // Denominator 10 → equivalent 100
+  "4.NF.C.5": ["fraction-circles"],                              // Denominator 10 → equivalent 100
   "4.NF.C.6": ["number-line-drop", "cut-the-bar"],                             // Decimal notation for fractions
   "4.NF.C.7": ["sorting-lane", "size-picker", "number-line-drop"],             // Compare decimals to hundredths
 
@@ -241,8 +241,8 @@ export const STANDARD_GAME_OPTIONS: Record<string, string[]> = {
 
   // 5.NBT — Number & Operations in Base Ten
   "5.NBT.A.1": ["auction-house", "round-and-win"],                               // Digit = 10× place to right, 1/10 place to left (estimation/rounding tests place value understanding)
-  "5.NBT.A.2": ["investment-sim", "population-boom", "potion-lab"],              // Powers of 10, zeros in products
-  "5.NBT.A.3a": ["number-line-drop", "sorting-lane"],                            // Read/write decimals to thousandths
+  "5.NBT.A.2": ["bead-chain"],              // Powers of 10, zeros in products
+  "5.NBT.A.3a": ["bead-chain"],                            // Read/write decimals to thousandths
   "5.NBT.A.3b": ["sorting-lane", "size-picker", "leaderboard-fix"],              // Compare decimals to thousandths
   "5.NBT.A.4": ["round-and-win", "auction-house"],                               // Round decimals to any place
   "5.NBT.B.5": ["potion-lab", "recipe-mixer"],                                   // Fluently multiply multi-digit
