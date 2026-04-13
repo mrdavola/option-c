@@ -22,6 +22,7 @@ import { raceCalculateEngine } from "./race-calculate"
 import { motionSimulationPhaserEngine } from "./motion-simulation-phaser"
 import { buildStructurePhaserEngine } from "./build-structure-phaser"
 import { measurementTimePhaserEngine } from "./measurement-time-phaser"
+import { montessoriPhaserEngine } from "./montessori-phaser"
 
 const ENGINE_REGISTRY: Record<string, GameEngine> = {
   "resource-management": collectManagePhaserEngine,
@@ -44,6 +45,7 @@ const ENGINE_REGISTRY: Record<string, GameEngine> = {
   "above-below-zero": aboveBelowZeroPhaserEngine,
   "build-structure": buildStructurePhaserEngine,
   "measurement-time": measurementTimePhaserEngine,
+  "montessori-materials": montessoriPhaserEngine,
 }
 
 export function hasEngine(mechanicId: string): boolean {

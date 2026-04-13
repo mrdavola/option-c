@@ -506,7 +506,57 @@ export const GAME_OPTIONS: GameOptionDef[] = [
     helpText: "Decompose and calculate.\n\n✅ L-shape → cut into two rectangles, find each area, add them\n❌ Don't forget to add ALL the pieces' areas!",
   },
 
-  // ─── 20. Clock & Time (measurement-time) ───
+  // ─── 20. Montessori Materials (montessori-materials) ───
+  {
+    id: "golden-beads",
+    mechanicId: "montessori-materials",
+    name: "Golden Beads",
+    description: "Count beads into ten-frames and hundred-squares",
+    introText: "Loose golden beads are scattered on the table. Click beads to count them into the ten-frame. Every 10 beads auto-bundle into a ten-bar! Then type how many tens and ones make the number.",
+    helpText: "Click beads to count them into the ten-frame.\n\nEvery 10 beads bundle into a ten-bar automatically.\n\n✅ 23 = 2 ten-bars + 3 loose beads → type 23\n❌ Miscounted? Check your ten-bars and loose beads!",
+  },
+  {
+    id: "hundred-board",
+    mechanicId: "montessori-materials",
+    name: "Hundred Board",
+    description: "Place numbers in the correct spot on a 10×10 grid",
+    introText: "A 10×10 hundred board with some numbers shown as guides. A number appears at the top — click the correct cell where it belongs! Numbers go 1-100, left to right, top to bottom.",
+    helpText: "Place each number in the right cell.\n\nNumbers go left to right: 1-10 in the first row, 11-20 in the second, etc.\n\n✅ 35 → row 4, column 5\n❌ 35 is not in row 3 — that's 21-30!",
+  },
+  {
+    id: "stamp-game",
+    mechanicId: "montessori-materials",
+    name: "Stamp Game",
+    description: "Use colored stamps to build a number by place value",
+    introText: "Colored stamps represent place values: green=1, blue=10, red=100, green-large=1000. Click stamps to add them. Your total must match the target number exactly!",
+    helpText: "Click stamps to build the target number.\n\nGreen=1, Blue=10, Red=100, Green-large=1000\n\n✅ Target 234 → 2 red (200) + 3 blue (30) + 4 green (4)\n❌ Total 243 ≠ 234 — check your stamps!",
+  },
+  {
+    id: "fraction-circles",
+    mechanicId: "montessori-materials",
+    name: "Fraction Circles",
+    description: "Color wedges of a circle to show a fraction",
+    introText: "A circle is divided into equal wedges. Click wedges to color them and show the fraction! Click again to uncolor. Your colored count must match the numerator.",
+    helpText: "Color the right number of wedges.\n\nThe circle is divided into equal parts (the denominator).\n\n✅ Show 3/4 → color 3 out of 4 wedges\n❌ 2 colored out of 4 = 2/4, not 3/4!",
+  },
+  {
+    id: "bead-chain",
+    mechanicId: "montessori-materials",
+    name: "Bead Chain",
+    description: "Skip count along a bead chain to find a number",
+    introText: "A chain of colored beads stretches across the screen. Click beads to skip count — each click highlights a bead and shows the running count. Then type the final answer!",
+    helpText: "Skip count by clicking beads.\n\nEach click adds the skip number to your count.\n\n✅ Skip by 3, click 4 beads → 3, 6, 9, 12\n❌ The 4th number when skip-counting by 3 is 12, not 7!",
+  },
+  {
+    id: "checkerboard-multiply",
+    mechanicId: "montessori-materials",
+    name: "Checkerboard Multiply",
+    description: "Place beads on a color-coded grid to multiply",
+    introText: "A Montessori checkerboard grid shows one factor across the top and the other down the side. Click cells to place beads at intersections, then type the product!",
+    helpText: "Place beads and find the product.\n\nThe grid shows A across × B down.\n\n✅ 3 × 4 → fill all 12 cells, type 12\n❌ Only filled 9 cells? That's 3×3, not 3×4!",
+  },
+
+  // ─── 21. Clock & Time (measurement-time) ───
   {
     id: "clock-reader",
     mechanicId: "measurement-time",
