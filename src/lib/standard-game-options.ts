@@ -121,13 +121,13 @@ export const STANDARD_GAME_OPTIONS: Record<string, string[]> = {
   // 2.MD — Measurement & Data
   "2.MD.A.1": ["ruler-race", "size-picker"],                                  // Measure with rulers, yardsticks
   "2.MD.A.2": ["ruler-race", "unit-converter"],                               // Measure with different units
-  "2.MD.A.3": ["auction-house", "price-is-right"],                            // Estimate lengths
+  "2.MD.A.3": ["bar-model"],                            // Estimate lengths
   "2.MD.A.4": ["ruler-race", "size-picker"],                                  // How much longer is one object
   "2.MD.B.5": ["free-collect", "ruler-race", "free-balance"],                 // Add/subtract within 100 with lengths
   "2.MD.B.6": ["number-line-drop", "free-collect"],                           // Number line sums/differences within 100
   "2.MD.C.7": ["clock-reader", "time-matcher", "time-elapsed"],                                                // Tell time to nearest 5 min (GAP: no game tests clock-reading; size-picker as placeholder for comparing time values)
   "2.MD.C.8": ["free-collect"],                                               // Word problems with coins/bills
-  "2.MD.D.9": ["build-the-chart", "ruler-race"],                              // Measurement data → line plot
+  "2.MD.D.9": ["measure-and-plot"],                              // Measurement data → line plot
   "2.MD.D.10": ["build-the-chart", "find-the-stat"],                          // Picture/bar graph with up to 4 categories
 
   // 2.G — Geometry
@@ -168,7 +168,7 @@ export const STANDARD_GAME_OPTIONS: Record<string, string[]> = {
   "3.MD.A.1": ["clock-reader", "time-matcher", "time-elapsed"],                                                 // Tell time to nearest minute (GAP: no game tests clock-reading; size-picker as placeholder for comparing time values)
   "3.MD.A.2": ["ruler-race", "size-picker", "unit-converter"],                 // Measure liquid volumes/masses
   "3.MD.B.3": ["build-the-chart", "find-the-stat"],                            // Scaled picture/bar graph
-  "3.MD.B.4": ["ruler-race", "build-the-chart"],                               // Measure lengths with fractions → line plot
+  "3.MD.B.4": ["measure-and-plot"],                               // Measure lengths with fractions → line plot
   "3.MD.C.5a": ["fill-the-floor", "stack-to-target"],                          // Unit square = one square unit
   "3.MD.C.5b": ["fill-the-floor", "stack-to-target"],                          // Area = n unit squares
   "3.MD.C.6": ["fill-the-floor", "stack-to-target"],                           // Measure areas by counting unit squares
@@ -190,7 +190,7 @@ export const STANDARD_GAME_OPTIONS: Record<string, string[]> = {
   "4.OA.A.1": ["potion-lab", "recipe-scaler", "resize-tool"],                  // Multiplicative comparison
   "4.OA.A.2": ["potion-lab", "recipe-mixer", "mystery-side"],                  // Multiply/divide word problems
   "4.OA.A.3": ["free-collect", "free-balance", "mystery-side"],                // Multistep word problems, four operations
-  "4.OA.B.4": ["elimination-grid", "logic-chain"],                             // Factor pairs, prime/composite
+  "4.OA.B.4": ["factor-finder"],                             // Factor pairs, prime/composite
   "4.OA.C.5": ["sequence-builder", "pattern-machine", "broken-pattern"],       // Number/shape patterns
 
   // 4.NBT — Number & Operations in Base Ten
@@ -219,7 +219,7 @@ export const STANDARD_GAME_OPTIONS: Record<string, string[]> = {
   "4.MD.A.1": ["unit-converter", "size-picker", "ruler-race"],                  // Measurement unit sizes; conversion tables
   "4.MD.A.2": ["unit-converter", "free-collect", "recipe-mixer"],               // Four operations with measurement
   "4.MD.A.3": ["fill-the-floor", "free-build", "box-packer"],                   // Area and perimeter formulas for rectangles
-  "4.MD.B.4": ["build-the-chart", "ruler-race"],                                // Line plot with fractional measurements
+  "4.MD.B.4": ["measure-and-plot"],                                // Line plot with fractional measurements
   "4.MD.C.5a": ["rotate-to-match", "ruler-race"],                               // Angle measure as fraction of circle
   "4.MD.C.5b": ["rotate-to-match", "ruler-race"],                               // Angle = n one-degree angles
   "4.MD.C.6": ["rotate-to-match", "ruler-race"],                                // Measure/sketch angles with protractor
@@ -264,7 +264,7 @@ export const STANDARD_GAME_OPTIONS: Record<string, string[]> = {
 
   // 5.MD — Measurement & Data
   "5.MD.A.1": ["unit-converter", "size-picker", "ruler-race"],                     // Convert measurement units
-  "5.MD.B.2": ["build-the-chart", "ruler-race", "cut-the-bar"],                   // Line plot with fraction measurements
+  "5.MD.B.2": ["measure-and-plot"],                   // Line plot with fraction measurements
   "5.MD.C.3a": ["box-packer", "stack-to-target"],                                  // Unit cube = one cubic unit
   "5.MD.C.3b": ["box-packer", "stack-to-target"],                                  // Volume = n unit cubes
   "5.MD.C.4": ["box-packer", "stack-to-target"],                                   // Measure volumes by counting unit cubes
@@ -294,7 +294,7 @@ export const STANDARD_GAME_OPTIONS: Record<string, string[]> = {
   "6.NS.A.1": ["cut-the-bar", "share-the-pizza", "pour-the-liquid"],               // Divide fractions by fractions
   "6.NS.B.2": ["split-the-loot", "share-the-pizza"],                               // Fluently divide multi-digit
   "6.NS.B.3": ["free-collect", "potion-lab", "recipe-mixer"],                       // Add/subtract/multiply/divide decimals
-  "6.NS.B.4": ["elimination-grid", "logic-chain"],                                  // GCF, LCM, distributive property
+  "6.NS.B.4": ["factor-finder"],                                  // GCF, LCM, distributive property
   "6.NS.C.5": ["depth-navigator", "temperature-swing", "elevator-operator"],        // Positive/negative numbers in context
   "6.NS.C.6a": ["depth-navigator", "number-line-drop"],                             // Opposites on number line
   "6.NS.C.6b": ["coordinate-hunter", "battleship"],                                  // Signs in ordered pairs, quadrants
@@ -307,10 +307,10 @@ export const STANDARD_GAME_OPTIONS: Record<string, string[]> = {
 
   // 6.EE — Expressions & Equations
   "6.EE.A.1": ["investment-sim", "population-boom", "doubling-maze"],                // Whole-number exponents
-  "6.EE.A.2a": ["pattern-machine", "mystery-side"],                                  // Write expressions with variables
-  "6.EE.A.2b": ["elimination-grid", "pattern-machine"],                               // Identify expression parts
+  "6.EE.A.2a": ["expression-transformer"],                                  // Write expressions with variables
+  "6.EE.A.2b": ["expression-transformer"],                               // Identify expression parts
   "6.EE.A.2c": ["potion-lab", "recipe-mixer", "free-balance"],                        // Evaluate expressions at values
-  "6.EE.A.3": ["pattern-machine", "free-balance"],                                    // Generate equivalent expressions
+  "6.EE.A.3": ["expression-transformer"],                                    // Generate equivalent expressions
   "6.EE.A.4": ["pattern-machine", "free-balance", "elimination-grid"],                // Identify equivalent expressions
   "6.EE.B.5": ["mystery-side", "free-balance", "elimination-grid"],                   // Solve equation by substitution
   "6.EE.B.6": ["mystery-side", "free-balance"],                                       // Variables represent unknowns
@@ -358,8 +358,8 @@ export const STANDARD_GAME_OPTIONS: Record<string, string[]> = {
   "7.NS.A.3": ["free-collect", "potion-lab", "depth-navigator"],                        // Four operations with rationals
 
   // 7.EE — Expressions & Equations
-  "7.EE.A.1": ["free-balance", "pattern-machine"],                                      // Add/subtract/factor linear expressions
-  "7.EE.A.2": ["pattern-machine", "investment-sim"],                                     // Rewrite expressions (a+0.05a=1.05a)
+  "7.EE.A.1": ["expression-transformer"],                                      // Add/subtract/factor linear expressions
+  "7.EE.A.2": ["expression-transformer"],                                     // Rewrite expressions (a+0.05a=1.05a)
   "7.EE.B.3": ["free-collect", "auction-house", "recipe-mixer"],                         // Multi-step problems, estimation
   "7.EE.B.4a": ["mystery-side", "free-balance", "chain-scales"],                         // Solve px+q=r
   "7.EE.B.4b": ["mystery-side", "free-balance", "number-line-drop"],                     // Solve px+q>r, graph solution
