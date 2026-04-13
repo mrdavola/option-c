@@ -505,6 +505,32 @@ export const GAME_OPTIONS: GameOptionDef[] = [
     introText: "A complex shape appears. Draw lines to break it into basic shapes (rectangles, triangles). Then calculate the total area from the pieces!",
     helpText: "Decompose and calculate.\n\n✅ L-shape → cut into two rectangles, find each area, add them\n❌ Don't forget to add ALL the pieces' areas!",
   },
+
+  // ─── 20. Clock & Time (measurement-time) ───
+  {
+    id: "clock-reader",
+    mechanicId: "measurement-time",
+    name: "Clock Reader",
+    description: "Read the clock and type the time",
+    introText: "An analog clock appears showing a time. Read the hour and minute hands, then type the time! Getting faster each round.",
+    helpText: "Read the clock.\n\nThe short hand = hour. The long hand = minutes.\n\n✅ Short hand on 3, long hand on 12 → 3:00\n✅ Short hand between 7-8, long hand on 6 → 7:30\n❌ Don't mix up the hands!",
+  },
+  {
+    id: "time-matcher",
+    mechanicId: "measurement-time",
+    name: "Time Matcher",
+    description: "Match analog clock to digital time",
+    introText: "A clock shows a time. Pick the matching digital time from 4 choices! Watch out — some are close but wrong.",
+    helpText: "Match the clock.\n\nLook at the hour hand first, then the minute hand.\n\n✅ If the hour hand is past 2 and minute hand is on 3 → 2:15\n❌ 3:10 looks similar but is wrong!",
+  },
+  {
+    id: "time-elapsed",
+    mechanicId: "measurement-time",
+    name: "Time Elapsed",
+    description: "Calculate how much time has passed",
+    introText: "Two clocks show start and end times. Calculate how many hours and minutes passed between them!",
+    helpText: "Count the time.\n\nFrom the start time to end time, count hours first, then minutes.\n\n✅ 2:00 to 4:30 = 2 hours 30 minutes\n❌ Don't forget to count the minutes part!",
+  },
 ]
 
 // ─── Lookup helpers ───

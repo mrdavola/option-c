@@ -21,6 +21,7 @@ import { pathOptimizationPhaserEngine } from "./path-optimization-phaser"
 import { raceCalculateEngine } from "./race-calculate"
 import { motionSimulationPhaserEngine } from "./motion-simulation-phaser"
 import { buildStructurePhaserEngine } from "./build-structure-phaser"
+import { measurementTimePhaserEngine } from "./measurement-time-phaser"
 
 const ENGINE_REGISTRY: Record<string, GameEngine> = {
   "resource-management": collectManagePhaserEngine,
@@ -42,6 +43,7 @@ const ENGINE_REGISTRY: Record<string, GameEngine> = {
   "bidding-auction": biddingAuctionPhaserEngine,
   "above-below-zero": aboveBelowZeroPhaserEngine,
   "build-structure": buildStructurePhaserEngine,
+  "measurement-time": measurementTimePhaserEngine,
 }
 
 export function hasEngine(mechanicId: string): boolean {

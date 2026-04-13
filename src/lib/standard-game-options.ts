@@ -88,7 +88,7 @@ export const STANDARD_GAME_OPTIONS: Record<string, string[]> = {
   // 1.MD — Measurement & Data
   "1.MD.A.1": ["sorting-lane", "size-picker"],                               // Order three objects by length
   "1.MD.A.2": ["ruler-race", "size-picker"],                                 // Measure length in whole units
-  "1.MD.B.3": ["size-picker"],                                               // Tell time in hours and half-hours (GAP: no game tests clock-reading; size-picker as placeholder for comparing time values)
+  "1.MD.B.3": ["clock-reader", "time-matcher"],                                               // Tell time in hours and half-hours (GAP: no game tests clock-reading; size-picker as placeholder for comparing time values)
   "1.MD.C.4": ["build-the-chart", "find-the-stat"],                          // Organize/interpret data, up to 3 categories
 
   // 1.G — Geometry
@@ -125,7 +125,7 @@ export const STANDARD_GAME_OPTIONS: Record<string, string[]> = {
   "2.MD.A.4": ["ruler-race", "size-picker"],                                  // How much longer is one object
   "2.MD.B.5": ["free-collect", "ruler-race", "free-balance"],                 // Add/subtract within 100 with lengths
   "2.MD.B.6": ["number-line-drop", "free-collect"],                           // Number line sums/differences within 100
-  "2.MD.C.7": ["size-picker"],                                                // Tell time to nearest 5 min (GAP: no game tests clock-reading; size-picker as placeholder for comparing time values)
+  "2.MD.C.7": ["clock-reader", "time-matcher", "time-elapsed"],                                                // Tell time to nearest 5 min (GAP: no game tests clock-reading; size-picker as placeholder for comparing time values)
   "2.MD.C.8": ["free-collect"],                                               // Word problems with coins/bills
   "2.MD.D.9": ["build-the-chart", "ruler-race"],                              // Measurement data → line plot
   "2.MD.D.10": ["build-the-chart", "find-the-stat"],                          // Picture/bar graph with up to 4 categories
@@ -165,7 +165,7 @@ export const STANDARD_GAME_OPTIONS: Record<string, string[]> = {
   "3.NF.A.3d": ["sorting-lane", "size-picker", "cut-the-bar"],                // Compare fractions same numerator/denominator
 
   // 3.MD — Measurement & Data
-  "3.MD.A.1": ["size-picker"],                                                 // Tell time to nearest minute (GAP: no game tests clock-reading; size-picker as placeholder for comparing time values)
+  "3.MD.A.1": ["clock-reader", "time-matcher", "time-elapsed"],                                                 // Tell time to nearest minute (GAP: no game tests clock-reading; size-picker as placeholder for comparing time values)
   "3.MD.A.2": ["ruler-race", "size-picker", "unit-converter"],                 // Measure liquid volumes/masses
   "3.MD.B.3": ["build-the-chart", "find-the-stat"],                            // Scaled picture/bar graph
   "3.MD.B.4": ["ruler-race", "build-the-chart"],                               // Measure lengths with fractions → line plot
