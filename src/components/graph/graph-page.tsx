@@ -876,7 +876,7 @@ export function GraphPage({ data }: GraphPageProps) {
   }
 
   return (
-    <div className="h-screen w-screen relative">
+    <div className="h-[calc(100vh-44px)] w-screen relative" style={{ marginTop: "-1px" }}>
       {/* Game Builder: Build Screen */}
       {buildMode === "building" && currentDesignDoc && (
         <BuildScreen
@@ -1001,8 +1001,8 @@ export function GraphPage({ data }: GraphPageProps) {
         </div>
       )}
 
-      {/* Search bar — galaxy view only */}
-      {viewMode === "galaxy" && (
+      {/* Galaxy search — hidden, unified header handles search */}
+      {viewMode === "galaxy" && false && (
         <div className={`absolute ${impersonating ? "top-32" : "top-14"} left-4 z-20`}>
           {searchOpen ? (
             <div className="w-72">
