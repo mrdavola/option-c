@@ -1467,6 +1467,21 @@ function TokenEconomyEditor() {
 
       {/* Token migration card — moved here from Overview */}
       <TokenTopupCard />
+
+      {/* Cache management */}
+      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 space-y-3">
+        <h3 className="text-sm font-semibold">Cache Management</h3>
+        <p className="text-xs text-zinc-400">Clear cached explanation cards so they regenerate with the latest format.</p>
+        <Button size="sm" variant="outline" onClick={async () => {
+          try {
+            const res = await fetch("/api/admin/clear-cache", { method: "POST" })
+            const data = await res.json()
+            alert(data.ok ? `Cleared ${data.deleted} cached explanations` : "Failed: " + data.error)
+          } catch { alert("Failed to clear cache") }
+        }}>
+          Clear Explanation Cache
+        </Button>
+      </div>
     </div>
   )
 }
