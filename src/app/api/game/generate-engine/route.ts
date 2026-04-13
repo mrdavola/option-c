@@ -172,16 +172,48 @@ Return JSON array: [{"prompt":"...","target":N,"items":[...],"hint":"..."},...]`
     return Response.json({ error: "Engine generation failed" }, { status: 500 })
   }
 
-  // VALIDATION: Check that generated game contains standard-relevant content
-  // If AI_ROUNDS were generated, verify they reference the standard's math
+  // VALIDATION: Check that generated rounds match the standard
   let validationWarning: string | null = null
   if (rounds && rounds.length > 0 && standardDescription) {
-    const firstPrompt = (rounds[0].prompt || "").toLowerCase()
+    const allPrompts = rounds.map((r: RoundData) => (r.prompt || "").toLowerCase()).join(" ")
     const stdWords = standardDescription.toLowerCase().split(/\s+/).filter((w: string) => w.length > 4)
-    const hasRelevantContent = stdWords.some((w: string) => firstPrompt.includes(w)) || firstPrompt.length > 10
-    if (!hasRelevantContent) {
-      validationWarning = "Generated rounds may not match the standard. The game might need regeneration."
-      console.warn(`[generate-engine] Validation warning for ${standardId}: rounds may not match standard "${standardDescription}"`)
+    const matchCount = stdWords.filter((w: string) => allPrompts.includes(w)).length
+    const matchRatio = stdWords.length > 0 ? matchCount / stdWords.length : 1
+
+    if (matchRatio < 0.1 && allPrompts.length > 20) {
+      // Low match — try regenerating rounds once
+      console.warn(`[generate-engine] Low match (${Math.round(matchRatio * 100)}%) for ${standardId}. Retrying...`)
+      try {
+        const retryResponse = await anthropic.messages.create({
+          model: "claude-haiku-4-5-20251001",
+          max_tokens: 800,
+          system: `Generate math game rounds. CRITICAL: Every round MUST test "${standardDescription}". Return ONLY a JSON array of 5 rounds.`,
+          messages: [{ role: "user", content: `Standard: ${standardId} — ${standardDescription}\nGrade: ${grade || "4"}\n\nGenerate 5 rounds. Each: {"prompt":"...","target":N,"items":[...],"hint":"..."}` }],
+        })
+        const retryText = retryResponse.content[0].type === "text" ? retryResponse.content[0].text : ""
+        const retryCleaned = retryText.replace(/\`\`\`json?\n?/g, "").replace(/\`\`\`/g, "").trim()
+        const rS = retryCleaned.indexOf("["), rE = retryCleaned.lastIndexOf("]")
+        if (rS !== -1 && rE !== -1) {
+          const retryParsed = JSON.parse(retryCleaned.slice(rS, rE + 1))
+          if (Array.isArray(retryParsed) && retryParsed.length >= 3) {
+            // Use retry rounds instead
+            mathParams.rounds = retryParsed.slice(0, 5).map((r: any) => ({
+              prompt: String(r.prompt || ""), target: Number(r.target) || 10,
+              items: Array.isArray(r.items) ? r.items.map(Number).filter((n: number) => !isNaN(n)) : [1,2,3,4,5],
+              hint: r.hint ? String(r.hint) : undefined,
+            }))
+            // Regenerate game with better rounds
+            const retryHtml = generateWithEngine(mechanicId, themeConfig, mathParams, gameOption)
+            if (retryHtml) {
+              return Response.json({ html: retryHtml, hasEngine: true })
+            }
+          }
+        }
+      } catch {
+        // Retry failed — flag for admin
+        validationWarning = `Rounds may not match standard ${standardId}. Flagged for review.`
+        console.error(`[generate-engine] Retry failed for ${standardId}`)
+      }
     }
   }
 
