@@ -80,6 +80,8 @@ export function GamePlayer({ gameId, title, html, concept, onClose, isPendingRev
   // Last time a game_win event arrived. Used to suppress the math-moment
   // overlay when a buggy game posts game_lose right after game_win.
   const lastWinAtRef = useRef<number>(0)
+  // Briefly shown after a hinted win to explain why no tokens were awarded.
+  const [showHintNoTokens, setShowHintNoTokens] = useState(false)
 
   const isGuide = activeProfile?.role === "guide" || activeProfile?.role === "admin"
   const isAuthor = !!authorUid && activeProfile?.uid === authorUid
@@ -130,6 +132,14 @@ export function GamePlayer({ gameId, title, html, concept, onClose, isPendingRev
       }
       if (playMode === "master") {
         posthog.capture("library_game_won", { game_id: gameId, standard_id: standardId, hint_used: !!winData?.hintUsed })
+      }
+      // If the learner used a hint, briefly surface why they aren't getting
+      // tokens for this attempt. The win still propagates to the parent so
+      // mastery progress (play counts) is preserved — parents are
+      // responsible for skipping their own token awards when hintUsed.
+      if (winData?.hintUsed) {
+        setShowHintNoTokens(true)
+        setTimeout(() => setShowHintNoTokens(false), 3000)
       }
       onWin?.(winData)
     } else {
@@ -496,6 +506,14 @@ export function GamePlayer({ gameId, title, html, concept, onClose, isPendingRev
                 Your comment is only visible to the creator, your guide, and admins.
               </p>
             </div>
+          </div>
+        )}
+
+        {/* Hint-used notice — brief toast explaining zero tokens for
+            this attempt. Auto-dismisses after a few seconds. */}
+        {showHintNoTokens && (
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-blue-900/90 border border-blue-500/40 rounded-xl px-5 py-2 text-sm text-blue-200 shadow-lg">
+            Hint used — no tokens this time
           </div>
         )}
 

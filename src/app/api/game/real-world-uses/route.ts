@@ -6,6 +6,7 @@
 // never blocks. Phase 2: replace AI call with a hardcoded per-standard map.
 
 import Anthropic from "@anthropic-ai/sdk"
+import { getRealWorldUses } from "@/lib/standard-real-world-uses"
 
 export const maxDuration = 20
 
@@ -35,6 +36,12 @@ export async function POST(req: Request) {
 
   if (!standardDescription) {
     return Response.json(fallback("this math"))
+  }
+
+  // Priority: hardcoded (verified quality) > AI (fallback)
+  if (standardId) {
+    const hardcoded = getRealWorldUses(standardId)
+    if (hardcoded) return Response.json(hardcoded)
   }
 
   try {

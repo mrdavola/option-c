@@ -163,11 +163,15 @@ export function Workshop({
               posthog.capture("game_tested_in_workshop", { game_id: currentGameId, standard_id: designDoc.standardId, outcome: "lose", hint_mode: hintMode })
               setShowMathMoment(true)
             }}
-            onWin={() => {
-              posthog.capture("game_tested_in_workshop", { game_id: currentGameId, standard_id: designDoc.standardId, outcome: "win", hint_mode: hintMode })
+            onWin={(data) => {
+              posthog.capture("game_tested_in_workshop", { game_id: currentGameId, standard_id: designDoc.standardId, outcome: "win", hint_mode: hintMode, hint_used: !!data?.hintUsed })
               if (hintMode === "hint") {
                 setHasWonHint(true)
                 setHintMode("prompt_real")
+              } else if (data?.hintUsed) {
+                // Real mode but the learner pressed "Get Hint" during play —
+                // no tokens and this shouldn't satisfy the Send-for-Review
+                // gate. Keep hasWon as-is so they have to win unaided.
               } else {
                 setHasWon(true)
               }

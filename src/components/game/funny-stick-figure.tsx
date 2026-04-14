@@ -18,6 +18,15 @@ const ACTIONS = [
   "magicTrick",
   "weightlifting",
   "yoga",
+  // --- Math-game poses (Phase 2.1) ---
+  "cutting",
+  "measuring",
+  "thinking",
+  "writing",
+  "stacking",
+  "climbing",
+  "spinning",
+  "shrugging",
 ] as const
 
 type Action = (typeof ACTIONS)[number]
@@ -83,20 +92,69 @@ export function FunnyStickFigure() {
 
           @keyframes fsf_yoga_body { 0%,100% { transform: scale(1); } 50% { transform: scale(1.02); } }
 
+          /* === New math-game poses === */
+
+          /* cutting — right arm swings down like a chef's knife */
+          @keyframes fsf_cut_arm { 0%,40% { transform: rotate(-80deg); } 55%,100% { transform: rotate(20deg); } }
+          @keyframes fsf_cut_puff { 0%,40%,100% { opacity: 0; transform: scale(0.4); } 60% { opacity: 1; transform: scale(1.2); } }
+
+          /* measuring — both arms spread wide, ruler stretches */
+          @keyframes fsf_measure_armA { 0%,100% { transform: rotate(-70deg); } 50% { transform: rotate(-85deg); } }
+          @keyframes fsf_measure_armB { 0%,100% { transform: rotate(70deg); } 50% { transform: rotate(85deg); } }
+          @keyframes fsf_measure_ruler { 0%,100% { transform: scaleX(1); } 50% { transform: scaleX(1.1); } }
+
+          /* thinking — hand on chin, question mark pulses */
+          @keyframes fsf_think_arm { 0%,100% { transform: rotate(-150deg); } 50% { transform: rotate(-155deg); } }
+          @keyframes fsf_think_q { 0%,100% { opacity: 0.4; transform: translateY(0) scale(0.9); } 50% { opacity: 1; transform: translateY(-3px) scale(1.1); } }
+          @keyframes fsf_think_head { 0%,100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }
+
+          /* writing — right arm scribbles back and forth on a board */
+          @keyframes fsf_write_arm { 0%,100% { transform: rotate(-55deg); } 25% { transform: rotate(-45deg); } 50% { transform: rotate(-65deg); } 75% { transform: rotate(-40deg); } }
+          @keyframes fsf_write_trail { 0%,100% { opacity: 0; transform: translateX(-4px); } 50% { opacity: 1; transform: translateX(4px); } }
+
+          /* stacking — both arms pick up & place a block */
+          @keyframes fsf_stack_armA { 0% { transform: rotate(70deg); } 25% { transform: rotate(70deg); } 50% { transform: rotate(-10deg); } 75% { transform: rotate(-30deg); } 100% { transform: rotate(70deg); } }
+          @keyframes fsf_stack_armB { 0% { transform: rotate(-70deg); } 25% { transform: rotate(-70deg); } 50% { transform: rotate(10deg); } 75% { transform: rotate(30deg); } 100% { transform: rotate(-70deg); } }
+          @keyframes fsf_stack_block { 0% { transform: translate(0, 28px); opacity: 1; } 25% { transform: translate(0, 28px); opacity: 1; } 50% { transform: translate(0, -6px); opacity: 1; } 75% { transform: translate(20px, 14px); opacity: 1; } 100% { transform: translate(0, 28px); opacity: 1; } }
+
+          /* climbing — alternating leg lifts and whole-body rise */
+          @keyframes fsf_climb_thighA { 0%,100% { transform: rotate(-35deg) translateY(0); } 50% { transform: rotate(-10deg) translateY(-6px); } }
+          @keyframes fsf_climb_thighB { 0%,100% { transform: rotate(-10deg) translateY(-6px); } 50% { transform: rotate(-35deg) translateY(0); } }
+          @keyframes fsf_climb_rise { 0% { transform: translateY(6px); } 100% { transform: translateY(-6px); } }
+          @keyframes fsf_climb_armA { 0%,100% { transform: rotate(-40deg); } 50% { transform: rotate(-70deg); } }
+          @keyframes fsf_climb_armB { 0%,100% { transform: rotate(-70deg); } 50% { transform: rotate(-40deg); } }
+
+          /* spinning — pirouette, arms out */
+          @keyframes fsf_spin_body { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(360deg); } }
+          @keyframes fsf_spin_fig  { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+          @keyframes fsf_spin_armA { 0%,100% { transform: rotate(-90deg); } }
+          @keyframes fsf_spin_armB { 0%,100% { transform: rotate(90deg); } }
+
+          /* shrugging — shoulders hop, arms flex up in "IDK" */
+          @keyframes fsf_shrug_armA { 0%,100% { transform: rotate(-40deg); } 50% { transform: rotate(-120deg); } }
+          @keyframes fsf_shrug_armB { 0%,100% { transform: rotate(40deg); } 50% { transform: rotate(120deg); } }
+          @keyframes fsf_shrug_body { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+
           /* === Walking + travel applied on every non-yoga action === */
           .traveler { animation: fsf_travel 4s ease-in-out infinite; }
-          .traveler.a-yoga { animation: none; }
+          .traveler.a-yoga, .traveler.a-spinning, .traveler.a-thinking, .traveler.a-climbing { animation: none; }
 
           .a-dancing .fig-thighA, .a-juggling .fig-thighA, .a-hammering .fig-thighA,
-          .a-sweeping .fig-thighA, .a-magicTrick .fig-thighA, .a-weightlifting .fig-thighA {
+          .a-sweeping .fig-thighA, .a-magicTrick .fig-thighA, .a-weightlifting .fig-thighA,
+          .a-cutting .fig-thighA, .a-measuring .fig-thighA, .a-writing .fig-thighA,
+          .a-stacking .fig-thighA, .a-shrugging .fig-thighA {
             animation: fsf_walk_thighA 1.1s ease-in-out infinite; transform-origin: 100px 92px;
           }
           .a-dancing .fig-thighB, .a-juggling .fig-thighB, .a-hammering .fig-thighB,
-          .a-sweeping .fig-thighB, .a-magicTrick .fig-thighB, .a-weightlifting .fig-thighB {
+          .a-sweeping .fig-thighB, .a-magicTrick .fig-thighB, .a-weightlifting .fig-thighB,
+          .a-cutting .fig-thighB, .a-measuring .fig-thighB, .a-writing .fig-thighB,
+          .a-stacking .fig-thighB, .a-shrugging .fig-thighB {
             animation: fsf_walk_thighB 1.1s ease-in-out infinite; transform-origin: 100px 92px;
           }
           .a-dancing .fig-bob, .a-juggling .fig-bob, .a-hammering .fig-bob,
-          .a-sweeping .fig-bob, .a-magicTrick .fig-bob, .a-weightlifting .fig-bob {
+          .a-sweeping .fig-bob, .a-magicTrick .fig-bob, .a-weightlifting .fig-bob,
+          .a-cutting .fig-bob, .a-measuring .fig-bob, .a-writing .fig-bob,
+          .a-stacking .fig-bob, .a-shrugging .fig-bob {
             animation: fsf_walk_bob 1.1s ease-in-out infinite;
           }
 
@@ -132,10 +190,57 @@ export function FunnyStickFigure() {
 
           /* yoga — sit still (legs are folded, no gait) */
           .a-yoga .fig-body { animation: fsf_yoga_body 3s ease-in-out infinite; transform-origin: 100px 80px; }
+
+          /* cutting */
+          .a-cutting .fig-armA { animation: fsf_cut_arm 0.7s ease-in-out infinite; transform-origin: 100px 68px; }
+          .a-cutting .puff { animation: fsf_cut_puff 0.7s ease-in-out infinite; transform-origin: 80px 120px; }
+
+          /* measuring */
+          .a-measuring .fig-armA { animation: fsf_measure_armA 1.4s ease-in-out infinite; transform-origin: 100px 68px; }
+          .a-measuring .fig-armB { animation: fsf_measure_armB 1.4s ease-in-out infinite; transform-origin: 100px 68px; }
+          .a-measuring .ruler { animation: fsf_measure_ruler 1.4s ease-in-out infinite; transform-origin: center; }
+
+          /* thinking */
+          .a-thinking .fig-armA { animation: fsf_think_arm 1.6s ease-in-out infinite; transform-origin: 100px 68px; }
+          .a-thinking .qbubble { animation: fsf_think_q 1.2s ease-in-out infinite; transform-origin: center; }
+          .a-thinking .fig-body { animation: fsf_think_head 2.4s ease-in-out infinite; transform-origin: 100px 80px; }
+
+          /* writing */
+          .a-writing .fig-armA { animation: fsf_write_arm 0.6s ease-in-out infinite; transform-origin: 100px 68px; }
+          .a-writing .trail { animation: fsf_write_trail 0.6s ease-in-out infinite; }
+
+          /* stacking */
+          .a-stacking .fig-armA { animation: fsf_stack_armA 1.6s ease-in-out infinite; transform-origin: 100px 68px; }
+          .a-stacking .fig-armB { animation: fsf_stack_armB 1.6s ease-in-out infinite; transform-origin: 100px 68px; }
+          .a-stacking .block-moving { animation: fsf_stack_block 1.6s ease-in-out infinite; }
+
+          /* climbing */
+          .a-climbing .fig-thighA { animation: fsf_climb_thighA 1.2s ease-in-out infinite; transform-origin: 100px 92px; }
+          .a-climbing .fig-thighB { animation: fsf_climb_thighB 1.2s ease-in-out infinite; transform-origin: 100px 92px; }
+          .a-climbing .fig-bob    { animation: fsf_climb_rise 4s linear infinite alternate; }
+          .a-climbing .fig-armA { animation: fsf_climb_armA 1.2s ease-in-out infinite; transform-origin: 100px 68px; }
+          .a-climbing .fig-armB { animation: fsf_climb_armB 1.2s ease-in-out infinite; transform-origin: 100px 68px; }
+
+          /* spinning */
+          .a-spinning .fig-bob { animation: fsf_spin_fig 1.4s linear infinite; transform-origin: 100px 92px; }
+          .a-spinning .fig-armA { transform: rotate(-90deg); transform-origin: 100px 68px; }
+          .a-spinning .fig-armB { transform: rotate(90deg); transform-origin: 100px 68px; }
+
+          /* shrugging */
+          .a-shrugging .fig-armA { animation: fsf_shrug_armA 0.9s ease-in-out infinite; transform-origin: 100px 68px; }
+          .a-shrugging .fig-armB { animation: fsf_shrug_armB 0.9s ease-in-out infinite; transform-origin: 100px 68px; }
+          .a-shrugging .fig-body { animation: fsf_shrug_body 0.9s ease-in-out infinite; transform-origin: 100px 80px; }
         `}</style>
 
         {/* Floor line */}
         <line x1="20" y1="148" x2="220" y2="148" stroke="#3f3f46" strokeWidth="1" strokeDasharray="3,3" />
+
+        {/* Stairs for climbing — only shown when that action is active */}
+        {action === "climbing" && (
+          <g stroke="#3f3f46" strokeWidth="1.5" fill="none">
+            <polyline points="40,148 70,148 70,132 110,132 110,116 150,116 150,100 190,100" />
+          </g>
+        )}
 
         {/* Outer "traveler" group walks back and forth across the floor.
             Yoga turns this off via .a-yoga override. */}
@@ -157,6 +262,25 @@ export function FunnyStickFigure() {
                 <>
                   <line x1="100" y1="90" x2="100" y2="108" stroke="#71717a" strokeWidth="2" strokeLinecap="round" />
                   <circle cx="100" cy="108" r="2" fill="#fbbf24" />
+                </>
+              )}
+              {action === "cutting" && (
+                <>
+                  {/* Knife — held at hand, swings with the arm */}
+                  <line x1="100" y1="90" x2="100" y2="104" stroke="#a1a1aa" strokeWidth="2" strokeLinecap="round" />
+                  <line x1="98" y1="104" x2="102" y2="104" stroke="#e4e4e7" strokeWidth="3" strokeLinecap="round" />
+                </>
+              )}
+              {action === "writing" && (
+                <>
+                  {/* Marker tip */}
+                  <line x1="100" y1="90" x2="100" y2="98" stroke="#fbbf24" strokeWidth="2" strokeLinecap="round" />
+                </>
+              )}
+              {action === "thinking" && (
+                <>
+                  {/* Forearm so hand reaches chin */}
+                  <line x1="100" y1="90" x2="100" y2="100" stroke="#e4e4e7" strokeWidth="2.5" strokeLinecap="round" />
                 </>
               )}
             </g>
@@ -247,6 +371,75 @@ export function FunnyStickFigure() {
                 <circle cx="108" cy="34" r="1.5" fill="#a78bfa" />
               </>
             )}
+
+            {/* === Math-game pose props === */}
+
+            {action === "cutting" && (
+              <>
+                {/* Pie on a cutting board at figure's feet */}
+                <rect x="62" y="126" width="40" height="3" rx="1" fill="#52525b" />
+                <path d="M 72 126 A 10 10 0 0 1 92 126 Z" fill="none" stroke="#fbbf24" strokeWidth="2" />
+                <line x1="82" y1="126" x2="82" y2="116" stroke="#fbbf24" strokeWidth="1.5" strokeDasharray="2,2" />
+                {/* Puff burst when the knife lands */}
+                <circle className="puff" cx="82" cy="120" r="6" fill="none" stroke="#e4e4e7" strokeWidth="1.5" opacity="0.7" />
+              </>
+            )}
+
+            {action === "measuring" && (
+              <>
+                {/* Ruler stretched between the two hands (~y=100) */}
+                <g className="ruler">
+                  <rect x="70" y="96" width="60" height="6" rx="1" fill="none" stroke="#fbbf24" strokeWidth="1.5" />
+                  <line x1="80" y1="96" x2="80" y2="100" stroke="#fbbf24" strokeWidth="1" />
+                  <line x1="90" y1="96" x2="90" y2="100" stroke="#fbbf24" strokeWidth="1" />
+                  <line x1="100" y1="96" x2="100" y2="100" stroke="#fbbf24" strokeWidth="1" />
+                  <line x1="110" y1="96" x2="110" y2="100" stroke="#fbbf24" strokeWidth="1" />
+                  <line x1="120" y1="96" x2="120" y2="100" stroke="#fbbf24" strokeWidth="1" />
+                </g>
+              </>
+            )}
+
+            {action === "thinking" && (
+              <>
+                {/* Question-mark bubble above head */}
+                <g className="qbubble" transform="translate(118 32)">
+                  <circle cx="0" cy="0" r="9" fill="none" stroke="#a78bfa" strokeWidth="1.5" />
+                  <text x="0" y="4" textAnchor="middle" fontSize="12" fill="#a78bfa" fontFamily="sans-serif" fontWeight="bold">?</text>
+                </g>
+              </>
+            )}
+
+            {action === "writing" && (
+              <>
+                {/* Chalkboard / whiteboard */}
+                <rect x="118" y="60" width="40" height="30" rx="2" fill="none" stroke="#e4e4e7" strokeWidth="1.5" />
+                {/* Scribble trails */}
+                <line className="trail" x1="126" y1="72" x2="148" y2="72" stroke="#fbbf24" strokeWidth="1.5" />
+                <line className="trail" x1="126" y1="80" x2="142" y2="80" stroke="#fbbf24" strokeWidth="1.5" />
+              </>
+            )}
+
+            {action === "stacking" && (
+              <>
+                {/* Existing stack on the ground (2 blocks) */}
+                <rect x="118" y="136" width="16" height="12" fill="none" stroke="#e4e4e7" strokeWidth="1.5" />
+                <rect x="118" y="124" width="16" height="12" fill="none" stroke="#e4e4e7" strokeWidth="1.5" />
+                {/* Moving block being carried */}
+                <g className="block-moving">
+                  <rect x="92" y="92" width="16" height="12" fill="none" stroke="#fbbf24" strokeWidth="1.5" />
+                </g>
+              </>
+            )}
+
+            {action === "shrugging" && (
+              <>
+                {/* Small "IDK" dots framing the head */}
+                <circle cx="82" cy="48" r="1.5" fill="#a78bfa" />
+                <circle cx="76" cy="52" r="1.5" fill="#a78bfa" />
+                <circle cx="118" cy="48" r="1.5" fill="#a78bfa" />
+                <circle cx="124" cy="52" r="1.5" fill="#a78bfa" />
+              </>
+            )}
           </g>
         </g>
       </svg>
@@ -264,5 +457,13 @@ function labelFor(action: Action): string {
     case "magicTrick": return "...doing a little magic..."
     case "weightlifting": return "...lifting heavy code..."
     case "yoga": return "...finding inner balance..."
+    case "cutting": return "...slicing up some fractions..."
+    case "measuring": return "...measuring twice, coding once..."
+    case "thinking": return "...hmm, let me think..."
+    case "writing": return "...scribbling the answer..."
+    case "stacking": return "...stacking blocks of logic..."
+    case "climbing": return "...climbing the number line..."
+    case "spinning": return "...spinning up some probability..."
+    case "shrugging": return "...honestly, no idea..."
   }
 }

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useAuth } from "@/lib/auth"
 import { db } from "@/lib/firebase"
 import { collection, query, where, getDocs, doc, getDoc, setDoc } from "firebase/firestore"
-import { GameIframe } from "@/components/game/game-iframe"
+import { GameIframe, type GameWinData } from "@/components/game/game-iframe"
 import { Trophy } from "lucide-react"
 import type { Game } from "@/lib/game-types"
 import type { FeedbackDoc } from "@/lib/feedback-types"
@@ -29,6 +29,9 @@ export function MasteryPlay({ standardId, onDemonstrated }: MasteryPlayProps) {
   const [playing, setPlaying] = useState(false)
   const [wins, setWins] = useState(0)
   const [demonstrated, setDemonstrated] = useState(false)
+  // Briefly shown after a hinted win so the learner sees why their
+  // streak didn't advance and no tokens were earned.
+  const [showHintNotice, setShowHintNotice] = useState(false)
 
   // Load the student's own approved/published game for this standard
   useEffect(() => {
@@ -62,7 +65,16 @@ export function MasteryPlay({ standardId, onDemonstrated }: MasteryPlayProps) {
       .catch(() => {})
   }, [activeProfile?.uid, standardId])
 
-  const handleWin = async () => {
+  const handleWin = async (data?: GameWinData) => {
+    // Hinted wins don't count toward the 3-in-a-row streak and don't
+    // earn tokens — but the play itself still "counts" (PostHog event,
+    // no streak reset). Show a brief notice so the learner understands.
+    if (data?.hintUsed) {
+      posthog.capture("own_game_win", { standard_id: standardId, streak: wins, hint_used: true })
+      setShowHintNotice(true)
+      setTimeout(() => setShowHintNotice(false), 3000)
+      return
+    }
     const newWins = wins + 1
     setWins(newWins)
     posthog.capture("own_game_win", { standard_id: standardId, streak: newWins })
@@ -145,13 +157,18 @@ export function MasteryPlay({ standardId, onDemonstrated }: MasteryPlayProps) {
             ))}
           </div>
         </div>
-        <div className="flex-1 min-h-0">
+        <div className="flex-1 min-h-0 relative">
           <GameIframe
             html={ownGame.gameHtml}
             className="w-full h-full"
             onWin={handleWin}
             onLose={handleLose}
           />
+          {showHintNotice && (
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-blue-900/90 border border-blue-500/40 rounded-xl px-5 py-2 text-sm text-blue-200 shadow-lg">
+              Hint used — no tokens, and this win doesn&apos;t count toward your streak.
+            </div>
+          )}
         </div>
         <div className="px-4 py-2 border-t border-zinc-800 bg-zinc-900/90 text-center">
           <p className="text-[11px] text-zinc-500">

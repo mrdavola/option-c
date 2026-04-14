@@ -3,6 +3,7 @@
 
 import { hasEngine, generateWithEngine, DEFAULT_PALETTE } from "@/lib/game-engines"
 import type { ThemeConfig, MathParams, RoundData } from "@/lib/game-engines"
+import { getHardcodedRounds } from "@/lib/standard-rounds"
 import Anthropic from "@anthropic-ai/sdk"
 
 export const maxDuration = 30
@@ -135,9 +136,19 @@ Return JSON:
     if (sprites?.backgroundImage) themeConfig.backgroundImage = sprites.backgroundImage
   }
 
-  // Generate math-specific round data tailored to the exact standard
+  // Generate math-specific round data tailored to the exact standard.
+  // Priority: hardcoded rounds (verified quality) > AI-generated (fallback).
   let rounds: RoundData[] | undefined
-  try {
+  const hardcoded = standardId ? getHardcodedRounds(standardId) : null
+  if (hardcoded && hardcoded.length >= 5) {
+    rounds = hardcoded.slice(0, 5).map(r => ({
+      prompt: r.prompt,
+      target: r.target,
+      items: r.items,
+      hint: r.hint,
+    }))
+  }
+  if (!rounds) try {
     const roundResponse = await anthropic.messages.create({
       model: "claude-haiku-4-5-20251001",
       max_tokens: 800,

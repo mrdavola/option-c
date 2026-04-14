@@ -11,9 +11,11 @@ export async function POST(
 ) {
   const { id } = await params
   let playerUid: string | undefined
+  let hintUsed = false
   try {
     const body = await req.json().catch(() => ({}))
     playerUid = body.playerUid
+    hintUsed = body.hintUsed === true
   } catch {
     // no body is fine for backward compatibility
   }
@@ -48,8 +50,11 @@ export async function POST(
           ? configSnap.data()!.tokenPerPlay
           : 10
 
-        // Award tokens to game creator (both lifetime and spendable)
-        if (tokenPerPlay > 0) {
+        // Award tokens to game creator (both lifetime and spendable).
+        // Defensive: if the player flagged this as a hinted attempt,
+        // skip the token award so hinted plays earn zero tokens for
+        // anyone involved in the session.
+        if (tokenPerPlay > 0 && !hintUsed) {
           const authorRef = adminDb.collection("users").doc(authorUid)
           await authorRef.update({
             tokens: FieldValue.increment(tokenPerPlay),
