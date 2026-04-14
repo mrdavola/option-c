@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <!-- Shadow -->
+  <ellipse cx="128" cy="245" rx="45" ry="10" fill="#000" opacity="0.15"/>
+  <!-- Legs -->
+  <rect x="112" y="200" width="12" height="40" rx="5" fill="#5d4037"/>
+  <rect x="132" y="200" width="12" height="40" rx="5" fill="#5d4037"/>
+  <!-- Shoes -->
+  <ellipse cx="118" cy="242" rx="12" ry="5" fill="#4caf50"/>
+  <ellipse cx="138" cy="242" rx="12" ry="5" fill="#4caf50"/>
+  <!-- Body / smock -->
+  <path d="M94 120 L162 120 L166 205 Q128 215 90 205 Z" fill="#e8e0d0"/>
+  <!-- Paint stains on smock -->
+  <circle cx="110" cy="160" r="6" fill="#e91e63" opacity="0.5"/>
+  <circle cx="145" cy="175" r="5" fill="#2196f3" opacity="0.4"/>
+  <circle cx="120" cy="188" r="4" fill="#f9ca24" opacity="0.5"/>
+  <circle cx="140" cy="150" r="3" fill="#4caf50" opacity="0.4"/>
+  <!-- Arms -->
+  <path d="M94 130 Q70 150 55 175" fill="none" stroke="#e8e0d0" stroke-width="11" stroke-linecap="round"/>
+  <path d="M162 130 Q186 145 200 160" fill="none" stroke="#e8e0d0" stroke-width="11" stroke-linecap="round"/>
+  <!-- Hands -->
+  <circle cx="53" cy="178" r="7" fill="#d4a574"/>
+  <circle cx="202" cy="163" r="7" fill="#d4a574"/>
+  <!-- Palette in left hand -->
+  <ellipse cx="48" cy="190" rx="22" ry="14" fill="#8d6e63" transform="rotate(-20,48,190)"/>
+  <circle cx="38" cy="184" r="4" fill="#e91e63"/>
+  <circle cx="48" cy="180" r="4" fill="#2196f3"/>
+  <circle cx="58" cy="184" r="4" fill="#f9ca24"/>
+  <circle cx="44" cy="194" r="3" fill="#4caf50"/>
+  <circle cx="54" cy="196" r="3" fill="#ff9800"/>
+  <!-- Paintbrush in right hand -->
+  <rect x="196" y="130" width="4" height="40" rx="1" fill="#8d6e63" transform="rotate(20,198,150)"/>
+  <path d="M206 130 L210 120 L202 120 Z" fill="#e91e63" transform="rotate(20,206,125)"/>
+  <!-- Head -->
+  <circle cx="128" cy="86" r="30" fill="#d4a574"/>
+  <!-- Beret -->
+  <ellipse cx="128" cy="62" rx="28" ry="12" fill="#e91e63"/>
+  <path d="M100 68 Q110 50 128 48 Q146 50 156 68" fill="#e91e63"/>
+  <circle cx="128" cy="48" r="5" fill="#c62828"/>
+  <!-- Face -->
+  <circle cx="118" cy="86" r="3" fill="#333"/>
+  <circle cx="138" cy="86" r="3" fill="#333"/>
+  <path d="M118 100 Q128 107 138 100" fill="none" stroke="#c0392b" stroke-width="2" stroke-linecap="round"/>
+  <!-- Small mustache -->
+  <path d="M120 94 Q128 98 136 94" fill="#5d4037"/>
+</svg>

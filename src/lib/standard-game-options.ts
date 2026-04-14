@@ -315,7 +315,7 @@ export const STANDARD_GAME_OPTIONS: Record<string, string[]> = {
   "6.EE.B.5": ["mystery-side", "free-balance", "elimination-grid"],                   // Solve equation by substitution
   "6.EE.B.6": ["mystery-side", "free-balance"],                                       // Variables represent unknowns
   "6.EE.B.7": ["mystery-side", "free-balance", "chain-scales"],                       // Solve x+p=q, px=q
-  "6.EE.B.8": ["number-line-drop", "elimination-grid"],                               // Write inequalities x>c, x<c
+  "6.EE.B.8": ["inequality-grapher", "number-line-drop"],                              // Write inequalities x>c, x<c — PERFECT: number line with open/closed circles
   "6.EE.C.9": ["launch-to-target", "speed-trap", "coordinate-hunter"],                // Two quantities; d=65t
 
   // 6.G — Geometry
@@ -352,15 +352,15 @@ export const STANDARD_GAME_OPTIONS: Record<string, string[]> = {
   "7.NS.A.1c": ["depth-navigator", "temperature-swing"],                                // Subtraction = adding inverse
   "7.NS.A.1d": ["depth-navigator", "temperature-swing", "elevator-operator"],           // Properties for adding/subtracting rationals
   "7.NS.A.2a": ["potion-lab", "depth-navigator"],                                       // Multiply signed numbers
-  "7.NS.A.2b": ["share-the-pizza", "depth-navigator"],                                  // Divide integers
+  "7.NS.A.2b": ["signed-divide", "share-the-pizza"],                                   // Divide integers — PERFECT: sign + magnitude two-step
   "7.NS.A.2c": ["potion-lab", "recipe-mixer", "depth-navigator"],                       // Multiply/divide rational numbers
-  "7.NS.A.2d": ["number-line-drop", "sorting-lane"],                                    // Convert rational → decimal
+  "7.NS.A.2d": ["fraction-to-decimal", "number-line-drop"],                             // Convert rational → decimal — PERFECT: long division visual
   "7.NS.A.3": ["free-collect", "potion-lab", "depth-navigator"],                        // Four operations with rationals
 
   // 7.EE — Expressions & Equations
   "7.EE.A.1": ["expression-transformer"],                                      // Add/subtract/factor linear expressions
   "7.EE.A.2": ["expression-transformer"],                                     // Rewrite expressions (a+0.05a=1.05a)
-  "7.EE.B.3": ["free-collect", "auction-house", "recipe-mixer"],                         // Multi-step problems, estimation
+  "7.EE.B.3": ["free-collect", "recipe-mixer", "auction-house"],                         // Multi-step problems, estimation (auction-house = practice-only)
   "7.EE.B.4a": ["mystery-side", "free-balance", "chain-scales"],                         // Solve px+q=r
   "7.EE.B.4b": ["mystery-side", "free-balance", "number-line-drop"],                     // Solve px+q>r, graph solution
 
@@ -390,14 +390,14 @@ export const STANDARD_GAME_OPTIONS: Record<string, string[]> = {
   // ═══════════════════════════════════════════════════════════════
 
   // 8.NS — The Number System
-  "8.NS.A.1": ["number-line-drop", "sorting-lane"],                                     // Rational vs irrational; repeating decimals
-  "8.NS.A.2": ["number-line-drop", "auction-house", "sorting-lane"],                    // Approximate irrationals on number line
+  "8.NS.A.1": ["number-classifier", "number-line-drop"],                                // Rational vs irrational — PERFECT: drag to rational/irrational bins
+  "8.NS.A.2": ["number-line-drop", "sorting-lane", "auction-house"],                    // Approximate irrationals on number line (auction-house = practice-only)
 
   // 8.EE — Expressions & Equations
   "8.EE.A.1": ["investment-sim", "population-boom", "doubling-maze"],                   // Properties of integer exponents
   "8.EE.A.2": ["mystery-side", "free-balance"],                                         // Square/cube roots, x²=p
   "8.EE.A.3": ["investment-sim", "population-boom", "auction-house"],                   // Scientific notation estimation
-  "8.EE.A.4": ["investment-sim", "population-boom"],                                    // Operations with scientific notation
+  "8.EE.A.4": ["sci-notation", "investment-sim"],                                      // Operations with scientific notation — PERFECT: sliding decimal + exponent
   "8.EE.B.5": ["speed-trap", "launch-to-target", "coordinate-hunter"],                  // Graph proportional; slope = unit rate
   "8.EE.B.6": ["coordinate-hunter", "speed-trap", "resize-tool"],                       // Similar triangles → slope; y=mx+b
   "8.EE.C.7a": ["mystery-side", "free-balance", "elimination-grid"],                    // Linear equations: one/none/infinite solutions
@@ -421,7 +421,7 @@ export const STANDARD_GAME_OPTIONS: Record<string, string[]> = {
   "8.G.A.3": ["rotate-to-match", "mirror-puzzle", "coordinate-hunter"],                 // Dilations/translations/rotations/reflections with coordinates
   "8.G.A.4": ["resize-tool", "rotate-to-match", "mirror-puzzle"],                       // Similarity via transformations
   "8.G.A.5": ["rotate-to-match", "mystery-side", "elimination-grid"],                   // Angle sum, transversals, AA similarity
-  "8.G.B.6": ["mystery-side", "free-balance"],                                          // Pythagorean Theorem proof
+  "8.G.B.6": ["proof-stepper", "mystery-side"],                                        // Pythagorean Theorem proof — PERFECT: order shuffled proof steps
   "8.G.B.7": ["mystery-side", "coordinate-hunter", "map-distance"],                     // Apply Pythagorean Theorem
   "8.G.B.8": ["coordinate-hunter", "map-distance"],                                     // Pythagorean Theorem → distance
   "8.G.C.9": ["box-packer", "stack-to-target"],                                         // Volume: cones, cylinders, spheres
@@ -443,8 +443,8 @@ export const STANDARD_GAME_OPTIONS: Record<string, string[]> = {
 
   // N-Q — Quantities
   "N-Q.A.1": ["unit-converter", "recipe-scaler", "map-distance"],                       // Units in multi-step problems
-  "N-Q.A.2": ["auction-house", "recipe-scaler"],                                         // Define quantities for modeling
-  "N-Q.A.3": ["auction-house", "round-and-win", "ruler-race"],                           // Level of accuracy in measurement
+  "N-Q.A.2": ["recipe-scaler", "auction-house"],                                         // Define quantities for modeling (auction-house = practice-only)
+  "N-Q.A.3": ["ruler-race", "auction-house", "round-and-win"],                           // Level of accuracy in measurement (auction-house & round-and-win = practice-only)
 
   // N-CN — Complex Numbers
   "N-CN.A.1": ["elimination-grid", "logic-chain"],                                      // Complex number i; a+bi (no game tests complex numbers; deduction-based placeholder)

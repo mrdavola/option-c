@@ -31,12 +31,29 @@ export function FeedbackButton({ targetGame }: FeedbackButtonProps) {
   const handleScreenshot = async () => {
     setCapturingScreenshot(true)
     try {
-      // Try using the native screen capture API
+      // Strategy 1: Try html2canvas for seamless capture (no user permission dialog)
+      // TODO: Install html2canvas (`npm i html2canvas`) and uncomment the block below
+      // for a zero-friction screenshot experience. Until then, fall through to Strategy 2.
+      //
+      // try {
+      //   const html2canvas = (await import("html2canvas")).default
+      //   const canvas = await html2canvas(document.body, {
+      //     scale: 0.8,
+      //     useCORS: true,
+      //     logging: false,
+      //     backgroundColor: "#09090b",
+      //   })
+      //   setScreenshot(canvas.toDataURL("image/jpeg", 0.7))
+      //   return
+      // } catch {
+      //   // html2canvas not available or failed, fall through to Strategy 2
+      // }
+
+      // Strategy 2: Native screen capture API (requires user permission)
       const canvas = document.createElement("canvas")
       const ctx = canvas.getContext("2d")
       if (!ctx) throw new Error("No canvas context")
 
-      // Use html2canvas-style approach: capture via media stream
       const stream = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: "browser" } as any })
       const video = document.createElement("video")
       video.srcObject = stream
@@ -110,8 +127,14 @@ export function FeedbackButton({ targetGame }: FeedbackButtonProps) {
         updatedAt: now,
         pageUrl: pageUrl || null,
       }
-      // Screenshot excluded from Firestore doc to avoid 1MB limit.
-      // TODO: upload to Cloud Storage and store URL instead.
+      // Screenshot: store a flag so recipients know one was captured.
+      // The full image is too large for Firestore (1MB limit).
+      // TODO: upload to Cloud Storage and store the download URL in screenshotUrl.
+      if (screenshot) {
+        baseDoc.hasScreenshot = true
+        // Store a tiny thumbnail (first 200 chars of data URI) as a hint
+        baseDoc.screenshotPreview = screenshot.slice(0, 200)
+      }
 
       if (isGameMessage) {
         // 1) creator-facing copy (target=game, toUid=authorUid)

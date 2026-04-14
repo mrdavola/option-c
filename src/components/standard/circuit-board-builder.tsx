@@ -106,7 +106,6 @@ export function CircuitBoardBuilder({
   const [selectedGameOption, setSelectedGameOption] = useState<GameOptionInfo | null>(null)
   const [selectedItem, setSelectedItem] = useState<string | null>(null)
   const [building, setBuilding] = useState(false)
-  const [expandedMechanic, setExpandedMechanic] = useState<string | null>(null)
 
   // Eureka mode state
   const [eurekaIdea, setEurekaIdea] = useState("")
@@ -355,54 +354,26 @@ Math: ${effectiveStandardDesc}`
               )}
             </div>
           ) : (
-            /* MOON MODE: pick from mechanic options */
-            mechanics.length === 0 ? (
+            /* MOON MODE: pick from per-standard mapped game options */
+            gameOptions.length === 0 ? (
               <p className="text-sm text-zinc-500">No game options available for this standard.</p>
             ) : (
-              <div className="space-y-3">
-                {mechanics.map((m) => {
-                  const regOptions = getGameOptions(m.id)
-                  if (regOptions.length === 0) return null
-                  const isExpanded = expandedMechanic === m.id
+              <div className="space-y-1.5">
+                {gameOptions.map((opt) => {
+                  const isSelected = selectedGameOption?.optionId === opt.optionId
                   return (
-                    <div key={m.id} className="rounded-lg border border-zinc-700 overflow-hidden">
-                      <button
-                        onClick={() => setExpandedMechanic(isExpanded ? null : m.id)}
-                        className="w-full flex items-center justify-between px-3 py-2 bg-zinc-800/50 hover:bg-zinc-800 transition-colors"
-                      >
-                        <div className="text-left">
-                          <span className="text-sm font-semibold text-zinc-200">{m.title}</span>
-                          <span className="text-xs text-zinc-500 ml-2">{m.description}</span>
-                        </div>
-                        <svg className={`size-4 text-zinc-400 transition-transform ${isExpanded ? "rotate-180" : ""}`} viewBox="0 0 16 16" fill="none">
-                          <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      </button>
-                      {isExpanded && (
-                        <div className="p-2 space-y-1.5 bg-zinc-900/50">
-                          {regOptions.map((opt) => {
-                            const isSelected = selectedGameOption?.optionId === opt.id
-                            return (
-                              <button
-                                key={opt.id}
-                                onClick={() => setSelectedGameOption({
-                                  mechanicId: m.id, mechanicTitle: m.title, mechanicDescription: m.description,
-                                  optionId: opt.id, optionName: opt.name, optionDescription: opt.description,
-                                })}
-                                className={`w-full text-left px-3 py-2.5 rounded-lg transition-all border-2 ${
-                                  isSelected
-                                    ? "border-emerald-500/60 bg-emerald-500/10"
-                                    : "border-transparent hover:bg-zinc-800"
-                                }`}
-                              >
-                                <span className={`text-sm font-semibold ${isSelected ? "text-emerald-300" : "text-white"}`}>{opt.name}</span>
-                                <p className="text-xs text-zinc-400 mt-0.5">{opt.description}</p>
-                              </button>
-                            )
-                          })}
-                        </div>
-                      )}
-                    </div>
+                    <button
+                      key={opt.optionId}
+                      onClick={() => setSelectedGameOption(opt)}
+                      className={`w-full text-left px-3 py-2.5 rounded-lg transition-all border-2 ${
+                        isSelected
+                          ? "border-emerald-500/60 bg-emerald-500/10"
+                          : "border-zinc-700 hover:bg-zinc-800"
+                      }`}
+                    >
+                      <span className={`text-sm font-semibold ${isSelected ? "text-emerald-300" : "text-white"}`}>{opt.optionName}</span>
+                      <p className="text-xs text-zinc-400 mt-0.5">{opt.optionDescription}</p>
+                    </button>
                   )
                 })}
               </div>

@@ -34,12 +34,33 @@ export function ConsoleAnimation({
 }: ConsoleAnimationProps) {
   const [state, setState] = useState<ConsoleState>("closed")
   const [showBeam, setShowBeam] = useState(false)
+  // LED startup sequence: each LED lights up one-by-one with delay
+  const [litLEDs, setLitLEDs] = useState(0)
+  // Track which components have slid into place
+  const [slidIn, setSlidIn] = useState(false)
 
-  // Auto-open on mount
+  // Auto-open on mount with assembling entrance
   useEffect(() => {
-    const timer = setTimeout(() => setState("exploded"), 600)
+    const timer = setTimeout(() => {
+      setState("exploded")
+      // Trigger slide-in animation after a beat
+      setTimeout(() => setSlidIn(true), 200)
+    }, 600)
     return () => clearTimeout(timer)
   }, [])
+
+  // LED startup sequence — LEDs light up one by one when state changes to exploded
+  useEffect(() => {
+    if (state !== "exploded" && state !== "assembling" && state !== "assembled" && state !== "beam") return
+    const total = 3
+    let current = 0
+    const interval = setInterval(() => {
+      current++
+      setLitLEDs(current)
+      if (current >= total) clearInterval(interval)
+    }, 300)
+    return () => clearInterval(interval)
+  }, [state === "exploded"])
 
   // When all filled, trigger assembly animation
   useEffect(() => {
@@ -66,9 +87,13 @@ export function ConsoleAnimation({
         state === "closed" ? "scale-90 opacity-0" : "scale-100 opacity-100"
       }`}>
         {/* Console body — rounded rectangle like a handheld */}
-        <div className="relative bg-gradient-to-b from-zinc-800 to-zinc-900 rounded-2xl border-2 border-zinc-700 overflow-hidden shadow-2xl shadow-black/50">
-          {/* Console top bar — looks like device bezel */}
-          <div className="bg-zinc-800 border-b border-zinc-700 px-4 py-2 flex items-center justify-between">
+        <div className={`relative bg-gradient-to-b from-zinc-800 to-zinc-900 rounded-2xl border-2 border-zinc-700 overflow-hidden shadow-2xl shadow-black/50 transition-all duration-700 ${
+          slidIn ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+        }`}>
+          {/* Console top bar — looks like device bezel, slides down from top */}
+          <div className={`bg-zinc-800 border-b border-zinc-700 px-4 py-2 flex items-center justify-between transition-all duration-500 delay-100 ${
+            slidIn ? "translate-y-0 opacity-100" : "-translate-y-3 opacity-0"
+          }`}>
             <div className="flex items-center gap-2">
               {/* Power LED */}
               <div className={`w-2 h-2 rounded-full transition-all duration-500 ${
@@ -81,17 +106,17 @@ export function ConsoleAnimation({
               <span className="text-[10px] text-zinc-500 font-mono uppercase tracking-wider">Game Assembler</span>
             </div>
             <div className="flex items-center gap-1.5">
-              {/* Criteria LEDs */}
-              <CriteriaLED lit={hasGameOption} label="Math" />
-              <CriteriaLED lit={hasGameOption} label="Essential" />
-              <CriteriaLED lit={allFilled} label="Playable" />
+              {/* Criteria LEDs — light up one by one via startup sequence */}
+              <CriteriaLED lit={litLEDs >= 1 && hasGameOption} label="Math" delayed={litLEDs < 1} />
+              <CriteriaLED lit={litLEDs >= 2 && hasGameOption} label="Essential" delayed={litLEDs < 2} />
+              <CriteriaLED lit={litLEDs >= 3 && allFilled} label="Playable" delayed={litLEDs < 3} />
             </div>
           </div>
 
           {/* Screen area — where the circuit board / slots are */}
           <div className={`relative transition-all duration-500 ${
             state === "exploded" ? "min-h-[400px]" : "min-h-[200px]"
-          }`}>
+          } ${state === "exploded" && !allFilled ? "animate-[screen-breathe_3s_ease-in-out_infinite]" : ""}`}>
             {/* Circuit board background */}
             <div className="absolute inset-0 opacity-[0.03]"
               style={{
@@ -129,8 +154,10 @@ export function ConsoleAnimation({
             )}
           </div>
 
-          {/* Console bottom bar — build button area */}
-          <div className="bg-zinc-800 border-t border-zinc-700 px-4 py-3 flex items-center justify-between">
+          {/* Console bottom bar — build button area, slides up from bottom */}
+          <div className={`bg-zinc-800 border-t border-zinc-700 px-4 py-3 flex items-center justify-between transition-all duration-500 delay-200 ${
+            slidIn ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0"
+          }`}>
             <div className="flex items-center gap-3">
               {/* D-pad decoration */}
               <div className="grid grid-cols-3 gap-0.5 opacity-20">
@@ -179,20 +206,28 @@ export function ConsoleAnimation({
           20% { opacity: 1; }
           100% { height: 300px; opacity: 0; transform: translateY(-200px); }
         }
+        @keyframes screen-breathe {
+          0%, 100% { box-shadow: inset 0 0 30px rgba(52,211,153,0); }
+          50% { box-shadow: inset 0 0 30px rgba(52,211,153,0.04); }
+        }
       `}</style>
     </div>
   )
 }
 
-function CriteriaLED({ lit, label }: { lit: boolean; label: string }) {
+function CriteriaLED({ lit, label, delayed }: { lit: boolean; label: string; delayed?: boolean }) {
   return (
     <div className="flex items-center gap-1" title={label}>
-      <div className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
-        lit
-          ? "bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.5)]"
-          : "bg-zinc-700"
+      <div className={`w-1.5 h-1.5 rounded-full transition-all duration-500 ${
+        delayed
+          ? "bg-zinc-800 scale-75"
+          : lit
+            ? "bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.5)] scale-100"
+            : "bg-zinc-700 scale-100"
       }`} />
-      <span className={`text-[8px] uppercase tracking-wide ${lit ? "text-emerald-400" : "text-zinc-600"}`}>{label}</span>
+      <span className={`text-[8px] uppercase tracking-wide transition-colors duration-300 ${
+        delayed ? "text-zinc-700" : lit ? "text-emerald-400" : "text-zinc-600"
+      }`}>{label}</span>
     </div>
   )
 }

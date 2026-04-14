@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Outer glow -->
+  <path d="M36 4 L16 32 L28 32 L22 60 L48 28 L34 28 Z" fill="#f9ca24" opacity="0.2" transform="scale(1.1) translate(-2,-2)"/>
+  <!-- Main bolt -->
+  <path d="M36 4 L16 32 L28 32 L22 60 L48 28 L34 28 Z" fill="#f9ca24"/>
+  <!-- Highlight -->
+  <path d="M34 8 L20 30 L30 30 L26 50" fill="none" stroke="#fff" stroke-width="2" opacity="0.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Sparkles -->
+  <circle cx="12" cy="20" r="2" fill="#f9ca24" opacity="0.6"/>
+  <circle cx="52" cy="40" r="1.5" fill="#f9ca24" opacity="0.5"/>
+  <circle cx="46" cy="12" r="1.5" fill="#f9ca24" opacity="0.4"/>
+</svg>

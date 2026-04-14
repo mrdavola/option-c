@@ -11,14 +11,30 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
 export async function POST(req: Request) {
   const body = await req.json()
-  const { designDoc, mechanicId, standardId, standardDescription, grade, cardChoices, sprites, gameOption } = body
+  const { designDoc, mechanicId, standardId, standardDescription, grade, cardChoices, sprites, gameOption, skeletonMode } = body
 
   if (!mechanicId || !hasEngine(mechanicId)) {
     return Response.json({ error: "No engine for this mechanic", hasEngine: false }, { status: 400 })
   }
 
-  // Generate theme config from the design doc using Haiku (fast + cheap)
+  // Skeleton Mode — skip themed LLM call entirely. The learner meets the pure
+  // math mechanic first, no background / character / item art. Rounds are
+  // still AI-generated per standard so the math matches the skill.
   let themeConfig: ThemeConfig
+  if (skeletonMode === true) {
+    themeConfig = {
+      title: "Mechanic Skeleton",
+      character: "player",
+      itemName: "items",
+      targetName: "target",
+      worldName: "skeleton",
+      colors: { ...DEFAULT_PALETTE, bg: "#0a0a0a" },
+      winMessage: "You got it!",
+      loseMessage: "Try again!",
+      skeletonMode: true,
+    }
+  } else {
+    // Generate theme config from the design doc using Haiku (fast + cheap)
   try {
     const response = await anthropic.messages.create({
       model: "claude-haiku-4-5-20251001",
@@ -102,11 +118,14 @@ Return JSON:
       backgroundImage: "forest",
     }
   }
+  } // end else (non-skeleton theme generation)
 
-  // Student sprite overrides (from artwork picker UI)
-  if (sprites?.characterSprite) themeConfig.characterSprite = sprites.characterSprite
-  if (sprites?.itemSprite) themeConfig.itemSprite = sprites.itemSprite
-  if (sprites?.backgroundImage) themeConfig.backgroundImage = sprites.backgroundImage
+  // Student sprite overrides (from artwork picker UI) — ignored in skeleton mode
+  if (!skeletonMode) {
+    if (sprites?.characterSprite) themeConfig.characterSprite = sprites.characterSprite
+    if (sprites?.itemSprite) themeConfig.itemSprite = sprites.itemSprite
+    if (sprites?.backgroundImage) themeConfig.backgroundImage = sprites.backgroundImage
+  }
 
   // Generate math-specific round data tailored to the exact standard
   let rounds: RoundData[] | undefined
@@ -116,7 +135,10 @@ Return JSON:
       max_tokens: 800,
       system: `You generate math game round data. Each round has a PROMPT (what the player sees), a TARGET (the correct number to collect), ITEMS (clickable numbers including the answer and distractors), and an optional HINT.
 
-CRITICAL: The math in each round must DIRECTLY test the specific standard described. Do NOT just make addition problems — make problems that test the EXACT skill.
+CRITICAL RULES:
+1. The math in each round must DIRECTLY test the specific standard described. Do NOT just make addition problems — make problems that test the EXACT skill.
+2. USE THE GAME'S THEMED OBJECTS in your prompts. If the game has shells and seahorses, write "3 shells for every 2 seahorses" — NOT "3 apples for every 2 oranges". The math must live INSIDE the game world.
+3. Never use generic objects (apples, oranges, etc.) when themed objects are provided.
 
 Return ONLY a JSON array of 5 rounds. No markdown, no explanation.`,
       messages: [{
@@ -124,13 +146,18 @@ Return ONLY a JSON array of 5 rounds. No markdown, no explanation.`,
         content: `Standard: ${standardId} — ${standardDescription}
 Grade: ${grade || "4"}
 Game option: ${gameOption || mechanicId}
+Game world: ${themeConfig.worldName || "a fun place"}
+Character: ${themeConfig.character || "player"}
+Items in game: ${themeConfig.itemName || "items"}
+Target objects: ${themeConfig.targetName || "targets"}
 
 CRITICAL: Every round MUST directly test "${standardDescription}".
 The prompt must be a math question about THIS SPECIFIC concept.
+Use "${themeConfig.itemName || "items"}" and "${themeConfig.targetName || "targets"}" in your prompts — these are the objects in the game world. Do NOT invent different objects.
 Do NOT generate generic math. The target must be the answer to a question about this standard.
 
 Generate 5 rounds of increasing difficulty. Each round:
-- "prompt": A short math question that tests THIS EXACT standard. Max 80 chars.
+- "prompt": A short math question that tests THIS EXACT standard, using the game's themed objects. Max 80 chars.
 - "target": The correct numerical answer
 - "items": Array of 6-8 numbers including the correct answer and plausible wrong answers
 - "hint": One sentence explaining how to solve this type of problem
@@ -187,8 +214,8 @@ Return JSON array: [{"prompt":"...","target":N,"items":[...],"hint":"..."},...]`
         const retryResponse = await anthropic.messages.create({
           model: "claude-haiku-4-5-20251001",
           max_tokens: 800,
-          system: `Generate math game rounds. CRITICAL: Every round MUST test "${standardDescription}". Return ONLY a JSON array of 5 rounds.`,
-          messages: [{ role: "user", content: `Standard: ${standardId} — ${standardDescription}\nGrade: ${grade || "4"}\n\nGenerate 5 rounds. Each: {"prompt":"...","target":N,"items":[...],"hint":"..."}` }],
+          system: `Generate math game rounds. CRITICAL: Every round MUST test "${standardDescription}". Use themed objects: "${themeConfig.itemName}" and "${themeConfig.targetName}" in the game world "${themeConfig.worldName}". Do NOT use generic objects like apples/oranges. Return ONLY a JSON array of 5 rounds.`,
+          messages: [{ role: "user", content: `Standard: ${standardId} — ${standardDescription}\nGrade: ${grade || "4"}\nItems: ${themeConfig.itemName}\nTargets: ${themeConfig.targetName}\n\nGenerate 5 rounds. Each: {"prompt":"...","target":N,"items":[...],"hint":"..."}` }],
         })
         const retryText = retryResponse.content[0].type === "text" ? retryResponse.content[0].text : ""
         const retryCleaned = retryText.replace(/\`\`\`json?\n?/g, "").replace(/\`\`\`/g, "").trim()

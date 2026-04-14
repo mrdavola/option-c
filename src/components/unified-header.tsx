@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Compass, Zap, Gamepad2, LayoutDashboard, Search, HelpCircle } from "lucide-react"
+import { Compass, Zap, Gamepad2, LayoutDashboard, Search, HelpCircle, Menu, X } from "lucide-react"
 import { RulesPopover } from "./rules-popover"
 import { useAuth } from "@/lib/auth"
 import { UserMenu } from "./user-menu"
@@ -42,39 +42,67 @@ export function UnifiedHeader() {
   const isGalaxy = isExplore // Galaxy page — header overlays the 3D view
 
   return (
-    <div className={isGalaxy ? "absolute top-0 left-0 right-0 z-40" : ""}>
-      {impersonating && (
-        <div className="bg-amber-500/90 text-black px-4 py-1.5 flex items-center justify-between text-sm">
-          <span className="font-medium">Viewing as {impersonating.name}</span>
-        </div>
+    <MobileMenuWrapper isGalaxy={isGalaxy} impersonating={impersonating}>
+      {(mobileOpen, setMobileOpen) => (
+        <>
+          {/* Single row: Logo + Nav + Stats + Search + User */}
+          <div className={`${isGalaxy ? "bg-zinc-950/60" : "bg-zinc-950/90"} backdrop-blur-sm border-b border-zinc-800/50 px-4 py-1.5`}>
+            <div className="max-w-7xl mx-auto flex items-center gap-3">
+              {/* Left: Logo + name */}
+              <Link href="/" className="flex items-center gap-2 shrink-0">
+                <Logo size={22} className="text-blue-400" />
+                <span className="text-sm font-bold text-white hidden md:inline">Diagonally</span>
+              </Link>
+
+              {/* Center: Nav tabs — hidden below 768px, shown in hamburger menu */}
+              <div className="hidden md:flex items-center gap-0.5 overflow-x-auto scrollbar-hide flex-1 min-w-0">
+                <NavLink href="/" active={isExplore} icon={<Compass className="size-3.5" />} label="Explore" />
+                <NavLink href="/build" active={isBuild} icon={<Zap className="size-3.5" />} label="Build NOW!" highlight />
+                <NavLink href="/library" active={isLibrary} icon={<Gamepad2 className="size-3.5" />} label="Library" />
+                <NavLink href="/learner" active={isDashboard} icon={<LayoutDashboard className="size-3.5" />} label="My Stuff" />
+              </div>
+
+              {/* Spacer on mobile to push right items */}
+              <div className="flex-1 md:hidden" />
+
+              {/* Right: Stats (hidden on mobile) + Search + Help + User + Hamburger */}
+              <div className="flex items-center gap-2 shrink-0">
+                <div className="hidden md:flex items-center">
+                  <LearnerStats />
+                </div>
+                <SearchToggle />
+                <RulesPopover />
+                <UserMenu />
+                {/* Hamburger — visible below 768px */}
+                <button
+                  onClick={() => setMobileOpen(!mobileOpen)}
+                  className="md:hidden p-1.5 rounded-md text-zinc-400 hover:text-white transition-colors"
+                  aria-label="Toggle menu"
+                >
+                  {mobileOpen ? <X className="size-4" /> : <Menu className="size-4" />}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile dropdown menu — slides down below 768px */}
+          {mobileOpen && (
+            <div className="md:hidden bg-zinc-950/95 backdrop-blur-sm border-b border-zinc-800/50 px-4 py-3 space-y-2">
+              <div className="flex flex-col gap-1">
+                <MobileNavLink href="/" active={isExplore} icon={<Compass className="size-4" />} label="Explore" onClick={() => setMobileOpen(false)} />
+                <MobileNavLink href="/build" active={isBuild} icon={<Zap className="size-4" />} label="Build NOW!" onClick={() => setMobileOpen(false)} highlight />
+                <MobileNavLink href="/library" active={isLibrary} icon={<Gamepad2 className="size-4" />} label="Library" onClick={() => setMobileOpen(false)} />
+                <MobileNavLink href="/learner" active={isDashboard} icon={<LayoutDashboard className="size-4" />} label="My Stuff" onClick={() => setMobileOpen(false)} />
+              </div>
+              {/* Stats shown in mobile menu */}
+              <div className="border-t border-zinc-800 pt-2">
+                <LearnerStats />
+              </div>
+            </div>
+          )}
+        </>
       )}
-      {/* Single row: Logo + Nav + Stats + Search + User */}
-      <div className={`${isGalaxy ? "bg-zinc-950/60" : "bg-zinc-950/90"} backdrop-blur-sm border-b border-zinc-800/50 px-4 py-1.5`}>
-        <div className="max-w-7xl mx-auto flex items-center gap-3">
-          {/* Left: Logo + name */}
-          <Link href="/" className="flex items-center gap-2 shrink-0">
-            <Logo size={22} className="text-blue-400" />
-            <span className="text-sm font-bold text-white hidden md:inline">Diagonally</span>
-          </Link>
-
-          {/* Center: Nav tabs */}
-          <div className="flex items-center gap-0.5 overflow-x-auto scrollbar-hide flex-1 min-w-0">
-            <NavLink href="/" active={isExplore} icon={<Compass className="size-3.5" />} label="Explore" />
-            <NavLink href="/build" active={isBuild} icon={<Zap className="size-3.5" />} label="Build NOW!" highlight />
-            <NavLink href="/library" active={isLibrary} icon={<Gamepad2 className="size-3.5" />} label="Library" />
-            <NavLink href="/learner" active={isDashboard} icon={<LayoutDashboard className="size-3.5" />} label="My Stuff" />
-          </div>
-
-          {/* Right: Stats + Search + Help + User */}
-          <div className="flex items-center gap-2 shrink-0">
-            <LearnerStats />
-            <SearchToggle />
-            <RulesPopover />
-            <UserMenu />
-          </div>
-        </div>
-      </div>
-    </div>
+    </MobileMenuWrapper>
   )
 }
 
@@ -199,6 +227,49 @@ function SearchToggle() {
     >
       <Search className="size-4" />
     </button>
+  )
+}
+
+// Wrapper that provides mobile menu state and the outer container markup
+function MobileMenuWrapper({
+  isGalaxy,
+  impersonating,
+  children,
+}: {
+  isGalaxy: boolean
+  impersonating: { name: string } | null
+  children: (mobileOpen: boolean, setMobileOpen: (v: boolean) => void) => React.ReactNode
+}) {
+  const [mobileOpen, setMobileOpen] = useState(false)
+
+  return (
+    <div className={isGalaxy ? "absolute top-0 left-0 right-0 z-40" : ""}>
+      {impersonating && (
+        <div className="bg-amber-500/90 text-black px-4 py-1.5 flex items-center justify-between text-sm">
+          <span className="font-medium">Viewing as {impersonating.name}</span>
+        </div>
+      )}
+      {children(mobileOpen, setMobileOpen)}
+    </div>
+  )
+}
+
+function MobileNavLink({ href, active, icon, label, highlight, onClick }: {
+  href: string; active: boolean; icon: React.ReactNode; label: string; highlight?: boolean; onClick: () => void
+}) {
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+        active
+          ? "bg-blue-500/10 text-white"
+          : highlight ? "text-emerald-400 hover:bg-emerald-500/10" : "text-zinc-400 hover:bg-zinc-800 hover:text-white"
+      }`}
+    >
+      {icon}
+      {label}
+    </Link>
   )
 }
 

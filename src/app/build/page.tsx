@@ -8,6 +8,7 @@ import { Workshop } from "@/components/game/workshop"
 import type { GameDesignDoc } from "@/lib/game-types"
 import { doc, setDoc, collection, getDoc } from "firebase/firestore"
 import { db } from "@/lib/firebase"
+import { InfoButton } from "@/components/info-button"
 
 // Eureka / "Build NOW!" page.
 // Uses the same Game Assembler as the moon pathway, but in eureka mode.
@@ -117,6 +118,13 @@ export default function BuildPage() {
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
       <div className="max-w-2xl mx-auto px-6 py-4">
+        <div className="flex items-center gap-2 mb-2">
+          <InfoButton title="Build NOW!">
+            <p><span className="text-zinc-200">Build NOW!</span> lets you create a game for any skill, any grade.</p>
+            <p>Pick a math standard, choose a game mechanic, background, character, and item, then hit Build.</p>
+            <p className="text-zinc-500">Your game will be reviewed by a guide before it goes live in the Library.</p>
+          </InfoButton>
+        </div>
         <div className="pb-8">
           <CircuitBoardBuilder
             mode="eureka"

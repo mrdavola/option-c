@@ -116,75 +116,182 @@ function generateMirrorRound(round) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// RotateToMatchScene — INTRINSIC REBUILD
+//
+// Math: rotation as a continuous transformation; angle of rotation.
+// Player drags a rotation handle around the shape's centre. The shape rotates
+// CONTINUOUSLY following the pointer (no discrete buttons, no Check). A
+// translucent GHOST of the target overlays the same position. As the player
+// approaches the target angle, the shape glows; when within a small tolerance
+// it SNAPS into the ghost and locks. Self-revealing truth: alignment IS the
+// answer. No typed input. Auto-detect success by angular proximity.
+// ═══════════════════════════════════════════════════════════════════════════════
 class RotateToMatchScene extends Phaser.Scene {
   constructor() { super('RotateToMatchScene'); }
-  create() { this.W=this.scale.width;this.H=this.scale.height;this.round=0;this.lives=MAX_LIVES;this._bg();this._ui();this.startRound(); }
-  _bg() { const bg=this.add.image(this.W/2,this.H/2,'bg');bg.setScale(Math.max(this.W/bg.width,this.H/bg.height));this.add.rectangle(this.W/2,this.H/2,this.W,this.H,0x000000,0.65); }
-  _ui() { this.scoreLbl=this.add.text(this.W-14,14,'Score: 0',{fontSize:'16px',color:COL_ACCENT,fontFamily:"'Lexend', system-ui",fontStyle:'bold'}).setOrigin(1,0).setDepth(10);this.hg=this.add.group();this._rh();this.dg=this.add.group();this._rd(); }
+  create() {
+    this.W=this.scale.width;this.H=this.scale.height;this.round=0;this.lives=MAX_LIVES;
+    this._bg();this._ui();
+    this.hero = addCharacter(this, this.W*0.88, this.H*0.55, 0.8);
+    this.startRound();
+  }
+  _bg() { const bg=this.add.image(this.W/2,this.H/2,'bg');bg.setScale(Math.max(this.W/bg.width,this.H/bg.height));this.add.rectangle(this.W/2,this.H/2,this.W,this.H,0x000000,0.7); }
+  _ui() {
+    this.scoreLbl=this.add.text(this.W-14,14,'Score: 0',{fontSize:'16px',color:COL_ACCENT,fontFamily:"'Lexend', system-ui",fontStyle:'bold'}).setOrigin(1,0).setDepth(10);
+    this.add.text(this.W/2,16,(MATH && MATH.standardDescription) || 'Rotation',{fontSize:'11px',color:COL_TEXT,fontFamily:"'Lexend', system-ui",alpha:0.55,align:'center',wordWrap:{width:this.W*0.6}}).setOrigin(0.5,0).setDepth(10);
+    this.hg=this.add.group();this._rh();this.dg=this.add.group();this._rd();
+  }
   _rh() { this.hg.clear(true,true);for(let i=0;i<this.lives;i++)this.hg.add(this.add.text(14+i*22,14,'\\u2665',{fontSize:'18px',color:COL_DANGER}).setDepth(10)); }
   _rd() { this.dg.clear(true,true);for(let i=0;i<TOTAL_ROUNDS;i++){const c=i<this.round?COL_ACCENT:i===this.round?COL_PRIMARY:'#555555';this.dg.add(this.add.circle(this.W/2-40+i*20,this.H-16,5,hexToNum(c)).setDepth(10));} }
 
   startRound() {
     if(this.rg)this.rg.clear(true,true);this.rg=this.add.group();
-    const data=getRound(this.round);this.targetAngle=data.target||90;this.currentAngle=0;this.shapeIdx=data.items[0]||0;this._rd();
-    const W=this.W,H=this.H;
-    const shapeSize=Math.min(W,H)*0.12;
+    this.solved = false;
+    var data=getRound(this.round);
+    // Fallback variation per round (5 rounds)
+    var fbAngles=[90,180,270,90,180];
+    var fbShapes=[0,1,2,3,4];
+    var rawAngle = (typeof data.target === 'number' && [90,180,270].indexOf(data.target)>=0) ? data.target : fbAngles[this.round % fbAngles.length];
+    var rawShape = (Array.isArray(data.items) && typeof data.items[0] === 'number' && data.items[0]>=0 && data.items[0]<SHAPE_PATHS.length) ? data.items[0] : fbShapes[this.round % fbShapes.length];
+    this.targetAngle = rawAngle;
+    this.shapeIdx = rawShape;
+    // Player begins at a different angle than the target
+    var startOffsets = [45, 30, 60, 120, 200];
+    this.currentAngle = (this.targetAngle + startOffsets[this.round % startOffsets.length]) % 360;
+    this._rd();
 
-    // Title
-    this.rg.add(this.add.text(W/2,H*0.07,'Rotate to Match!',{fontSize:'18px',color:COL_ACCENT,fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold'}).setOrigin(0.5).setDepth(6));
-    this.rg.add(this.add.text(W/2,H*0.13,'Shape: '+SHAPE_PATHS[this.shapeIdx].name,{fontSize:'12px',color:COL_TEXT,fontFamily:"'Lexend', system-ui",alpha:0.6}).setOrigin(0.5).setDepth(6));
+    var W=this.W,H=this.H;
+    var shapeSize=Math.min(W,H)*0.14;
+    this.shapeSize = shapeSize;
+    this.cx = W*0.42; this.cy = H*0.45;
 
-    // Target shape (left side)
-    var targetCx=W*0.28,targetCy=H*0.42;
-    this.rg.add(this.add.text(targetCx,H*0.2,'TARGET',{fontSize:'13px',color:COL_DANGER,fontFamily:"'Lexend', system-ui",fontStyle:'bold'}).setOrigin(0.5).setDepth(6));
-    var basePts=SHAPE_PATHS[this.shapeIdx].pts(targetCx,targetCy,shapeSize);
-    var targetPts=rotatePoints(basePts,targetCx,targetCy,this.targetAngle);
-    drawShapePolyFilled(this,this.rg,targetPts,COL_DANGER,0.2,COL_DANGER,3);
+    // Header
+    this.rg.add(this.add.text(W/2,52,'Rotate to align with the ghost',{fontSize:'18px',color:COL_ACCENT,fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold'}).setOrigin(0.5).setDepth(6));
+    this.rg.add(this.add.text(W/2,78,'Drag the handle around the centre. Shape snaps when aligned.',{fontSize:'12px',color:COL_TEXT,fontFamily:"'Lexend', system-ui",alpha:0.7,align:'center',wordWrap:{width:W-60}}).setOrigin(0.5).setDepth(6));
 
-    // Player shape (right side)
-    this.playerCx=W*0.72;this.playerCy=H*0.42;
-    this.rg.add(this.add.text(this.playerCx,H*0.2,'YOUR SHAPE',{fontSize:'13px',color:COL_PRIMARY,fontFamily:"'Lexend', system-ui",fontStyle:'bold'}).setOrigin(0.5).setDepth(6));
+    // Centre marker
+    this.rg.add(this.add.circle(this.cx,this.cy,4,hexToNum(COL_TEXT),0.5).setDepth(4));
+    // Faint orbit guide for the handle
+    var orbitG = this.add.graphics().setDepth(3);
+    orbitG.lineStyle(1, hexToNum(COL_TEXT), 0.18);
+    orbitG.strokeCircle(this.cx, this.cy, shapeSize + 28);
+    this.rg.add(orbitG);
+
+    // Ghost target shape (overlay at same centre, rotated to target angle)
+    this._drawGhost();
+    // Player shape
     this._drawPlayerShape();
 
-    // Angle label
-    this.angleLbl=this.add.text(this.playerCx,H*0.62,'Rotation: 0\\u00b0',{fontSize:'14px',color:COL_TEXT,fontFamily:"'Lexend', system-ui"}).setOrigin(0.5).setDepth(6);
+    // Angle readout
+    this.angleLbl=this.add.text(this.cx, this.cy + shapeSize + 60, '', {fontSize:'13px',color:COL_TEXT,fontFamily:"'Space Grotesk', sans-serif"}).setOrigin(0.5).setDepth(6);
     this.rg.add(this.angleLbl);
+    this.targetLbl=this.add.text(this.cx, this.cy - shapeSize - 22, 'target = ' + this.targetAngle + '\\u00b0', {fontSize:'12px',color:COL_DANGER,fontFamily:"'Lexend', system-ui",fontStyle:'bold'}).setOrigin(0.5).setDepth(6);
+    this.rg.add(this.targetLbl);
 
-    // Rotate button
-    var rotBtn=this.add.rectangle(W*0.35,H*0.78,130,42,hexToNum(COL_SECONDARY),0.3).setInteractive({useHandCursor:true}).setDepth(7);
-    this.rg.add(rotBtn);this.rg.add(this.add.text(W*0.35,H*0.78,'Rotate 90\\u00b0',{fontSize:'15px',color:COL_TEXT,fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold'}).setOrigin(0.5).setDepth(8));
-    rotBtn.on('pointerdown',()=>{
-      this.currentAngle=(this.currentAngle+90)%360;
-      this.angleLbl.setText('Rotation: '+this.currentAngle+'\\u00b0');
-      this._drawPlayerShape();
+    // Rotation handle — draggable around the orbit
+    var hx = this.cx + Math.cos((this.currentAngle - 90) * Math.PI/180) * (shapeSize + 28);
+    var hy = this.cy + Math.sin((this.currentAngle - 90) * Math.PI/180) * (shapeSize + 28);
+    this.handle = this.add.circle(hx, hy, 14, hexToNum(COL_ACCENT), 1).setStrokeStyle(2, hexToNum(COL_TEXT)).setDepth(9);
+    this.handle.setInteractive({ useHandCursor:true, draggable:true });
+    this.input.setDraggable(this.handle);
+    this.rg.add(this.handle);
+
+    var scene = this;
+    this.input.removeAllListeners('drag');
+    this.input.on('drag', function(pointer, obj, dragX, dragY){
+      if (obj !== scene.handle || scene.solved) return;
+      var dx = dragX - scene.cx, dy = dragY - scene.cy;
+      var ang = Math.atan2(dy, dx) * 180 / Math.PI + 90;
+      while (ang < 0) ang += 360;
+      while (ang >= 360) ang -= 360;
+      scene.currentAngle = ang;
+      // Snap handle onto orbit
+      var rad = (ang - 90) * Math.PI/180;
+      scene.handle.x = scene.cx + Math.cos(rad) * (scene.shapeSize + 28);
+      scene.handle.y = scene.cy + Math.sin(rad) * (scene.shapeSize + 28);
+      scene._drawPlayerShape();
+      scene._checkAlignment();
     });
 
-    // Lock In button
-    var lockBtn=this.add.rectangle(W*0.65,H*0.78,120,42,hexToNum(COL_PRIMARY),1).setInteractive({useHandCursor:true}).setDepth(10);
-    this.rg.add(lockBtn);this.rg.add(this.add.text(W*0.65,H*0.78,'Lock In',{fontSize:'14px',color:'#fff',fontFamily:"'Lexend', system-ui",fontStyle:'bold'}).setOrigin(0.5).setDepth(11));
-    lockBtn.on('pointerdown',()=>this._check());
+    this._updateAngleLabel();
+  }
+
+  _drawGhost() {
+    if (this.ghostGfx) this.ghostGfx.destroy();
+    var pts = SHAPE_PATHS[this.shapeIdx].pts(this.cx, this.cy, this.shapeSize);
+    var rotated = rotatePoints(pts, this.cx, this.cy, this.targetAngle);
+    var g = this.add.graphics().setDepth(5);
+    g.fillStyle(hexToNum(COL_DANGER), 0.12);
+    g.lineStyle(2, hexToNum(COL_DANGER), 0.55);
+    g.beginPath(); g.moveTo(rotated[0].x, rotated[0].y);
+    for (var i = 1; i < rotated.length; i++) g.lineTo(rotated[i].x, rotated[i].y);
+    g.closePath(); g.fillPath(); g.strokePath();
+    this.ghostGfx = g; this.rg.add(g);
   }
 
   _drawPlayerShape() {
-    if(this.playerGfx)this.playerGfx.destroy();
-    var pts=SHAPE_PATHS[this.shapeIdx].pts(this.playerCx,this.playerCy,Math.min(this.W,this.H)*0.12);
-    var rotated=rotatePoints(pts,this.playerCx,this.playerCy,this.currentAngle);
-    var g=this.add.graphics().setDepth(6);
-    g.fillStyle(hexToNum(COL_PRIMARY),0.25);
-    g.lineStyle(3,hexToNum(COL_PRIMARY),1);
-    g.beginPath();g.moveTo(rotated[0].x,rotated[0].y);
-    for(var i=1;i<rotated.length;i++)g.lineTo(rotated[i].x,rotated[i].y);
-    g.closePath();g.fillPath();g.strokePath();
-    this.playerGfx=g;this.rg.add(g);
+    if (this.playerGfx) this.playerGfx.destroy();
+    var pts = SHAPE_PATHS[this.shapeIdx].pts(this.cx, this.cy, this.shapeSize);
+    var rotated = rotatePoints(pts, this.cx, this.cy, this.currentAngle);
+    var g = this.add.graphics().setDepth(7);
+    var diff = this._angleDiff();
+    var glow = diff < 12;
+    g.fillStyle(hexToNum(glow ? COL_ACCENT : COL_PRIMARY), glow ? 0.5 : 0.35);
+    g.lineStyle(3, hexToNum(glow ? COL_ACCENT : COL_PRIMARY), 1);
+    g.beginPath(); g.moveTo(rotated[0].x, rotated[0].y);
+    for (var i = 1; i < rotated.length; i++) g.lineTo(rotated[i].x, rotated[i].y);
+    g.closePath(); g.fillPath(); g.strokePath();
+    this.playerGfx = g; this.rg.add(g);
   }
 
-  _check() {
-    if(this.currentAngle===this.targetAngle){
-      gameScore+=10*(this.round+1);this.scoreLbl.setText('Score: '+gameScore);this.cameras.main.flash(200,34,197,94);
-      this.round++;if(this.round>=TOTAL_ROUNDS)this.time.delayedCall(600,()=>this.scene.start('VictoryScene',{score:gameScore}));
-      else this.time.delayedCall(800,()=>this.startRound());
-    }else{this.lives--;this._rh();this.cameras.main.shake(200,0.01);
-      if(this.lives<=0)this.time.delayedCall(500,()=>this.scene.start('LoseScene',{score:gameScore}));}
+  _angleDiff() {
+    var d = Math.abs(((this.currentAngle - this.targetAngle) % 360 + 540) % 360 - 180);
+    return d;
+  }
+
+  _updateAngleLabel() {
+    if (!this.angleLbl) return;
+    this.angleLbl.setText('rotation = ' + Math.round(this.currentAngle) + '\\u00b0');
+  }
+
+  _checkAlignment() {
+    this._updateAngleLabel();
+    if (this.solved) return;
+    var diff = this._angleDiff();
+    if (diff < 7) {
+      // Snap and lock
+      this.solved = true;
+      this.currentAngle = this.targetAngle;
+      this._drawPlayerShape();
+      // Move handle to snap position
+      var rad = (this.targetAngle - 90) * Math.PI/180;
+      this.handle.x = this.cx + Math.cos(rad) * (this.shapeSize + 28);
+      this.handle.y = this.cy + Math.sin(rad) * (this.shapeSize + 28);
+      this.handle.setFillStyle(hexToNum(COL_ACCENT), 1);
+      this._updateAngleLabel();
+      this.cameras.main.flash(140, 34, 197, 94);
+      heroCheer(this, this.hero);
+      gameScore += 10 * (this.round + 1);
+      this.scoreLbl.setText('Score: ' + gameScore);
+      this.time.delayedCall(450, () => this._showSolutionCard());
+    }
+  }
+
+  _showSolutionCard() {
+    var W=this.W,H=this.H;
+    var backdrop = this.add.rectangle(W/2,H/2,W,H,0x000000,0.55).setDepth(50);
+    var card = this.add.rectangle(W/2,H*0.5,W-40,220,0x18181b,1).setStrokeStyle(2,hexToNum(COL_ACCENT)).setDepth(51);
+    var h1 = this.add.text(W/2,H*0.5-75,'Aligned!',{fontSize:'22px',color:COL_ACCENT,fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold'}).setOrigin(0.5).setDepth(52);
+    var t1 = this.add.text(W/2,H*0.5-30,'You rotated the ' + SHAPE_PATHS[this.shapeIdx].name + ' until it matched the ghost.',{fontSize:'13px',color:COL_TEXT,fontFamily:"'Lexend', system-ui",align:'center',wordWrap:{width:W-80}}).setOrigin(0.5).setDepth(52);
+    var t2 = this.add.text(W/2,H*0.5+10,'rotation = ' + this.targetAngle + '\\u00b0',{fontSize:'22px',color:COL_ACCENT,fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold'}).setOrigin(0.5).setDepth(52);
+    var btn = this.add.rectangle(W/2,H*0.5+70,200,44,hexToNum(COL_ACCENT),1).setInteractive({useHandCursor:true}).setDepth(52);
+    var isLast = this.round + 1 >= TOTAL_ROUNDS;
+    var btnLbl = this.add.text(W/2,H*0.5+70,isLast?'Finish!':'Got it! Next round \\u2192',{fontSize:'14px',color:'#000',fontFamily:"'Lexend', system-ui",fontStyle:'bold'}).setOrigin(0.5).setDepth(53);
+    btn.on('pointerdown',()=>{
+      [backdrop,card,h1,t1,t2,btn,btnLbl].forEach(o=>o.destroy());
+      this.round++;
+      if (this.round >= TOTAL_ROUNDS) this.scene.start('VictoryScene',{score:gameScore});
+      else this.startRound();
+    });
   }
 }
 
@@ -298,116 +405,168 @@ class TangramFillScene extends Phaser.Scene {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// MirrorPuzzleScene — INTRINSIC REBUILD
+//
+// Math: line of symmetry / reflection across a vertical axis.
+// The mirror line is fixed at the centre. Original shape sits on the left.
+// A translucent GHOST OVERLAY shows the correct reflected shape on the right
+// (always visible — the answer is right there as a guide). Player drags a
+// shape token from the bank to anywhere on the right; it snaps into the
+// ghost when placed correctly. Self-revealing truth: the placement IS the
+// reflection. No Check button. Auto-detect by distance to ghost centre.
+// ═══════════════════════════════════════════════════════════════════════════════
 class MirrorPuzzleScene extends Phaser.Scene {
   constructor() { super('MirrorPuzzleScene'); }
-  create() { this.W=this.scale.width;this.H=this.scale.height;this.round=0;this.lives=MAX_LIVES;this._bg();this._ui();this.startRound(); }
-  _bg() { const bg=this.add.image(this.W/2,this.H/2,'bg');bg.setScale(Math.max(this.W/bg.width,this.H/bg.height));this.add.rectangle(this.W/2,this.H/2,this.W,this.H,0x000000,0.65); }
-  _ui() { this.scoreLbl=this.add.text(this.W-14,14,'Score: 0',{fontSize:'16px',color:COL_ACCENT,fontFamily:"'Lexend', system-ui",fontStyle:'bold'}).setOrigin(1,0).setDepth(10);this.hg=this.add.group();this._rh();this.dg=this.add.group();this._rd(); }
+  create() {
+    this.W=this.scale.width;this.H=this.scale.height;this.round=0;this.lives=MAX_LIVES;
+    this._bg();this._ui();
+    this.hero = addCharacter(this, this.W*0.88, this.H*0.55, 0.8);
+    this.startRound();
+  }
+  _bg() { const bg=this.add.image(this.W/2,this.H/2,'bg');bg.setScale(Math.max(this.W/bg.width,this.H/bg.height));this.add.rectangle(this.W/2,this.H/2,this.W,this.H,0x000000,0.7); }
+  _ui() {
+    this.scoreLbl=this.add.text(this.W-14,14,'Score: 0',{fontSize:'16px',color:COL_ACCENT,fontFamily:"'Lexend', system-ui",fontStyle:'bold'}).setOrigin(1,0).setDepth(10);
+    this.add.text(this.W/2,16,(MATH && MATH.standardDescription) || 'Reflection symmetry',{fontSize:'11px',color:COL_TEXT,fontFamily:"'Lexend', system-ui",alpha:0.55,align:'center',wordWrap:{width:this.W*0.6}}).setOrigin(0.5,0).setDepth(10);
+    this.hg=this.add.group();this._rh();this.dg=this.add.group();this._rd();
+  }
   _rh() { this.hg.clear(true,true);for(let i=0;i<this.lives;i++)this.hg.add(this.add.text(14+i*22,14,'\\u2665',{fontSize:'18px',color:COL_DANGER}).setDepth(10)); }
   _rd() { this.dg.clear(true,true);for(let i=0;i<TOTAL_ROUNDS;i++){const c=i<this.round?COL_ACCENT:i===this.round?COL_PRIMARY:'#555555';this.dg.add(this.add.circle(this.W/2-40+i*20,this.H-16,5,hexToNum(c)).setDepth(10));} }
 
   startRound() {
     if(this.rg)this.rg.clear(true,true);this.rg=this.add.group();
-    const data=getRound(this.round);this.dotOffsetX=data.items[0]||-40;this.dotOffsetY=data.items[1]||0;this.tolerance=data.target||22;this.shapeIdx=data.items[2]||0;this.placed=false;this._rd();
-    const W=this.W,H=this.H;
-    var mirrorX=W/2;
-    var areaTop=H*0.15,areaBot=H*0.75;
-    var areaCy=(areaTop+areaBot)/2;
+    this.solved = false; this.placedX = null; this.placedY = null;
+    var data = getRound(this.round);
+    var fbVar = [
+      { dx:-90, dy:-30, shape:0 },
+      { dx:-130, dy:20, shape:1 },
+      { dx:-70, dy:50, shape:2 },
+      { dx:-110, dy:-40, shape:3 },
+      { dx:-150, dy:0, shape:4 },
+    ];
+    var fb = fbVar[this.round % fbVar.length];
+    this.dotOffsetX = (Array.isArray(data.items) && typeof data.items[0] === 'number' && data.items[0] < 0) ? data.items[0] : fb.dx;
+    this.dotOffsetY = (Array.isArray(data.items) && typeof data.items[1] === 'number') ? data.items[1] : fb.dy;
+    this.shapeIdx = (Array.isArray(data.items) && typeof data.items[2] === 'number' && data.items[2] >= 0 && data.items[2] < SHAPE_PATHS.length) ? data.items[2] : fb.shape;
+    this._rd();
+
+    var W=this.W,H=this.H;
+    var mirrorX = W*0.45;
+    var areaTop = H*0.18, areaBot = H*0.72;
+    var areaCy = (areaTop + areaBot) / 2;
+    this.mirrorX = mirrorX;
 
     // Title
-    this.rg.add(this.add.text(W/2,H*0.06,'Mirror Puzzle!',{fontSize:'18px',color:COL_ACCENT,fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold'}).setOrigin(0.5).setDepth(6));
-    this.rg.add(this.add.text(W/2,H*0.12,'Click where the reflection should go',{fontSize:'11px',color:COL_TEXT,fontFamily:"'Lexend', system-ui",alpha:0.6}).setOrigin(0.5).setDepth(6));
+    this.rg.add(this.add.text(W/2,52,'Place the mirror image',{fontSize:'18px',color:COL_ACCENT,fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold'}).setOrigin(0.5).setDepth(6));
+    this.rg.add(this.add.text(W/2,78,'Drag the shape into the ghost on the other side of the mirror.',{fontSize:'12px',color:COL_TEXT,fontFamily:"'Lexend', system-ui",alpha:0.7,align:'center',wordWrap:{width:W-60}}).setOrigin(0.5).setDepth(6));
 
-    // Mirror line (vertical dashed)
-    for(var dy=areaTop;dy<areaBot;dy+=12){
-      this.rg.add(this.add.rectangle(mirrorX,dy,2,8,hexToNum(COL_ACCENT),0.6).setDepth(5));
+    // Mirror line (dashed vertical)
+    for (var ly = areaTop; ly < areaBot; ly += 12) {
+      this.rg.add(this.add.rectangle(mirrorX, ly, 2, 8, hexToNum(COL_ACCENT), 0.65).setDepth(5));
     }
-    this.rg.add(this.add.text(mirrorX,areaTop-10,'MIRROR',{fontSize:'10px',color:COL_ACCENT,fontFamily:"'Lexend', system-ui",alpha:0.5}).setOrigin(0.5).setDepth(5));
+    this.rg.add(this.add.text(mirrorX, areaTop - 12, 'MIRROR', {fontSize:'10px',color:COL_ACCENT,fontFamily:"'Lexend', system-ui",alpha:0.7}).setOrigin(0.5).setDepth(5));
 
-    // Left side label
-    this.rg.add(this.add.text(W*0.25,areaTop-10,'Original',{fontSize:'10px',color:COL_TEXT,fontFamily:"'Lexend', system-ui",alpha:0.4}).setOrigin(0.5).setDepth(5));
-    // Right side label
-    this.rg.add(this.add.text(W*0.75,areaTop-10,'Reflection',{fontSize:'10px',color:COL_TEXT,fontFamily:"'Lexend', system-ui",alpha:0.4}).setOrigin(0.5).setDepth(5));
+    // Light side backgrounds
+    this.rg.add(this.add.rectangle(mirrorX - (mirrorX - 20)/2 - 10, areaCy, mirrorX - 20, areaBot - areaTop, hexToNum(COL_SECONDARY), 0.06).setDepth(3));
+    var rightW = (W - mirrorX) - 20;
+    this.rg.add(this.add.rectangle(mirrorX + rightW/2 + 10, areaCy, rightW, areaBot - areaTop, hexToNum(COL_PRIMARY), 0.04).setDepth(3));
 
-    // Left/right area backgrounds
-    this.rg.add(this.add.rectangle(W*0.25,areaCy,W/2-8,areaBot-areaTop,hexToNum(COL_SECONDARY),0.06).setDepth(3));
-    this.rg.add(this.add.rectangle(W*0.75,areaCy,W/2-8,areaBot-areaTop,hexToNum(COL_PRIMARY),0.04).setDepth(3));
+    // Original on left
+    var origX = mirrorX + this.dotOffsetX;
+    var origY = areaCy + this.dotOffsetY;
+    this.correctX = mirrorX - this.dotOffsetX;
+    this.correctY = origY;
+    var shapeSize = Math.min(W, H) * 0.06;
+    this.shapeSize = shapeSize;
 
-    // Original shape/dot on left side
-    var origX=mirrorX+this.dotOffsetX;
-    var origY=areaCy+this.dotOffsetY;
-    // Correct reflection position: same distance from mirror line but on right side
-    this.correctX=mirrorX-this.dotOffsetX;
-    this.correctY=origY;
+    var origPts = SHAPE_PATHS[this.shapeIdx].pts(origX, origY, shapeSize);
+    drawShapePolyFilled(this, this.rg, origPts, COL_DANGER, 0.45, COL_DANGER, 2);
 
-    // Draw original shape
-    var shapeSize=Math.min(W,H)*0.04;
-    var origPts=SHAPE_PATHS[this.shapeIdx].pts(origX,origY,shapeSize);
-    drawShapePolyFilled(this,this.rg,origPts,COL_DANGER,0.4,COL_DANGER,2);
-    this.rg.add(this.add.circle(origX,origY,5,hexToNum(COL_DANGER)).setDepth(7));
+    // Ghost reflection — visible guide on the right
+    // Build mirrored points (reflect each point across mirrorX)
+    var ghostPts = origPts.map(function(p){ return { x: 2*mirrorX - p.x, y: p.y }; });
+    var gg = this.add.graphics().setDepth(4);
+    gg.fillStyle(hexToNum(COL_ACCENT), 0.10);
+    gg.lineStyle(2, hexToNum(COL_ACCENT), 0.55);
+    gg.beginPath(); gg.moveTo(ghostPts[0].x, ghostPts[0].y);
+    for (var i = 1; i < ghostPts.length; i++) gg.lineTo(ghostPts[i].x, ghostPts[i].y);
+    gg.closePath(); gg.fillPath(); gg.strokePath();
+    this.rg.add(gg);
 
-    // Distance indicator from mirror
-    var distFromMirror=Math.abs(this.dotOffsetX);
-    this.rg.add(this.add.text(origX,origY-20,Math.round(distFromMirror)+'px',{fontSize:'10px',color:COL_TEXT,fontFamily:"'Lexend', system-ui",alpha:0.4}).setOrigin(0.5).setDepth(6));
+    // Distance indicator on left
+    this.rg.add(this.add.text(origX, origY - shapeSize - 14, Math.abs(this.dotOffsetX) + 'px from mirror', {fontSize:'10px',color:COL_DANGER,fontFamily:"'Lexend', system-ui",alpha:0.7}).setOrigin(0.5).setDepth(6));
 
-    // Clickable area on right side
-    var clickZone=this.add.rectangle(W*0.75,areaCy,W/2-8,areaBot-areaTop,0x000000,0.001).setInteractive({useHandCursor:true}).setDepth(8);
-    this.rg.add(clickZone);
+    // Draggable token in the bank below
+    var tokenY = H * 0.86;
+    var tokenX = W * 0.45;
+    this.tokenStartX = tokenX; this.tokenStartY = tokenY;
+    this.token = this.add.container(tokenX, tokenY).setDepth(9);
+    var tg = this.add.graphics();
+    var localPts = SHAPE_PATHS[this.shapeIdx].pts(0, 0, shapeSize);
+    tg.fillStyle(hexToNum(COL_PRIMARY), 0.55);
+    tg.lineStyle(2, hexToNum(COL_PRIMARY), 1);
+    tg.beginPath(); tg.moveTo(localPts[0].x, localPts[0].y);
+    for (var j = 1; j < localPts.length; j++) tg.lineTo(localPts[j].x, localPts[j].y);
+    tg.closePath(); tg.fillPath(); tg.strokePath();
+    this.token.add(tg);
+    // Reflected token (same as ghost shape) — token visually shows the orientation
+    this.token.setSize(shapeSize * 2, shapeSize * 2);
+    this.token.setInteractive(new Phaser.Geom.Rectangle(-shapeSize, -shapeSize, shapeSize*2, shapeSize*2), Phaser.Geom.Rectangle.Contains);
+    this.input.setDraggable(this.token);
+    this.rg.add(this.token);
 
-    // Player placement marker (hidden initially)
-    this.playerMarker=this.add.circle(-100,-100,7,hexToNum(COL_PRIMARY)).setDepth(9).setAlpha(0);
-    this.rg.add(this.playerMarker);
-    this.playerShapeGfx=null;
-
-    clickZone.on('pointerdown',(pointer)=>{
-      if(this.placed)return;
-      var px=pointer.x,py=pointer.y;
-      // Clamp to right side
-      if(px<=mirrorX)return;
-      this.placedX=px;this.placedY=py;
-      this.playerMarker.setPosition(px,py).setAlpha(1);
-
-      // Draw mirrored shape at placed position
-      if(this.playerShapeGfx)this.playerShapeGfx.destroy();
-      var pPts=SHAPE_PATHS[this.shapeIdx].pts(px,py,shapeSize);
-      this.playerShapeGfx=this.add.graphics().setDepth(8);
-      this.playerShapeGfx.fillStyle(hexToNum(COL_PRIMARY),0.3);
-      this.playerShapeGfx.lineStyle(2,hexToNum(COL_PRIMARY),1);
-      this.playerShapeGfx.beginPath();this.playerShapeGfx.moveTo(pPts[0].x,pPts[0].y);
-      for(var i=1;i<pPts.length;i++)this.playerShapeGfx.lineTo(pPts[i].x,pPts[i].y);
-      this.playerShapeGfx.closePath();this.playerShapeGfx.fillPath();this.playerShapeGfx.strokePath();
-      this.rg.add(this.playerShapeGfx);
+    // Drag handler
+    var scene = this;
+    this.input.removeAllListeners('drag');
+    this.input.removeAllListeners('dragend');
+    this.input.on('drag', function(pointer, obj, dragX, dragY){
+      if (obj !== scene.token || scene.solved) return;
+      obj.x = dragX; obj.y = dragY;
+      scene._checkSnap();
     });
-
-    // Tolerance indicator
-    this.rg.add(this.add.text(W/2,H*0.79,'Tolerance: \\u00b1'+this.tolerance+'px',{fontSize:'11px',color:COL_TEXT,fontFamily:"'Lexend', system-ui",alpha:0.4}).setOrigin(0.5).setDepth(6));
-
-    // Lock In button
-    var lockBtn=this.add.rectangle(W/2,H*0.87,120,40,hexToNum(COL_PRIMARY),1).setInteractive({useHandCursor:true}).setDepth(10);
-    this.rg.add(lockBtn);this.rg.add(this.add.text(W/2,H*0.87,'Lock In',{fontSize:'14px',color:'#fff',fontFamily:"'Lexend', system-ui",fontStyle:'bold'}).setOrigin(0.5).setDepth(11));
-    lockBtn.on('pointerdown',()=>this._check());
+    this.input.on('dragend', function(pointer, obj){
+      if (obj !== scene.token || scene.solved) return;
+      // If not snapped (still active), return to start
+      if (!scene.solved) {
+        scene.tweens.add({ targets: scene.token, x: scene.tokenStartX, y: scene.tokenStartY, duration: 220, ease:'Sine.easeOut' });
+      }
+    });
   }
 
-  _check() {
-    if(!this.placedX){this.cameras.main.shake(100,0.005);return;}
-    var dx=this.placedX-this.correctX;
-    var dy=this.placedY-this.correctY;
-    var dist=Math.sqrt(dx*dx+dy*dy);
-
-    if(dist<=this.tolerance){
-      gameScore+=10*(this.round+1);this.scoreLbl.setText('Score: '+gameScore);this.cameras.main.flash(200,34,197,94);
-      // Show correct position briefly
-      this.rg.add(this.add.circle(this.correctX,this.correctY,8,hexToNum(COL_ACCENT),0.5).setDepth(12));
-      this.round++;if(this.round>=TOTAL_ROUNDS)this.time.delayedCall(600,()=>this.scene.start('VictoryScene',{score:gameScore}));
-      else this.time.delayedCall(800,()=>this.startRound());
-    }else{
-      // Show where correct was
-      this.rg.add(this.add.circle(this.correctX,this.correctY,8,hexToNum(COL_ACCENT),0.6).setDepth(12));
-      this.rg.add(this.add.text(this.correctX,this.correctY-16,'Here!',{fontSize:'10px',color:COL_ACCENT,fontFamily:"'Lexend', system-ui"}).setOrigin(0.5).setDepth(12));
-      this.lives--;this._rh();this.cameras.main.shake(200,0.01);
-      if(this.lives<=0)this.time.delayedCall(500,()=>this.scene.start('LoseScene',{score:gameScore}));
-      else{this.placedX=null;this.placedY=null;}
+  _checkSnap() {
+    if (this.solved) return;
+    var dx = this.token.x - this.correctX;
+    var dy = this.token.y - this.correctY;
+    var dist = Math.sqrt(dx*dx + dy*dy);
+    var tol = 26;
+    if (dist <= tol) {
+      this.solved = true;
+      // Snap into ghost
+      this.tweens.add({ targets: this.token, x: this.correctX, y: this.correctY, duration: 160, ease:'Sine.easeOut' });
+      this.cameras.main.flash(140, 34, 197, 94);
+      heroCheer(this, this.hero);
+      gameScore += 10 * (this.round + 1);
+      this.scoreLbl.setText('Score: ' + gameScore);
+      this.time.delayedCall(450, () => this._showSolutionCard());
     }
+  }
+
+  _showSolutionCard() {
+    var W=this.W,H=this.H;
+    var backdrop = this.add.rectangle(W/2,H/2,W,H,0x000000,0.55).setDepth(50);
+    var card = this.add.rectangle(W/2,H*0.5,W-40,220,0x18181b,1).setStrokeStyle(2,hexToNum(COL_ACCENT)).setDepth(51);
+    var h1 = this.add.text(W/2,H*0.5-75,'Reflected!',{fontSize:'22px',color:COL_ACCENT,fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold'}).setOrigin(0.5).setDepth(52);
+    var dist = Math.abs(this.dotOffsetX);
+    var t1 = this.add.text(W/2,H*0.5-30,'A reflection has the same distance from the mirror on both sides.',{fontSize:'13px',color:COL_TEXT,fontFamily:"'Lexend', system-ui",align:'center',wordWrap:{width:W-80}}).setOrigin(0.5).setDepth(52);
+    var t2 = this.add.text(W/2,H*0.5+10,dist + 'px left  =  ' + dist + 'px right',{fontSize:'18px',color:COL_ACCENT,fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold'}).setOrigin(0.5).setDepth(52);
+    var btn = this.add.rectangle(W/2,H*0.5+70,200,44,hexToNum(COL_ACCENT),1).setInteractive({useHandCursor:true}).setDepth(52);
+    var isLast = this.round + 1 >= TOTAL_ROUNDS;
+    var btnLbl = this.add.text(W/2,H*0.5+70,isLast?'Finish!':'Got it! Next round \\u2192',{fontSize:'14px',color:'#000',fontFamily:"'Lexend', system-ui",fontStyle:'bold'}).setOrigin(0.5).setDepth(53);
+    btn.on('pointerdown',()=>{
+      [backdrop,card,h1,t1,t2,btn,btnLbl].forEach(o=>o.destroy());
+      this.round++;
+      if (this.round >= TOTAL_ROUNDS) this.scene.start('VictoryScene',{score:gameScore});
+      else this.startRound();
+    });
   }
 }
 `

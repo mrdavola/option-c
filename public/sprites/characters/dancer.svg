@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <!-- Shadow -->
+  <ellipse cx="128" cy="240" rx="50" ry="12" fill="#000" opacity="0.15"/>
+  <!-- Legs in dance pose -->
+  <path d="M112 190 L100 240 L90 240" fill="none" stroke="#d4a574" stroke-width="8" stroke-linecap="round"/>
+  <path d="M144 190 L170 230 L180 225" fill="none" stroke="#d4a574" stroke-width="8" stroke-linecap="round"/>
+  <!-- Shoes -->
+  <ellipse cx="87" cy="242" rx="10" ry="5" fill="#e91e63"/>
+  <ellipse cx="182" cy="227" rx="10" ry="5" fill="#e91e63" transform="rotate(-15,182,227)"/>
+  <!-- Body / leotard -->
+  <path d="M108 130 Q128 125 148 130 L152 192 Q128 198 104 192 Z" fill="#9c27b0"/>
+  <path d="M108 130 Q128 125 148 130 L148 155 Q128 150 108 155 Z" fill="#ab47bc" opacity="0.6"/>
+  <!-- Tutu / skirt -->
+  <ellipse cx="128" cy="180" rx="40" ry="14" fill="#ce93d8" opacity="0.8"/>
+  <ellipse cx="128" cy="183" rx="36" ry="10" fill="#e1bee7" opacity="0.5"/>
+  <!-- Arms raised -->
+  <path d="M108 140 Q80 120 70 90 Q68 80 75 75" fill="none" stroke="#d4a574" stroke-width="7" stroke-linecap="round"/>
+  <path d="M148 140 Q176 120 186 90 Q188 80 181 75" fill="none" stroke="#d4a574" stroke-width="7" stroke-linecap="round"/>
+  <!-- Hands -->
+  <circle cx="75" cy="73" r="6" fill="#d4a574"/>
+  <circle cx="181" cy="73" r="6" fill="#d4a574"/>
+  <!-- Head -->
+  <circle cx="128" cy="100" r="30" fill="#d4a574"/>
+  <!-- Hair bun -->
+  <circle cx="128" cy="68" r="16" fill="#4a2800"/>
+  <ellipse cx="128" cy="76" rx="24" ry="8" fill="#4a2800"/>
+  <!-- Face -->
+  <circle cx="118" cy="98" r="3" fill="#333"/>
+  <circle cx="138" cy="98" r="3" fill="#333"/>
+  <path d="M120 110 Q128 116 136 110" fill="none" stroke="#c0392b" stroke-width="2" stroke-linecap="round"/>
+  <!-- Blush -->
+  <circle cx="112" cy="106" r="5" fill="#e91e63" opacity="0.2"/>
+  <circle cx="144" cy="106" r="5" fill="#e91e63" opacity="0.2"/>
+  <!-- Sparkles around -->
+  <path d="M60 60 L62 54 L64 60 L70 62 L64 64 L62 70 L60 64 L54 62 Z" fill="#f9ca24" opacity="0.7"/>
+  <path d="M190 65 L192 59 L194 65 L200 67 L194 69 L192 75 L190 69 L184 67 Z" fill="#f9ca24" opacity="0.6"/>
+</svg>

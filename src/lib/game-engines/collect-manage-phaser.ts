@@ -1,6 +1,18 @@
 // Collect & Manage — Phaser engine with 3 game options.
 // Math: Add values to hit a target sum.
 // Options: free-collect, conveyor-belt, split-the-loot
+//
+// ═══════════════════════════════════════════════════════════════════════════════
+// INTRINSIC DESIGN NOTES — all three scenes follow MysterySideScene's model:
+//
+// The math the child is learning is EMBEDDED in the physical manipulation.
+// You cannot succeed by reading numbers and computing in your head. You succeed
+// by watching a visual state (dot fields / liquid levels / silo fills) match a
+// target. Numbers appear as reinforcement (labels), never as gates.
+//
+// Self-revealing truth: when the visual match happens, the system auto-snaps
+// and reveals the arithmetic that was just performed. No "Check" buttons.
+// ═══════════════════════════════════════════════════════════════════════════════
 
 import type { ThemeConfig, MathParams, GameOption } from "./engine-types"
 import { phaserGame } from "./base-phaser-template"
@@ -11,13 +23,11 @@ export function collectManagePhaserEngine(
   math: MathParams,
   option: GameOption = "free-collect"
 ): string {
-  // Default to free-collect for this mechanic
   const validOptions = ["free-collect", "conveyor-belt", "split-the-loot"]
   const activeOption = validOptions.includes(option) ? option : "free-collect"
 
   const optDef = getOptionDef(activeOption)
 
-  // Scene name mapping
   const sceneMap: Record<string, string> = {
     "free-collect": "FreeCollectScene",
     "conveyor-belt": "ConveyorBeltScene",
@@ -29,101 +39,104 @@ export function collectManagePhaserEngine(
     math,
     option: activeOption,
     sceneName: sceneMap[activeOption],
-    introText: optDef?.introText || "Click items to collect them!",
-    helpText: optDef?.helpText || "Collect items to match the target.",
+    introText: optDef?.introText || "Match the target!",
+    helpText: optDef?.helpText || "Match the target by physical manipulation.",
     gameSceneCode: GAME_SCENES,
   })
 }
 
-// ─── Shared round generation (used by all 3 options) ─────────────────────────
 const GAME_SCENES = `
-// ─── Shared: Round Generation ────────────────────────────────────────────────
-function generateRound(round) {
-  if (AI_ROUNDS && AI_ROUNDS[round]) {
-    const r = AI_ROUNDS[round];
-    return {
-      prompt: r.prompt || "Collect the target!",
-      target: r.target,
-      items: r.items.slice(),
-      hint: r.hint || null
-    };
+// ─── Shared helpers ──────────────────────────────────────────────────────────
+function _buildHUD(scene) {
+  const W = scene.W, pad = 14;
+  scene.scoreLbl = scene.add.text(W - pad, pad, 'Score: 0', {
+    fontSize: '16px', color: COL_ACCENT, fontFamily: "'Lexend', system-ui", fontStyle: 'bold'
+  }).setOrigin(1, 0).setDepth(10);
+  scene.heartsGroup = scene.add.group();
+  _redrawHearts(scene);
+  scene.dotGroup = scene.add.group();
+  _redrawDots(scene);
+}
+function _redrawHearts(scene) {
+  scene.heartsGroup.clear(true, true);
+  for (let i = 0; i < MAX_LIVES; i++) {
+    const col = i < scene.lives ? COL_DANGER : '#444';
+    scene.heartsGroup.add(scene.add.text(14 + i * 22, 14, '♥', {
+      fontSize: '18px', color: col, fontFamily: 'system-ui'
+    }).setDepth(10));
   }
-  let maxVal, itemCount;
-  if (round < 2)      { maxVal = 10; itemCount = 6; }
-  else if (round < 4) { maxVal = 20; itemCount = 7; }
-  else                { maxVal = 30; itemCount = 8; }
-
-  const minTarget = Math.max(5, maxVal - 10);
-  const target = Math.floor(Math.random() * (maxVal - minTarget)) + minTarget;
-  const items  = [];
-  const a = Math.floor(Math.random() * (target - 1)) + 1;
-  items.push(a, target - a);
-
-  let tries = 0;
-  while (items.length < itemCount && tries < 200) {
-    tries++;
-    const v = Math.floor(Math.random() * maxVal) + 1;
-    if (v !== target) items.push(v);
+}
+function _redrawDots(scene) {
+  scene.dotGroup.clear(true, true);
+  const dotW = 10, gap = 6, total = (dotW + gap) * TOTAL_ROUNDS - gap;
+  const startX = scene.W / 2 - total / 2;
+  for (let i = 0; i < TOTAL_ROUNDS; i++) {
+    let col = i < scene.round ? hexToNum(COL_ACCENT) : i === scene.round ? hexToNum(COL_PRIMARY) : 0x444444;
+    scene.dotGroup.add(scene.add.circle(startX + i * (dotW + gap), scene.H - 14, dotW / 2, col, 1).setDepth(10));
   }
-  for (let i = items.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [items[i], items[j]] = [items[j], items[i]];
-  }
-  return { prompt: "Collect exactly", target, items, hint: null };
 }
 
-function generateSplitRound(round) {
-  // Generate two targets and items that can be split between them
-  let maxVal, itemCount;
-  if (round < 2)      { maxVal = 8;  itemCount = 5; }
-  else if (round < 4) { maxVal = 15; itemCount = 7; }
-  else                { maxVal = 22; itemCount = 9; }
+function _sceneBackground(scene) {
+  const bg = scene.add.image(scene.W / 2, scene.H / 2, 'bg');
+  bg.setScale(Math.max(scene.W / bg.width, scene.H / bg.height));
+  scene.add.rectangle(scene.W / 2, scene.H / 2, scene.W, scene.H, 0x000000, 0.7);
+}
 
-  const targetA = Math.floor(Math.random() * maxVal) + 3;
-  const targetB = Math.floor(Math.random() * maxVal) + 3;
-  const total = targetA + targetB;
-
-  // Generate items that sum to total (targetA + targetB)
-  const items = [];
-  // Ensure subset for targetA
-  let remA = targetA;
-  const subsetSizeA = Math.min(2, Math.floor(itemCount / 2));
-  for (let i = 0; i < subsetSizeA - 1; i++) {
-    const v = Math.floor(Math.random() * (remA - 1)) + 1;
-    items.push(v);
-    remA -= v;
-  }
-  items.push(remA);
-
-  // Ensure subset for targetB
-  let remB = targetB;
-  const subsetSizeB = Math.min(2, Math.floor(itemCount / 2));
-  for (let i = 0; i < subsetSizeB - 1; i++) {
-    const v = Math.floor(Math.random() * (remB - 1)) + 1;
-    items.push(v);
-    remB -= v;
-  }
-  items.push(remB);
-
-  // Fill remaining with values that don't break things
-  while (items.length < itemCount) {
-    // Add pairs that sum to 0 net effect (one for each bin)
-    const v = Math.floor(Math.random() * 5) + 1;
-    items.push(v);
-    if (items.length < itemCount) items.push(v);
-  }
-
-  // Shuffle
-  for (let i = items.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [items[i], items[j]] = [items[j], items[i]];
-  }
-
-  return { targetA, targetB, items: items.slice(0, itemCount) };
+// Show a solution-reveal card (MysterySideScene pattern). Lines = array of strings.
+function _showSolutionCard(scene, lines, onNext) {
+  if (scene.solutionCard) return;
+  const W = scene.W, H = scene.H;
+  const backdrop = scene.add.rectangle(W/2, H/2, W, H, 0x000000, 0.55).setDepth(50);
+  const card = scene.add.rectangle(W/2, H * 0.55, W - 40, 240, 0x18181b, 1)
+    .setStrokeStyle(2, hexToNum(COL_ACCENT)).setDepth(51);
+  const h1 = scene.add.text(W/2, H * 0.55 - 95, 'You matched it!', {
+    fontSize: '22px', color: COL_ACCENT, fontFamily: "'Space Grotesk', sans-serif", fontStyle: 'bold'
+  }).setOrigin(0.5).setDepth(52);
+  const textObjs = [];
+  lines.forEach((line, i) => {
+    const t = scene.add.text(W/2, H * 0.55 - 55 + i * 28, line, {
+      fontSize: i === lines.length - 1 ? '22px' : '15px',
+      color: i === lines.length - 1 ? COL_ACCENT : COL_TEXT,
+      fontFamily: "'Space Grotesk', sans-serif",
+      fontStyle: i === lines.length - 1 ? 'bold' : 'normal',
+      align: 'center'
+    }).setOrigin(0.5).setDepth(52).setAlpha(0);
+    textObjs.push(t);
+    scene.time.delayedCall(180 * i, () => {
+      scene.tweens.add({ targets: t, alpha: 1, duration: 280 });
+    });
+  });
+  const nextY = H * 0.55 + 90;
+  const isLast = scene.round + 1 >= TOTAL_ROUNDS;
+  const nextBg = scene.add.rectangle(W/2, nextY, 210, 42, hexToNum(COL_ACCENT), 1)
+    .setInteractive({ useHandCursor: true }).setDepth(52).setAlpha(0);
+  const nextLbl = scene.add.text(W/2, nextY, isLast ? 'Finish!' : 'Got it! Next round →', {
+    fontSize: '14px', color: '#000', fontFamily: "'Lexend', system-ui", fontStyle: 'bold'
+  }).setOrigin(0.5).setDepth(53).setAlpha(0);
+  scene.time.delayedCall(180 * lines.length + 160, () => {
+    scene.tweens.add({ targets: [nextBg, nextLbl], alpha: 1, duration: 280 });
+  });
+  const cleanup = () => {
+    [backdrop, card, h1, ...textObjs, nextBg, nextLbl].forEach(o => o && o.destroy());
+    scene.solutionCard = null;
+    onNext();
+  };
+  nextBg.on('pointerdown', cleanup);
+  scene.solutionCard = { destroy: cleanup };
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// OPTION A: Free Collect — click items to hit exact target sum
+// OPTION A: Free Collect — INTRINSIC REBUILD (visual dot-field matching)
+//
+// Items are VISUAL GROUPS OF DOTS (no numbers to read to succeed — numbers are
+// labels for reinforcement only). A target dot-field is shown at the top.
+// Clicking an item flies its dots into a growing collection dot-field at the
+// bottom. When the bottom field visually matches the target field (same dot
+// count AND same arrangement), it snaps, locks, and the equation is revealed.
+//
+// Child discovers addition through visual combining. They do NOT need to read
+// or compute numbers to succeed. The system auto-detects the match — no Check
+// button. Discovery + Self-Revealing Truth.
 // ═══════════════════════════════════════════════════════════════════════════════
 class FreeCollectScene extends Phaser.Scene {
   constructor() { super('FreeCollectScene'); }
@@ -133,321 +146,238 @@ class FreeCollectScene extends Phaser.Scene {
     this.H = this.scale.height;
     this.round = 0;
     this.lives = MAX_LIVES;
-    this.collectedItems = [];
+    this.collected = []; // array of { val, dots: [] }
     this.currentTotal = 0;
-    this.targetValue = 0;
-    this.itemSprites = [];
-    this.roundItems = [];
 
-    this._buildBackground();
-    this._buildUI();
-    this._buildCharacter();
-    this._buildDoneButton();
+    _sceneBackground(this);
+    _buildHUD(this);
+    this._buildLabels();
+    this.hero = addCharacter(this, this.W * 0.88, this.H * 0.55, 0.8);
     this.startRound();
   }
 
-  _buildBackground() {
-    const bg = this.add.image(this.W / 2, this.H / 2, 'bg');
-    bg.setScale(Math.max(this.W / bg.width, this.H / bg.height));
-    this.add.rectangle(this.W / 2, this.H / 2, this.W, this.H, 0x000000, 0.65);
+  _buildLabels() {
+    const W = this.W, pad = 14;
+    this.equationLbl = this.add.text(W / 2, 40, '', {
+      fontSize: '18px', color: COL_PRIMARY, fontFamily: "'Space Grotesk', sans-serif", fontStyle: 'bold'
+    }).setOrigin(0.5, 0).setDepth(10);
+    this.promptLbl = this.add.text(W / 2, 66, 'Tap items — grow your field to match the target', {
+      fontSize: '12px', color: COL_TEXT, fontFamily: "'Lexend', system-ui",
+      align: 'center', wordWrap: { width: W - 40 }, alpha: 0.8
+    }).setOrigin(0.5, 0).setDepth(10);
   }
 
-  _buildUI() {
-    const W = this.W, H = this.H, pad = 14;
-    this.scoreLbl = this.add.text(W - pad, pad, 'Score: 0', {
-      fontSize: '16px', color: COL_ACCENT, fontFamily: "'Lexend', system-ui", fontStyle: 'bold'
-    }).setOrigin(1, 0).setDepth(10);
-
-    this.heartsGroup = this.add.group();
-    this._redrawHearts();
-    this.dotGroup = this.add.group();
-    this._redrawDots();
-
-    this.targetLbl = this.add.text(W / 2, pad, 'Collect exactly', {
-      fontSize: AI_ROUNDS ? '16px' : '13px',
-      color: AI_ROUNDS ? COL_ACCENT : COL_TEXT,
-      fontFamily: "'Lexend', system-ui",
-      fontStyle: AI_ROUNDS ? 'bold' : 'normal',
-      alpha: AI_ROUNDS ? 1 : 0.7,
-      align: 'center', wordWrap: { width: W - 120 }
-    }).setOrigin(0.5, 0).setDepth(10);
-
-    this.targetNum = this.add.text(W / 2, pad + (AI_ROUNDS ? 40 : 18), '0', {
-      fontSize: AI_ROUNDS ? '20px' : '54px',
-      color: AI_ROUNDS ? COL_TEXT : COL_ACCENT,
-      fontFamily: "'Space Grotesk', sans-serif", fontStyle: 'bold',
-      alpha: AI_ROUNDS ? 0.4 : 1
-    }).setOrigin(0.5, 0).setDepth(10);
-
-    if (AI_ROUNDS) this.targetNum.setText('?').setFontSize(36).setAlpha(0.3);
-
-    const totalY = this.targetNum.y + (AI_ROUNDS ? 30 : 68);
-    this.add.text(W / 2, totalY, AI_ROUNDS ? 'Your answer:' : 'You have:', {
-      fontSize: '13px', color: COL_TEXT, fontFamily: "'Lexend', system-ui", alpha: 0.6
-    }).setOrigin(0.5, 0).setDepth(10);
-
-    this.totalNum = this.add.text(W / 2, totalY + 16, '0', {
-      fontSize: '34px', color: COL_PRIMARY, fontFamily: "'Space Grotesk', sans-serif", fontStyle: 'bold'
-    }).setOrigin(0.5, 0).setDepth(10);
-
-    const collY = H - 96;
-    this.add.text(pad, collY - 20, 'Collected:', {
-      fontSize: '12px', color: COL_TEXT, fontFamily: "'Lexend', system-ui", alpha: 0.55
-    }).setOrigin(0, 0).setDepth(10);
-
-    const g = this.add.graphics().setDepth(5);
-    g.lineStyle(1, hexToNum(COL_ACCENT), 0.3);
-    g.lineBetween(pad, collY - 4, W - pad, collY - 4);
-    this.collectedZone = { x: pad, y: collY, maxW: W - pad * 2 };
-  }
-
-  _redrawHearts() {
-    this.heartsGroup.clear(true, true);
-    for (let i = 0; i < MAX_LIVES; i++) {
-      const col = i < this.lives ? COL_DANGER : '#444';
-      this.heartsGroup.add(this.add.text(14 + i * 22, 14, '♥', {
-        fontSize: '18px', color: col, fontFamily: 'system-ui'
-      }).setDepth(10));
+  _fieldLayout(count) {
+    // Grid arrangement: columns grow with count
+    const cols = count <= 4 ? count : count <= 9 ? 3 : count <= 16 ? 4 : 5;
+    const rows = Math.ceil(count / cols);
+    const positions = [];
+    for (let i = 0; i < count; i++) {
+      const c = i % cols, r = Math.floor(i / cols);
+      positions.push({ cx: c - (cols - 1) / 2, cy: r - (rows - 1) / 2 });
     }
+    return { cols, rows, positions };
   }
 
-  _redrawDots() {
-    this.dotGroup.clear(true, true);
-    const dotW = 12, gap = 6;
-    const total = (dotW + gap) * TOTAL_ROUNDS - gap;
-    const startX = this.W / 2 - total / 2;
-    for (let i = 0; i < TOTAL_ROUNDS; i++) {
-      let col = i < this.round ? hexToNum(COL_ACCENT) : i === this.round ? hexToNum(COL_PRIMARY) : 0x444444;
-      this.dotGroup.add(this.add.circle(startX + i * (dotW + gap), this.H - 18, dotW / 2, col, 1).setDepth(10));
-    }
-  }
-
-  _buildCharacter() {
-    this.character = this.add.image(70, this.H - 80, 'character').setScale(0.7).setDepth(8);
-    this.charTween = this.tweens.add({
-      targets: this.character, y: this.H - 90,
-      duration: 900, yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
+  _drawField(centerX, centerY, count, color, dotR, gap) {
+    // Returns array of circles drawn at given center
+    const layout = this._fieldLayout(count);
+    const out = [];
+    layout.positions.forEach(p => {
+      const x = centerX + p.cx * gap;
+      const y = centerY + p.cy * gap;
+      const c = this.add.circle(x, y, dotR, hexToNum(color), 1).setDepth(5);
+      out.push(c);
     });
-  }
-
-  _buildDoneButton() {
-    const bx = this.W - 72, by = this.H - 60;
-    const bg = this.add.rectangle(bx, by, 100, 38, hexToNum(COL_PRIMARY), 1)
-      .setOrigin(0.5).setDepth(10).setInteractive({ cursor: 'pointer' });
-    this.add.text(bx, by, 'Done!', {
-      fontSize: '16px', color: '#fff', fontFamily: "'Lexend', system-ui", fontStyle: 'bold'
-    }).setOrigin(0.5).setDepth(11);
-    bg.on('pointerover', () => bg.setAlpha(0.8));
-    bg.on('pointerout', () => bg.setAlpha(1));
-    bg.on('pointerdown', () => this._checkCollection());
+    return out;
   }
 
   startRound() {
-    this._clearItems();
-    this._clearCollected();
-    this.collectedItems = [];
+    const data = getRound(this.round);
+    // Fallback to guarantee solvability: items must include a subset summing to target
+    const roundVariation = [
+      { target: 7,  items: [3, 4, 2, 5] },
+      { target: 10, items: [4, 6, 3, 7, 2] },
+      { target: 12, items: [5, 7, 4, 8, 3] },
+      { target: 15, items: [6, 9, 4, 7, 5] },
+      { target: 18, items: [8, 10, 6, 7, 5] },
+    ];
+    const isDefault = !data || data.prompt === 'Solve this!' ||
+      (Array.isArray(data.items) && data.items[0] === 10 && data.items[1] === 5);
+    const fb = roundVariation[this.round % roundVariation.length];
+    this.targetValue = isDefault ? fb.target : (data.target || fb.target);
+    this.itemValues  = isDefault ? fb.items.slice() : (Array.isArray(data.items) && data.items.length ? data.items.slice() : fb.items.slice());
+
+    // Reset state
+    this.collected = [];
     this.currentTotal = 0;
-    this._updateTotal();
+    if (this._itemObjs) this._itemObjs.forEach(o => o.destroy && o.destroy());
+    if (this._targetObjs) this._targetObjs.forEach(o => o.destroy && o.destroy());
+    if (this._collectedObjs) this._collectedObjs.forEach(o => o.destroy && o.destroy());
+    this._itemObjs = [];
+    this._targetObjs = [];
+    this._collectedObjs = [];
 
-    const data = generateRound(this.round);
-    this.targetValue = data.target;
-    this.roundItems = data.items;
-    this.targetLbl.setText(data.prompt || 'Collect exactly');
+    this.equationLbl.setText('Target: ' + this.targetValue + ' dots');
+    _redrawDots(this);
 
-    if (AI_ROUNDS) {
-      this.targetNum.setText('?').setFontSize(36).setAlpha(0.3).setScale(1);
-      this.targetLbl.setScale(0.8).setAlpha(0);
-      this.tweens.add({ targets: this.targetLbl, scale: 1, alpha: 1, duration: 350, ease: 'Back.easeOut' });
-    } else {
-      this.targetNum.setText(data.target).setScale(0.4).setAlpha(0);
-      this.tweens.add({ targets: this.targetNum, scale: 1, alpha: 1, duration: 350, ease: 'Back.easeOut' });
-    }
+    // Draw TARGET field (top)
+    const targetCX = this.W / 2, targetCY = this.H * 0.22;
+    const tBg = this.add.rectangle(targetCX, targetCY, this.W * 0.55, 90, 0x000000, 0.3)
+      .setStrokeStyle(2, hexToNum(COL_ACCENT), 0.7).setDepth(4);
+    this._targetObjs.push(tBg);
+    const tLbl = this.add.text(targetCX, targetCY - 58, 'TARGET', {
+      fontSize: '11px', color: COL_ACCENT, fontFamily: "'Lexend', system-ui", fontStyle: 'bold'
+    }).setOrigin(0.5).setDepth(6);
+    this._targetObjs.push(tLbl);
+    const tNumLbl = this.add.text(targetCX + this.W * 0.22, targetCY, String(this.targetValue), {
+      fontSize: '26px', color: COL_ACCENT, fontFamily: "'Space Grotesk', sans-serif", fontStyle: 'bold'
+    }).setOrigin(0.5).setDepth(6);
+    this._targetObjs.push(tNumLbl);
+    const targetDots = this._drawField(targetCX - 30, targetCY, this.targetValue, COL_ACCENT, 5, 14);
+    targetDots.forEach(d => this._targetObjs.push(d));
 
-    this._redrawDots();
-    this._spawnItems(data.items);
-  }
+    // Draw COLLECTION field (middle) — empty at start
+    this.collectCX = this.W / 2;
+    this.collectCY = this.H * 0.48;
+    const cBg = this.add.rectangle(this.collectCX, this.collectCY, this.W * 0.55, 90, 0x000000, 0.25)
+      .setStrokeStyle(2, hexToNum(COL_PRIMARY), 0.5).setDepth(4);
+    this._collectedObjs.push(cBg);
+    this.collectBg = cBg;
+    this.collectNumLbl = this.add.text(this.collectCX + this.W * 0.22, this.collectCY, '0', {
+      fontSize: '26px', color: COL_PRIMARY, fontFamily: "'Space Grotesk', sans-serif", fontStyle: 'bold'
+    }).setOrigin(0.5).setDepth(6);
+    this._collectedObjs.push(this.collectNumLbl);
+    const cLbl = this.add.text(this.collectCX, this.collectCY - 58, 'YOUR FIELD', {
+      fontSize: '11px', color: COL_PRIMARY, fontFamily: "'Lexend', system-ui", fontStyle: 'bold'
+    }).setOrigin(0.5).setDepth(6);
+    this._collectedObjs.push(cLbl);
 
-  _spawnItems(values) {
-    const W = this.W, H = this.H;
-    const itemArea = { x: 14, y: 180, w: W - 28, h: H - 300 };
-    const cols = Math.min(values.length, 4);
-    const cellW = itemArea.w / cols;
-    const cellH = Math.min(80, itemArea.h / Math.ceil(values.length / cols));
-
-    values.forEach((val, i) => {
-      const col = i % cols, row = Math.floor(i / cols);
-      const tx = itemArea.x + col * cellW + cellW / 2;
-      const ty = itemArea.y + row * cellH + cellH / 2;
-
-      const spr = this.add.image(tx, ty - 60, 'item')
-        .setScale(0.6).setDepth(6).setAlpha(0).setInteractive({ cursor: 'pointer' });
-      const lbl = this.add.text(tx, ty - 20, String(val), {
-        fontSize: '15px', fontStyle: 'bold', color: COL_ACCENT,
-        fontFamily: "'Lexend', system-ui", stroke: '#000', strokeThickness: 3
-      }).setOrigin(0.5).setDepth(7).setAlpha(0);
-
-      spr.on('pointerover', () => this.tweens.add({ targets: spr, scale: 0.72, duration: 100 }));
-      spr.on('pointerout', () => this.tweens.add({ targets: spr, scale: 0.6, duration: 100 }));
-      spr.on('pointerdown', () => this._collectItem(spr, lbl, val));
-
-      this.tweens.add({ targets: [spr, lbl], alpha: 1, delay: i * 60, duration: 280, ease: 'Cubic.easeOut' });
-      this.tweens.add({ targets: spr, y: ty, delay: i * 60, duration: 320, ease: 'Back.easeOut', onUpdate: () => lbl.setY(spr.y + 40) });
-      this.itemSprites.push({ spr, lbl, val, tx, ty });
-    });
-  }
-
-  _clearItems() {
-    this.itemSprites.forEach(({ spr, lbl }) => { spr.destroy(); lbl.destroy(); });
-    this.itemSprites = [];
-  }
-
-  _collectItem(spr, lbl, val) {
-    const idx = this.itemSprites.findIndex(i => i.spr === spr);
-    if (idx === -1) return;
-    this.itemSprites.splice(idx, 1);
-    spr.disableInteractive();
-
-    const zone = this.collectedZone;
-    const slot = this.collectedItems.length;
-    const destX = zone.x + 24 + slot * 52, destY = zone.y + 16;
-
-    this.tweens.add({
-      targets: spr, x: destX, y: destY, scale: 0.38, duration: 260, ease: 'Cubic.easeOut',
-      onComplete: () => {
-        spr.setInteractive({ cursor: 'pointer' });
-        spr.on('pointerdown', () => this._returnItem(spr, lbl, val));
-      }
-    });
-    this.tweens.add({ targets: lbl, alpha: 0, duration: 160 });
-
-    const cLbl = this.add.text(destX, destY + 22, String(val), {
-      fontSize: '12px', color: COL_ACCENT, fontFamily: "'Lexend', system-ui", fontStyle: 'bold'
-    }).setOrigin(0.5).setDepth(8);
-
-    this.collectedItems.push({ spr, lbl, cLbl, val, destX, destY });
-    this.currentTotal += val;
-    this._updateTotal();
-    this._showScorePop('+' + val);
-  }
-
-  _returnItem(spr, lbl, val) {
-    const idx = this.collectedItems.findIndex(i => i.spr === spr);
-    if (idx === -1) return;
-    const { cLbl } = this.collectedItems[idx];
-    this.collectedItems.splice(idx, 1);
-    cLbl.destroy();
-    this._repositionCollected();
-    spr.disableInteractive();
-
-    const cols = Math.min(this.roundItems.length, 4);
-    const itemArea = { x: 14, y: 180, w: this.W - 28 };
-    const cellW = itemArea.w / cols;
-    const origSlot = this.itemSprites.length;
-    const tx = itemArea.x + (origSlot % cols) * cellW + cellW / 2;
-    const ty = 200 + Math.floor(origSlot / cols) * 80;
-
-    this.tweens.add({
-      targets: spr, x: tx, y: ty, scale: 0.6, duration: 260, ease: 'Cubic.easeOut',
-      onComplete: () => {
-        spr.setInteractive({ cursor: 'pointer' });
-        spr.removeAllListeners('pointerdown');
-        spr.on('pointerdown', () => this._collectItem(spr, lbl, val));
-        lbl.setPosition(tx, ty + 40).setAlpha(1);
-        this.itemSprites.push({ spr, lbl, val, tx, ty });
-      }
-    });
-    this.currentTotal -= val;
-    this._updateTotal();
-  }
-
-  _repositionCollected() {
-    this.collectedItems.forEach(({ spr, cLbl }, i) => {
-      const nx = this.collectedZone.x + 24 + i * 52, ny = this.collectedZone.y + 16;
-      this.tweens.add({ targets: spr, x: nx, y: ny, duration: 180 });
-      cLbl.setPosition(nx, ny + 22);
-    });
-  }
-
-  _clearCollected() {
-    this.collectedItems.forEach(({ spr, lbl, cLbl }) => { spr.destroy(); lbl.destroy(); cLbl.destroy(); });
-    this.collectedItems = [];
-  }
-
-  _updateTotal() {
-    this.totalNum.setText(String(this.currentTotal));
-    if (this.currentTotal === this.targetValue) this.totalNum.setColor(COL_ACCENT);
-    else if (this.currentTotal > this.targetValue) this.totalNum.setColor(COL_DANGER);
-    else this.totalNum.setColor(COL_PRIMARY);
-  }
-
-  _checkCollection() {
-    if (this._shaking) return;
-    if (this.currentTotal === this.targetValue) {
-      const pts = 10 * (this.round + 1);
-      gameScore += pts;
-      this.scoreLbl.setText('Score: ' + gameScore);
-      this._showScorePop('+' + pts);
-      this._burstParticles(this.W / 2, this.H / 2, 18);
-      this._characterCelebrate();
-      this.round++;
-      this._redrawDots();
-      if (this.round >= TOTAL_ROUNDS) {
-        this.time.delayedCall(700, () => this.scene.start('VictoryScene', { score: gameScore }));
-      } else {
-        this.time.delayedCall(900, () => this.startRound());
-      }
-    } else {
-      const msg = AI_ROUNDS
-        ? (this.currentTotal > this.targetValue ? 'Too high! Answer is ' + this.targetValue : 'Too low! Answer is ' + this.targetValue)
-        : (this.currentTotal > this.targetValue ? 'Too many!' : 'Not enough!');
-      this._onWrongAnswer(msg);
-    }
-  }
-
-  _onWrongAnswer(msg) {
-    this.lives--;
-    this._redrawHearts();
-    this._screenShake();
-    this._characterFlinch();
-    this._showScorePop(msg, COL_DANGER);
-    if (this.lives <= 0) {
-      this.time.delayedCall(800, () => { window.parent.postMessage({ type: 'game_lose' }, '*'); this.scene.start('LoseScene', { score: gameScore }); });
-    } else {
-      this.time.delayedCall(400, () => {
-        this._clearCollected(); this._clearItems();
-        this.collectedItems = []; this.currentTotal = 0; this._updateTotal();
-        this._spawnItems(this.roundItems);
+    // Draw ITEM BANK (bottom) — each item is a small dot-cluster (with number label for reinforcement)
+    const bankY = this.H * 0.78;
+    const n = this.itemValues.length;
+    const gap = Math.min(86, (this.W - 40) / n);
+    const startX = this.W / 2 - ((n - 1) * gap) / 2;
+    this.itemValues.forEach((val, i) => {
+      const x = startX + i * gap;
+      const bg = this.add.rectangle(x, bankY, 70, 70, hexToNum(COL_SECONDARY), 0.25)
+        .setStrokeStyle(1, hexToNum(COL_TEXT), 0.3).setDepth(4)
+        .setInteractive({ useHandCursor: true });
+      const dots = this._drawField(x, bankY - 4, val, COL_PRIMARY, 3, 8);
+      const numLbl = this.add.text(x, bankY + 28, String(val), {
+        fontSize: '14px', color: COL_TEXT, fontFamily: "'Space Grotesk', sans-serif", fontStyle: 'bold'
+      }).setOrigin(0.5).setDepth(6);
+      let used = false;
+      bg.on('pointerdown', () => {
+        if (used || this.solutionCard) return;
+        used = true;
+        bg.setAlpha(0.3);
+        dots.forEach(d => d.setAlpha(0.25));
+        numLbl.setAlpha(0.4);
+        this._flyItem(x, bankY - 4, val);
       });
+      this._itemObjs.push(bg, numLbl);
+      dots.forEach(d => this._itemObjs.push(d));
+      this._itemObjs.push({ destroy: () => {} }); // placeholder
+    });
+  }
+
+  _flyItem(srcX, srcY, val) {
+    // Create val "flying dots" that travel from source to collection area
+    // then become part of the collection dot-field.
+    const entry = { val, dots: [] };
+    for (let i = 0; i < val; i++) {
+      const dot = this.add.circle(srcX + (Math.random() - 0.5) * 10, srcY + (Math.random() - 0.5) * 10, 4, hexToNum(COL_PRIMARY), 1).setDepth(15);
+      entry.dots.push(dot);
     }
+    this.collected.push(entry);
+    this.currentTotal += val;
+    this.collectNumLbl.setText(String(this.currentTotal));
+    // Tween dots to their layout positions in the collection field
+    this._relayoutCollection(true, srcX, srcY);
+
+    // Auto-check after animation
+    this.time.delayedCall(420, () => this._checkMatch());
   }
 
-  _characterCelebrate() {
-    this.charTween.stop();
-    this.tweens.add({
-      targets: this.character, y: this.H - 130, angle: 15,
-      duration: 200, yoyo: true, repeat: 2, ease: 'Sine.easeInOut',
-      onComplete: () => {
-        this.character.setAngle(0);
-        this.charTween = this.tweens.add({ targets: this.character, y: this.H - 90, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
-      }
+  _relayoutCollection(animateFromSource, srcX, srcY) {
+    // All dots in this.collected form ONE combined field with currentTotal dots
+    const layout = this._fieldLayout(this.currentTotal);
+    const gap = 14;
+    const cx = this.collectCX - 30;
+    const cy = this.collectCY;
+    let k = 0;
+    this.collected.forEach(entry => {
+      entry.dots.forEach(dot => {
+        const p = layout.positions[k++];
+        if (!p) return;
+        const targetX = cx + p.cx * gap;
+        const targetY = cy + p.cy * gap;
+        this.tweens.add({
+          targets: dot,
+          x: targetX, y: targetY,
+          duration: 380,
+          ease: 'Cubic.easeOut'
+        });
+      });
     });
+    // Color update
+    const matched = this.currentTotal === this.targetValue;
+    this.collectBg.setStrokeStyle(2, matched ? hexToNum(COL_ACCENT) : hexToNum(COL_PRIMARY), matched ? 1 : 0.5);
+    this.collectNumLbl.setColor(matched ? COL_ACCENT : this.currentTotal > this.targetValue ? COL_DANGER : COL_PRIMARY);
   }
 
-  _characterFlinch() {
-    this.charTween.stop();
-    this.tweens.add({
-      targets: this.character, angle: -20, x: 50,
-      duration: 120, yoyo: true, repeat: 1,
-      onComplete: () => {
-        this.character.setAngle(0).setX(70);
-        this.charTween = this.tweens.add({ targets: this.character, y: this.H - 90, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+  _checkMatch() {
+    if (this.solutionCard) return;
+    if (this.currentTotal === this.targetValue) {
+      // VISUAL MATCH — snap, lock, reveal
+      heroCheer(this, this.hero);
+      this.cameras.main.flash(140, 34, 197, 94);
+      this.collected.forEach(e => e.dots.forEach(d => d.setFillStyle(hexToNum(COL_ACCENT), 1)));
+      gameScore += 10 * (this.round + 1);
+      this.scoreLbl.setText('Score: ' + gameScore);
+      // Reveal equation
+      const parts = this.collected.map(e => e.val);
+      const eqStr = parts.join(' + ') + ' = ' + this.targetValue;
+      _showSolutionCard(this, [
+        'You combined ' + parts.length + ' group' + (parts.length === 1 ? '' : 's') + ' of dots:',
+        eqStr,
+        'Total: ' + this.targetValue,
+      ], () => {
+        this.round++;
+        if (this.round >= TOTAL_ROUNDS) {
+          this.scene.start('VictoryScene', { score: gameScore });
+        } else {
+          this.startRound();
+        }
+      });
+    } else if (this.currentTotal > this.targetValue) {
+      // Over — lose a life, reset
+      this.lives--;
+      _redrawHearts(this);
+      heroShake(this, this.hero);
+      this.cameras.main.shake(160, 0.008);
+      if (this.lives <= 0) {
+        this.time.delayedCall(500, () => this.scene.start('LoseScene', { score: gameScore }));
+        return;
       }
-    });
+      this.time.delayedCall(600, () => this.startRound());
+    }
+    // else: under target — keep playing silently
   }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// OPTION B: Conveyor Belt — items scroll past, grab before they disappear
+// OPTION B: Conveyor Belt — INTRINSIC REBUILD (liquid mixing tank)
+//
+// Conveyor cups scroll past. Each cup holds proportional liquid (visible by
+// fill level, and labelled). Tap a cup to pour its liquid into a transparent
+// TANK. Target line marked on the tank. When the liquid LEVEL reaches the
+// target line exactly, the tank glows and locks.
+//
+// Overfill is visibly catastrophic — the tank overflows red. The accumulation
+// IS the addition. Child sees liquid rise visually — no number reading needed
+// to succeed.
 // ═══════════════════════════════════════════════════════════════════════════════
 class ConveyorBeltScene extends Phaser.Scene {
   constructor() { super('ConveyorBeltScene'); }
@@ -457,263 +387,239 @@ class ConveyorBeltScene extends Phaser.Scene {
     this.H = this.scale.height;
     this.round = 0;
     this.lives = MAX_LIVES;
-    this.currentTotal = 0;
-    this.targetValue = 0;
+    this.tankAmount = 0;
     this.beltItems = [];
-    this.grabbedItems = [];
-    this.spawnTimer = null;
-    this.beltSpeed = 1.5;
+    this.poured = []; // array of values for the equation
+    this.beltSpeed = 1.2;
 
-    this._buildBackground();
-    this._buildUI();
-    this._buildCharacter();
+    _sceneBackground(this);
+    _buildHUD(this);
+    this._buildLabels();
+    this._buildTank();
     this._buildBelt();
-    this._buildDoneButton();
+    this.hero = addCharacter(this, this.W * 0.88, this.H * 0.55, 0.8);
     this.startRound();
   }
 
-  _buildBackground() {
-    const bg = this.add.image(this.W / 2, this.H / 2, 'bg');
-    bg.setScale(Math.max(this.W / bg.width, this.H / bg.height));
-    this.add.rectangle(this.W / 2, this.H / 2, this.W, this.H, 0x000000, 0.65);
-  }
-
-  _buildUI() {
-    const W = this.W, pad = 14;
-    this.scoreLbl = this.add.text(W - pad, pad, 'Score: 0', {
-      fontSize: '16px', color: COL_ACCENT, fontFamily: "'Lexend', system-ui", fontStyle: 'bold'
-    }).setOrigin(1, 0).setDepth(10);
-
-    this.heartsGroup = this.add.group();
-    this._redrawHearts();
-    this.dotGroup = this.add.group();
-    this._redrawDots();
-
-    this.targetLbl = this.add.text(W / 2, pad, '', {
-      fontSize: '16px', color: COL_ACCENT, fontFamily: "'Lexend', system-ui", fontStyle: 'bold',
-      align: 'center', wordWrap: { width: W - 120 }
+  _buildLabels() {
+    const W = this.W;
+    this.equationLbl = this.add.text(W / 2, 40, '', {
+      fontSize: '18px', color: COL_PRIMARY, fontFamily: "'Space Grotesk', sans-serif", fontStyle: 'bold'
     }).setOrigin(0.5, 0).setDepth(10);
-
-    this.targetNum = this.add.text(W / 2, pad + 28, '0', {
-      fontSize: '48px', color: COL_ACCENT, fontFamily: "'Space Grotesk', sans-serif", fontStyle: 'bold'
-    }).setOrigin(0.5, 0).setDepth(10);
-
-    this.add.text(W / 2, 100, 'Grabbed:', {
-      fontSize: '13px', color: COL_TEXT, fontFamily: "'Lexend', system-ui", alpha: 0.6
-    }).setOrigin(0.5, 0).setDepth(10);
-
-    this.totalNum = this.add.text(W / 2, 118, '0', {
-      fontSize: '34px', color: COL_PRIMARY, fontFamily: "'Space Grotesk', sans-serif", fontStyle: 'bold'
+    this.promptLbl = this.add.text(W / 2, 66, 'Tap cups to pour — fill to the target line exactly', {
+      fontSize: '12px', color: COL_TEXT, fontFamily: "'Lexend', system-ui", alpha: 0.8,
+      align: 'center', wordWrap: { width: W - 40 }
     }).setOrigin(0.5, 0).setDepth(10);
   }
 
-  _redrawHearts() {
-    this.heartsGroup.clear(true, true);
-    for (let i = 0; i < MAX_LIVES; i++) {
-      this.heartsGroup.add(this.add.text(14 + i * 22, 14, '♥', {
-        fontSize: '18px', color: i < this.lives ? COL_DANGER : '#444', fontFamily: 'system-ui'
-      }).setDepth(10));
-    }
-  }
-
-  _redrawDots() {
-    this.dotGroup.clear(true, true);
-    const dotW = 12, gap = 6, total = (dotW + gap) * TOTAL_ROUNDS - gap;
-    const startX = this.W / 2 - total / 2;
-    for (let i = 0; i < TOTAL_ROUNDS; i++) {
-      let col = i < this.round ? hexToNum(COL_ACCENT) : i === this.round ? hexToNum(COL_PRIMARY) : 0x444444;
-      this.dotGroup.add(this.add.circle(startX + i * (dotW + gap), this.H - 18, dotW / 2, col, 1).setDepth(10));
-    }
-  }
-
-  _buildCharacter() {
-    this.character = this.add.image(this.W - 60, this.H - 140, 'character').setScale(0.6).setDepth(8);
-    this.charTween = this.tweens.add({
-      targets: this.character, y: this.character.y - 8,
-      duration: 900, yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
-    });
+  _buildTank() {
+    const W = this.W, H = this.H;
+    // Tank body on the left side
+    this.tankX = W * 0.18;
+    this.tankTopY = H * 0.22;
+    this.tankBotY = H * 0.62;
+    this.tankW = 90;
+    this.tankH = this.tankBotY - this.tankTopY;
+    // Walls
+    this.add.rectangle(this.tankX, (this.tankTopY + this.tankBotY) / 2, this.tankW, this.tankH, 0x000000, 0.35)
+      .setStrokeStyle(3, hexToNum(COL_TEXT), 0.8).setDepth(4);
+    // Target line (drawn per round)
+    this.tankLiquid = this.add.rectangle(this.tankX, this.tankBotY, this.tankW - 6, 0, hexToNum(COL_PRIMARY), 0.8)
+      .setOrigin(0.5, 1).setDepth(5);
+    this.tankValueLbl = this.add.text(this.tankX, this.tankBotY + 20, '0', {
+      fontSize: '22px', color: COL_PRIMARY, fontFamily: "'Space Grotesk', sans-serif", fontStyle: 'bold'
+    }).setOrigin(0.5, 0).setDepth(6);
   }
 
   _buildBelt() {
-    const beltY = this.H - 200;
-    // Belt track
-    this.add.rectangle(this.W / 2, beltY, this.W - 20, 60, hexToNum(COL_SECONDARY), 0.15).setDepth(2);
-    // Belt lines (conveyor marks)
-    const g = this.add.graphics().setDepth(3);
-    g.lineStyle(1, hexToNum(COL_SECONDARY), 0.3);
-    g.lineBetween(10, beltY - 30, this.W - 10, beltY - 30);
-    g.lineBetween(10, beltY + 30, this.W - 10, beltY + 30);
-
-    // Arrow indicators showing direction
-    for (let x = 50; x < this.W; x += 80) {
-      this.add.text(x, beltY, '←', {
-        fontSize: '16px', color: COL_SECONDARY, fontFamily: 'system-ui', alpha: 0.2
-      }).setOrigin(0.5).setDepth(3);
-    }
-
-    this.beltY = beltY;
-
-    // Grabbed tray area
-    this.add.rectangle(this.W / 2, this.H - 70, this.W - 40, 50, hexToNum(COL_PRIMARY), 0.1).setDepth(2);
-    this.trayY = this.H - 70;
-  }
-
-  _buildDoneButton() {
-    const bx = this.W - 72, by = this.H - 70;
-    const bg = this.add.rectangle(bx, by, 100, 38, hexToNum(COL_PRIMARY), 1)
-      .setOrigin(0.5).setDepth(10).setInteractive({ cursor: 'pointer' });
-    this.add.text(bx, by, 'Done!', {
-      fontSize: '16px', color: '#fff', fontFamily: "'Lexend', system-ui", fontStyle: 'bold'
-    }).setOrigin(0.5).setDepth(11);
-    bg.on('pointerover', () => bg.setAlpha(0.8));
-    bg.on('pointerout', () => bg.setAlpha(1));
-    bg.on('pointerdown', () => this._checkCollection());
+    const W = this.W, H = this.H;
+    this.beltY = H * 0.78;
+    // Belt track on right side of tank
+    this.beltLeft = W * 0.32;
+    this.beltRight = W - 20;
+    this.add.rectangle((this.beltLeft + this.beltRight) / 2, this.beltY, this.beltRight - this.beltLeft, 54, hexToNum(COL_SECONDARY), 0.2).setDepth(2);
+    this.add.text(this.beltLeft - 6, this.beltY, '◀', {
+      fontSize: '22px', color: COL_SECONDARY, fontFamily: 'system-ui'
+    }).setOrigin(1, 0.5).setDepth(3);
   }
 
   startRound() {
-    // Clear old belt items
-    this.beltItems.forEach(({ spr, lbl }) => { spr.destroy(); lbl.destroy(); });
+    const data = getRound(this.round);
+    const roundVariation = [
+      { target: 8,  items: [3, 5, 2, 4, 1] },
+      { target: 10, items: [4, 6, 3, 2, 5] },
+      { target: 12, items: [5, 7, 4, 3, 2] },
+      { target: 15, items: [6, 9, 4, 5, 3] },
+      { target: 18, items: [8, 10, 5, 6, 3] },
+    ];
+    const isDefault = !data || data.prompt === 'Solve this!' ||
+      (Array.isArray(data.items) && data.items[0] === 10 && data.items[1] === 5);
+    const fb = roundVariation[this.round % roundVariation.length];
+    this.targetValue = isDefault ? fb.target : (data.target || fb.target);
+    this.items       = isDefault ? fb.items.slice() : (Array.isArray(data.items) && data.items.length ? data.items.slice() : fb.items.slice());
+    this.maxTankValue = Math.max(this.targetValue * 1.4, this.targetValue + 4);
+    this.beltSpeed = 1.0 + this.round * 0.25;
+
+    // Reset state
+    this.tankAmount = 0;
+    this.poured = [];
+    this.beltItems.forEach(b => { b.spr.destroy(); b.fill.destroy(); b.lbl.destroy(); });
     this.beltItems = [];
-    this.grabbedItems.forEach(({ spr, lbl }) => { spr.destroy(); lbl.destroy(); });
-    this.grabbedItems = [];
-    this.currentTotal = 0;
-    this._updateTotal();
 
-    const data = generateRound(this.round);
-    this.targetValue = data.target;
-    this.targetLbl.setText(data.prompt || 'Grab exactly');
-    this.targetNum.setText(AI_ROUNDS ? '?' : String(data.target));
+    // Redraw target line
+    if (this.targetLine) this.targetLine.destroy();
+    if (this.targetLineLbl) this.targetLineLbl.destroy();
+    const frac = this.targetValue / this.maxTankValue;
+    const lineY = this.tankBotY - this.tankH * frac;
+    this.targetLine = this.add.rectangle(this.tankX, lineY, this.tankW + 16, 3, hexToNum(COL_ACCENT), 1).setDepth(6);
+    this.targetLineLbl = this.add.text(this.tankX - this.tankW / 2 - 10, lineY, String(this.targetValue), {
+      fontSize: '14px', color: COL_ACCENT, fontFamily: "'Space Grotesk', sans-serif", fontStyle: 'bold'
+    }).setOrigin(1, 0.5).setDepth(6);
 
-    if (AI_ROUNDS) {
-      this.targetNum.setFontSize(36).setAlpha(0.3);
-      this.targetLbl.setScale(0.8).setAlpha(0);
-      this.tweens.add({ targets: this.targetLbl, scale: 1, alpha: 1, duration: 350, ease: 'Back.easeOut' });
-    } else {
-      this.targetNum.setScale(0.4).setAlpha(0);
-      this.tweens.add({ targets: this.targetNum, scale: 1, alpha: 1, duration: 350, ease: 'Back.easeOut' });
-    }
+    this._updateTank();
+    this.equationLbl.setText('Fill to the orange line (' + this.targetValue + ')');
+    _redrawDots(this);
 
-    this._redrawDots();
-    this.beltSpeed = 1.5 + this.round * 0.3;
-
-    // Spawn items staggered onto the belt from the right
-    const items = data.items;
-    let spawnIdx = 0;
+    // Spawn cups staggered
+    let idx = 0;
     if (this.spawnTimer) this.spawnTimer.remove();
     this.spawnTimer = this.time.addEvent({
-      delay: 600,
-      repeat: items.length - 1,
+      delay: 900,
+      repeat: this.items.length - 1,
       callback: () => {
-        if (spawnIdx < items.length) {
-          this._spawnBeltItem(items[spawnIdx]);
-          spawnIdx++;
+        if (idx < this.items.length) {
+          this._spawnCup(this.items[idx]);
+          idx++;
         }
       }
     });
   }
 
-  _spawnBeltItem(val) {
-    const startX = this.W + 40;
-    const spr = this.add.image(startX, this.beltY, 'item')
-      .setScale(0.55).setDepth(6).setInteractive({ cursor: 'pointer' });
-    const lbl = this.add.text(startX, this.beltY + 34, String(val), {
-      fontSize: '14px', fontStyle: 'bold', color: COL_ACCENT,
-      fontFamily: "'Lexend', system-ui", stroke: '#000', strokeThickness: 3
-    }).setOrigin(0.5).setDepth(7);
-
-    spr.on('pointerover', () => spr.setScale(0.65));
-    spr.on('pointerout', () => spr.setScale(0.55));
-    spr.on('pointerdown', () => this._grabItem(spr, lbl, val));
-
-    this.beltItems.push({ spr, lbl, val });
+  _spawnCup(val) {
+    const x = this.beltRight + 40;
+    // Cup body — proportional height to value (so bigger value = visibly more liquid)
+    const maxCupH = 44;
+    const cupH = Math.max(16, Math.min(maxCupH, 8 + val * 3));
+    const cupW = 28;
+    const spr = this.add.rectangle(x, this.beltY, cupW, maxCupH, 0x000000, 0.3)
+      .setStrokeStyle(2, hexToNum(COL_TEXT), 0.8).setDepth(6)
+      .setInteractive({ useHandCursor: true });
+    const fill = this.add.rectangle(x, this.beltY + maxCupH / 2 - 2, cupW - 4, cupH, hexToNum(COL_PRIMARY), 0.75)
+      .setOrigin(0.5, 1).setDepth(7);
+    const lbl = this.add.text(x, this.beltY + maxCupH / 2 + 14, String(val), {
+      fontSize: '13px', color: COL_TEXT, fontFamily: "'Space Grotesk', sans-serif", fontStyle: 'bold'
+    }).setOrigin(0.5, 0).setDepth(7);
+    const entry = { spr, fill, lbl, val, taken: false };
+    spr.on('pointerdown', () => this._pour(entry));
+    this.beltItems.push(entry);
   }
 
   update() {
-    // Move belt items left
     for (let i = this.beltItems.length - 1; i >= 0; i--) {
-      const item = this.beltItems[i];
-      item.spr.x -= this.beltSpeed;
-      item.lbl.x = item.spr.x;
-
-      // Fell off the left edge
-      if (item.spr.x < -50) {
-        item.spr.destroy();
-        item.lbl.destroy();
+      const it = this.beltItems[i];
+      if (it.taken) continue;
+      it.spr.x -= this.beltSpeed;
+      it.fill.x = it.spr.x;
+      it.lbl.x = it.spr.x;
+      if (it.spr.x < this.beltLeft - 40) {
+        it.spr.destroy(); it.fill.destroy(); it.lbl.destroy();
         this.beltItems.splice(i, 1);
       }
     }
   }
 
-  _grabItem(spr, lbl, val) {
-    const idx = this.beltItems.findIndex(i => i.spr === spr);
-    if (idx === -1) return;
-    this.beltItems.splice(idx, 1);
-    spr.disableInteractive();
-
-    const slot = this.grabbedItems.length;
-    const destX = 30 + slot * 48, destY = this.trayY;
-
+  _pour(entry) {
+    if (entry.taken || this.solutionCard) return;
+    entry.taken = true;
+    entry.spr.disableInteractive();
+    // Animate cup flying to tank, tipping, draining
     this.tweens.add({
-      targets: spr, x: destX, y: destY, scale: 0.35,
-      duration: 200, ease: 'Cubic.easeOut'
+      targets: [entry.spr, entry.fill, entry.lbl],
+      x: this.tankX, duration: 320, ease: 'Cubic.easeInOut'
     });
     this.tweens.add({
-      targets: lbl, x: destX, y: destY + 22, alpha: 0.8,
-      duration: 200, ease: 'Cubic.easeOut',
-      onComplete: () => lbl.setFontSize(11)
+      targets: [entry.spr, entry.fill, entry.lbl],
+      y: this.tankTopY - 40, duration: 280, ease: 'Cubic.easeOut'
     });
-
-    this.grabbedItems.push({ spr, lbl, val });
-    this.currentTotal += val;
-    this._updateTotal();
-    this._showScorePop('+' + val);
+    this.time.delayedCall(340, () => {
+      // Drain fill
+      this.tweens.add({
+        targets: entry.fill,
+        height: 0, duration: 260, ease: 'Cubic.easeIn',
+        onComplete: () => {
+          entry.spr.destroy(); entry.fill.destroy(); entry.lbl.destroy();
+          const idx = this.beltItems.indexOf(entry);
+          if (idx !== -1) this.beltItems.splice(idx, 1);
+        }
+      });
+      // Raise tank level
+      this.tankAmount += entry.val;
+      this.poured.push(entry.val);
+      this._updateTank();
+      this.time.delayedCall(320, () => this._checkMatch());
+    });
   }
 
-  _updateTotal() {
-    this.totalNum.setText(String(this.currentTotal));
-    if (this.currentTotal === this.targetValue) this.totalNum.setColor(COL_ACCENT);
-    else if (this.currentTotal > this.targetValue) this.totalNum.setColor(COL_DANGER);
-    else this.totalNum.setColor(COL_PRIMARY);
+  _updateTank() {
+    const frac = Math.min(1, this.tankAmount / this.maxTankValue);
+    const newH = this.tankH * frac;
+    this.tweens.add({
+      targets: this.tankLiquid, height: newH, duration: 260, ease: 'Cubic.easeOut'
+    });
+    const matched = this.tankAmount === this.targetValue;
+    const over = this.tankAmount > this.targetValue;
+    this.tankLiquid.fillColor = matched ? hexToNum(COL_ACCENT) : over ? hexToNum(COL_DANGER) : hexToNum(COL_PRIMARY);
+    this.tankValueLbl.setText(String(this.tankAmount));
+    this.tankValueLbl.setColor(matched ? COL_ACCENT : over ? COL_DANGER : COL_PRIMARY);
   }
 
-  _checkCollection() {
-    if (this._shaking) return;
-    if (this.currentTotal === this.targetValue) {
+  _checkMatch() {
+    if (this.solutionCard) return;
+    if (this.tankAmount === this.targetValue) {
       if (this.spawnTimer) this.spawnTimer.remove();
-      const pts = 10 * (this.round + 1);
-      gameScore += pts;
+      heroCheer(this, this.hero);
+      this.cameras.main.flash(140, 34, 197, 94);
+      gameScore += 10 * (this.round + 1);
       this.scoreLbl.setText('Score: ' + gameScore);
-      this._showScorePop('+' + pts);
-      this._burstParticles(this.W / 2, this.beltY, 18);
-      this.round++;
-      this._redrawDots();
-      if (this.round >= TOTAL_ROUNDS) {
-        this.time.delayedCall(700, () => this.scene.start('VictoryScene', { score: gameScore }));
-      } else {
-        this.time.delayedCall(900, () => this.startRound());
+      const eqStr = this.poured.join(' + ') + ' = ' + this.targetValue;
+      _showSolutionCard(this, [
+        'You poured ' + this.poured.length + ' cup' + (this.poured.length === 1 ? '' : 's') + ':',
+        eqStr,
+        'Tank level: ' + this.targetValue,
+      ], () => {
+        this.round++;
+        if (this.round >= TOTAL_ROUNDS) {
+          this.scene.start('VictoryScene', { score: gameScore });
+        } else {
+          this.startRound();
+        }
+      });
+    } else if (this.tankAmount > this.targetValue) {
+      // Overflow — lose a life, reset round
+      this.lives--;
+      _redrawHearts(this);
+      heroShake(this, this.hero);
+      this.cameras.main.shake(180, 0.01);
+      if (this.lives <= 0) {
+        if (this.spawnTimer) this.spawnTimer.remove();
+        this.time.delayedCall(600, () => this.scene.start('LoseScene', { score: gameScore }));
+        return;
       }
-    } else {
-      const msg = this.currentTotal > this.targetValue ? 'Too many!' : 'Not enough!';
-      this._onWrongAnswer(msg);
-    }
-  }
-
-  _onWrongAnswer(msg) {
-    this.lives--;
-    this._redrawHearts();
-    this._screenShake();
-    this._showScorePop(msg, COL_DANGER);
-    if (this.lives <= 0) {
-      if (this.spawnTimer) this.spawnTimer.remove();
-      this.time.delayedCall(800, () => { window.parent.postMessage({ type: 'game_lose' }, '*'); this.scene.start('LoseScene', { score: gameScore }); });
-    } else {
-      this.time.delayedCall(400, () => this.startRound());
+      this.time.delayedCall(700, () => this.startRound());
     }
   }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// OPTION C: Split the Loot — two bins, each with its own target
+// OPTION C: Split the Loot — INTRINSIC REBUILD (silo fill lines)
+//
+// Two transparent SILOS, each with a target FILL LINE. Grain-weight items sit
+// in a bank. Drag each into LEFT or RIGHT silo — grain pours in, silo level
+// rises by that weight. When BOTH silos hit their fill lines exactly, both
+// glow and snap. Overflow is red and catastrophic.
+//
+// The visual height in each silo IS the sum. No computing in your head —
+// the height tells you.
 // ═══════════════════════════════════════════════════════════════════════════════
 class SplitTheLootScene extends Phaser.Scene {
   constructor() { super('SplitTheLootScene'); }
@@ -723,261 +629,242 @@ class SplitTheLootScene extends Phaser.Scene {
     this.H = this.scale.height;
     this.round = 0;
     this.lives = MAX_LIVES;
-    this.targetA = 0;
-    this.targetB = 0;
+    this.items = [];
     this.totalA = 0;
     this.totalB = 0;
-    this.itemSprites = [];
-    this.binAItems = [];
-    this.binBItems = [];
 
-    this._buildBackground();
-    this._buildUI();
-    this._buildBins();
-    this._buildCharacter();
-    this._buildDoneButton();
+    _sceneBackground(this);
+    _buildHUD(this);
+    this._buildLabels();
+    this._buildSilos();
+    this.hero = addCharacter(this, this.W * 0.88, this.H * 0.55, 0.8);
     this.startRound();
   }
 
-  _buildBackground() {
-    const bg = this.add.image(this.W / 2, this.H / 2, 'bg');
-    bg.setScale(Math.max(this.W / bg.width, this.H / bg.height));
-    this.add.rectangle(this.W / 2, this.H / 2, this.W, this.H, 0x000000, 0.65);
-  }
-
-  _buildUI() {
-    const W = this.W, pad = 14;
-    this.scoreLbl = this.add.text(W - pad, pad, 'Score: 0', {
-      fontSize: '16px', color: COL_ACCENT, fontFamily: "'Lexend', system-ui", fontStyle: 'bold'
-    }).setOrigin(1, 0).setDepth(10);
-
-    this.heartsGroup = this.add.group();
-    this._redrawHearts();
-    this.dotGroup = this.add.group();
-    this._redrawDots();
-
-    this.add.text(W / 2, pad, 'Split the loot into two bins!', {
-      fontSize: '15px', color: COL_ACCENT, fontFamily: "'Lexend', system-ui", fontStyle: 'bold'
+  _buildLabels() {
+    const W = this.W;
+    this.equationLbl = this.add.text(W / 2, 40, '', {
+      fontSize: '16px', color: COL_PRIMARY, fontFamily: "'Space Grotesk', sans-serif", fontStyle: 'bold',
+      align: 'center'
+    }).setOrigin(0.5, 0).setDepth(10);
+    this.promptLbl = this.add.text(W / 2, 62, 'Drag weights into a silo — fill BOTH silos to their lines', {
+      fontSize: '12px', color: COL_TEXT, fontFamily: "'Lexend', system-ui", alpha: 0.8,
+      align: 'center', wordWrap: { width: W - 40 }
     }).setOrigin(0.5, 0).setDepth(10);
   }
 
-  _redrawHearts() {
-    this.heartsGroup.clear(true, true);
-    for (let i = 0; i < MAX_LIVES; i++) {
-      this.heartsGroup.add(this.add.text(14 + i * 22, 14, '♥', {
-        fontSize: '18px', color: i < this.lives ? COL_DANGER : '#444', fontFamily: 'system-ui'
-      }).setDepth(10));
-    }
-  }
-
-  _redrawDots() {
-    this.dotGroup.clear(true, true);
-    const dotW = 12, gap = 6, total = (dotW + gap) * TOTAL_ROUNDS - gap;
-    const startX = this.W / 2 - total / 2;
-    for (let i = 0; i < TOTAL_ROUNDS; i++) {
-      let col = i < this.round ? hexToNum(COL_ACCENT) : i === this.round ? hexToNum(COL_PRIMARY) : 0x444444;
-      this.dotGroup.add(this.add.circle(startX + i * (dotW + gap), this.H - 18, dotW / 2, col, 1).setDepth(10));
-    }
-  }
-
-  _buildBins() {
+  _buildSilos() {
     const W = this.W, H = this.H;
-    const binW = W * 0.38, binH = 120;
-    const binY = H - 100;
-
-    // Bin A (left)
-    this.binARec = this.add.rectangle(W * 0.25, binY, binW, binH, hexToNum(COL_PRIMARY), 0.15)
-      .setDepth(2).setStrokeStyle(2, hexToNum(COL_PRIMARY), 0.6);
-    this.binALabel = this.add.text(W * 0.25, binY - binH / 2 - 16, 'Bin A: target 0', {
-      fontSize: '13px', color: COL_PRIMARY, fontFamily: "'Lexend', system-ui", fontStyle: 'bold'
-    }).setOrigin(0.5).setDepth(10);
-    this.binATotalLbl = this.add.text(W * 0.25, binY + 10, '0', {
-      fontSize: '28px', color: COL_PRIMARY, fontFamily: "'Space Grotesk', sans-serif", fontStyle: 'bold'
-    }).setOrigin(0.5).setDepth(10);
-
-    // Bin B (right)
-    this.binBRec = this.add.rectangle(W * 0.75, binY, binW, binH, hexToNum(COL_SECONDARY), 0.15)
-      .setDepth(2).setStrokeStyle(2, hexToNum(COL_SECONDARY), 0.6);
-    this.binBLabel = this.add.text(W * 0.75, binY - binH / 2 - 16, 'Bin B: target 0', {
-      fontSize: '13px', color: COL_SECONDARY, fontFamily: "'Lexend', system-ui", fontStyle: 'bold'
-    }).setOrigin(0.5).setDepth(10);
-    this.binBTotalLbl = this.add.text(W * 0.75, binY + 10, '0', {
-      fontSize: '28px', color: COL_SECONDARY, fontFamily: "'Space Grotesk', sans-serif", fontStyle: 'bold'
-    }).setOrigin(0.5).setDepth(10);
-
-    this.binY = binY;
-    this.binW = binW;
-    this.binH = binH;
-  }
-
-  _buildCharacter() {
-    this.character = this.add.image(this.W / 2, this.H - 100, 'character').setScale(0.5).setDepth(8).setAlpha(0.6);
-  }
-
-  _buildDoneButton() {
-    const bx = this.W / 2, by = this.H - 30;
-    const bg = this.add.rectangle(bx, by, 120, 34, hexToNum(COL_ACCENT), 1)
-      .setOrigin(0.5).setDepth(10).setInteractive({ cursor: 'pointer' });
-    this.add.text(bx, by, 'Check Split!', {
-      fontSize: '14px', color: '#000', fontFamily: "'Lexend', system-ui", fontStyle: 'bold'
-    }).setOrigin(0.5).setDepth(11);
-    bg.on('pointerover', () => bg.setAlpha(0.8));
-    bg.on('pointerout', () => bg.setAlpha(1));
-    bg.on('pointerdown', () => this._checkSplit());
+    this.siloTopY = H * 0.18;
+    this.siloBotY = H * 0.56;
+    this.siloH = this.siloBotY - this.siloTopY;
+    this.siloW = 84;
+    const xA = W * 0.28, xB = W * 0.58;
+    // Silo A
+    this.siloAX = xA;
+    this.add.rectangle(xA, (this.siloTopY + this.siloBotY) / 2, this.siloW, this.siloH, 0x000000, 0.35)
+      .setStrokeStyle(3, hexToNum(COL_PRIMARY), 0.8).setDepth(4);
+    this.siloAFill = this.add.rectangle(xA, this.siloBotY, this.siloW - 6, 0, hexToNum(COL_PRIMARY), 0.75)
+      .setOrigin(0.5, 1).setDepth(5);
+    this.siloALbl = this.add.text(xA, this.siloBotY + 14, '0', {
+      fontSize: '18px', color: COL_PRIMARY, fontFamily: "'Space Grotesk', sans-serif", fontStyle: 'bold'
+    }).setOrigin(0.5, 0).setDepth(6);
+    this.add.text(xA, this.siloTopY - 18, 'SILO A', {
+      fontSize: '11px', color: COL_PRIMARY, fontFamily: "'Lexend', system-ui", fontStyle: 'bold'
+    }).setOrigin(0.5).setDepth(6);
+    // Silo B
+    this.siloBX = xB;
+    this.add.rectangle(xB, (this.siloTopY + this.siloBotY) / 2, this.siloW, this.siloH, 0x000000, 0.35)
+      .setStrokeStyle(3, hexToNum(COL_SECONDARY), 0.8).setDepth(4);
+    this.siloBFill = this.add.rectangle(xB, this.siloBotY, this.siloW - 6, 0, hexToNum(COL_SECONDARY), 0.75)
+      .setOrigin(0.5, 1).setDepth(5);
+    this.siloBLbl = this.add.text(xB, this.siloBotY + 14, '0', {
+      fontSize: '18px', color: COL_SECONDARY, fontFamily: "'Space Grotesk', sans-serif", fontStyle: 'bold'
+    }).setOrigin(0.5, 0).setDepth(6);
+    this.add.text(xB, this.siloTopY - 18, 'SILO B', {
+      fontSize: '11px', color: COL_SECONDARY, fontFamily: "'Lexend', system-ui", fontStyle: 'bold'
+    }).setOrigin(0.5).setDepth(6);
   }
 
   startRound() {
-    // Clear old items
-    this.itemSprites.forEach(({ spr, lbl }) => { spr.destroy(); lbl.destroy(); });
-    this.itemSprites = [];
-    this.binAItems = [];
-    this.binBItems = [];
+    const data = getRound(this.round);
+    const roundVariation = [
+      { a: 5,  b: 6,  items: [3, 2, 4, 2, 6] },
+      { a: 8,  b: 7,  items: [5, 3, 4, 3, 7] },
+      { a: 10, b: 8,  items: [6, 4, 5, 3, 8] },
+      { a: 12, b: 10, items: [7, 5, 6, 4, 5] },
+      { a: 14, b: 12, items: [8, 6, 7, 5, 4] },
+    ];
+    const isDefault = !data || data.prompt === 'Solve this!' ||
+      (Array.isArray(data.items) && data.items[0] === 10 && data.items[1] === 5);
+    const fb = roundVariation[this.round % roundVariation.length];
+    // If AI provides items, split target ~ half
+    if (isDefault) {
+      this.targetA = fb.a;
+      this.targetB = fb.b;
+      this.itemValues = fb.items.slice();
+    } else {
+      const t = data.target || (fb.a + fb.b);
+      this.targetA = Math.ceil(t / 2);
+      this.targetB = t - this.targetA;
+      this.itemValues = (Array.isArray(data.items) && data.items.length ? data.items : fb.items).slice();
+    }
+    this.maxSilo = Math.max(this.targetA, this.targetB) * 1.4 + 2;
+
+    // Reset state
     this.totalA = 0;
     this.totalB = 0;
+    if (this._itemObjs) this._itemObjs.forEach(o => o.destroy && o.destroy());
+    this._itemObjs = [];
+    this.items = [];
 
-    const data = generateSplitRound(this.round);
-    this.targetA = data.targetA;
-    this.targetB = data.targetB;
+    // Redraw silo target lines
+    if (this.lineA) this.lineA.destroy();
+    if (this.lineALbl) this.lineALbl.destroy();
+    if (this.lineB) this.lineB.destroy();
+    if (this.lineBLbl) this.lineBLbl.destroy();
+    const yA = this.siloBotY - this.siloH * (this.targetA / this.maxSilo);
+    const yB = this.siloBotY - this.siloH * (this.targetB / this.maxSilo);
+    this.lineA = this.add.rectangle(this.siloAX, yA, this.siloW + 14, 3, hexToNum(COL_ACCENT), 1).setDepth(6);
+    this.lineALbl = this.add.text(this.siloAX - this.siloW / 2 - 8, yA, String(this.targetA), {
+      fontSize: '13px', color: COL_ACCENT, fontFamily: "'Space Grotesk', sans-serif", fontStyle: 'bold'
+    }).setOrigin(1, 0.5).setDepth(6);
+    this.lineB = this.add.rectangle(this.siloBX, yB, this.siloW + 14, 3, hexToNum(COL_ACCENT), 1).setDepth(6);
+    this.lineBLbl = this.add.text(this.siloBX - this.siloW / 2 - 8, yB, String(this.targetB), {
+      fontSize: '13px', color: COL_ACCENT, fontFamily: "'Space Grotesk', sans-serif", fontStyle: 'bold'
+    }).setOrigin(1, 0.5).setDepth(6);
 
-    this.binALabel.setText('Bin A: target ' + this.targetA);
-    this.binBLabel.setText('Bin B: target ' + this.targetB);
-    this._updateBinTotals();
-    this._redrawDots();
+    this.equationLbl.setText('Silo A: fill to ' + this.targetA + '    |    Silo B: fill to ' + this.targetB);
+    _redrawDots(this);
+    this._updateSilos();
 
-    // Spawn draggable items in center area
-    const items = data.items;
-    const cols = Math.min(items.length, 5);
-    const startX = this.W / 2 - (cols - 1) * 55 / 2;
-    const startY = 80;
-
-    items.forEach((val, i) => {
-      const col = i % cols, row = Math.floor(i / cols);
-      const x = startX + col * 55;
-      const y = startY + row * 70;
-
-      const spr = this.add.image(x, y, 'item')
-        .setScale(0.5).setDepth(6).setInteractive({ cursor: 'pointer', draggable: true });
-      const lbl = this.add.text(x, y + 30, String(val), {
-        fontSize: '13px', fontStyle: 'bold', color: COL_ACCENT,
-        fontFamily: "'Lexend', system-ui", stroke: '#000', strokeThickness: 3
-      }).setOrigin(0.5).setDepth(7);
-
+    // Place item bank at bottom
+    const bankY = this.H * 0.78;
+    const n = this.itemValues.length;
+    const gap = Math.min(76, (this.W - 40) / n);
+    const startX = this.W / 2 - ((n - 1) * gap) / 2;
+    this.itemValues.forEach((val, i) => {
+      const x = startX + i * gap;
+      // Proportional weight shape (taller = more)
+      const wH = Math.max(22, Math.min(58, 14 + val * 3));
+      const spr = this.add.rectangle(x, bankY, 44, wH, hexToNum(COL_TEXT), 0.5)
+        .setStrokeStyle(2, hexToNum(COL_ACCENT), 0.6).setDepth(6)
+        .setInteractive({ useHandCursor: true, draggable: true });
+      const lbl = this.add.text(x, bankY + wH / 2 + 10, String(val), {
+        fontSize: '12px', color: COL_TEXT, fontFamily: "'Space Grotesk', sans-serif", fontStyle: 'bold'
+      }).setOrigin(0.5, 0).setDepth(7);
       spr._val = val;
       spr._lbl = lbl;
       spr._origX = x;
-      spr._origY = y;
-      spr._inBin = null;
-
+      spr._origY = bankY;
+      spr._inSilo = null;
       this.input.setDraggable(spr);
-      this.itemSprites.push({ spr, lbl, val });
+      this.items.push(spr);
+      this._itemObjs.push(spr, lbl);
     });
 
-    // Drag events
-    this.input.on('drag', (pointer, obj, dragX, dragY) => {
-      obj.x = dragX;
-      obj.y = dragY;
-      if (obj._lbl) obj._lbl.setPosition(dragX, dragY + 30);
-    });
+    // Drag handlers (only set up once)
+    if (!this._dragBound) {
+      this._dragBound = true;
+      this.input.on('drag', (pointer, obj, dragX, dragY) => {
+        if (!obj._val) return;
+        obj.x = dragX; obj.y = dragY;
+        if (obj._lbl) obj._lbl.setPosition(dragX, dragY + obj.height / 2 + 10);
+      });
+      this.input.on('dragend', (pointer, obj) => {
+        if (!obj._val) return;
+        // Determine drop target by position
+        const distA = Math.abs(obj.x - this.siloAX);
+        const distB = Math.abs(obj.x - this.siloBX);
+        const inSiloArea = obj.y > this.siloTopY - 20 && obj.y < this.siloBotY + 40;
+        if (inSiloArea && distA < this.siloW) {
+          this._dropInSilo(obj, 'A');
+        } else if (inSiloArea && distB < this.siloW) {
+          this._dropInSilo(obj, 'B');
+        } else {
+          if (obj._inSilo) this._removeFromSilo(obj);
+          this.tweens.add({ targets: obj, x: obj._origX, y: obj._origY, duration: 220 });
+          this.tweens.add({ targets: obj._lbl, x: obj._origX, y: obj._origY + obj.height / 2 + 10, duration: 220 });
+        }
+      });
+    }
+  }
 
-    this.input.on('dragend', (pointer, obj) => {
-      const W = this.W;
-      // Check if dropped in bin A or bin B
-      if (obj.x < W * 0.5 && obj.y > this.binY - this.binH / 2) {
-        this._dropInBin(obj, 'A');
-      } else if (obj.x >= W * 0.5 && obj.y > this.binY - this.binH / 2) {
-        this._dropInBin(obj, 'B');
-      } else {
-        // Return to center if was in a bin
-        if (obj._inBin) this._removeFromBin(obj);
-        this.tweens.add({ targets: obj, x: obj._origX, y: obj._origY, duration: 200 });
-        this.tweens.add({ targets: obj._lbl, x: obj._origX, y: obj._origY + 30, duration: 200 });
+  _dropInSilo(spr, which) {
+    if (spr._inSilo === which) return;
+    if (spr._inSilo) this._removeFromSilo(spr);
+    spr._inSilo = which;
+    if (which === 'A') this.totalA += spr._val; else this.totalB += spr._val;
+    // Park the weight visually on top of silo
+    const x = which === 'A' ? this.siloAX : this.siloBX;
+    const y = this.siloTopY - 30 - (which === 'A' ? this.totalA : this.totalB) * 2;
+    this.tweens.add({ targets: spr, x, y: Math.max(80, y), scale: 0.6, duration: 220 });
+    this.tweens.add({ targets: spr._lbl, x, y: Math.max(80, y) + spr.height / 2 + 6, duration: 220 });
+    this._updateSilos();
+    this.time.delayedCall(260, () => this._checkMatch());
+  }
+
+  _removeFromSilo(spr) {
+    if (spr._inSilo === 'A') this.totalA -= spr._val;
+    else if (spr._inSilo === 'B') this.totalB -= spr._val;
+    spr._inSilo = null;
+    spr.setScale(1);
+    this._updateSilos();
+  }
+
+  _updateSilos() {
+    const fracA = Math.min(1, this.totalA / this.maxSilo);
+    const fracB = Math.min(1, this.totalB / this.maxSilo);
+    this.tweens.add({ targets: this.siloAFill, height: this.siloH * fracA, duration: 240 });
+    this.tweens.add({ targets: this.siloBFill, height: this.siloH * fracB, duration: 240 });
+    const matchA = this.totalA === this.targetA;
+    const overA  = this.totalA > this.targetA;
+    const matchB = this.totalB === this.targetB;
+    const overB  = this.totalB > this.targetB;
+    this.siloAFill.fillColor = matchA ? hexToNum(COL_ACCENT) : overA ? hexToNum(COL_DANGER) : hexToNum(COL_PRIMARY);
+    this.siloBFill.fillColor = matchB ? hexToNum(COL_ACCENT) : overB ? hexToNum(COL_DANGER) : hexToNum(COL_SECONDARY);
+    this.siloALbl.setText(String(this.totalA)).setColor(matchA ? COL_ACCENT : overA ? COL_DANGER : COL_PRIMARY);
+    this.siloBLbl.setText(String(this.totalB)).setColor(matchB ? COL_ACCENT : overB ? COL_DANGER : COL_SECONDARY);
+  }
+
+  _checkMatch() {
+    if (this.solutionCard) return;
+    if (this.totalA > this.targetA || this.totalB > this.targetB) {
+      // Overflow — lose life, reset
+      this.lives--;
+      _redrawHearts(this);
+      heroShake(this, this.hero);
+      this.cameras.main.shake(160, 0.008);
+      if (this.lives <= 0) {
+        this.time.delayedCall(600, () => this.scene.start('LoseScene', { score: gameScore }));
+        return;
       }
-    });
-  }
-
-  _dropInBin(spr, bin) {
-    // Remove from old bin if switching
-    if (spr._inBin) this._removeFromBin(spr);
-
-    if (bin === 'A') {
-      this.binAItems.push(spr);
-      this.totalA += spr._val;
-      const slot = this.binAItems.length - 1;
-      const tx = this.W * 0.25 - this.binW / 2 + 20 + (slot % 4) * 40;
-      const ty = this.binY - 20 + Math.floor(slot / 4) * 30;
-      this.tweens.add({ targets: spr, x: tx, y: ty, scale: 0.35, duration: 200 });
-      this.tweens.add({ targets: spr._lbl, x: tx, y: ty + 22, duration: 200 });
-    } else {
-      this.binBItems.push(spr);
-      this.totalB += spr._val;
-      const slot = this.binBItems.length - 1;
-      const tx = this.W * 0.75 - this.binW / 2 + 20 + (slot % 4) * 40;
-      const ty = this.binY - 20 + Math.floor(slot / 4) * 30;
-      this.tweens.add({ targets: spr, x: tx, y: ty, scale: 0.35, duration: 200 });
-      this.tweens.add({ targets: spr._lbl, x: tx, y: ty + 22, duration: 200 });
+      this.time.delayedCall(700, () => this.startRound());
+      return;
     }
-    spr._inBin = bin;
-    this._updateBinTotals();
-  }
-
-  _removeFromBin(spr) {
-    if (spr._inBin === 'A') {
-      const idx = this.binAItems.indexOf(spr);
-      if (idx !== -1) { this.binAItems.splice(idx, 1); this.totalA -= spr._val; }
-    } else if (spr._inBin === 'B') {
-      const idx = this.binBItems.indexOf(spr);
-      if (idx !== -1) { this.binBItems.splice(idx, 1); this.totalB -= spr._val; }
-    }
-    spr._inBin = null;
-    spr.setScale(0.5);
-    this._updateBinTotals();
-  }
-
-  _updateBinTotals() {
-    this.binATotalLbl.setText(String(this.totalA));
-    this.binATotalLbl.setColor(this.totalA === this.targetA ? COL_ACCENT : this.totalA > this.targetA ? COL_DANGER : COL_PRIMARY);
-
-    this.binBTotalLbl.setText(String(this.totalB));
-    this.binBTotalLbl.setColor(this.totalB === this.targetB ? COL_ACCENT : this.totalB > this.targetB ? COL_DANGER : COL_SECONDARY);
-
-    // Highlight bins when targets hit
-    this.binARec.setStrokeStyle(2, this.totalA === this.targetA ? hexToNum(COL_ACCENT) : hexToNum(COL_PRIMARY), 0.6);
-    this.binBRec.setStrokeStyle(2, this.totalB === this.targetB ? hexToNum(COL_ACCENT) : hexToNum(COL_SECONDARY), 0.6);
-  }
-
-  _checkSplit() {
-    if (this._shaking) return;
     if (this.totalA === this.targetA && this.totalB === this.targetB) {
-      const pts = 10 * (this.round + 1);
-      gameScore += pts;
+      heroCheer(this, this.hero);
+      this.cameras.main.flash(140, 34, 197, 94);
+      gameScore += 10 * (this.round + 1);
       this.scoreLbl.setText('Score: ' + gameScore);
-      this._showScorePop('+' + pts);
-      this._burstParticles(this.W * 0.25, this.binY, 12);
-      this._burstParticles(this.W * 0.75, this.binY, 12);
-      this.round++;
-      this._redrawDots();
-      if (this.round >= TOTAL_ROUNDS) {
-        this.time.delayedCall(700, () => this.scene.start('VictoryScene', { score: gameScore }));
-      } else {
-        this.time.delayedCall(900, () => this.startRound());
-      }
-    } else {
-      let msg = '';
-      if (this.totalA !== this.targetA) msg += 'Bin A: need ' + this.targetA + ', got ' + this.totalA + '. ';
-      if (this.totalB !== this.targetB) msg += 'Bin B: need ' + this.targetB + ', got ' + this.totalB + '.';
-      this._onWrongAnswer(msg);
+      // Build equation strings from items placed
+      const partsA = this.items.filter(s => s._inSilo === 'A').map(s => s._val);
+      const partsB = this.items.filter(s => s._inSilo === 'B').map(s => s._val);
+      const eqA = partsA.join(' + ') + ' = ' + this.targetA;
+      const eqB = partsB.join(' + ') + ' = ' + this.targetB;
+      _showSolutionCard(this, [
+        'Silo A: ' + eqA,
+        'Silo B: ' + eqB,
+        'Total split: ' + (this.targetA + this.targetB),
+      ], () => {
+        this.round++;
+        if (this.round >= TOTAL_ROUNDS) {
+          this.scene.start('VictoryScene', { score: gameScore });
+        } else {
+          this.startRound();
+        }
+      });
     }
-  }
-
-  _onWrongAnswer(msg) {
-    this.lives--;
-    this._redrawHearts();
-    this._screenShake();
-    this._showScorePop(msg || 'Not right!', COL_DANGER);
-    if (this.lives <= 0) {
-      this.time.delayedCall(800, () => { window.parent.postMessage({ type: 'game_lose' }, '*'); this.scene.start('LoseScene', { score: gameScore }); });
-    }
-    // Don't reset — let them keep trying with remaining lives
   }
 }
 `

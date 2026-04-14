@@ -33,123 +33,224 @@ export function montessoriPhaserEngine(
 
 const GAME_SCENES = `
 // ═══════════════════════════════════════════════════════════════════════════════
+// GoldenBeadsScene — INTRINSIC REBUILD (April 13 night)
+// Teaches: place value composition (hundreds, tens, ones) — CCSS 2.NBT.A.1
+// Discovery: dragging a hundred-square, ten-bar, or unit into its column makes
+//   the digital readout tick up by 100, 10, or 1 — the learner SEES that a
+//   ten-bar IS ten ones because the readout jumps by 10. The target is reached
+//   only when the composition is physically correct.
+// Self-revealing truth: the digital number at the bottom is a direct mirror of
+//   what's on the mat. When it matches the target, the round auto-completes.
+//   No "Check" — the math is visible in the arrangement itself.
+// ═══════════════════════════════════════════════════════════════════════════════
 class GoldenBeadsScene extends Phaser.Scene {
   constructor() { super('GoldenBeadsScene'); }
-  create() { this.W=this.scale.width;this.H=this.scale.height;this.round=0;this.lives=MAX_LIVES;this._bg();this._ui();this.hero=addCharacter(this,this.W*0.88,this.H*0.85,0.45);this.startRound(); }
-  _bg() { const bg=this.add.image(this.W/2,this.H/2,'bg');bg.setScale(Math.max(this.W/bg.width,this.H/bg.height));this.add.rectangle(this.W/2,this.H/2,this.W,this.H,0x000000,0.65); }
+  create() { this.W=this.scale.width;this.H=this.scale.height;this.round=0;this.lives=MAX_LIVES;this._bg();this._ui();this.hero=addCharacter(this,this.W*0.88,this.H*0.55,0.8);this.startRound(); }
+  _bg() { const bg=this.add.image(this.W/2,this.H/2,'bg');bg.setScale(Math.max(this.W/bg.width,this.H/bg.height));this.add.rectangle(this.W/2,this.H/2,this.W,this.H,0x000000,0.7); }
   _ui() { this.scoreLbl=this.add.text(this.W-14,14,'Score: 0',{fontSize:'16px',color:COL_ACCENT,fontFamily:"'Lexend', system-ui",fontStyle:'bold'}).setOrigin(1,0).setDepth(10);this.hg=this.add.group();this._rh();this.dg=this.add.group();this._rd(); }
   _rh() { this.hg.clear(true,true);for(let i=0;i<this.lives;i++)this.hg.add(this.add.text(14+i*22,14,'♥',{fontSize:'18px',color:COL_DANGER}).setDepth(10)); }
   _rd() { this.dg.clear(true,true);for(let i=0;i<TOTAL_ROUNDS;i++){const c=i<this.round?COL_ACCENT:i===this.round?COL_PRIMARY:'#555555';this.dg.add(this.add.circle(this.W/2-40+i*20,this.H-16,5,hexToNum(c)).setDepth(10));} }
 
   startRound() {
-    if(this.rg)this.rg.clear(true,true);this.rg=this.add.group();
-    const data=getRound(this.round);this.target=data.target;this._rd();
+    if(this.rg){this.rg.destroy(true);}this.rg=this.add.group();
+    const data=getRound(this.round);
+    // roundVariation fallback — intrinsic, no AI dependency required
+    const roundVariation=[
+      {target:23},
+      {target:47},
+      {target:152},
+      {target:308},
+      {target:426},
+    ];
+    const isDefault=!data||data.prompt==='Solve this!'||!data.target||data.target<10;
+    const fallback=roundVariation[this.round%roundVariation.length];
+    this.target=isDefault?fallback.target:data.target;
+    if(this.target>999)this.target=this.target%1000;
+    this._rd();
     const W=this.W,H=this.H;
-    this.inputVal='';
-    this.beadCount=0;
-    this.tenBarCount=0;
 
-    // Prompt
-    this.rg.add(this.add.text(W/2,H*0.08,data.prompt,{fontSize:'18px',color:COL_ACCENT,fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold',wordWrap:{width:W-40}}).setOrigin(0.5).setDepth(6));
+    // Top: operation / target number
+    this.rg.add(this.add.text(W/2,H*0.06,'Build this number with beads',{fontSize:'14px',color:COL_TEXT,fontFamily:"'Lexend', system-ui"}).setOrigin(0.5).setDepth(6));
+    this.rg.add(this.add.text(W/2,H*0.11,String(this.target),{fontSize:'30px',color:COL_ACCENT,fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold'}).setOrigin(0.5).setDepth(6));
 
-    // Ten-frame (2x5 grid) on the left
-    const tfX=W*0.15,tfY=H*0.3,cellSize=28;
-    this.rg.add(this.add.text(tfX+cellSize*2.5,tfY-20,'Ten-Frame',{fontSize:'12px',color:COL_TEXT,fontFamily:"'Lexend', system-ui",alpha:0.6}).setOrigin(0.5).setDepth(5));
-    this.tenFrameCells=[];
-    for(let r=0;r<2;r++){for(let c=0;c<5;c++){
-      const cx=tfX+c*cellSize+cellSize/2,cy=tfY+r*cellSize+cellSize/2;
-      const cell=this.add.rectangle(cx,cy,cellSize-2,cellSize-2,hexToNum(COL_SECONDARY),0.15).setStrokeStyle(1,hexToNum(COL_TEXT),0.3).setDepth(5);
-      this.rg.add(cell);this.tenFrameCells.push({rect:cell,filled:false,x:cx,y:cy});
-    }}
+    // State: how many pieces dropped per column
+    this.columnCounts={H:0,T:0,O:0};
+    this.placedPieces=[]; // {sprite, val}
 
-    // Hundred-square outline on the right of ten-frame
-    const hsX=W*0.15,hsY=H*0.48;
-    const hsCellSize=12;
-    this.rg.add(this.add.text(hsX+hsCellSize*5,hsY-14,'Hundred-Square',{fontSize:'11px',color:COL_TEXT,fontFamily:"'Lexend', system-ui",alpha:0.6}).setOrigin(0.5).setDepth(5));
-    this.rg.add(this.add.rectangle(hsX+hsCellSize*5,hsY+hsCellSize*5,hsCellSize*10,hsCellSize*10,hexToNum(COL_SECONDARY),0.08).setStrokeStyle(1,hexToNum(COL_ACCENT),0.3).setDepth(5));
-    for(let r=0;r<10;r++){for(let c=0;c<10;c++){
-      this.rg.add(this.add.rectangle(hsX+c*hsCellSize+hsCellSize/2,hsY+r*hsCellSize+hsCellSize/2,hsCellSize-1,hsCellSize-1,0x000000,0).setStrokeStyle(0.5,hexToNum(COL_TEXT),0.1).setDepth(5));
-    }}
+    // Place-value columns (drop zones)
+    const colY=H*0.22,colH=H*0.38,colW=W*0.18;
+    const colXH=W*0.12,colXT=W*0.32,colXO=W*0.52;
+    const mkCol=(x,label,key,tint)=>{
+      const rect=this.add.rectangle(x+colW/2,colY+colH/2,colW,colH,hexToNum(tint),0.08).setStrokeStyle(2,hexToNum(tint),0.6).setDepth(4);
+      this.rg.add(rect);
+      this.rg.add(this.add.text(x+colW/2,colY+12,label,{fontSize:'13px',color:tint,fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold'}).setOrigin(0.5).setDepth(5));
+      return {x,y:colY,w:colW,h:colH,key,tint};
+    };
+    this.columns={
+      H:mkCol(colXH,'Hundreds','H','#ef4444'),
+      T:mkCol(colXT,'Tens','T','#3b82f6'),
+      O:mkCol(colXO,'Ones','O','#22c55e'),
+    };
 
-    // Loose unit beads scattered
-    const beadArea={x:W*0.45,y:H*0.22,w:W*0.48,h:H*0.28};
-    this.rg.add(this.add.text(beadArea.x+beadArea.w/2,beadArea.y-14,'Loose Beads (click to count)',{fontSize:'11px',color:COL_TEXT,fontFamily:"'Lexend', system-ui",alpha:0.6}).setOrigin(0.5).setDepth(5));
-    const numBeads=Math.min(this.target+5,30);
-    this.beads=[];
-    for(let i=0;i<numBeads;i++){
-      const bx=beadArea.x+20+Math.random()*(beadArea.w-40);
-      const by=beadArea.y+10+Math.random()*(beadArea.h-20);
-      const bead=this.add.circle(bx,by,8,hexToNum(COL_PRIMARY),0.7).setInteractive({useHandCursor:true}).setDepth(6);
-      this.rg.add(bead);this.beads.push({circle:bead,counted:false});
-      bead.on('pointerdown',()=>{
-        const idx=this.beads.indexOf(this.beads.find(b=>b.circle===bead));
-        if(idx>=0&&!this.beads[idx].counted){
-          this.beads[idx].counted=true;
-          bead.setFillStyle(hexToNum(COL_ACCENT),1);
-          this.beadCount++;
-          // Fill ten-frame
-          if(this.beadCount<=10){
-            const ci=this.beadCount-1;
-            if(this.tenFrameCells[ci]){
-              this.tenFrameCells[ci].filled=true;
-              this.add.circle(this.tenFrameCells[ci].x,this.tenFrameCells[ci].y,10,hexToNum(COL_ACCENT),0.8).setDepth(6);
-            }
-          }
-          // Auto-bundle at 10
-          if(this.beadCount===10){
-            this.tenBarCount++;
-            this.beadCount=0;
-            this.tenFrameCells.forEach(tc=>{tc.filled=false;});
-            this.time.delayedCall(300,()=>{
-              if(this.tenBarLbl)this.tenBarLbl.setText('Ten-bars: '+this.tenBarCount);
-            });
-          }
-          if(this.beadCountLbl)this.beadCountLbl.setText('Units: '+this.beadCount);
-        }
-      });
-    }
+    // Bead tray (source) on the right
+    const trayX=W*0.72,trayY=H*0.22,trayW=W*0.24,trayH=H*0.38;
+    this.rg.add(this.add.rectangle(trayX+trayW/2,trayY+trayH/2,trayW,trayH,hexToNum(COL_SECONDARY),0.08).setStrokeStyle(1,hexToNum(COL_TEXT),0.3).setDepth(3));
+    this.rg.add(this.add.text(trayX+trayW/2,trayY+10,'Bead Tray',{fontSize:'11px',color:COL_TEXT,fontFamily:"'Lexend', system-ui",alpha:0.6}).setOrigin(0.5).setDepth(4));
 
-    // Counters
-    this.tenBarLbl=this.add.text(W*0.5,H*0.55,'Ten-bars: 0',{fontSize:'14px',color:COL_ACCENT,fontFamily:"'Lexend', system-ui",fontStyle:'bold'}).setDepth(6);
-    this.rg.add(this.tenBarLbl);
-    this.beadCountLbl=this.add.text(W*0.5,H*0.6,'Units: 0',{fontSize:'14px',color:COL_PRIMARY,fontFamily:"'Lexend', system-ui",fontStyle:'bold'}).setDepth(6);
-    this.rg.add(this.beadCountLbl);
+    // Spawn one reusable "source" of each piece type. Dragging CLONES.
+    // Hundred-square source
+    this._makeSource(trayX+trayW*0.25,trayY+trayH*0.35,'H',100,'#ef4444');
+    // Ten-bar source
+    this._makeSource(trayX+trayW*0.55,trayY+trayH*0.35,'T',10,'#3b82f6');
+    // Unit-bead source
+    this._makeSource(trayX+trayW*0.85,trayY+trayH*0.35,'O',1,'#22c55e');
 
-    // Number pad for final answer
-    this.rg.add(this.add.text(W*0.5,H*0.68,'Type your answer:',{fontSize:'13px',color:COL_TEXT,fontFamily:"'Lexend', system-ui",alpha:0.6}).setDepth(6));
-    this.answerLbl=this.add.text(W*0.5,H*0.73,'_',{fontSize:'28px',color:COL_TEXT,fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold'}).setOrigin(0,0.5).setDepth(6);
-    this.rg.add(this.answerLbl);
-    this._numpad(W*0.38,H*0.79);
+    this.rg.add(this.add.text(trayX+trayW*0.25,trayY+trayH*0.65,'100',{fontSize:'10px',color:'#ef4444',fontFamily:"'Lexend', system-ui"}).setOrigin(0.5).setDepth(4));
+    this.rg.add(this.add.text(trayX+trayW*0.55,trayY+trayH*0.65,'10',{fontSize:'10px',color:'#3b82f6',fontFamily:"'Lexend', system-ui"}).setOrigin(0.5).setDepth(4));
+    this.rg.add(this.add.text(trayX+trayW*0.85,trayY+trayH*0.65,'1',{fontSize:'10px',color:'#22c55e',fontFamily:"'Lexend', system-ui"}).setOrigin(0.5).setDepth(4));
 
-    // Check button
-    const check=this.add.rectangle(W*0.75,H*0.9,110,38,hexToNum(COL_PRIMARY),1).setInteractive({useHandCursor:true}).setDepth(10);
-    this.rg.add(check);this.rg.add(this.add.text(W*0.75,H*0.9,'Check',{fontSize:'14px',color:'#fff',fontFamily:"'Lexend', system-ui",fontStyle:'bold'}).setOrigin(0.5).setDepth(11));
-    check.on('pointerdown',()=>this._check());
+    // Undo button (return last piece)
+    const undoBtn=this.add.rectangle(W*0.85,H*0.66,100,30,hexToNum(COL_DANGER),0.55).setInteractive({useHandCursor:true}).setDepth(10);
+    this.rg.add(undoBtn);
+    this.rg.add(this.add.text(W*0.85,H*0.66,'Undo',{fontSize:'12px',color:'#fff',fontFamily:"'Lexend', system-ui",fontStyle:'bold'}).setOrigin(0.5).setDepth(11));
+    undoBtn.on('pointerdown',()=>this._undo());
+
+    // Digital readout (auto-forms from columns)
+    this.rg.add(this.add.text(W/2,H*0.7,'Your number:',{fontSize:'12px',color:COL_TEXT,fontFamily:"'Lexend', system-ui",alpha:0.6}).setOrigin(0.5).setDepth(6));
+    this.readoutLbl=this.add.text(W/2,H*0.76,'0',{fontSize:'34px',color:COL_PRIMARY,fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold'}).setOrigin(0.5).setDepth(6);
+    this.rg.add(this.readoutLbl);
+
+    this.breakdownLbl=this.add.text(W/2,H*0.82,'',{fontSize:'12px',color:COL_TEXT,fontFamily:"'Lexend', system-ui",alpha:0.6}).setOrigin(0.5).setDepth(6);
+    this.rg.add(this.breakdownLbl);
+    this._updateReadout();
   }
 
-  _numpad(sx,sy) {
-    const keys=['1','2','3','4','5','6','7','8','9','0','⌫'];
-    keys.forEach((k,i)=>{
-      const col=Math.floor(i%4),row=Math.floor(i/4);
-      const bx=sx+col*52,by=sy+row*38;
-      const btn=this.add.rectangle(bx,by,46,32,hexToNum(COL_SECONDARY),0.3).setInteractive({useHandCursor:true}).setDepth(8);
-      this.rg.add(btn);this.rg.add(this.add.text(bx,by,k,{fontSize:'16px',color:COL_TEXT,fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold'}).setOrigin(0.5).setDepth(9));
-      btn.on('pointerdown',()=>{
-        if(k==='⌫'){this.inputVal=this.inputVal.slice(0,-1);}
-        else if(this.inputVal.length<6){this.inputVal+=k;}
-        this.answerLbl.setText(this.inputVal||'_');
-      });
+  _makeSource(x,y,key,val,tint) {
+    const color=hexToNum(tint);
+    const src=this._drawPiece(x,y,val,color);
+    src.setInteractive({draggable:true,useHandCursor:true});
+    this.input.setDraggable(src);
+    this.rg.add(src);
+    let ghost=null;
+    src.on('dragstart',()=>{
+      ghost=this._drawPiece(x,y,val,color).setAlpha(0.85).setDepth(20);
+      this.rg.add(ghost);
+    });
+    src.on('drag',(_p,dx,dy)=>{
+      if(ghost){ghost.x=dx;ghost.y=dy;}
+    });
+    src.on('dragend',(p)=>{
+      if(!ghost)return;
+      const zone=this._zoneAt(ghost.x,ghost.y);
+      if(zone===key){
+        // Correct column — stick the piece where dropped (inside column)
+        const col=this.columns[key];
+        const n=this.columnCounts[key];
+        // Grid positions within column
+        const px=col.x+12+(n%3)*((col.w-24)/3);
+        const py=col.y+40+Math.floor(n/3)*22;
+        ghost.x=px;ghost.y=py;ghost.setAlpha(1);
+        this.placedPieces.push({sprite:ghost,val,key});
+        this.columnCounts[key]++;
+        this._updateReadout();
+        this._checkSolved();
+        ghost=null;
+      }else{
+        // Wrong column or nowhere — flash + return
+        this.cameras.main.shake(80,0.003);
+        if(ghost){ghost.destroy();ghost=null;}
+      }
     });
   }
 
-  _check() {
-    const answer=parseInt(this.inputVal,10);
-    if(answer===this.target){
-      gameScore+=10*(this.round+1);this.scoreLbl.setText('Score: '+gameScore);this.cameras.main.flash(200,34,197,94);heroCheer(this,this.hero);
-      this.round++;if(this.round>=TOTAL_ROUNDS)this.time.delayedCall(600,()=>this.scene.start('VictoryScene',{score:gameScore}));
-      else this.time.delayedCall(800,()=>this.startRound());
-    }else{this.lives--;this._rh();this.cameras.main.shake(200,0.01);heroShake(this,this.hero);
-      if(this.lives<=0)this.time.delayedCall(500,()=>this.scene.start('LoseScene',{score:gameScore}));}
+  _drawPiece(x,y,val,color) {
+    if(val===100){
+      const c=this.add.container(x,y);
+      const bg=this.add.rectangle(0,0,40,40,color,0.75).setStrokeStyle(1,0xffffff,0.4);
+      c.add(bg);
+      for(let r=0;r<3;r++)for(let k=0;k<3;k++){
+        c.add(this.add.circle(-12+k*12,-12+r*12,2.5,0xffffff,0.6));
+      }
+      c.setSize(40,40);
+      return c;
+    }
+    if(val===10){
+      const c=this.add.container(x,y);
+      const bg=this.add.rectangle(0,0,14,46,color,0.8).setStrokeStyle(1,0xffffff,0.4);
+      c.add(bg);
+      for(let i=0;i<5;i++)c.add(this.add.circle(0,-18+i*9,2.5,0xffffff,0.7));
+      c.setSize(14,46);
+      return c;
+    }
+    const c=this.add.container(x,y);
+    c.add(this.add.circle(0,0,9,color,0.85).setStrokeStyle(1,0xffffff,0.4));
+    c.setSize(18,18);
+    return c;
+  }
+
+  _zoneAt(x,y) {
+    for(const k of ['H','T','O']){
+      const c=this.columns[k];
+      if(x>=c.x&&x<=c.x+c.w&&y>=c.y&&y<=c.y+c.h)return k;
+    }
+    return null;
+  }
+
+  _undo() {
+    if(this.solved)return;
+    const last=this.placedPieces.pop();
+    if(!last)return;
+    this.columnCounts[last.key]--;
+    last.sprite.destroy();
+    this._updateReadout();
+  }
+
+  _updateReadout() {
+    const n=this.columnCounts.H*100+this.columnCounts.T*10+this.columnCounts.O;
+    this.readoutLbl.setText(String(n));
+    const parts=[];
+    if(this.columnCounts.H)parts.push(this.columnCounts.H+' hundred'+(this.columnCounts.H>1?'s':''));
+    if(this.columnCounts.T)parts.push(this.columnCounts.T+' ten'+(this.columnCounts.T>1?'s':''));
+    if(this.columnCounts.O)parts.push(this.columnCounts.O+' one'+(this.columnCounts.O>1?'s':''));
+    this.breakdownLbl.setText(parts.join(' + '));
+    this.readoutLbl.setColor(n===this.target?COL_ACCENT:COL_PRIMARY);
+  }
+
+  _checkSolved() {
+    const n=this.columnCounts.H*100+this.columnCounts.T*10+this.columnCounts.O;
+    // Correct composition means correct column placements (no spillover between columns).
+    // Because the ONLY way to get H*100+T*10+O==target is via target's actual digit composition
+    // when each column holds 0-9 items, require each column 0-9.
+    if(n===this.target&&this.columnCounts.H<=9&&this.columnCounts.T<=9&&this.columnCounts.O<=9){
+      this.solved=true;
+      gameScore+=10*(this.round+1);this.scoreLbl.setText('Score: '+gameScore);
+      this.cameras.main.flash(140,34,197,94);heroCheer(this,this.hero);
+      this._showSolutionCard();
+    }
+  }
+
+  _showSolutionCard() {
+    const W=this.W,H=this.H;
+    const backdrop=this.add.rectangle(W/2,H/2,W,H,0x000000,0.6).setDepth(50);
+    const card=this.add.rectangle(W/2,H*0.5,W-60,220,0x18181b,1).setStrokeStyle(2,hexToNum(COL_ACCENT)).setDepth(51);
+    const h1=this.add.text(W/2,H*0.5-85,'Got it!',{fontSize:'22px',color:COL_ACCENT,fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold'}).setOrigin(0.5).setDepth(52);
+    const h=this.columnCounts.H,t=this.columnCounts.T,o=this.columnCounts.O;
+    const parts=[];
+    if(h)parts.push(h+'×100');
+    if(t)parts.push(t+'×10');
+    if(o)parts.push(o+'×1');
+    const l1=this.add.text(W/2,H*0.5-40,parts.join(' + ')+' = '+this.target,{fontSize:'18px',color:COL_TEXT,fontFamily:"'Space Grotesk', sans-serif"}).setOrigin(0.5).setDepth(52);
+    const l2=this.add.text(W/2,H*0.5-10,'Each column holds one place value.',{fontSize:'12px',color:COL_TEXT,fontFamily:"'Lexend', system-ui",alpha:0.7}).setOrigin(0.5).setDepth(52);
+    const nextY=H*0.5+60;
+    const nextBg=this.add.rectangle(W/2,nextY,220,42,hexToNum(COL_ACCENT),1).setInteractive({useHandCursor:true}).setDepth(52);
+    const nextLbl=this.add.text(W/2,nextY,this.round+1>=TOTAL_ROUNDS?'Finish!':'Next round →',{fontSize:'14px',color:'#000',fontFamily:"'Lexend', system-ui",fontStyle:'bold'}).setOrigin(0.5).setDepth(53);
+    nextBg.on('pointerdown',()=>{
+      [backdrop,card,h1,l1,l2,nextBg,nextLbl].forEach(o=>o.destroy());
+      this.solved=false;
+      this.round++;
+      if(this.round>=TOTAL_ROUNDS)this.scene.start('VictoryScene',{score:gameScore});
+      else this.startRound();
+    });
   }
 }
 
@@ -222,110 +323,189 @@ class HundredBoardScene extends Phaser.Scene {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// StampGameScene — INTRINSIC REBUILD (April 13 night)
+// Teaches: expanded form & 4-digit place value — CCSS 3.NBT.A.1 / 4.NBT.A.2
+// Discovery: the stamp the learner drops into the "Hundreds" region adds 100
+//   to the readout — the learner sees, not tells, that a red "100" stamp IS
+//   one hundred ones. Wrong-column drops bounce back: the mat itself enforces
+//   the place-value rule.
+// Self-revealing truth: the digital readout is a live sum of the mat.
+//   Target match auto-completes the round; no "Check" is needed.
+// ═══════════════════════════════════════════════════════════════════════════════
 class StampGameScene extends Phaser.Scene {
   constructor() { super('StampGameScene'); }
-  create() { this.W=this.scale.width;this.H=this.scale.height;this.round=0;this.lives=MAX_LIVES;this._bg();this._ui();this.hero=addCharacter(this,this.W*0.88,this.H*0.85,0.45);this.startRound(); }
-  _bg() { const bg=this.add.image(this.W/2,this.H/2,'bg');bg.setScale(Math.max(this.W/bg.width,this.H/bg.height));this.add.rectangle(this.W/2,this.H/2,this.W,this.H,0x000000,0.65); }
+  create() { this.W=this.scale.width;this.H=this.scale.height;this.round=0;this.lives=MAX_LIVES;this._bg();this._ui();this.hero=addCharacter(this,this.W*0.88,this.H*0.55,0.8);this.startRound(); }
+  _bg() { const bg=this.add.image(this.W/2,this.H/2,'bg');bg.setScale(Math.max(this.W/bg.width,this.H/bg.height));this.add.rectangle(this.W/2,this.H/2,this.W,this.H,0x000000,0.7); }
   _ui() { this.scoreLbl=this.add.text(this.W-14,14,'Score: 0',{fontSize:'16px',color:COL_ACCENT,fontFamily:"'Lexend', system-ui",fontStyle:'bold'}).setOrigin(1,0).setDepth(10);this.hg=this.add.group();this._rh();this.dg=this.add.group();this._rd(); }
   _rh() { this.hg.clear(true,true);for(let i=0;i<this.lives;i++)this.hg.add(this.add.text(14+i*22,14,'♥',{fontSize:'18px',color:COL_DANGER}).setDepth(10)); }
   _rd() { this.dg.clear(true,true);for(let i=0;i<TOTAL_ROUNDS;i++){const c=i<this.round?COL_ACCENT:i===this.round?COL_PRIMARY:'#555555';this.dg.add(this.add.circle(this.W/2-40+i*20,this.H-16,5,hexToNum(c)).setDepth(10));} }
 
   startRound() {
-    if(this.rg)this.rg.clear(true,true);this.rg=this.add.group();
-    const data=getRound(this.round);this.target=data.target;this._rd();
+    if(this.rg){this.rg.destroy(true);}this.rg=this.add.group();
+    const data=getRound(this.round);
+    const roundVariation=[
+      {target:132},
+      {target:1205},
+      {target:2340},
+      {target:3452},
+      {target:5678},
+    ];
+    const isDefault=!data||data.prompt==='Solve this!'||!data.target||data.target<10;
+    const fallback=roundVariation[this.round%roundVariation.length];
+    this.target=isDefault?fallback.target:data.target;
+    if(this.target>9999)this.target=this.target%10000;
+    this._rd();
     const W=this.W,H=this.H;
 
-    // Stamp counts
-    this.stamps={1000:0,100:0,10:0,1:0};
+    // Top: operation + target
+    this.rg.add(this.add.text(W/2,H*0.06,'Build this number with place-value stamps',{fontSize:'13px',color:COL_TEXT,fontFamily:"'Lexend', system-ui"}).setOrigin(0.5).setDepth(6));
+    this.rg.add(this.add.text(W/2,H*0.11,String(this.target),{fontSize:'30px',color:COL_ACCENT,fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold'}).setOrigin(0.5).setDepth(6));
 
-    // Prompt
-    this.rg.add(this.add.text(W/2,H*0.06,data.prompt,{fontSize:'18px',color:COL_ACCENT,fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold',wordWrap:{width:W-40}}).setOrigin(0.5).setDepth(6));
-    this.rg.add(this.add.text(W/2,H*0.13,'Target: '+this.target,{fontSize:'16px',color:COL_TEXT,fontFamily:"'Lexend', system-ui"}).setOrigin(0.5).setDepth(6));
+    // Place value mat — 4 labeled regions
+    this.stampCounts={1000:0,100:0,10:0,1:0};
+    this.placed=[]; // {sprite, val}
 
-    // Stamp tiles
-    const stampDefs=[
-      {val:1000,color:'#22c55e',label:'1000',name:'Thousands'},
-      {val:100,color:'#ef4444',label:'100',name:'Hundreds'},
-      {val:10,color:'#3b82f6',label:'10',name:'Tens'},
-      {val:1,color:'#4ade80',label:'1',name:'Ones'}
-    ];
-
-    const tileW=70,tileH=50,startX=W*0.12,startY=H*0.25;
-    stampDefs.forEach((sd,i)=>{
-      const tx=startX+i*(tileW+12),ty=startY;
-      const tile=this.add.rectangle(tx,ty,tileW,tileH,parseInt(sd.color.replace('#',''),16),0.8).setInteractive({useHandCursor:true}).setDepth(6);
-      this.rg.add(tile);
-      this.rg.add(this.add.text(tx,ty-8,sd.label,{fontSize:'16px',color:'#fff',fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold'}).setOrigin(0.5).setDepth(7));
-      this.rg.add(this.add.text(tx,ty+12,sd.name,{fontSize:'9px',color:'#fff',fontFamily:"'Lexend', system-ui",alpha:0.7}).setOrigin(0.5).setDepth(7));
-      tile.on('pointerdown',()=>{
-        this.stamps[sd.val]++;
-        this._updateStampDisplay();
-      });
+    const matY=H*0.19,matH=H*0.34;
+    const matX=W*0.05,matW=W*0.6;
+    const regionW=matW/4;
+    const tints={1000:'#22c55e',100:'#ef4444',10:'#3b82f6',1:'#fbbf24'};
+    const labels={1000:'Thousands',100:'Hundreds',10:'Tens',1:'Ones'};
+    const valsOrder=[1000,100,10,1];
+    this.regions={};
+    valsOrder.forEach((v,i)=>{
+      const x=matX+i*regionW;
+      const rect=this.add.rectangle(x+regionW/2,matY+matH/2,regionW-4,matH,hexToNum(tints[v]),0.08).setStrokeStyle(2,hexToNum(tints[v]),0.6).setDepth(4);
+      this.rg.add(rect);
+      this.rg.add(this.add.text(x+regionW/2,matY+14,labels[v],{fontSize:'12px',color:tints[v],fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold'}).setOrigin(0.5).setDepth(5));
+      this.rg.add(this.add.text(x+regionW/2,matY+30,String(v),{fontSize:'10px',color:COL_TEXT,fontFamily:"'Lexend', system-ui",alpha:0.6}).setOrigin(0.5).setDepth(5));
+      this.regions[v]={x,y:matY,w:regionW,h:matH,val:v};
     });
 
-    // Running total display
-    this.stampDisplayY=H*0.42;
-    this.totalLbl=this.add.text(W/2,this.stampDisplayY,'Total: 0',{fontSize:'24px',color:COL_PRIMARY,fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold'}).setOrigin(0.5).setDepth(6);
-    this.rg.add(this.totalLbl);
+    // Stamp tray (source)
+    const trayX=W*0.68,trayW=W*0.28;
+    this.rg.add(this.add.rectangle(trayX+trayW/2,matY+matH/2,trayW,matH,hexToNum(COL_SECONDARY),0.08).setStrokeStyle(1,hexToNum(COL_TEXT),0.3).setDepth(3));
+    this.rg.add(this.add.text(trayX+trayW/2,matY+12,'Stamp Tray',{fontSize:'11px',color:COL_TEXT,fontFamily:"'Lexend', system-ui",alpha:0.6}).setOrigin(0.5).setDepth(4));
+    valsOrder.forEach((v,i)=>{
+      const sx=trayX+trayW*0.15+(i%4)*(trayW*0.22);
+      const sy=matY+matH*0.55;
+      this._makeStampSource(sx,sy,v,tints[v]);
+    });
 
-    this.breakdownLbl=this.add.text(W/2,this.stampDisplayY+30,'',{fontSize:'13px',color:COL_TEXT,fontFamily:"'Lexend', system-ui",alpha:0.7}).setOrigin(0.5).setDepth(6);
+    // Undo
+    const undoBtn=this.add.rectangle(W*0.82,H*0.58,100,30,hexToNum(COL_DANGER),0.55).setInteractive({useHandCursor:true}).setDepth(10);
+    this.rg.add(undoBtn);
+    this.rg.add(this.add.text(W*0.82,H*0.58,'Undo',{fontSize:'12px',color:'#fff',fontFamily:"'Lexend', system-ui",fontStyle:'bold'}).setOrigin(0.5).setDepth(11));
+    undoBtn.on('pointerdown',()=>this._undo());
+
+    // Digital readout
+    this.rg.add(this.add.text(W/2,H*0.68,'Your number:',{fontSize:'12px',color:COL_TEXT,fontFamily:"'Lexend', system-ui",alpha:0.6}).setOrigin(0.5).setDepth(6));
+    this.readoutLbl=this.add.text(W/2,H*0.75,'0',{fontSize:'34px',color:COL_PRIMARY,fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold'}).setOrigin(0.5).setDepth(6);
+    this.rg.add(this.readoutLbl);
+    this.breakdownLbl=this.add.text(W/2,H*0.82,'',{fontSize:'12px',color:COL_TEXT,fontFamily:"'Lexend', system-ui",alpha:0.6}).setOrigin(0.5).setDepth(6);
     this.rg.add(this.breakdownLbl);
-
-    // Stamp visual area — shows placed stamps
-    this.stampVisuals=this.add.group();
-
-    // Clear button
-    const clearBtn=this.add.rectangle(W*0.25,H*0.62,90,34,hexToNum(COL_DANGER),0.7).setInteractive({useHandCursor:true}).setDepth(8);
-    this.rg.add(clearBtn);this.rg.add(this.add.text(W*0.25,H*0.62,'Clear',{fontSize:'13px',color:'#fff',fontFamily:"'Lexend', system-ui",fontStyle:'bold'}).setOrigin(0.5).setDepth(9));
-    clearBtn.on('pointerdown',()=>{
-      this.stamps={1000:0,100:0,10:0,1:0};
-      this._updateStampDisplay();
-      this.stampVisuals.clear(true,true);
-    });
-
-    // Check button
-    const check=this.add.rectangle(W*0.75,H*0.62,110,38,hexToNum(COL_PRIMARY),1).setInteractive({useHandCursor:true}).setDepth(10);
-    this.rg.add(check);this.rg.add(this.add.text(W*0.75,H*0.62,'Check',{fontSize:'14px',color:'#fff',fontFamily:"'Lexend', system-ui",fontStyle:'bold'}).setOrigin(0.5).setDepth(11));
-    check.on('pointerdown',()=>this._check());
+    this._updateReadout();
   }
 
-  _updateStampDisplay() {
-    const total=this.stamps[1000]*1000+this.stamps[100]*100+this.stamps[10]*10+this.stamps[1]*1;
-    this.totalLbl.setText('Total: '+total);
+  _makeStampSource(x,y,val,tint) {
+    const color=hexToNum(tint);
+    const src=this._drawStamp(x,y,val,color);
+    src.setInteractive({draggable:true,useHandCursor:true});
+    this.input.setDraggable(src);
+    this.rg.add(src);
+    let ghost=null;
+    src.on('dragstart',()=>{ghost=this._drawStamp(x,y,val,color).setAlpha(0.85).setDepth(20);this.rg.add(ghost);});
+    src.on('drag',(_p,dx,dy)=>{if(ghost){ghost.x=dx;ghost.y=dy;}});
+    src.on('dragend',()=>{
+      if(!ghost)return;
+      const region=this._regionAt(ghost.x,ghost.y);
+      if(region===val){
+        const n=this.stampCounts[val];
+        const r=this.regions[val];
+        ghost.x=r.x+12+(n%3)*((r.w-24)/3);
+        ghost.y=r.y+48+Math.floor(n/3)*18;
+        ghost.setAlpha(1);
+        this.placed.push({sprite:ghost,val});
+        this.stampCounts[val]++;
+        this._updateReadout();
+        this._checkSolved();
+        ghost=null;
+      }else{
+        this.cameras.main.shake(80,0.003);
+        ghost.destroy();ghost=null;
+      }
+    });
+  }
+
+  _drawStamp(x,y,val,color) {
+    const c=this.add.container(x,y);
+    c.add(this.add.rectangle(0,0,36,24,color,0.85).setStrokeStyle(1,0xffffff,0.5));
+    c.add(this.add.text(0,0,String(val),{fontSize:'12px',color:'#fff',fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold'}).setOrigin(0.5));
+    c.setSize(36,24);
+    return c;
+  }
+
+  _regionAt(x,y) {
+    for(const k of [1000,100,10,1]){
+      const r=this.regions[k];
+      if(x>=r.x&&x<=r.x+r.w&&y>=r.y&&y<=r.y+r.h)return k;
+    }
+    return null;
+  }
+
+  _undo() {
+    if(this.solved)return;
+    const last=this.placed.pop();
+    if(!last)return;
+    this.stampCounts[last.val]--;
+    last.sprite.destroy();
+    this._updateReadout();
+  }
+
+  _updateReadout() {
+    const total=this.stampCounts[1000]*1000+this.stampCounts[100]*100+this.stampCounts[10]*10+this.stampCounts[1];
+    this.readoutLbl.setText(String(total));
     const parts=[];
-    if(this.stamps[1000])parts.push(this.stamps[1000]+'×1000');
-    if(this.stamps[100])parts.push(this.stamps[100]+'×100');
-    if(this.stamps[10])parts.push(this.stamps[10]+'×10');
-    if(this.stamps[1])parts.push(this.stamps[1]+'×1');
-    this.breakdownLbl.setText(parts.join(' + ')||'Click stamps to add');
-
-    // Visual stamps
-    this.stampVisuals.clear(true,true);
-    const colors={1000:0x22c55e,100:0xef4444,10:0x3b82f6,1:0x4ade80};
-    let vx=this.W*0.1,vy=this.H*0.72;
-    [1000,100,10,1].forEach(val=>{
-      for(let i=0;i<Math.min(this.stamps[val],9);i++){
-        const s=this.add.rectangle(vx,vy,22,22,colors[val],0.7).setDepth(6);
-        this.stampVisuals.add(s);
-        this.stampVisuals.add(this.add.text(vx,vy,val>=100?String(val).charAt(0):String(val),{fontSize:'10px',color:'#fff',fontFamily:"'Lexend', system-ui"}).setOrigin(0.5).setDepth(7));
-        vx+=26;
-      }
-      if(this.stamps[val]>9){
-        this.stampVisuals.add(this.add.text(vx,vy,'+' +(this.stamps[val]-9),{fontSize:'10px',color:COL_TEXT,fontFamily:"'Lexend', system-ui"}).setOrigin(0,0.5).setDepth(7));
-        vx+=30;
-      }
-      vx+=8;
-    });
+    if(this.stampCounts[1000])parts.push(this.stampCounts[1000]+' thousand'+(this.stampCounts[1000]>1?'s':''));
+    if(this.stampCounts[100])parts.push(this.stampCounts[100]+' hundred'+(this.stampCounts[100]>1?'s':''));
+    if(this.stampCounts[10])parts.push(this.stampCounts[10]+' ten'+(this.stampCounts[10]>1?'s':''));
+    if(this.stampCounts[1])parts.push(this.stampCounts[1]+' one'+(this.stampCounts[1]>1?'s':''));
+    this.breakdownLbl.setText(parts.join(' + '));
+    this.readoutLbl.setColor(total===this.target?COL_ACCENT:COL_PRIMARY);
   }
 
-  _check() {
-    const total=this.stamps[1000]*1000+this.stamps[100]*100+this.stamps[10]*10+this.stamps[1]*1;
-    if(total===this.target){
-      gameScore+=10*(this.round+1);this.scoreLbl.setText('Score: '+gameScore);this.cameras.main.flash(200,34,197,94);heroCheer(this,this.hero);
-      this.round++;if(this.round>=TOTAL_ROUNDS)this.time.delayedCall(600,()=>this.scene.start('VictoryScene',{score:gameScore}));
-      else this.time.delayedCall(800,()=>this.startRound());
-    }else{this.lives--;this._rh();this.cameras.main.shake(200,0.01);heroShake(this,this.hero);
-      if(this.lives<=0)this.time.delayedCall(500,()=>this.scene.start('LoseScene',{score:gameScore}));}
+  _checkSolved() {
+    const total=this.stampCounts[1000]*1000+this.stampCounts[100]*100+this.stampCounts[10]*10+this.stampCounts[1];
+    if(total===this.target&&this.stampCounts[1000]<=9&&this.stampCounts[100]<=9&&this.stampCounts[10]<=9&&this.stampCounts[1]<=9){
+      this.solved=true;
+      gameScore+=10*(this.round+1);this.scoreLbl.setText('Score: '+gameScore);
+      this.cameras.main.flash(140,34,197,94);heroCheer(this,this.hero);
+      this._showSolutionCard();
+    }
+  }
+
+  _showSolutionCard() {
+    const W=this.W,H=this.H;
+    const backdrop=this.add.rectangle(W/2,H/2,W,H,0x000000,0.6).setDepth(50);
+    const card=this.add.rectangle(W/2,H*0.5,W-60,220,0x18181b,1).setStrokeStyle(2,hexToNum(COL_ACCENT)).setDepth(51);
+    const h1=this.add.text(W/2,H*0.5-85,'Got it!',{fontSize:'22px',color:COL_ACCENT,fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold'}).setOrigin(0.5).setDepth(52);
+    const th=this.stampCounts[1000],h=this.stampCounts[100],t=this.stampCounts[10],o=this.stampCounts[1];
+    const parts=[];
+    if(th)parts.push(th+' thousand'+(th>1?'s':''));
+    if(h)parts.push(h+' hundred'+(h>1?'s':''));
+    if(t)parts.push(t+' ten'+(t>1?'s':''));
+    if(o)parts.push(o+' one'+(o>1?'s':''));
+    const l1=this.add.text(W/2,H*0.5-40,parts.join(' + ')+' = '+this.target,{fontSize:'16px',color:COL_TEXT,fontFamily:"'Space Grotesk', sans-serif",wordWrap:{width:W-100}}).setOrigin(0.5).setDepth(52);
+    const l2=this.add.text(W/2,H*0.5-5,'Each place is 10× bigger than the one to its right.',{fontSize:'12px',color:COL_TEXT,fontFamily:"'Lexend', system-ui",alpha:0.7}).setOrigin(0.5).setDepth(52);
+    const nextY=H*0.5+60;
+    const nextBg=this.add.rectangle(W/2,nextY,220,42,hexToNum(COL_ACCENT),1).setInteractive({useHandCursor:true}).setDepth(52);
+    const nextLbl=this.add.text(W/2,nextY,this.round+1>=TOTAL_ROUNDS?'Finish!':'Next round →',{fontSize:'14px',color:'#000',fontFamily:"'Lexend', system-ui",fontStyle:'bold'}).setOrigin(0.5).setDepth(53);
+    nextBg.on('pointerdown',()=>{
+      [backdrop,card,h1,l1,l2,nextBg,nextLbl].forEach(o=>o.destroy());
+      this.solved=false;
+      this.round++;
+      if(this.round>=TOTAL_ROUNDS)this.scene.start('VictoryScene',{score:gameScore});
+      else this.startRound();
+    });
   }
 }
 
@@ -446,245 +626,316 @@ class FractionCirclesScene extends Phaser.Scene {
       });
     }
 
-    // Fraction label
+    // Fraction label — auto-updates as wedges are shaded
     this.fractionLbl=this.add.text(W/2,H*0.72,'0/'+this.denominator,{fontSize:'28px',color:COL_PRIMARY,fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold'}).setOrigin(0.5).setDepth(6);
     this.rg.add(this.fractionLbl);
-
-    // Check button
-    const check=this.add.rectangle(W/2,H*0.82,120,40,hexToNum(COL_PRIMARY),1).setInteractive({useHandCursor:true}).setDepth(10);
-    this.rg.add(check);this.rg.add(this.add.text(W/2,H*0.82,'Check',{fontSize:'14px',color:'#fff',fontFamily:"'Lexend', system-ui",fontStyle:'bold'}).setOrigin(0.5).setDepth(11));
-    check.on('pointerdown',()=>this._check());
+    // Target label — what to make (e.g. "Make 3/4")
+    this.targetLbl=this.add.text(W/2,H*0.78,'Make '+this.numerator+'/'+this.denominator,{fontSize:'14px',color:COL_TEXT,fontFamily:"'Lexend', system-ui"}).setOrigin(0.5).setDepth(6);
+    this.rg.add(this.targetLbl);
   }
 
   _updateFractionLabel() {
     this.fractionLbl.setText(this.coloredCount+'/'+this.denominator);
-  }
-
-  _check() {
+    // Auto-detect success: when shaded count matches target, the circle IS the fraction
     if(this.coloredCount===this.numerator){
-      gameScore+=10*(this.round+1);this.scoreLbl.setText('Score: '+gameScore);this.cameras.main.flash(200,34,197,94);heroCheer(this,this.hero);
-      this.round++;if(this.round>=TOTAL_ROUNDS)this.time.delayedCall(600,()=>this.scene.start('VictoryScene',{score:gameScore}));
-      else this.time.delayedCall(800,()=>this.startRound());
-    }else{this.lives--;this._rh();this.cameras.main.shake(200,0.01);heroShake(this,this.hero);
-      if(this.lives<=0)this.time.delayedCall(500,()=>this.scene.start('LoseScene',{score:gameScore}));}
+      gameScore+=10*(this.round+1);this.scoreLbl.setText('Score: '+gameScore);
+      this.cameras.main.flash(150,34,197,94);heroCheer(this,this.hero);
+      this.round++;
+      if(this.round>=TOTAL_ROUNDS) this.time.delayedCall(900,()=>this.scene.start('VictoryScene',{score:gameScore}));
+      else this.time.delayedCall(900,()=>this.startRound());
+    }
   }
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// BeadChainScene — INTRINSIC REBUILD (April 13 night)
+// Teaches: skip counting & multiplication as repeated groups — CCSS 3.OA.A.1
+// Discovery: the chain is physically grouped into colored segments of N beads.
+//   As the learner drags the marker, the live readout shows "3 × 7 = 21" —
+//   the learner sees that the "answer" is literally the count of beads the
+//   marker has passed. Target M × N = product is aligned with the Mth segment
+//   boundary — NOT a number to memorize.
+// Self-revealing truth: when the marker snaps to the target segment, the chain
+//   visually reads as a product. No typing.
 // ═══════════════════════════════════════════════════════════════════════════════
 class BeadChainScene extends Phaser.Scene {
   constructor() { super('BeadChainScene'); }
-  create() { this.W=this.scale.width;this.H=this.scale.height;this.round=0;this.lives=MAX_LIVES;this._bg();this._ui();this.hero=addCharacter(this,this.W*0.88,this.H*0.85,0.45);this.startRound(); }
-  _bg() { const bg=this.add.image(this.W/2,this.H/2,'bg');bg.setScale(Math.max(this.W/bg.width,this.H/bg.height));this.add.rectangle(this.W/2,this.H/2,this.W,this.H,0x000000,0.65); }
+  create() { this.W=this.scale.width;this.H=this.scale.height;this.round=0;this.lives=MAX_LIVES;this._bg();this._ui();this.hero=addCharacter(this,this.W*0.88,this.H*0.55,0.8);this.startRound(); }
+  _bg() { const bg=this.add.image(this.W/2,this.H/2,'bg');bg.setScale(Math.max(this.W/bg.width,this.H/bg.height));this.add.rectangle(this.W/2,this.H/2,this.W,this.H,0x000000,0.7); }
   _ui() { this.scoreLbl=this.add.text(this.W-14,14,'Score: 0',{fontSize:'16px',color:COL_ACCENT,fontFamily:"'Lexend', system-ui",fontStyle:'bold'}).setOrigin(1,0).setDepth(10);this.hg=this.add.group();this._rh();this.dg=this.add.group();this._rd(); }
   _rh() { this.hg.clear(true,true);for(let i=0;i<this.lives;i++)this.hg.add(this.add.text(14+i*22,14,'♥',{fontSize:'18px',color:COL_DANGER}).setDepth(10)); }
   _rd() { this.dg.clear(true,true);for(let i=0;i<TOTAL_ROUNDS;i++){const c=i<this.round?COL_ACCENT:i===this.round?COL_PRIMARY:'#555555';this.dg.add(this.add.circle(this.W/2-40+i*20,this.H-16,5,hexToNum(c)).setDepth(10));} }
 
   startRound() {
-    if(this.rg)this.rg.clear(true,true);this.rg=this.add.group();
-    const data=getRound(this.round);this.target=data.target;this._rd();
+    if(this.rg){this.rg.destroy(true);}this.rg=this.add.group();
+    const data=getRound(this.round);
+    const roundVariation=[
+      {skipN:2,mult:4},  // 2 × 4 = 8
+      {skipN:3,mult:5},  // 3 × 5 = 15
+      {skipN:5,mult:4},  // 5 × 4 = 20
+      {skipN:7,mult:5},  // 7 × 5 = 35
+      {skipN:6,mult:6},  // 6 × 6 = 36
+    ];
+    const isDefault=!data||data.prompt==='Solve this!'||!data.target||!data.items;
+    const fallback=roundVariation[this.round%roundVariation.length];
+    this.skipN=isDefault?fallback.skipN:((data.items&&data.items[0])?data.items[0]:fallback.skipN);
+    this.targetMult=isDefault?fallback.mult:Math.max(2,Math.round(data.target/this.skipN));
+    if(this.targetMult<2)this.targetMult=fallback.mult;
+    if(this.targetMult>9)this.targetMult=9;
+    this.target=this.skipN*this.targetMult;
+    this._rd();
     const W=this.W,H=this.H;
-    this.inputVal='';
-    this.clickCount=0;
-    this.runningCount=0;
 
-    // Extract skip-count value from items or default
-    this.skipN=(data.items&&data.items[0])?data.items[0]:2;
-    // Total beads in chain
-    const totalBeads=Math.min(Math.max(this.target/this.skipN+4,8),20);
+    // Top: operation
+    this.rg.add(this.add.text(W/2,H*0.06,'Slide the marker to solve',{fontSize:'13px',color:COL_TEXT,fontFamily:"'Lexend', system-ui"}).setOrigin(0.5).setDepth(6));
+    this.rg.add(this.add.text(W/2,H*0.12,this.skipN+' × '+this.targetMult+' = ?',{fontSize:'28px',color:COL_ACCENT,fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold'}).setOrigin(0.5).setDepth(6));
 
-    // Prompt
-    this.rg.add(this.add.text(W/2,H*0.07,data.prompt,{fontSize:'18px',color:COL_ACCENT,fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold',wordWrap:{width:W-40}}).setOrigin(0.5).setDepth(6));
-
-    // Horizontal bead chain
-    const chainY=H*0.3;
-    const beadR=14;
-    const spacing=beadR*2+6;
+    // Build chain: targetMult+2 segments (so target is not at the very end), each segment skipN beads
+    const totalSegments=Math.min(this.targetMult+2,9);
+    const totalBeads=totalSegments*this.skipN;
+    const chainY=H*0.28;
+    const beadR=Math.max(6,Math.min(12,Math.floor((W*0.86)/totalBeads/2.4)));
+    const spacing=beadR*2+3;
     const chainW=totalBeads*spacing;
-    const startX=Math.max(20,(W-chainW)/2);
+    const startX=(W-chainW)/2+beadR;
 
     // Chain line
-    this.rg.add(this.add.rectangle(W/2,chainY,Math.min(chainW,W-40),3,hexToNum(COL_TEXT),0.2).setDepth(4));
+    this.rg.add(this.add.rectangle(W/2,chainY,chainW,2,hexToNum(COL_TEXT),0.25).setDepth(3));
 
-    // Color pattern for beads (alternating by skip group)
-    const colors=[hexToNum(COL_PRIMARY),hexToNum(COL_ACCENT),hexToNum('#a855f7'),hexToNum(COL_SECONDARY)];
-    this.chainBeads=[];
-    for(let i=0;i<totalBeads;i++){
-      const bx=startX+i*spacing+beadR;
-      const by=chainY;
-      const colorIdx=Math.floor(i/this.skipN)%colors.length;
-      const bead=this.add.circle(bx,by,beadR,colors[colorIdx],0.5).setStrokeStyle(2,hexToNum(COL_TEXT),0.3).setInteractive({useHandCursor:true}).setDepth(6);
-      this.rg.add(bead);
-      const numLbl=this.add.text(bx,by,'',{fontSize:'11px',color:'#fff',fontFamily:"'Lexend', system-ui",fontStyle:'bold'}).setOrigin(0.5).setDepth(7);
-      this.rg.add(numLbl);
-      this.chainBeads.push({circle:bead,label:numLbl,highlighted:false,index:i});
-
-      bead.on('pointerdown',()=>{
-        const b=this.chainBeads[i];
-        if(!b.highlighted){
-          b.highlighted=true;
-          b.circle.setFillStyle(hexToNum(COL_ACCENT),1);
-          this.clickCount++;
-          this.runningCount=this.clickCount*this.skipN;
-          b.label.setText(String(this.runningCount));
-          this.countLbl.setText('Count: '+this.runningCount);
-        }
-      });
+    // Alternate segment colors
+    const segColors=[hexToNum(COL_PRIMARY),hexToNum('#a855f7')];
+    this.beadPositions=[];
+    for(let s=0;s<totalSegments;s++){
+      const segColor=segColors[s%2];
+      for(let b=0;b<this.skipN;b++){
+        const i=s*this.skipN+b;
+        const bx=startX+i*spacing;
+        const bead=this.add.circle(bx,chainY,beadR,segColor,0.75).setStrokeStyle(1,hexToNum(COL_TEXT),0.4).setDepth(5);
+        this.rg.add(bead);
+        this.beadPositions.push(bx);
+      }
+      // Segment-end tick with running total
+      const endX=startX+((s+1)*this.skipN-1)*spacing+beadR+1;
+      this.rg.add(this.add.rectangle(endX,chainY,1,beadR*2+10,hexToNum(COL_TEXT),0.4).setDepth(4));
+      this.rg.add(this.add.text(endX,chainY+beadR+14,String((s+1)*this.skipN),{fontSize:'10px',color:COL_TEXT,fontFamily:"'Lexend', system-ui",alpha:0.6}).setOrigin(0.5).setDepth(4));
     }
 
-    // Running count display
-    this.countLbl=this.add.text(W/2,H*0.45,'Count: 0',{fontSize:'20px',color:COL_PRIMARY,fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold'}).setOrigin(0.5).setDepth(6);
-    this.rg.add(this.countLbl);
+    // Snap positions: end of each segment (1-indexed)
+    this.snapPositions=[startX-beadR-1]; // 0×N position (start)
+    for(let s=0;s<totalSegments;s++){
+      this.snapPositions.push(startX+((s+1)*this.skipN-1)*spacing+beadR+1);
+    }
 
-    this.rg.add(this.add.text(W/2,H*0.52,'Skip counting by '+this.skipN,{fontSize:'12px',color:COL_TEXT,fontFamily:"'Lexend', system-ui",alpha:0.5}).setOrigin(0.5).setDepth(6));
+    // Target flag (shown above the target segment end) — subtle hint
+    const targetX=this.snapPositions[this.targetMult];
+    const flagY=chainY-beadR-22;
+    this.rg.add(this.add.text(targetX,flagY,'▼',{fontSize:'14px',color:COL_ACCENT,fontFamily:"'Lexend', system-ui"}).setOrigin(0.5).setDepth(5));
+    this.rg.add(this.add.text(targetX,flagY-12,'target',{fontSize:'9px',color:COL_ACCENT,fontFamily:"'Lexend', system-ui"}).setOrigin(0.5).setDepth(5));
 
-    // Number pad for final answer
-    this.rg.add(this.add.text(W*0.35,H*0.58,'Type your answer:',{fontSize:'13px',color:COL_TEXT,fontFamily:"'Lexend', system-ui",alpha:0.6}).setDepth(6));
-    this.answerLbl=this.add.text(W*0.35,H*0.63,'_',{fontSize:'28px',color:COL_TEXT,fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold'}).setOrigin(0,0.5).setDepth(6);
-    this.rg.add(this.answerLbl);
-    this._numpad(W*0.25,H*0.7);
+    // Marker (draggable)
+    this.currentMult=0;
+    const markerY=chainY+beadR+32;
+    this.markerBase=this.add.triangle(this.snapPositions[0],markerY,0,14,7,0,14,14,hexToNum(COL_ACCENT)).setDepth(7);
+    this.rg.add(this.markerBase);
+    this.markerHandle=this.add.circle(this.snapPositions[0],markerY+10,10,hexToNum(COL_ACCENT),0.85).setStrokeStyle(2,0xffffff,0.7).setInteractive({draggable:true,useHandCursor:true}).setDepth(8);
+    this.input.setDraggable(this.markerHandle);
+    this.rg.add(this.markerHandle);
 
-    // Check button
-    const check=this.add.rectangle(W*0.75,H*0.82,110,38,hexToNum(COL_PRIMARY),1).setInteractive({useHandCursor:true}).setDepth(10);
-    this.rg.add(check);this.rg.add(this.add.text(W*0.75,H*0.82,'Check',{fontSize:'14px',color:'#fff',fontFamily:"'Lexend', system-ui",fontStyle:'bold'}).setOrigin(0.5).setDepth(11));
-    check.on('pointerdown',()=>this._check());
-  }
-
-  _numpad(sx,sy) {
-    const keys=['1','2','3','4','5','6','7','8','9','0','⌫'];
-    keys.forEach((k,i)=>{
-      const col=Math.floor(i%4),row=Math.floor(i/4);
-      const bx=sx+col*52,by=sy+row*38;
-      const btn=this.add.rectangle(bx,by,46,32,hexToNum(COL_SECONDARY),0.3).setInteractive({useHandCursor:true}).setDepth(8);
-      this.rg.add(btn);this.rg.add(this.add.text(bx,by,k,{fontSize:'16px',color:COL_TEXT,fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold'}).setOrigin(0.5).setDepth(9));
-      btn.on('pointerdown',()=>{
-        if(k==='⌫'){this.inputVal=this.inputVal.slice(0,-1);}
-        else if(this.inputVal.length<6){this.inputVal+=k;}
-        this.answerLbl.setText(this.inputVal||'_');
-      });
+    this.markerHandle.on('drag',(_p,dx)=>{
+      const minX=this.snapPositions[0];
+      const maxX=this.snapPositions[this.snapPositions.length-1];
+      const x=Math.max(minX,Math.min(maxX,dx));
+      // Snap to nearest segment end
+      let bestIdx=0,bestD=Infinity;
+      this.snapPositions.forEach((sx,idx)=>{const d=Math.abs(sx-x);if(d<bestD){bestD=d;bestIdx=idx;}});
+      const snappedX=this.snapPositions[bestIdx];
+      this.markerHandle.x=snappedX;
+      this.markerBase.x=snappedX;
+      if(this.currentMult!==bestIdx){
+        this.currentMult=bestIdx;
+        this._updateReadout();
+        if(bestIdx===this.targetMult&&!this.solved)this._checkSolved();
+      }
     });
+
+    // Live readout
+    this.rg.add(this.add.text(W/2,H*0.56,'Where the marker lands:',{fontSize:'12px',color:COL_TEXT,fontFamily:"'Lexend', system-ui",alpha:0.6}).setOrigin(0.5).setDepth(6));
+    this.readoutLbl=this.add.text(W/2,H*0.63,'',{fontSize:'26px',color:COL_PRIMARY,fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold'}).setOrigin(0.5).setDepth(6);
+    this.rg.add(this.readoutLbl);
+    this.hintLbl=this.add.text(W/2,H*0.7,'Drag the marker to the ▼ target.',{fontSize:'12px',color:COL_TEXT,fontFamily:"'Lexend', system-ui",alpha:0.55}).setOrigin(0.5).setDepth(6);
+    this.rg.add(this.hintLbl);
+    this._updateReadout();
   }
 
-  _check() {
-    const answer=parseInt(this.inputVal,10);
-    if(answer===this.target){
-      gameScore+=10*(this.round+1);this.scoreLbl.setText('Score: '+gameScore);this.cameras.main.flash(200,34,197,94);heroCheer(this,this.hero);
-      this.round++;if(this.round>=TOTAL_ROUNDS)this.time.delayedCall(600,()=>this.scene.start('VictoryScene',{score:gameScore}));
-      else this.time.delayedCall(800,()=>this.startRound());
-    }else{this.lives--;this._rh();this.cameras.main.shake(200,0.01);heroShake(this,this.hero);
-      if(this.lives<=0)this.time.delayedCall(500,()=>this.scene.start('LoseScene',{score:gameScore}));}
+  _updateReadout() {
+    const product=this.currentMult*this.skipN;
+    this.readoutLbl.setText(this.skipN+' × '+this.currentMult+' = '+product);
+    this.readoutLbl.setColor(this.currentMult===this.targetMult?COL_ACCENT:COL_PRIMARY);
+  }
+
+  _checkSolved() {
+    this.solved=true;
+    gameScore+=10*(this.round+1);this.scoreLbl.setText('Score: '+gameScore);
+    this.cameras.main.flash(140,34,197,94);heroCheer(this,this.hero);
+    this._showSolutionCard();
+  }
+
+  _showSolutionCard() {
+    const W=this.W,H=this.H;
+    const backdrop=this.add.rectangle(W/2,H/2,W,H,0x000000,0.6).setDepth(50);
+    const card=this.add.rectangle(W/2,H*0.5,W-60,220,0x18181b,1).setStrokeStyle(2,hexToNum(COL_ACCENT)).setDepth(51);
+    const h1=this.add.text(W/2,H*0.5-85,'Got it!',{fontSize:'22px',color:COL_ACCENT,fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold'}).setOrigin(0.5).setDepth(52);
+    const l1=this.add.text(W/2,H*0.5-40,this.skipN+' × '+this.targetMult+' = '+this.target,{fontSize:'22px',color:COL_TEXT,fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold'}).setOrigin(0.5).setDepth(52);
+    const l2=this.add.text(W/2,H*0.5-5,this.targetMult+' groups of '+this.skipN+' beads = '+this.target+' beads total.',{fontSize:'12px',color:COL_TEXT,fontFamily:"'Lexend', system-ui",alpha:0.7,wordWrap:{width:W-100},align:'center'}).setOrigin(0.5).setDepth(52);
+    const nextY=H*0.5+60;
+    const nextBg=this.add.rectangle(W/2,nextY,220,42,hexToNum(COL_ACCENT),1).setInteractive({useHandCursor:true}).setDepth(52);
+    const nextLbl=this.add.text(W/2,nextY,this.round+1>=TOTAL_ROUNDS?'Finish!':'Next round →',{fontSize:'14px',color:'#000',fontFamily:"'Lexend', system-ui",fontStyle:'bold'}).setOrigin(0.5).setDepth(53);
+    nextBg.on('pointerdown',()=>{
+      [backdrop,card,h1,l1,l2,nextBg,nextLbl].forEach(o=>o.destroy());
+      this.solved=false;
+      this.round++;
+      if(this.round>=TOTAL_ROUNDS)this.scene.start('VictoryScene',{score:gameScore});
+      else this.startRound();
+    });
   }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// CheckerboardMultiplyScene — INTRINSIC REBUILD (April 13 night)
+// Teaches: multiplication as rectangular area (rows × columns) — CCSS 3.OA.A.1
+// Discovery: every bead the learner places adds 1 to the running count while
+//   the display also reads "A × (columns filled per row) = count". The
+//   learner SEES that filling 3 rows of 4 is the same as counting to 12.
+// Self-revealing truth: when the grid is full, the count on-screen IS the
+//   product. No typing, no Check button — the filled rectangle is the proof.
+// ═══════════════════════════════════════════════════════════════════════════════
 class CheckerboardMultiplyScene extends Phaser.Scene {
   constructor() { super('CheckerboardMultiplyScene'); }
-  create() { this.W=this.scale.width;this.H=this.scale.height;this.round=0;this.lives=MAX_LIVES;this._bg();this._ui();this.hero=addCharacter(this,this.W*0.88,this.H*0.85,0.45);this.startRound(); }
-  _bg() { const bg=this.add.image(this.W/2,this.H/2,'bg');bg.setScale(Math.max(this.W/bg.width,this.H/bg.height));this.add.rectangle(this.W/2,this.H/2,this.W,this.H,0x000000,0.65); }
+  create() { this.W=this.scale.width;this.H=this.scale.height;this.round=0;this.lives=MAX_LIVES;this._bg();this._ui();this.hero=addCharacter(this,this.W*0.88,this.H*0.55,0.8);this.startRound(); }
+  _bg() { const bg=this.add.image(this.W/2,this.H/2,'bg');bg.setScale(Math.max(this.W/bg.width,this.H/bg.height));this.add.rectangle(this.W/2,this.H/2,this.W,this.H,0x000000,0.7); }
   _ui() { this.scoreLbl=this.add.text(this.W-14,14,'Score: 0',{fontSize:'16px',color:COL_ACCENT,fontFamily:"'Lexend', system-ui",fontStyle:'bold'}).setOrigin(1,0).setDepth(10);this.hg=this.add.group();this._rh();this.dg=this.add.group();this._rd(); }
   _rh() { this.hg.clear(true,true);for(let i=0;i<this.lives;i++)this.hg.add(this.add.text(14+i*22,14,'♥',{fontSize:'18px',color:COL_DANGER}).setDepth(10)); }
   _rd() { this.dg.clear(true,true);for(let i=0;i<TOTAL_ROUNDS;i++){const c=i<this.round?COL_ACCENT:i===this.round?COL_PRIMARY:'#555555';this.dg.add(this.add.circle(this.W/2-40+i*20,this.H-16,5,hexToNum(c)).setDepth(10));} }
 
   startRound() {
-    if(this.rg)this.rg.clear(true,true);this.rg=this.add.group();
-    const data=getRound(this.round);this.target=data.target;this._rd();
+    if(this.rg){this.rg.destroy(true);}this.rg=this.add.group();
+    const data=getRound(this.round);
+    const roundVariation=[
+      {A:3,B:4},
+      {A:4,B:5},
+      {A:5,B:6},
+      {A:6,B:7},
+      {A:7,B:8},
+    ];
+    const isDefault=!data||data.prompt==='Solve this!'||!data.items;
+    const fallback=roundVariation[this.round%roundVariation.length];
+    this.factorA=isDefault?fallback.A:((data.items&&data.items[0])?data.items[0]:fallback.A);
+    this.factorB=isDefault?fallback.B:((data.items&&data.items[1])?data.items[1]:fallback.B);
+    this.factorA=Math.max(2,Math.min(9,this.factorA));
+    this.factorB=Math.max(2,Math.min(9,this.factorB));
+    this.target=this.factorA*this.factorB;
+    this._rd();
     const W=this.W,H=this.H;
-    this.inputVal='';
-    this.beadCount=0;
 
-    // Extract factors from items
-    this.factorA=(data.items&&data.items[0])?data.items[0]:3;
-    this.factorB=(data.items&&data.items[1])?data.items[1]:4;
+    // Top: operation
+    this.rg.add(this.add.text(W/2,H*0.06,'Fill every cell to find the product',{fontSize:'13px',color:COL_TEXT,fontFamily:"'Lexend', system-ui"}).setOrigin(0.5).setDepth(6));
+    this.rg.add(this.add.text(W/2,H*0.12,this.factorB+' rows × '+this.factorA+' columns = ?',{fontSize:'24px',color:COL_ACCENT,fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold'}).setOrigin(0.5).setDepth(6));
 
-    // Prompt
-    this.rg.add(this.add.text(W/2,H*0.06,data.prompt,{fontSize:'18px',color:COL_ACCENT,fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold',wordWrap:{width:W-40}}).setOrigin(0.5).setDepth(6));
-
-    // Checkerboard grid
+    // Grid
     const rows=this.factorB,cols=this.factorA;
-    const maxCells=Math.max(rows,cols);
-    const cellSize=Math.min(Math.floor((W*0.6)/cols),Math.floor((H*0.4)/rows),50);
+    const cellSize=Math.min(Math.floor((W*0.55)/cols),Math.floor((H*0.42)/rows),52);
     const gridW=cols*cellSize,gridH=rows*cellSize;
-    const gridX=(W-gridW)/2,gridY=H*0.2;
+    const gridX=(W-gridW)/2-W*0.05,gridY=H*0.22;
+    this.gridX=gridX;this.gridY=gridY;this.cellSize=cellSize;this.rows=rows;this.cols=cols;
 
-    // Montessori checkerboard colors (place value alternating)
     const boardColors=[
-      [0x22c55e,0x3b82f6,0xef4444,0x22c55e],  // row pattern 1
-      [0x3b82f6,0xef4444,0x22c55e,0x3b82f6],  // row pattern 2
+      [0x22c55e,0x3b82f6,0xef4444,0xfbbf24],
+      [0x3b82f6,0xef4444,0xfbbf24,0x22c55e],
     ];
 
-    // Factor labels across top
+    // Column labels (top)
     for(let c=0;c<cols;c++){
-      this.rg.add(this.add.text(gridX+c*cellSize+cellSize/2,gridY-14,String(c+1),{fontSize:'12px',color:COL_ACCENT,fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold'}).setOrigin(0.5).setDepth(6));
+      this.rg.add(this.add.text(gridX+c*cellSize+cellSize/2,gridY-14,String(c+1),{fontSize:'11px',color:COL_ACCENT,fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold'}).setOrigin(0.5).setDepth(6));
     }
-    // Factor labels down side
+    // Row labels (side)
     for(let r=0;r<rows;r++){
-      this.rg.add(this.add.text(gridX-14,gridY+r*cellSize+cellSize/2,String(r+1),{fontSize:'12px',color:COL_ACCENT,fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold'}).setOrigin(0.5).setDepth(6));
+      this.rg.add(this.add.text(gridX-14,gridY+r*cellSize+cellSize/2,String(r+1),{fontSize:'11px',color:COL_ACCENT,fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold'}).setOrigin(0.5).setDepth(6));
     }
 
-    // A across top label
-    this.rg.add(this.add.text(gridX+gridW/2,gridY-28,this.factorA+' across',{fontSize:'11px',color:COL_TEXT,fontFamily:"'Lexend', system-ui",alpha:0.5}).setOrigin(0.5).setDepth(5));
-    // B down side label
-    this.rg.add(this.add.text(gridX-30,gridY+gridH/2,this.factorB+' down',{fontSize:'11px',color:COL_TEXT,fontFamily:"'Lexend', system-ui",alpha:0.5,angle:-90}).setOrigin(0.5).setDepth(5));
-
+    this.beadCount=0;
+    this.cellsFilled=new Array(rows*cols).fill(false);
     this.gridCells=[];
     for(let r=0;r<rows;r++){for(let c=0;c<cols;c++){
       const cx=gridX+c*cellSize+cellSize/2;
       const cy=gridY+r*cellSize+cellSize/2;
-      const colorRow=boardColors[r%2];
-      const color=colorRow[c%colorRow.length];
-      const cell=this.add.rectangle(cx,cy,cellSize-2,cellSize-2,color,0.25).setStrokeStyle(1,hexToNum(COL_TEXT),0.2).setInteractive({useHandCursor:true}).setDepth(5);
+      const color=boardColors[r%2][c%4];
+      const cell=this.add.rectangle(cx,cy,cellSize-2,cellSize-2,color,0.2).setStrokeStyle(1,hexToNum(COL_TEXT),0.25).setInteractive({useHandCursor:true}).setDepth(5);
       this.rg.add(cell);
-      const bead={cell,hasBead:false,x:cx,y:cy};
-      this.gridCells.push(bead);
+      const idx=r*cols+c;
+      this.gridCells.push({cell,x:cx,y:cy,color,idx,r,c});
       cell.on('pointerdown',()=>{
-        if(!bead.hasBead){
-          bead.hasBead=true;
-          this.beadCount++;
-          this.add.circle(cx,cy,cellSize*0.3,hexToNum(COL_ACCENT),0.85).setDepth(6);
-          cell.setFillStyle(color,0.5);
-        }
-        this.beadCountLbl.setText('Beads placed: '+this.beadCount);
+        if(this.cellsFilled[idx]||this.solved)return;
+        this.cellsFilled[idx]=true;
+        this.beadCount++;
+        const bead=this.add.circle(cx,cy,cellSize*0.28,hexToNum(COL_ACCENT),0.9).setStrokeStyle(1,0xffffff,0.5).setDepth(6);
+        this.rg.add(bead);
+        cell.setFillStyle(color,0.45);
+        this._updateReadout();
+        if(this.beadCount===this.target)this._checkSolved();
       });
     }}
 
-    // Bead count
-    this.beadCountLbl=this.add.text(W/2,gridY+gridH+18,'Beads placed: 0',{fontSize:'13px',color:COL_TEXT,fontFamily:"'Lexend', system-ui"}).setOrigin(0.5).setDepth(6);
-    this.rg.add(this.beadCountLbl);
+    // Bead tray (source — drag alternative)
+    const trayX=W*0.78,trayY=gridY+20;
+    this.rg.add(this.add.rectangle(trayX,trayY+70,W*0.15,160,hexToNum(COL_SECONDARY),0.08).setStrokeStyle(1,hexToNum(COL_TEXT),0.3).setDepth(3));
+    this.rg.add(this.add.text(trayX,trayY,'Bead',{fontSize:'11px',color:COL_TEXT,fontFamily:"'Lexend', system-ui",alpha:0.6}).setOrigin(0.5).setDepth(4));
+    this.rg.add(this.add.text(trayX,trayY+14,'(click cells)',{fontSize:'9px',color:COL_TEXT,fontFamily:"'Lexend', system-ui",alpha:0.5}).setOrigin(0.5).setDepth(4));
+    this.rg.add(this.add.circle(trayX,trayY+70,14,hexToNum(COL_ACCENT),0.85).setStrokeStyle(1,0xffffff,0.5).setDepth(4));
 
-    // Number pad for final answer
-    this.rg.add(this.add.text(W*0.35,H*0.7,'Type the product:',{fontSize:'13px',color:COL_TEXT,fontFamily:"'Lexend', system-ui",alpha:0.6}).setDepth(6));
-    this.answerLbl=this.add.text(W*0.35,H*0.75,'_',{fontSize:'28px',color:COL_TEXT,fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold'}).setOrigin(0,0.5).setDepth(6);
-    this.rg.add(this.answerLbl);
-    this._numpad(W*0.25,H*0.82);
-
-    // Check button
-    const check=this.add.rectangle(W*0.78,H*0.82,110,38,hexToNum(COL_PRIMARY),1).setInteractive({useHandCursor:true}).setDepth(10);
-    this.rg.add(check);this.rg.add(this.add.text(W*0.78,H*0.82,'Check',{fontSize:'14px',color:'#fff',fontFamily:"'Lexend', system-ui",fontStyle:'bold'}).setOrigin(0.5).setDepth(11));
-    check.on('pointerdown',()=>this._check());
+    // Running readout
+    this.readoutY=gridY+gridH+40;
+    this.rg.add(this.add.text(W/2,this.readoutY-16,'Cells filled:',{fontSize:'12px',color:COL_TEXT,fontFamily:"'Lexend', system-ui",alpha:0.6}).setOrigin(0.5).setDepth(6));
+    this.readoutLbl=this.add.text(W/2,this.readoutY+10,'',{fontSize:'22px',color:COL_PRIMARY,fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold'}).setOrigin(0.5).setDepth(6);
+    this.rg.add(this.readoutLbl);
+    this._updateReadout();
   }
 
-  _numpad(sx,sy) {
-    const keys=['1','2','3','4','5','6','7','8','9','0','⌫'];
-    keys.forEach((k,i)=>{
-      const col=Math.floor(i%4),row=Math.floor(i/4);
-      const bx=sx+col*52,by=sy+row*38;
-      const btn=this.add.rectangle(bx,by,46,32,hexToNum(COL_SECONDARY),0.3).setInteractive({useHandCursor:true}).setDepth(8);
-      this.rg.add(btn);this.rg.add(this.add.text(bx,by,k,{fontSize:'16px',color:COL_TEXT,fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold'}).setOrigin(0.5).setDepth(9));
-      btn.on('pointerdown',()=>{
-        if(k==='⌫'){this.inputVal=this.inputVal.slice(0,-1);}
-        else if(this.inputVal.length<6){this.inputVal+=k;}
-        this.answerLbl.setText(this.inputVal||'_');
-      });
+  _updateReadout() {
+    // Show how many complete rows and partial
+    const full=Math.floor(this.beadCount/this.cols);
+    const partial=this.beadCount%this.cols;
+    let txt;
+    if(partial===0&&this.beadCount>0)txt=this.cols+' × '+full+' = '+this.beadCount;
+    else if(this.beadCount===0)txt=this.cols+' × 0 = 0';
+    else txt=this.cols+' × '+full+' + '+partial+' = '+this.beadCount;
+    this.readoutLbl.setText(txt);
+    this.readoutLbl.setColor(this.beadCount===this.target?COL_ACCENT:COL_PRIMARY);
+  }
+
+  _checkSolved() {
+    this.solved=true;
+    gameScore+=10*(this.round+1);this.scoreLbl.setText('Score: '+gameScore);
+    this.cameras.main.flash(140,34,197,94);heroCheer(this,this.hero);
+    this._showSolutionCard();
+  }
+
+  _showSolutionCard() {
+    const W=this.W,H=this.H;
+    const backdrop=this.add.rectangle(W/2,H/2,W,H,0x000000,0.6).setDepth(50);
+    const card=this.add.rectangle(W/2,H*0.5,W-60,220,0x18181b,1).setStrokeStyle(2,hexToNum(COL_ACCENT)).setDepth(51);
+    const h1=this.add.text(W/2,H*0.5-85,'Got it!',{fontSize:'22px',color:COL_ACCENT,fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold'}).setOrigin(0.5).setDepth(52);
+    const l1=this.add.text(W/2,H*0.5-40,this.factorB+' rows × '+this.factorA+' columns = '+this.target,{fontSize:'20px',color:COL_TEXT,fontFamily:"'Space Grotesk', sans-serif",fontStyle:'bold'}).setOrigin(0.5).setDepth(52);
+    const l2=this.add.text(W/2,H*0.5-5,this.factorB+' groups of '+this.factorA+' beads gives '+this.target+' beads in all.',{fontSize:'12px',color:COL_TEXT,fontFamily:"'Lexend', system-ui",alpha:0.7,wordWrap:{width:W-100},align:'center'}).setOrigin(0.5).setDepth(52);
+    const nextY=H*0.5+60;
+    const nextBg=this.add.rectangle(W/2,nextY,220,42,hexToNum(COL_ACCENT),1).setInteractive({useHandCursor:true}).setDepth(52);
+    const nextLbl=this.add.text(W/2,nextY,this.round+1>=TOTAL_ROUNDS?'Finish!':'Next round →',{fontSize:'14px',color:'#000',fontFamily:"'Lexend', system-ui",fontStyle:'bold'}).setOrigin(0.5).setDepth(53);
+    nextBg.on('pointerdown',()=>{
+      [backdrop,card,h1,l1,l2,nextBg,nextLbl].forEach(o=>o.destroy());
+      this.solved=false;
+      this.round++;
+      if(this.round>=TOTAL_ROUNDS)this.scene.start('VictoryScene',{score:gameScore});
+      else this.startRound();
     });
-  }
-
-  _check() {
-    const answer=parseInt(this.inputVal,10);
-    if(answer===this.target){
-      gameScore+=10*(this.round+1);this.scoreLbl.setText('Score: '+gameScore);this.cameras.main.flash(200,34,197,94);heroCheer(this,this.hero);
-      this.round++;if(this.round>=TOTAL_ROUNDS)this.time.delayedCall(600,()=>this.scene.start('VictoryScene',{score:gameScore}));
-      else this.time.delayedCall(800,()=>this.startRound());
-    }else{this.lives--;this._rh();this.cameras.main.shake(200,0.01);heroShake(this,this.hero);
-      if(this.lives<=0)this.time.delayedCall(500,()=>this.scene.start('LoseScene',{score:gameScore}));}
   }
 }
 `

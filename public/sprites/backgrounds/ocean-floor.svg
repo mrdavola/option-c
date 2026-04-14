@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <defs>
+    <linearGradient id="ocean" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0a1628"/>
+      <stop offset="50%" stop-color="#0c2340"/>
+      <stop offset="100%" stop-color="#1a3a5c"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#ocean)"/>
+  <!-- Light rays from above -->
+  <polygon points="200,0 260,600 140,600" fill="rgba(100,180,255,0.03)"/>
+  <polygon points="500,0 560,600 440,600" fill="rgba(100,180,255,0.04)"/>
+  <!-- Sandy floor -->
+  <ellipse cx="400" cy="620" rx="500" ry="80" fill="#3d5a4a"/>
+  <!-- Coral -->
+  <path d="M120 520 Q130 480 120 460 Q110 440 125 430" fill="none" stroke="#e06060" stroke-width="6" stroke-linecap="round"/>
+  <path d="M140 530 Q150 500 145 475" fill="none" stroke="#e07070" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="125" cy="425" r="8" fill="#e06060" opacity="0.8"/>
+  <!-- Seaweed -->
+  <path d="M600 560 Q610 520 595 480 Q580 440 590 400" fill="none" stroke="#2d6a4f" stroke-width="5" stroke-linecap="round"/>
+  <path d="M620 550 Q630 510 618 470" fill="none" stroke="#40916c" stroke-width="4" stroke-linecap="round"/>
+  <!-- Bubbles -->
+  <circle cx="300" cy="200" r="6" fill="none" stroke="rgba(150,220,255,0.3)" stroke-width="1"/>
+  <circle cx="320" cy="150" r="4" fill="none" stroke="rgba(150,220,255,0.2)" stroke-width="1"/>
+  <circle cx="500" cy="300" r="5" fill="none" stroke="rgba(150,220,255,0.25)" stroke-width="1"/>
+  <circle cx="450" cy="100" r="3" fill="none" stroke="rgba(150,220,255,0.2)" stroke-width="1"/>
+  <!-- Small fish -->
+  <ellipse cx="350" cy="280" rx="12" ry="6" fill="#f9ca24" opacity="0.6"/>
+  <polygon points="330,280 324,274 324,286" fill="#f9ca24" opacity="0.6"/>
+</svg>

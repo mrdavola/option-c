@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <!-- Sky gradient -->
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1a0a2e"/>
+      <stop offset="40%" stop-color="#f4845f"/>
+      <stop offset="70%" stop-color="#f7b267"/>
+      <stop offset="100%" stop-color="#f7d794"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#sky)"/>
+  <!-- Sun -->
+  <circle cx="650" cy="180" r="60" fill="#f9ca24" opacity="0.9"/>
+  <circle cx="650" cy="180" r="80" fill="#f9ca24" opacity="0.15"/>
+  <!-- Far dunes -->
+  <ellipse cx="200" cy="420" rx="350" ry="80" fill="#c49a6c"/>
+  <ellipse cx="600" cy="400" rx="300" ry="70" fill="#d4a574"/>
+  <!-- Near dunes -->
+  <ellipse cx="400" cy="500" rx="500" ry="120" fill="#e0b88a"/>
+  <ellipse cx="100" cy="520" rx="250" ry="100" fill="#c49a6c"/>
+  <!-- Cacti -->
+  <rect x="300" y="370" width="12" height="60" rx="6" fill="#2d6a4f"/>
+  <rect x="290" y="380" width="10" height="30" rx="5" fill="#2d6a4f" transform="rotate(-30,295,395)"/>
+  <rect x="312" y="385" width="8" height="25" rx="4" fill="#2d6a4f" transform="rotate(25,316,397)"/>
+  <!-- Sand texture dots -->
+  <circle cx="150" cy="480" r="1.5" fill="#c49a6c" opacity="0.5"/>
+  <circle cx="350" cy="510" r="1" fill="#c49a6c" opacity="0.4"/>
+  <circle cx="550" cy="490" r="1.5" fill="#c49a6c" opacity="0.5"/>
+  <circle cx="700" cy="520" r="1" fill="#c49a6c" opacity="0.3"/>
+</svg>

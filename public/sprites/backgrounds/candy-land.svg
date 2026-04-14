@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <defs>
+    <linearGradient id="candy-sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fce4ec"/>
+      <stop offset="100%" stop-color="#f8bbd0"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#candy-sky)"/>
+  <!-- Cotton candy clouds -->
+  <ellipse cx="150" cy="100" rx="80" ry="40" fill="#e1bee7" opacity="0.6"/>
+  <ellipse cx="190" cy="90" rx="60" ry="35" fill="#ce93d8" opacity="0.4"/>
+  <ellipse cx="600" cy="130" rx="70" ry="35" fill="#b2ebf2" opacity="0.5"/>
+  <ellipse cx="640" cy="120" rx="50" ry="30" fill="#80deea" opacity="0.4"/>
+  <!-- Chocolate ground -->
+  <rect x="0" y="440" width="800" height="160" rx="0" fill="#5d4037"/>
+  <rect x="0" y="440" width="800" height="20" rx="10" fill="#6d4c41"/>
+  <!-- Lollipop trees -->
+  <rect x="198" y="320" width="8" height="120" rx="4" fill="#fff"/>
+  <circle cx="202" cy="300" r="40" fill="#e91e63" opacity="0.8"/>
+  <path d="M170 300 Q202 280 234 300 Q202 320 170 300" fill="#f48fb1" opacity="0.5"/>
+  <rect x="598" y="340" width="8" height="100" rx="4" fill="#fff"/>
+  <circle cx="602" cy="320" r="35" fill="#4caf50" opacity="0.7"/>
+  <path d="M574 320 Q602 302 630 320 Q602 338 574 320" fill="#81c784" opacity="0.5"/>
+  <!-- Candy cane -->
+  <rect x="420" y="350" width="10" height="90" rx="5" fill="#fff"/>
+  <rect x="420" y="350" width="10" height="15" fill="#e53935" opacity="0.8"/>
+  <rect x="420" y="380" width="10" height="15" fill="#e53935" opacity="0.8"/>
+  <rect x="420" y="410" width="10" height="15" fill="#e53935" opacity="0.8"/>
+  <path d="M420 350 Q420 320 445 320" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round"/>
+  <!-- Gumdrops -->
+  <ellipse cx="100" cy="440" rx="25" ry="20" fill="#ff7043" opacity="0.8"/>
+  <ellipse cx="350" cy="440" rx="20" ry="16" fill="#ab47bc" opacity="0.8"/>
+  <ellipse cx="700" cy="440" rx="22" ry="18" fill="#26c6da" opacity="0.8"/>
+  <!-- Stars / sprinkles -->
+  <circle cx="300" cy="180" r="3" fill="#f9ca24" opacity="0.6"/>
+  <circle cx="500" cy="80" r="2" fill="#f9ca24" opacity="0.5"/>
+  <circle cx="450" cy="200" r="2.5" fill="#e91e63" opacity="0.4"/>
+</svg>

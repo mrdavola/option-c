@@ -9,6 +9,11 @@ export const SPRITE_CHARACTERS = [
   { id: "ninja", label: "Ninja", keywords: ["stealth", "temple", "shadow", "warrior", "dojo"] },
   { id: "wizard", label: "Wizard", keywords: ["magic", "spell", "tower", "enchanted", "potion"] },
   { id: "explorer", label: "Explorer", keywords: ["jungle", "cave", "forest", "adventure", "map"] },
+  { id: "dancer", label: "Dancer", keywords: ["dance", "ballet", "stage", "performance", "music"] },
+  { id: "scientist", label: "Scientist", keywords: ["lab", "experiment", "research", "beaker", "chemistry"] },
+  { id: "athlete", label: "Athlete", keywords: ["sport", "run", "race", "gym", "compete"] },
+  { id: "musician", label: "Musician", keywords: ["music", "guitar", "band", "concert", "song"] },
+  { id: "artist", label: "Artist", keywords: ["paint", "canvas", "brush", "creative", "gallery"] },
 ] as const
 
 export const SPRITE_ITEMS = [
@@ -22,6 +27,11 @@ export const SPRITE_ITEMS = [
   { id: "shell", label: "Shells", keywords: ["ocean", "beach", "sea", "underwater", "coral"] },
   { id: "mushroom", label: "Mushrooms", keywords: ["forest", "nature", "magic", "enchanted", "fairy"] },
   { id: "key", label: "Keys", keywords: ["lock", "door", "treasure", "secret", "dungeon"] },
+  { id: "trophy", label: "Trophies", keywords: ["win", "award", "champion", "gold", "victory"] },
+  { id: "lightning-bolt", label: "Lightning Bolts", keywords: ["power", "energy", "electric", "speed", "storm"] },
+  { id: "pizza-slice", label: "Pizza Slices", keywords: ["food", "party", "snack", "cheese", "fun"] },
+  { id: "rocket", label: "Rockets", keywords: ["space", "launch", "fly", "blast", "speed"] },
+  { id: "diamond", label: "Diamonds", keywords: ["gem", "jewel", "sparkle", "precious", "luxury"] },
 ] as const
 
 export const SPRITE_BACKGROUNDS = [
@@ -35,6 +45,11 @@ export const SPRITE_BACKGROUNDS = [
   { id: "volcano", label: "Volcano", keywords: ["lava", "fire", "hot", "mountain", "dragon"] },
   { id: "arctic", label: "Arctic", keywords: ["ice", "snow", "cold", "polar", "frozen"] },
   { id: "jungle", label: "Jungle", keywords: ["tropical", "vine", "explorer", "adventure", "wild"] },
+  { id: "desert", label: "Desert", keywords: ["sand", "dune", "cactus", "hot", "dry"] },
+  { id: "ocean-floor", label: "Ocean Floor", keywords: ["deep", "sea", "coral", "fish", "abyss"] },
+  { id: "laboratory", label: "Laboratory", keywords: ["lab", "science", "experiment", "beaker", "research"] },
+  { id: "candy-land", label: "Candy Land", keywords: ["sweet", "candy", "lollipop", "sugar", "fun"] },
+  { id: "cyberpunk", label: "Cyberpunk", keywords: ["neon", "future", "city", "tech", "cyber"] },
 ] as const
 
 // Categories for organizing sprites (including community uploads)
@@ -42,20 +57,24 @@ export const CHARACTER_CATEGORIES: Record<string, string[]> = {
   "Adventurers": ["pirate", "astronaut", "explorer", "diver"],
   "Warriors": ["knight", "ninja"],
   "Magic": ["wizard", "ghost"],
-  "Professionals": ["chef", "robot"],
+  "Professionals": ["chef", "robot", "scientist"],
+  "Creative": ["dancer", "musician", "artist"],
+  "Sports": ["athlete"],
 }
 
 export const BACKGROUND_CATEGORIES: Record<string, string[]> = {
-  "Nature": ["forest", "jungle", "arctic"],
-  "Water": ["underwater"],
-  "Built": ["castle", "kitchen", "city"],
+  "Nature": ["forest", "jungle", "arctic", "desert"],
+  "Water": ["underwater", "ocean-floor"],
+  "Built": ["castle", "kitchen", "city", "laboratory"],
   "Extreme": ["volcano", "cave", "space"],
+  "Fantasy": ["candy-land", "cyberpunk"],
 }
 
 export const ITEM_CATEGORIES: Record<string, string[]> = {
-  "Treasure": ["coin", "gem", "treasure-chest", "key"],
-  "Magic": ["crystal", "potion", "star"],
+  "Treasure": ["coin", "gem", "treasure-chest", "key", "diamond"],
+  "Magic": ["crystal", "potion", "star", "lightning-bolt"],
   "Nature": ["fruit", "shell", "mushroom"],
+  "Fun": ["trophy", "pizza-slice", "rocket"],
 }
 
 export type SpriteId = typeof SPRITE_CHARACTERS[number]["id"]

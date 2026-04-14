@@ -21,6 +21,11 @@ export interface ThemeConfig {
   characterSprite?: string   // sprite library ID or upload URL
   itemSprite?: string        // sprite library ID or upload URL
   backgroundImage?: string   // sprite library ID or upload URL
+  // Skeleton Mode — strip all theme assets so the learner meets the pure math
+  // mechanic first. When true: background is a solid dark color, character is a
+  // plain white stickman, items are neutral white/gray shapes. Used by the
+  // Mechanic Skeleton page (src/components/standard/mechanic-skeleton.tsx).
+  skeletonMode?: boolean
 }
 
 // What the AI generates from the circuit board builder choices

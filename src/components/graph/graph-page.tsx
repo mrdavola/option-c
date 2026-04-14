@@ -19,6 +19,7 @@ import { doc, setDoc, getDoc, updateDoc, collection } from "firebase/firestore"
 import { db } from "@/lib/firebase"
 import { useAuth } from "@/lib/auth"
 import { FeedbackButton } from "@/components/feedback/feedback-button"
+import { InfoButton } from "@/components/info-button"
 import { UserMenu } from "@/components/user-menu"
 import { GalaxySettingsPopover } from "./galaxy-settings-popover"
 import { RulesPopover } from "@/components/rules-popover"
@@ -234,9 +235,8 @@ export function GraphPage({ data }: GraphPageProps) {
     const node = data.nodes.find((n) => n.id === moonId)
     if (!node) return
     moonParamHandled.current = true
-    const planetId = `${node.grade}.${node.domainCode}`
-    setCurrentPlanetId(planetId)
-    setViewMode("planet")
+    // Open the moon card directly over the galaxy — don't auto-enter planet view.
+    // When the learner closes the panel, they return to the galaxy, not a planet they didn't choose.
     setSelectedStandard(node)
     setPanelOpen(true)
   }, [onboardingComplete, searchParams, data.nodes])
@@ -989,7 +989,17 @@ export function GraphPage({ data }: GraphPageProps) {
         </button>
       )}
 
-      {/* Galaxy settings — hidden for now, unified header handles everything */}
+      {/* Galaxy info button — bottom-left overlay on galaxy view */}
+      {buildMode === "idle" && viewMode === "galaxy" && (
+        <div className="absolute bottom-6 left-4 z-20">
+          <InfoButton title="Galaxy View">
+            <p><span className="text-zinc-200">Explore 466 math skills</span> across K-12, organized as planets and moons.</p>
+            <p>Each <span className="text-zinc-200">planet</span> is a math domain (e.g. Geometry, Algebra). Each <span className="text-zinc-200">moon</span> is a specific skill.</p>
+            <p>Click a planet to zoom in and see its moons. Click a moon to start building a game for that skill.</p>
+            <p className="text-zinc-500">Green = demonstrated. Gold = mastered. Grey = locked (finish prerequisites first).</p>
+          </InfoButton>
+        </div>
+      )}
 
       {/* Search results dropdown — triggered by unified header ?search= param */}
       {searchOpen && searchQuery.trim() && (

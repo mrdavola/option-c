@@ -99,6 +99,15 @@ function createNumPad(scene, x, y, onSubmit, opts) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// LaunchToTargetScene — ALREADY INTRINSIC
+//
+// Teaches: d = s × t via direct manipulation. The learner picks a speed, the
+// projectile flies for the given time, and they SEE where it lands relative
+// to the target flag. The landing position IS the answer — no quiz wrapper.
+// Wrong speed → projectile visibly overshoots or falls short. Right speed →
+// it lands on the flag. Multiplication is discovered through the act of
+// choosing speed and watching the consequence.
+// ═══════════════════════════════════════════════════════════════════════════════
 class LaunchToTargetScene extends Phaser.Scene {
   constructor() { super('LaunchToTargetScene'); }
   create() { this.W=this.scale.width;this.H=this.scale.height;this.round=0;this.lives=MAX_LIVES;this._bg();this._ui();this.startRound(); }

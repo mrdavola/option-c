@@ -1,6 +1,12 @@
 // Score & Rank — Phaser engine with 3 game options.
 // Math: Order, compare, and rank numbers — counting and cardinality.
 // Options: sorting-lane, number-line-drop, leaderboard-fix
+//
+// ════════════════════════════════════════════════════════════════════════════
+// INTRINSIC REBUILD (v2) — sorting-lane and leaderboard-fix rebuilt so the
+// math is validated by physics / visible structure rather than a "Check" click.
+// number-line-drop is already truly intrinsic and is left unchanged.
+// ════════════════════════════════════════════════════════════════════════════
 
 import type { ThemeConfig, MathParams, GameOption } from "./engine-types"
 import { phaserGame } from "./base-phaser-template"
@@ -34,236 +40,245 @@ export function scoringRankingPhaserEngine(
 }
 
 const GAME_SCENES = `
-// ─── Shared: Round Generation ────────────────────────────────────────────────
-function generateSortRound(round) {
-  if (AI_ROUNDS && AI_ROUNDS[round]) {
-    const r = AI_ROUNDS[round];
-    return { prompt: r.prompt || "Sort these!", values: r.items.slice(), hint: r.hint || null };
+// ─── Shared: Round helper ────────────────────────────────────────────────────
+function getSortRound(roundIndex) {
+  const data = getRound(roundIndex);
+  const isDefault = !data || data.prompt === 'Solve this!' ||
+    (Array.isArray(data.items) && data.items.length === 6 &&
+     data.items[0] === 10 && data.items[1] === 5 && data.items[2] === 8);
+  if (isDefault) {
+    const fallbacks = [
+      [4, 9, 2, 7],
+      [12, 3, 18, 7, 15],
+      [25, 11, 8, 19, 33],
+      [45, 12, 28, 61, 7, 39],
+      [88, 14, 52, 33, 71, 9],
+    ];
+    const items = fallbacks[roundIndex % fallbacks.length].slice();
+    return { prompt: 'Stack the weights: smallest on bottom, largest on top.', items };
   }
-  let count, maxVal;
-  if (round < 2)      { count = 4; maxVal = 20; }
-  else if (round < 4) { count = 5; maxVal = 50; }
-  else                { count = 6; maxVal = 100; }
-  const values = [];
-  const used = new Set();
-  while (values.length < count) {
-    const v = Math.floor(Math.random() * maxVal) + 1;
-    if (!used.has(v)) { used.add(v); values.push(v); }
-  }
-  return { prompt: "Sort from smallest to largest", values, hint: null };
-}
-
-function generateNumberLineRound(round) {
-  let min, max, count;
-  if (round < 2)      { min = 0; max = 20; count = 3; }
-  else if (round < 4) { min = 0; max = 50; count = 4; }
-  else                { min = -10; max = 30; count = 4; }
-  const values = [];
-  const used = new Set();
-  while (values.length < count) {
-    const v = Math.floor(Math.random() * (max - min)) + min;
-    if (!used.has(v)) { used.add(v); values.push(v); }
-  }
-  return { min, max, values };
-}
-
-function generateLeaderboardRound(round) {
-  let count;
-  if (round < 2)      { count = 4; }
-  else if (round < 4) { count = 5; }
-  else                { count = 6; }
-  const scores = [];
-  for (let i = 0; i < count; i++) {
-    scores.push(Math.floor(Math.random() * 90) + 10);
-  }
-  // Create a sorted version then swap 1-2 to make errors
-  const sorted = [...scores].sort((a, b) => b - a);
-  const errorCount = round < 2 ? 1 : 2;
-  const errors = new Set();
-  while (errors.size < errorCount && errors.size < count - 1) {
-    const idx = Math.floor(Math.random() * (count - 1));
-    errors.add(idx);
-  }
-  const display = [...sorted];
-  for (const idx of errors) {
-    [display[idx], display[idx + 1]] = [display[idx + 1], display[idx]];
-  }
-  return { display, correct: sorted, errorPositions: errors };
+  return {
+    prompt: data.prompt || 'Stack the weights in order.',
+    items: Array.isArray(data.items) && data.items.length >= 3 ? data.items.slice() : [4, 9, 2, 7]
+  };
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// OPTION A: Sorting Lane — drag items into ascending order
+// OPTION A: Weight Tower Builder (sorting-lane rebuild)
+// ═══════════════════════════════════════════════════════════════════════════════
+// INTRINSIC DESIGN: Numbers are WEIGHT BLOCKS whose width is proportional to
+// value. Player clicks blocks in order to stack them into a tower (bottom-up).
+// If stacked in ascending order (largest on bottom, smallest on top) the tower
+// stands straight. If a block is out of order — a bigger block placed on a
+// smaller one — the tower VISIBLY WOBBLES and the offending block slides off
+// the stack back to the pool. Physical stability IS the validation. When all
+// blocks are successfully stacked, the tower glows and locks.
 // ═══════════════════════════════════════════════════════════════════════════════
 class SortingLaneScene extends Phaser.Scene {
   constructor() { super('SortingLaneScene'); }
 
   create() {
-    this.W = this.scale.width;
-    this.H = this.scale.height;
-    this.round = 0;
-    this.lives = MAX_LIVES;
-
-    this._buildBackground();
-    this._buildUI();
-    this.hero = addCharacter(this, this.W * 0.85, this.H * 0.35, 0.4);
+    this.W = this.scale.width; this.H = this.scale.height;
+    this.round = 0; this.lives = MAX_LIVES;
+    this._bg(); this._ui();
+    this.hero = addCharacter(this, this.W * 0.88, this.H * 0.55, 0.8);
     this.startRound();
   }
 
-  _buildBackground() {
-    const bg = this.add.image(this.W / 2, this.H / 2, 'bg');
-    bg.setScale(Math.max(this.W / bg.width, this.H / bg.height));
-    this.add.rectangle(this.W / 2, this.H / 2, this.W, this.H, 0x000000, 0.65);
+  _bg() {
+    const bg = this.add.image(this.W/2, this.H/2, 'bg');
+    bg.setScale(Math.max(this.W/bg.width, this.H/bg.height));
+    this.add.rectangle(this.W/2, this.H/2, this.W, this.H, 0x000000, 0.7);
   }
 
-  _buildUI() {
+  _ui() {
     const W = this.W, pad = 14;
-    this.scoreLbl = this.add.text(W - pad, pad, 'Score: 0', {
+    this.scoreLbl = this.add.text(W-pad, pad, 'Score: 0', {
       fontSize: '16px', color: COL_ACCENT, fontFamily: "'Lexend', system-ui", fontStyle: 'bold'
     }).setOrigin(1, 0).setDepth(10);
-    this.heartsGroup = this.add.group();
-    this._redrawHearts();
-    this.dotGroup = this.add.group();
-    this._redrawDots();
-    this.promptLbl = this.add.text(W / 2, pad, '', {
-      fontSize: '14px', color: COL_TEXT, fontFamily: "'Lexend', system-ui",
-      align: 'center', wordWrap: { width: W - 80 }
+    this.heartsGroup = this.add.group(); this._rh();
+    this.dotGroup = this.add.group(); this._rd();
+    this.promptLbl = this.add.text(W/2, pad, '', {
+      fontSize: '13px', color: COL_TEXT, fontFamily: "'Lexend', system-ui",
+      wordWrap: { width: W - 60 }, align: 'center'
     }).setOrigin(0.5, 0).setDepth(10);
   }
-
-  _redrawHearts() {
-    this.heartsGroup.clear(true, true);
-    for (let i = 0; i < this.lives; i++) {
-      this.heartsGroup.add(
-        this.add.text(14 + i * 22, 14, '♥', { fontSize: '18px', color: COL_DANGER }).setDepth(10)
-      );
-    }
-  }
-
-  _redrawDots() {
-    this.dotGroup.clear(true, true);
-    for (let i = 0; i < TOTAL_ROUNDS; i++) {
-      const col = i < this.round ? COL_ACCENT : (i === this.round ? COL_PRIMARY : '#555555');
-      this.dotGroup.add(
-        this.add.circle(this.W / 2 - 40 + i * 20, this.H - 16, 5, hexToNum(col)).setDepth(10)
-      );
-    }
-  }
+  _rh() { this.heartsGroup.clear(true,true); for(let i=0;i<this.lives;i++) this.heartsGroup.add(this.add.text(14+i*22,14,'♥',{fontSize:'18px',color:COL_DANGER}).setDepth(10)); }
+  _rd() { this.dotGroup.clear(true,true); for(let i=0;i<TOTAL_ROUNDS;i++){const c=i<this.round?COL_ACCENT:i===this.round?COL_PRIMARY:'#555555'; this.dotGroup.add(this.add.circle(this.W/2-40+i*20,this.H-16,5,hexToNum(c)).setDepth(10));} }
 
   startRound() {
-    if (this.slotGroup) this.slotGroup.clear(true, true);
-    this.slotGroup = this.add.group();
-    const data = getRound(this.round);
+    if (this.rg) this.rg.clear(true, true);
+    this.rg = this.add.group();
+    if (this.solutionCard) { this.solutionCard.destroy && this.solutionCard.destroy(); this.solutionCard = null; }
+
+    const data = getSortRound(this.round);
     this.promptLbl.setText(data.prompt);
-    this.correctOrder = [...data.items].sort((a, b) => a - b);
-    this.userOrder = [];
-    this.remaining = [...data.items];
-    this._redrawDots();
-    this._drawItems();
-    this._drawSlots();
+    this.values = data.items.slice();
+    // Correct order: ascending values, largest on BOTTOM of tower. Player must
+    // place largest first, then next-largest, etc.
+    this.correctOrder = this.values.slice().sort((a, b) => b - a);
+    this.stacked = [];
+    this.locked = false;
+    this._rd();
+
+    this._drawGround();
+    this._drawPool();
+    this._drawStackArea();
   }
 
-  _drawItems() {
-    if (this.itemGroup) this.itemGroup.clear(true, true);
-    this.itemGroup = this.add.group();
-    const W = this.W, y = this.H * 0.35;
-    const gap = Math.min(80, (W * 0.8) / this.remaining.length);
-    const startX = W / 2 - ((this.remaining.length - 1) * gap) / 2;
-    this.remaining.forEach((val, i) => {
-      const x = startX + i * gap;
-      const bg = this.add.rectangle(x, y, 60, 44, hexToNum(COL_SECONDARY), 0.4)
-        .setInteractive({ useHandCursor: true }).setDepth(7);
-      const lbl = this.add.text(x, y, String(val), {
-        fontSize: '20px', color: COL_TEXT, fontFamily: "'Space Grotesk', sans-serif", fontStyle: 'bold'
-      }).setOrigin(0.5).setDepth(8);
-      bg.on('pointerdown', () => this._placeItem(val));
-      this.itemGroup.add(bg);
-      this.itemGroup.add(lbl);
-    });
+  _drawGround() {
+    const W = this.W, H = this.H;
+    this.groundY = H * 0.62;
+    this.rg.add(this.add.rectangle(W/2, this.groundY + 6, W * 0.9, 8, hexToNum(COL_SECONDARY), 0.7).setDepth(3));
+    this.rg.add(this.add.text(W * 0.12, this.groundY + 22, 'build: biggest on BOTTOM → smallest on TOP', {
+      fontSize: '11px', color: '#888', fontFamily: "'Lexend', system-ui"
+    }).setOrigin(0, 0).setDepth(4));
   }
 
-  _drawSlots() {
-    const W = this.W, y = this.H * 0.6;
-    const total = this.correctOrder.length;
-    const gap = Math.min(80, (W * 0.8) / total);
-    const startX = W / 2 - ((total - 1) * gap) / 2;
-    // Lane label
-    this.slotGroup.add(
-      this.add.text(W / 2, y - 35, 'smallest → largest', {
-        fontSize: '12px', color: COL_TEXT, fontFamily: "'Lexend', system-ui", alpha: 0.5
-      }).setOrigin(0.5).setDepth(6)
-    );
-    this.slotLbls = [];
-    for (let i = 0; i < total; i++) {
+  _drawPool() {
+    // Pool of blocks at bottom, widths proportional to value
+    if (this.poolObjs) this.poolObjs.forEach(o => { o.bg.destroy(); o.lbl.destroy(); });
+    this.poolObjs = [];
+    const W = this.W, H = this.H;
+    const maxVal = Math.max.apply(null, this.values);
+    const maxWidth = 110;
+    const minWidth = 36;
+    const poolY = H * 0.82;
+    const gap = Math.min(130, (W * 0.9) / this.values.length);
+    const startX = W/2 - ((this.values.length - 1) * gap)/2;
+    this.values.forEach((v, i) => {
+      if (this.stacked.indexOf(v) !== -1) return;
+      const width = minWidth + (v / maxVal) * (maxWidth - minWidth);
       const x = startX + i * gap;
-      this.slotGroup.add(
-        this.add.rectangle(x, y, 60, 44, hexToNum(COL_PRIMARY), 0.15).setStrokeStyle(2, hexToNum(COL_PRIMARY), 0.4).setDepth(6)
-      );
-      const lbl = this.add.text(x, y, i < this.userOrder.length ? String(this.userOrder[i]) : '', {
-        fontSize: '20px', color: COL_PRIMARY, fontFamily: "'Space Grotesk', sans-serif", fontStyle: 'bold'
+      const bg = this.add.rectangle(x, poolY, width, 30, hexToNum(COL_PRIMARY), 0.7)
+        .setStrokeStyle(2, hexToNum(COL_ACCENT), 0.6).setInteractive({ useHandCursor: true }).setDepth(6);
+      const lbl = this.add.text(x, poolY, String(v), {
+        fontSize: '15px', color: '#fff', fontFamily: "'Space Grotesk', sans-serif", fontStyle: 'bold'
       }).setOrigin(0.5).setDepth(7);
-      this.slotLbls.push(lbl);
-      this.slotGroup.add(lbl);
-      // Arrow
-      if (i < total - 1) {
-        this.slotGroup.add(
-          this.add.text(x + gap / 2, y, '→', { fontSize: '14px', color: '#555' }).setOrigin(0.5).setDepth(6)
-        );
-      }
-    }
-  }
-
-  _placeItem(val) {
-    this.userOrder.push(val);
-    this.remaining = this.remaining.filter((v, i) => {
-      if (v === val) { return false; }
-      return true;
+      bg.on('pointerdown', () => { if (!this.locked) this._tryPlace(v); });
+      this.rg.add(bg); this.rg.add(lbl);
+      this.poolObjs.push({ bg, lbl, val: v });
     });
-    // Update slot display
-    if (this.slotLbls[this.userOrder.length - 1]) {
-      this.slotLbls[this.userOrder.length - 1].setText(String(val));
-    }
-    this._drawItems();
-    // Check if all placed
-    if (this.userOrder.length === this.correctOrder.length) {
-      this._checkOrder();
-    }
   }
 
-  _checkOrder() {
-    const isCorrect = this.userOrder.every((v, i) => v === this.correctOrder[i]);
-    if (isCorrect) {
-      gameScore += 10 * (this.round + 1);
-      this.scoreLbl.setText('Score: ' + gameScore);
-      this.cameras.main.flash(200, 34, 197, 94); heroCheer(this, this.hero);
+  _drawStackArea() {
+    // Mark the stack area
+    this.stackX = this.W / 2;
+    this.stackObjs = [];
+  }
+
+  _tryPlace(val) {
+    // Determine expected next value
+    const expected = this.correctOrder[this.stacked.length];
+    const maxVal = Math.max.apply(null, this.values);
+    const maxWidth = 110;
+    const minWidth = 36;
+    const blockH = 30;
+    const width = minWidth + (val / maxVal) * (maxWidth - minWidth);
+    const yOnStack = this.groundY - (this.stacked.length * (blockH + 2)) - blockH/2;
+    // Create block at stack position
+    const bg = this.add.rectangle(this.stackX, yOnStack - 60, width, blockH, hexToNum(COL_ACCENT), 0.9)
+      .setStrokeStyle(2, hexToNum(COL_PRIMARY), 0.8).setDepth(7);
+    const lbl = this.add.text(this.stackX, yOnStack - 60, String(val), {
+      fontSize: '15px', color: '#000', fontFamily: "'Space Grotesk', sans-serif", fontStyle: 'bold'
+    }).setOrigin(0.5).setDepth(8);
+    this.rg.add(bg); this.rg.add(lbl);
+
+    // Animate drop
+    this.tweens.add({
+      targets: [bg, lbl], y: yOnStack, duration: 320, ease: 'Quad.easeIn',
+      onComplete: () => {
+        if (val === expected) {
+          // Stable — lock into place
+          this.stacked.push(val);
+          this.stackObjs.push({ bg, lbl });
+          // Hide the pool block
+          const pool = this.poolObjs.find(o => o.val === val);
+          if (pool) { pool.bg.setAlpha(0); pool.lbl.setAlpha(0); }
+          // Check for completion
+          if (this.stacked.length === this.correctOrder.length) {
+            this._onComplete();
+          }
+        } else {
+          // WOBBLE: visible instability — larger block on top of smaller
+          this.cameras.main.shake(250, 0.008);
+          heroShake(this, this.hero);
+          this.lives--; this._rh();
+          // Wobble the whole tower
+          const allTower = [bg, lbl, ...this.stackObjs.flatMap(o => [o.bg, o.lbl])];
+          this.tweens.add({
+            targets: allTower,
+            angle: { from: -6, to: 6 }, yoyo: true, repeat: 2, duration: 90
+          });
+          // Slide the offending block off the stack back to pool
+          this.time.delayedCall(400, () => {
+            allTower.forEach(o => { if (o.setAngle) o.setAngle(0); });
+            this.tweens.add({
+              targets: [bg, lbl],
+              x: this.W * 0.5,
+              y: this.H * 0.82,
+              alpha: 0,
+              duration: 500,
+              ease: 'Quad.easeOut',
+              onComplete: () => { bg.destroy(); lbl.destroy(); }
+            });
+            if (this.lives <= 0) {
+              this.time.delayedCall(700, () => this.scene.start('LoseScene', { score: gameScore }));
+            }
+          });
+        }
+      }
+    });
+  }
+
+  _onComplete() {
+    this.locked = true;
+    gameScore += 10 * (this.round + 1);
+    this.scoreLbl.setText('Score: ' + gameScore);
+    this.cameras.main.flash(200, 34, 197, 94);
+    heroCheer(this, this.hero);
+    // Glow the tower
+    this.stackObjs.forEach(o => {
+      this.tweens.add({
+        targets: o.bg, scaleX: { from: 1, to: 1.05 }, scaleY: { from: 1, to: 1.08 },
+        yoyo: true, duration: 260
+      });
+    });
+    this.time.delayedCall(400, () => this._showSolutionCard());
+  }
+
+  _showSolutionCard() {
+    const W = this.W, H = this.H;
+    const backdrop = this.add.rectangle(W/2, H/2, W, H, 0x000000, 0.6).setDepth(50);
+    const card = this.add.rectangle(W/2, H/2, W - 50, 220, 0x18181b, 1).setStrokeStyle(2, hexToNum(COL_ACCENT)).setDepth(51);
+    const title = this.add.text(W/2, H/2 - 70, 'Tower locked!', {
+      fontSize: '20px', color: COL_ACCENT, fontFamily: "'Space Grotesk', sans-serif", fontStyle: 'bold'
+    }).setOrigin(0.5).setDepth(52);
+    const order = this.correctOrder.slice().reverse().join(' < ');
+    const line = this.add.text(W/2, H/2 - 16, order, {
+      fontSize: '18px', color: COL_PRIMARY, fontFamily: "'Space Grotesk', sans-serif", fontStyle: 'bold'
+    }).setOrigin(0.5).setDepth(52);
+    const sub = this.add.text(W/2, H/2 + 20, 'ascending: smallest to largest', {
+      fontSize: '12px', color: COL_TEXT, fontFamily: "'Lexend', system-ui"
+    }).setOrigin(0.5).setDepth(52);
+    const btn = this.add.rectangle(W/2, H/2 + 70, 220, 44, hexToNum(COL_ACCENT), 1).setInteractive({ useHandCursor: true }).setDepth(52);
+    const btnLbl = this.add.text(W/2, H/2 + 70, this.round + 1 >= TOTAL_ROUNDS ? 'Finish!' : 'Got it! Next round →', {
+      fontSize: '14px', color: '#000', fontFamily: "'Lexend', system-ui", fontStyle: 'bold'
+    }).setOrigin(0.5).setDepth(53);
+    const cleanup = () => {
+      [backdrop, card, title, line, sub, btn, btnLbl].forEach(o => o.destroy());
+      this.solutionCard = null;
       this.round++;
-      if (this.round >= TOTAL_ROUNDS) {
-        this.time.delayedCall(600, () => this.scene.start('VictoryScene', { score: gameScore }));
-      } else {
-        this.time.delayedCall(800, () => this.startRound());
-      }
-    } else {
-      this.lives--;
-      this._redrawHearts();
-      this.cameras.main.shake(200, 0.01); heroShake(this, this.hero);
-      // Reset user order
-      this.remaining = [...this.correctOrder];
-      // Shuffle remaining
-      for (let i = this.remaining.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [this.remaining[i], this.remaining[j]] = [this.remaining[j], this.remaining[i]];
-      }
-      this.userOrder = [];
-      this._drawItems();
-      this._drawSlots();
-      if (this.lives <= 0) {
-        this.time.delayedCall(500, () => this.scene.start('LoseScene', { score: gameScore }));
-      }
-    }
+      if (this.round >= TOTAL_ROUNDS) this.scene.start('VictoryScene', { score: gameScore });
+      else this.startRound();
+    };
+    btn.on('pointerdown', cleanup);
+    this.solutionCard = { destroy: cleanup };
   }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// OPTION B: Number Line Drop — drop numbers onto correct position
+// OPTION B: Number Line Drop (UNCHANGED — already truly intrinsic)
 // ═══════════════════════════════════════════════════════════════════════════════
 class NumberLineDropScene extends Phaser.Scene {
   constructor() { super('NumberLineDropScene'); }
@@ -338,11 +353,9 @@ class NumberLineDropScene extends Phaser.Scene {
     const W = this.W, H = this.H;
     const lineY = H * 0.55;
     const lineLeft = W * 0.1, lineRight = W * 0.9;
-    // Main line
     this.lineGroup.add(
       this.add.rectangle((lineLeft + lineRight) / 2, lineY, lineRight - lineLeft, 3, hexToNum(COL_TEXT), 0.6).setDepth(5)
     );
-    // Ticks and labels
     const range = this.nlMax - this.nlMin;
     const tickCount = Math.min(range + 1, 11);
     const step = range / (tickCount - 1);
@@ -358,7 +371,6 @@ class NumberLineDropScene extends Phaser.Scene {
         }).setOrigin(0.5, 0).setDepth(5)
       );
     }
-    // Drop zones — make the whole line clickable
     const dropZone = this.add.rectangle((lineLeft + lineRight) / 2, lineY, lineRight - lineLeft, 50, 0x000000, 0)
       .setInteractive({ useHandCursor: true }).setDepth(8);
     dropZone.on('pointerdown', (pointer) => {
@@ -385,7 +397,6 @@ class NumberLineDropScene extends Phaser.Scene {
     const target = this.nlValues[this.currentIdx];
     const tolerance = Math.max(1, Math.ceil((this.nlMax - this.nlMin) * 0.08));
     if (Math.abs(clickedValue - target) <= tolerance) {
-      // Correct placement
       this.lineGroup.add(
         this.add.circle(clickX, lineY, 8, hexToNum(COL_ACCENT)).setDepth(9)
       );
@@ -421,149 +432,182 @@ class NumberLineDropScene extends Phaser.Scene {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// OPTION C: Leaderboard Fix — find and fix errors in a scoreboard
+// OPTION C: Leaderboard Fix — Staircase Builder (rebuild)
+// ═══════════════════════════════════════════════════════════════════════════════
+// INTRINSIC DESIGN: Scores are BLOCKS whose heights are proportional to score.
+// They're shown stacked in the wrong order (visibly a jagged staircase — some
+// short blocks above tall ones). Player clicks blocks to swap adjacent pairs.
+// As the ordering improves, the silhouette approaches a clean descending
+// staircase. When the staircase is monotonically descending, the whole row
+// glows — the shape IS the validation. No "check" button; the clean stair
+// pattern emerges as the ranking becomes correct.
 // ═══════════════════════════════════════════════════════════════════════════════
 class LeaderboardFixScene extends Phaser.Scene {
   constructor() { super('LeaderboardFixScene'); }
 
   create() {
-    this.W = this.scale.width;
-    this.H = this.scale.height;
-    this.round = 0;
-    this.lives = MAX_LIVES;
-
-    this._buildBackground();
-    this._buildUI();
-    this.hero = addCharacter(this, this.W * 0.85, this.H * 0.35, 0.4);
+    this.W = this.scale.width; this.H = this.scale.height;
+    this.round = 0; this.lives = MAX_LIVES;
+    this._bg(); this._ui();
+    this.hero = addCharacter(this, this.W * 0.88, this.H * 0.55, 0.8);
     this.startRound();
   }
 
-  _buildBackground() {
-    const bg = this.add.image(this.W / 2, this.H / 2, 'bg');
-    bg.setScale(Math.max(this.W / bg.width, this.H / bg.height));
-    this.add.rectangle(this.W / 2, this.H / 2, this.W, this.H, 0x000000, 0.65);
+  _bg() {
+    const bg = this.add.image(this.W/2, this.H/2, 'bg');
+    bg.setScale(Math.max(this.W/bg.width, this.H/bg.height));
+    this.add.rectangle(this.W/2, this.H/2, this.W, this.H, 0x000000, 0.7);
   }
 
-  _buildUI() {
+  _ui() {
     const W = this.W, pad = 14;
-    this.scoreLbl = this.add.text(W - pad, pad, 'Score: 0', {
+    this.scoreLbl = this.add.text(W-pad, pad, 'Score: 0', {
       fontSize: '16px', color: COL_ACCENT, fontFamily: "'Lexend', system-ui", fontStyle: 'bold'
     }).setOrigin(1, 0).setDepth(10);
-    this.heartsGroup = this.add.group();
-    this._redrawHearts();
-    this.dotGroup = this.add.group();
-    this._redrawDots();
-    this.add.text(W / 2, pad, 'Find the scores in the wrong position!', {
-      fontSize: '14px', color: COL_TEXT, fontFamily: "'Lexend', system-ui"
+    this.hg = this.add.group(); this._rh();
+    this.dg = this.add.group(); this._rd();
+    this.promptLbl = this.add.text(W/2, pad, '', {
+      fontSize: '13px', color: COL_TEXT, fontFamily: "'Lexend', system-ui",
+      wordWrap: { width: W - 60 }, align: 'center'
     }).setOrigin(0.5, 0).setDepth(10);
   }
-
-  _redrawHearts() {
-    this.heartsGroup.clear(true, true);
-    for (let i = 0; i < this.lives; i++) {
-      this.heartsGroup.add(
-        this.add.text(14 + i * 22, 14, '♥', { fontSize: '18px', color: COL_DANGER }).setDepth(10)
-      );
-    }
-  }
-
-  _redrawDots() {
-    this.dotGroup.clear(true, true);
-    for (let i = 0; i < TOTAL_ROUNDS; i++) {
-      const col = i < this.round ? COL_ACCENT : (i === this.round ? COL_PRIMARY : '#555555');
-      this.dotGroup.add(
-        this.add.circle(this.W / 2 - 40 + i * 20, this.H - 16, 5, hexToNum(col)).setDepth(10)
-      );
-    }
-  }
+  _rh() { this.hg.clear(true,true); for(let i=0;i<this.lives;i++) this.hg.add(this.add.text(14+i*22,14,'♥',{fontSize:'18px',color:COL_DANGER}).setDepth(10)); }
+  _rd() { this.dg.clear(true,true); for(let i=0;i<TOTAL_ROUNDS;i++){const c=i<this.round?COL_ACCENT:i===this.round?COL_PRIMARY:'#555555'; this.dg.add(this.add.circle(this.W/2-40+i*20,this.H-16,5,hexToNum(c)).setDepth(10));} }
 
   startRound() {
-    if (this.boardGroup) this.boardGroup.clear(true, true);
-    this.boardGroup = this.add.group();
-    const data = getRound(this.round);
-    // Build leaderboard data from getRound: items are the display order, target is the count of errors
-    const display = data.items.slice();
-    const correct = [...display].sort((a, b) => b - a);
-    const errorPositions = new Set();
-    for (let i = 0; i < display.length; i++) { if (display[i] !== correct[i]) errorPositions.add(i); }
-    this.boardData = { display, correct, errorPositions };
-    this.foundErrors = new Set();
-    this.totalErrors = errorPositions.size;
-    this._redrawDots();
-    this._drawBoard();
-  }
+    if (this.rg) this.rg.clear(true, true);
+    this.rg = this.add.group();
+    if (this.solutionCard) { this.solutionCard.destroy && this.solutionCard.destroy(); this.solutionCard = null; }
 
-  _drawBoard() {
-    const W = this.W, H = this.H;
-    const startY = H * 0.2;
-    const rowH = 44;
-    // Header
-    this.boardGroup.add(
-      this.add.text(W / 2, startY - 20, 'LEADERBOARD (highest first)', {
-        fontSize: '13px', color: COL_ACCENT, fontFamily: "'Space Grotesk', sans-serif", fontStyle: 'bold'
-      }).setOrigin(0.5).setDepth(6)
-    );
-    this.boardData.display.forEach((score, i) => {
-      const y = startY + i * rowH + 20;
-      const isError = this.boardData.errorPositions.has(i) || this.boardData.errorPositions.has(i - 1);
-      const isFound = this.foundErrors.has(i);
-      const bgCol = isFound ? hexToNum(COL_ACCENT) : hexToNum(COL_SECONDARY);
-      const row = this.add.rectangle(W / 2, y, W * 0.6, rowH - 4, bgCol, isFound ? 0.3 : 0.15)
-        .setStrokeStyle(2, bgCol, 0.3).setDepth(6);
-      if (!isFound) {
-        row.setInteractive({ useHandCursor: true });
-        row.on('pointerdown', () => this._clickRow(i));
-      }
-      this.boardGroup.add(row);
-      // Rank
-      this.boardGroup.add(
-        this.add.text(W * 0.25, y, '#' + (i + 1), {
-          fontSize: '14px', color: isFound ? COL_ACCENT : COL_TEXT, fontFamily: "'Lexend', system-ui"
-        }).setOrigin(0, 0.5).setDepth(7)
-      );
-      // Score
-      this.boardGroup.add(
-        this.add.text(W * 0.65, y, String(score), {
-          fontSize: '18px', color: isFound ? COL_ACCENT : COL_TEXT,
-          fontFamily: "'Space Grotesk', sans-serif", fontStyle: 'bold'
-        }).setOrigin(0.5).setDepth(7)
-      );
-    });
-  }
-
-  _clickRow(idx) {
-    // Check if this row is part of an error pair
-    const isWrong = this.boardData.errorPositions.has(idx) ||
-      (idx > 0 && this.boardData.errorPositions.has(idx - 1) && !this.foundErrors.has(idx - 1));
-    // More precisely: check if display[idx] != correct[idx]
-    const isOutOfPlace = this.boardData.display[idx] !== this.boardData.correct[idx];
-    if (isOutOfPlace) {
-      this.foundErrors.add(idx);
-      this.cameras.main.flash(100, 34, 197, 94); heroCheer(this, this.hero);
-      // Redraw
-      this._drawBoard();
-      // Check if all errors found
-      const allFixed = this.boardData.display.every((v, i) =>
-        v === this.boardData.correct[i] || this.foundErrors.has(i)
-      );
-      if (allFixed) {
-        gameScore += 10 * (this.round + 1);
-        this.scoreLbl.setText('Score: ' + gameScore);
-        this.round++;
-        if (this.round >= TOTAL_ROUNDS) {
-          this.time.delayedCall(600, () => this.scene.start('VictoryScene', { score: gameScore }));
-        } else {
-          this.time.delayedCall(800, () => this.startRound());
-        }
-      }
-    } else {
-      this.lives--;
-      this._redrawHearts();
-      this.cameras.main.shake(200, 0.01); heroShake(this, this.hero);
-      if (this.lives <= 0) {
-        this.time.delayedCall(500, () => this.scene.start('LoseScene', { score: gameScore }));
+    const data = getSortRound(this.round);
+    this.promptLbl.setText('Tap a block, then tap its neighbour to swap. Build a descending staircase.');
+    // Initial display may already be scrambled. Ensure not sorted.
+    let display = data.items.slice();
+    // If sorted already, introduce a couple swaps
+    const sorted = display.slice().sort((a,b) => b - a);
+    const isAlreadySorted = display.every((v,i) => v === sorted[i]);
+    if (isAlreadySorted) {
+      for (let s = 0; s < 2; s++) {
+        const i = Math.floor(Math.random() * (display.length - 1));
+        [display[i], display[i+1]] = [display[i+1], display[i]];
       }
     }
+    this.display = display;
+    this.correct = sorted;
+    this.selected = -1;
+    this.locked = false;
+    this._rd();
+    this._drawBlocks();
+  }
+
+  _drawBlocks() {
+    if (this.blockObjs) this.blockObjs.forEach(o => { o.bg.destroy(); o.lbl.destroy(); if (o.rank) o.rank.destroy(); });
+    this.blockObjs = [];
+    const W = this.W, H = this.H;
+    const n = this.display.length;
+    const maxVal = Math.max.apply(null, this.display);
+    const blockMaxH = H * 0.38;
+    const blockW = Math.min(80, (W * 0.85) / n);
+    const gap = 6;
+    const totalW = n * blockW + (n - 1) * gap;
+    const startX = W/2 - totalW/2 + blockW/2;
+    const baseY = H * 0.68;
+
+    this.display.forEach((v, i) => {
+      const h = 30 + (v / maxVal) * (blockMaxH - 30);
+      const x = startX + i * (blockW + gap);
+      const y = baseY - h/2;
+      const bg = this.add.rectangle(x, y, blockW - 4, h, hexToNum(COL_PRIMARY), 0.8)
+        .setStrokeStyle(2, hexToNum(COL_ACCENT), 0.6)
+        .setInteractive({ useHandCursor: true }).setDepth(6);
+      const lbl = this.add.text(x, y, String(v), {
+        fontSize: '14px', color: '#fff', fontFamily: "'Space Grotesk', sans-serif", fontStyle: 'bold'
+      }).setOrigin(0.5).setDepth(7);
+      const rank = this.add.text(x, baseY + 18, '#' + (i+1), {
+        fontSize: '11px', color: '#888', fontFamily: "'Lexend', system-ui"
+      }).setOrigin(0.5).setDepth(7);
+      bg.on('pointerdown', () => { if (!this.locked) this._tapBlock(i); });
+      this.rg.add(bg); this.rg.add(lbl); this.rg.add(rank);
+      this.blockObjs.push({ bg, lbl, rank, val: v, idx: i });
+    });
+    // Base line
+    this.rg.add(this.add.rectangle(W/2, baseY + 4, totalW + 20, 4, hexToNum(COL_SECONDARY), 0.8).setDepth(4));
+    this._checkStair();
+  }
+
+  _tapBlock(i) {
+    if (this.selected === -1) {
+      this.selected = i;
+      this.blockObjs[i].bg.setStrokeStyle(3, hexToNum(COL_DANGER), 1);
+    } else if (this.selected === i) {
+      this.blockObjs[i].bg.setStrokeStyle(2, hexToNum(COL_ACCENT), 0.6);
+      this.selected = -1;
+    } else {
+      // Must be adjacent
+      if (Math.abs(this.selected - i) === 1) {
+        const a = this.selected, b = i;
+        [this.display[a], this.display[b]] = [this.display[b], this.display[a]];
+        this.selected = -1;
+        this._drawBlocks();
+      } else {
+        // Not adjacent — flash invalid
+        this.cameras.main.shake(120, 0.005);
+        this.blockObjs[this.selected].bg.setStrokeStyle(2, hexToNum(COL_ACCENT), 0.6);
+        this.selected = -1;
+      }
+    }
+  }
+
+  _checkStair() {
+    // Check monotonic descending
+    let descending = true;
+    for (let i = 1; i < this.display.length; i++) {
+      if (this.display[i] > this.display[i-1]) { descending = false; break; }
+    }
+    if (descending && !this.locked) {
+      this.locked = true;
+      // Glow
+      this.blockObjs.forEach((o, i) => {
+        this.tweens.add({
+          targets: o.bg, scaleY: { from: 1, to: 1.06 }, yoyo: true,
+          duration: 240, delay: i * 60,
+          onStart: () => { o.bg.setStrokeStyle(3, hexToNum(COL_ACCENT), 1); o.bg.setFillStyle(hexToNum(COL_ACCENT), 0.85); }
+        });
+      });
+      this.cameras.main.flash(220, 34, 197, 94);
+      heroCheer(this, this.hero);
+      gameScore += 10 * (this.round + 1);
+      this.scoreLbl.setText('Score: ' + gameScore);
+      this.time.delayedCall(700, () => this._showSolutionCard());
+    }
+  }
+
+  _showSolutionCard() {
+    const W = this.W, H = this.H;
+    const backdrop = this.add.rectangle(W/2, H/2, W, H, 0x000000, 0.6).setDepth(50);
+    const card = this.add.rectangle(W/2, H/2, W - 50, 220, 0x18181b, 1).setStrokeStyle(2, hexToNum(COL_ACCENT)).setDepth(51);
+    const title = this.add.text(W/2, H/2 - 70, 'Leaderboard fixed!', {
+      fontSize: '20px', color: COL_ACCENT, fontFamily: "'Space Grotesk', sans-serif", fontStyle: 'bold'
+    }).setOrigin(0.5).setDepth(52);
+    const line = this.add.text(W/2, H/2 - 16, this.correct.join('  >  '), {
+      fontSize: '18px', color: COL_PRIMARY, fontFamily: "'Space Grotesk', sans-serif", fontStyle: 'bold'
+    }).setOrigin(0.5).setDepth(52);
+    const sub = this.add.text(W/2, H/2 + 20, 'descending: highest rank first', {
+      fontSize: '12px', color: COL_TEXT, fontFamily: "'Lexend', system-ui"
+    }).setOrigin(0.5).setDepth(52);
+    const btn = this.add.rectangle(W/2, H/2 + 70, 220, 44, hexToNum(COL_ACCENT), 1).setInteractive({ useHandCursor: true }).setDepth(52);
+    const btnLbl = this.add.text(W/2, H/2 + 70, this.round + 1 >= TOTAL_ROUNDS ? 'Finish!' : 'Got it! Next round →', {
+      fontSize: '14px', color: '#000', fontFamily: "'Lexend', system-ui", fontStyle: 'bold'
+    }).setOrigin(0.5).setDepth(53);
+    const cleanup = () => {
+      [backdrop, card, title, line, sub, btn, btnLbl].forEach(o => o.destroy());
+      this.solutionCard = null;
+      this.round++;
+      if (this.round >= TOTAL_ROUNDS) this.scene.start('VictoryScene', { score: gameScore });
+      else this.startRound();
+    };
+    btn.on('pointerdown', cleanup);
+    this.solutionCard = { destroy: cleanup };
   }
 }
 `

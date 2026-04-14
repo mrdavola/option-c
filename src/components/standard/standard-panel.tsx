@@ -14,6 +14,7 @@ import posthog from "posthog-js"
 import Link from "next/link"
 import { ConceptCard } from "./concept-card"
 import { CircuitBoardBuilder } from "./circuit-board-builder"
+import { MechanicSkeleton } from "./mechanic-skeleton"
 import { MasteryPlay } from "./mastery-play"
 import { GameIframe } from "@/components/game/game-iframe"
 import { useAuth } from "@/lib/auth"
@@ -272,7 +273,9 @@ function MoonCardView({
   )
 }
 
-type FlowStep = "learn" | "earn" | "unlocked" | "demonstrate"
+// "skeleton" sits between "learn" and "earn" — the learner plays a stripped-down
+// preview of the game mechanic (no theme) before opening the Circuit Board Builder.
+type FlowStep = "learn" | "skeleton" | "earn" | "unlocked" | "demonstrate"
 
 interface StandardPanelProps {
   standard: StandardNode | null
@@ -337,7 +340,7 @@ export function StandardPanel({
 
   return (
     <>
-    <Sheet open={open && step !== "earn" && step !== "learn"} onOpenChange={(isOpen) => { if (!isOpen) onClose() }}>
+    <Sheet open={open && step !== "earn" && step !== "learn" && step !== "skeleton"} onOpenChange={(isOpen) => { if (!isOpen) onClose() }}>
       <SheetContent
         side="right"
         className="w-full sm:w-[75vw] lg:w-[60vw] overflow-y-auto"
@@ -490,16 +493,30 @@ export function StandardPanel({
       </div>
     )}
 
-    {/* Full-page moon card — learn step (only for available/in_progress nodes) */}
-    {step === "learn" && standard && open && (!nodeStatus || nodeStatus === "available" || nodeStatus === "in_progress") && (
+    {/* Full-page moon card — learn step. Show for available/in_progress nodes,
+         and also for locked nodes (so learners can preview what's ahead when they search). */}
+    {step === "learn" && standard && open && (!nodeStatus || nodeStatus === "available" || nodeStatus === "in_progress" || nodeStatus === "locked") && (
       <MoonCardView
         standard={standard}
         planetLabel={getPlanetLabel(standard)}
         moonName={getMoonName(standard)}
         playToMasterButton={playToMasterButton}
         onClose={onClose}
-        onBuild={() => setStep("earn")}
+        onBuild={() => setStep("skeleton")}
         onImportHtml={onImportHtml ? () => onImportHtml(standard) : undefined}
+      />
+    )}
+
+    {/* Full-page Mechanic Skeleton — inserted between learn and earn.
+         Learner meets the pure math mechanic (no theme) before themed build. */}
+    {step === "skeleton" && standard && open && (
+      <MechanicSkeleton
+        standardId={standard.id}
+        standardDescription={standard.description}
+        standardGrade={standard.grade}
+        mathSkillLabel={standard.description}
+        onReadyToBuild={() => setStep("earn")}
+        onBack={() => setStep("learn")}
       />
     )}
   </>

@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <!-- Shadow -->
+  <ellipse cx="128" cy="245" rx="45" ry="10" fill="#000" opacity="0.15"/>
+  <!-- Legs -->
+  <rect x="110" y="200" width="14" height="45" rx="5" fill="#2c3e50"/>
+  <rect x="132" y="200" width="14" height="45" rx="5" fill="#2c3e50"/>
+  <!-- Shoes -->
+  <ellipse cx="117" cy="246" rx="12" ry="5" fill="#1a1a1a"/>
+  <ellipse cx="139" cy="246" rx="12" ry="5" fill="#1a1a1a"/>
+  <!-- Lab coat body -->
+  <path d="M92 120 L164 120 L170 210 Q128 220 86 210 Z" fill="#ecf0f1"/>
+  <line x1="128" y1="120" x2="128" y2="210" stroke="#bdc3c7" stroke-width="1"/>
+  <!-- Coat pockets -->
+  <rect x="98" y="170" width="24" height="18" rx="3" fill="none" stroke="#bdc3c7" stroke-width="1"/>
+  <rect x="134" y="170" width="24" height="18" rx="3" fill="none" stroke="#bdc3c7" stroke-width="1"/>
+  <!-- Pen in pocket -->
+  <rect x="140" y="166" width="3" height="14" rx="1" fill="#3498db"/>
+  <!-- Arms -->
+  <path d="M92 130 Q70 150 60 180" fill="none" stroke="#ecf0f1" stroke-width="12" stroke-linecap="round"/>
+  <path d="M164 130 Q186 150 196 170" fill="none" stroke="#ecf0f1" stroke-width="12" stroke-linecap="round"/>
+  <!-- Hands -->
+  <circle cx="58" cy="183" r="8" fill="#d4a574"/>
+  <circle cx="198" cy="173" r="8" fill="#d4a574"/>
+  <!-- Beaker in hand -->
+  <path d="M188 150 L188 130 L182 125 L182 110 L208 110 L208 125 L202 130 L202 150 Z" fill="#80deea" opacity="0.4" stroke="#4dd0e1" stroke-width="1.5"/>
+  <rect x="180" y="106" width="30" height="6" rx="2" fill="#b0bec5"/>
+  <!-- Bubbles -->
+  <circle cx="192" cy="118" r="3" fill="#4dd0e1" opacity="0.5"/>
+  <circle cx="198" cy="124" r="2" fill="#4dd0e1" opacity="0.4"/>
+  <!-- Head -->
+  <circle cx="128" cy="88" r="32" fill="#d4a574"/>
+  <!-- Hair -->
+  <path d="M96 78 Q100 50 128 48 Q156 50 160 78" fill="#555"/>
+  <!-- Glasses -->
+  <circle cx="114" cy="88" r="11" fill="none" stroke="#333" stroke-width="2.5"/>
+  <circle cx="142" cy="88" r="11" fill="none" stroke="#333" stroke-width="2.5"/>
+  <line x1="125" y1="88" x2="131" y2="88" stroke="#333" stroke-width="2"/>
+  <line x1="96" y1="86" x2="103" y2="88" stroke="#333" stroke-width="2"/>
+  <line x1="153" y1="88" x2="160" y2="86" stroke="#333" stroke-width="2"/>
+  <!-- Eyes behind glasses -->
+  <circle cx="114" cy="89" r="3" fill="#333"/>
+  <circle cx="142" cy="89" r="3" fill="#333"/>
+  <!-- Smile -->
+  <path d="M118 102 Q128 108 138 102" fill="none" stroke="#c0392b" stroke-width="2" stroke-linecap="round"/>
+</svg>

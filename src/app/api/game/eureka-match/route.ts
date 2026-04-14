@@ -4,6 +4,7 @@
 import Anthropic from "@anthropic-ai/sdk"
 import { getAdminDb } from "@/lib/firebase-admin"
 import { GAME_OPTIONS, type GameOptionDef } from "@/lib/game-engines/game-option-registry"
+import { STANDARD_GAME_OPTIONS } from "@/lib/standard-game-options"
 import standardsData from "@/data/standards.json"
 
 export const maxDuration = 15
@@ -37,49 +38,54 @@ export async function POST(req: Request) {
     /\d$|[a-z]$/.test(s.id)
   )
 
-  // Build a compact list of available game options with their standards
-  const availableOptions: Array<{
+  // Build valid option-standard pairs using the per-standard mapping
+  // This is the ONLY source of truth for which game options work with which standards
+  const validPairs: Array<{
     optionId: string; optionName: string; description: string;
     mechanicId: string; standardId: string; standardDescription: string
   }> = []
 
   for (const standard of gradeStandards) {
-    // Find mechanics that match this standard (simplified keyword matching)
-    for (const opt of GAME_OPTIONS) {
-      // Basic check: does this mechanic's game option already have an entry for this standard?
-      // We allow all options for all grade-level standards for now
-      if (!availableOptions.some(a => a.optionId === opt.id && a.standardId === standard.id)) {
-        availableOptions.push({
-          optionId: opt.id,
-          optionName: opt.name,
-          description: opt.description,
-          mechanicId: opt.mechanicId,
-          standardId: standard.id,
-          standardDescription: standard.description,
-        })
-      }
+    const allowedOptionIds = STANDARD_GAME_OPTIONS[standard.id]
+    if (!allowedOptionIds) continue
+    for (const optId of allowedOptionIds) {
+      const opt = GAME_OPTIONS.find(o => o.id === optId)
+      if (!opt) continue
+      validPairs.push({
+        optionId: opt.id,
+        optionName: opt.name,
+        description: opt.description,
+        mechanicId: opt.mechanicId,
+        standardId: standard.id,
+        standardDescription: standard.description,
+      })
     }
   }
 
-  // Build a compact summary of game options for the AI
-  const uniqueOptions = GAME_OPTIONS.map(o => `- ${o.name} (${o.id}): ${o.description}`).join("\n")
+  if (validPairs.length === 0) {
+    return Response.json({ suggestions: [], allOptions: [], reason: "No matching standards found for this grade." })
+  }
+
+  // Build a compact summary of ONLY valid pairs for the AI
+  const pairSummary = validPairs.map(p =>
+    `- ${p.optionName} (${p.optionId}) for "${p.standardDescription}" [${p.standardId}]`
+  ).join("\n")
 
   try {
     const response = await anthropic.messages.create({
       model: "claude-haiku-4-5-20251001",
-      max_tokens: 300,
-      system: `You match a kid's game idea to one of our pre-built game options. Return ONLY JSON, no markdown.
+      max_tokens: 400,
+      system: `You match a kid's game idea to the best game option + math standard pair. Return ONLY JSON, no markdown.
 
-Available game options:
-${uniqueOptions}
+IMPORTANT: You may ONLY pick from the pairs listed below. Each pair is a game option matched to a specific math standard. Do NOT suggest options or standards outside this list.
 
-If the idea clearly matches one option, return:
-{"match": true, "optionId": "<id>", "reason": "one sentence why this fits"}
+Available game option + standard pairs:
+${pairSummary}
 
-If no option fits well, return:
-{"match": false, "closest": ["<id1>", "<id2>", "<id3>"], "reason": "one sentence explaining why these are close"}
+Return:
+{"matches": [{"optionId": "<id>", "standardId": "<id>", "reason": "why this fits the idea"}], "count": N}
 
-Pick options where the GAMEPLAY (what the player does) matches, not just the theme.`,
+Return the 3 best-matching pairs. Pick pairs where the GAMEPLAY matches the idea AND the math standard makes sense. If the idea is vague, pick the most fun/engaging options.`,
       messages: [{
         role: "user",
         content: `Background: ${background}
@@ -92,68 +98,57 @@ Game idea: ${gameIdea}`,
     const cleaned = text.replace(/```json?\n?/g, "").replace(/```/g, "").trim()
     const parsed = JSON.parse(cleaned)
 
-    if (parsed.match && parsed.optionId) {
-      // Direct match — find the option and a standard for it
-      const opt = GAME_OPTIONS.find(o => o.id === parsed.optionId)
-      if (opt) {
-        // Find a standard at the learner's grade that they still need
-        const matchingStandard = gradeStandards[0] // Simple: pick first undemonstrated
-        return Response.json({
-          match: {
-            mechanicId: opt.mechanicId,
-            mechanicTitle: "",
-            optionId: opt.id,
-            optionName: opt.name,
-            optionDescription: opt.description,
-            standardId: matchingStandard?.id || "",
-            standardDescription: matchingStandard?.description || "",
-            moonName: "",
-            explanation: parsed.reason || "",
-          },
-        })
-      }
-    }
-
-    // No direct match — return 3 closest suggestions
-    const closestIds: string[] = parsed.closest || []
-    const suggestions = closestIds
-      .map(id => {
-        const opt = GAME_OPTIONS.find(o => o.id === id)
-        if (!opt) return null
-        const std = gradeStandards[0]
-        return {
-          optionId: opt.id,
-          optionName: opt.name,
-          description: opt.description,
-          mechanicId: opt.mechanicId,
-          standardId: std?.id || "",
-          standardDescription: std?.description || "",
-        }
+    const matches: Array<typeof parsed.matches[0]> = parsed.matches || []
+    const suggestions = matches
+      .map((m: any) => {
+        const pair = validPairs.find(p => p.optionId === m.optionId && p.standardId === m.standardId)
+        if (!pair) return null
+        return { ...pair, reason: m.reason }
       })
       .filter(Boolean)
+      .slice(0, 3)
 
-    // Also build a full list of all options for "see all"
-    const allOpts = GAME_OPTIONS.slice(0, 30).map(o => ({
-      optionId: o.id,
-      optionName: o.name,
-      description: o.description,
-      mechanicId: o.mechanicId,
-      standardId: gradeStandards[0]?.id || "",
-      standardDescription: gradeStandards[0]?.description || "",
+    if (suggestions.length > 0 && suggestions.length === 1) {
+      // Single strong match — return as direct match
+      const s = suggestions[0]!
+      const opt = GAME_OPTIONS.find(o => o.id === (s as any).optionId)
+      return Response.json({
+        match: {
+          mechanicId: opt?.mechanicId || (s as any).mechanicId,
+          mechanicTitle: "",
+          optionId: (s as any).optionId,
+          optionName: (s as any).optionName,
+          optionDescription: (s as any).description,
+          standardId: (s as any).standardId,
+          standardDescription: (s as any).standardDescription,
+          moonName: "",
+          explanation: (s as any).reason || "",
+        },
+      })
+    }
+
+    // Multiple suggestions — let learner choose
+    // Also build a broader list of all valid options for this grade
+    const allOpts = validPairs.slice(0, 30).map(p => ({
+      optionId: p.optionId,
+      optionName: p.optionName,
+      description: p.description,
+      mechanicId: p.mechanicId,
+      standardId: p.standardId,
+      standardDescription: p.standardDescription,
     }))
 
-    return Response.json({ suggestions, allOptions: allOpts, reason: parsed.reason })
+    return Response.json({
+      suggestions: suggestions.length > 0 ? suggestions : validPairs.slice(0, 3),
+      allOptions: allOpts,
+      reason: parsed.reason || matches[0]?.reason || "",
+    })
   } catch (err) {
     console.error("[eureka-match] AI matching failed:", err)
-    // Fallback: just return all options
-    const fallback = GAME_OPTIONS.slice(0, 9).map(o => ({
-      optionId: o.id,
-      optionName: o.name,
-      description: o.description,
-      mechanicId: o.mechanicId,
-      standardId: gradeStandards[0]?.id || "",
-      standardDescription: gradeStandards[0]?.description || "",
-    }))
-    return Response.json({ suggestions: fallback.slice(0, 3), allOptions: fallback })
+    // Fallback: return first 3 valid pairs (guaranteed correct mapping)
+    return Response.json({
+      suggestions: validPairs.slice(0, 3),
+      allOptions: validPairs.slice(0, 9),
+    })
   }
 }

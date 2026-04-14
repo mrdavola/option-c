@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <rect width="800" height="600" fill="#1a1a2e"/>
+  <!-- Tiled floor -->
+  <rect x="0" y="450" width="800" height="150" fill="#2a2a3e"/>
+  <line x1="0" y1="450" x2="800" y2="450" stroke="#3a3a5a" stroke-width="2"/>
+  <line x1="200" y1="450" x2="200" y2="600" stroke="#3a3a5a" stroke-width="1" opacity="0.5"/>
+  <line x1="400" y1="450" x2="400" y2="600" stroke="#3a3a5a" stroke-width="1" opacity="0.5"/>
+  <line x1="600" y1="450" x2="600" y2="600" stroke="#3a3a5a" stroke-width="1" opacity="0.5"/>
+  <!-- Back wall panels -->
+  <rect x="50" y="60" width="200" height="350" rx="8" fill="#222240" stroke="#3a3a5a" stroke-width="1"/>
+  <rect x="300" y="60" width="200" height="350" rx="8" fill="#222240" stroke="#3a3a5a" stroke-width="1"/>
+  <rect x="550" y="60" width="200" height="350" rx="8" fill="#222240" stroke="#3a3a5a" stroke-width="1"/>
+  <!-- Monitor -->
+  <rect x="330" y="100" width="140" height="100" rx="6" fill="#0d1117" stroke="#34d399" stroke-width="2"/>
+  <line x1="350" y1="130" x2="440" y2="130" stroke="#34d399" stroke-width="1" opacity="0.6"/>
+  <line x1="350" y1="150" x2="420" y2="150" stroke="#34d399" stroke-width="1" opacity="0.4"/>
+  <line x1="350" y1="170" x2="450" y2="170" stroke="#34d399" stroke-width="1" opacity="0.5"/>
+  <!-- Beakers on shelf -->
+  <rect x="80" y="300" width="150" height="6" rx="2" fill="#3a3a5a"/>
+  <path d="M100 300 L100 270 L90 260 L90 240 L130 240 L130 260 L120 270 L120 300" fill="#4488aa" opacity="0.4" stroke="#6ab0d4" stroke-width="1"/>
+  <path d="M150 300 L150 275 L145 268 L145 252 L175 252 L175 268 L170 275 L170 300" fill="#aa4488" opacity="0.3" stroke="#d46ab0" stroke-width="1"/>
+  <!-- DNA helix decoration -->
+  <path d="M620 120 Q640 140 620 160 Q600 180 620 200 Q640 220 620 240" fill="none" stroke="#6366f1" stroke-width="2" opacity="0.5"/>
+  <path d="M640 120 Q620 140 640 160 Q660 180 640 200 Q620 220 640 240" fill="none" stroke="#8b5cf6" stroke-width="2" opacity="0.5"/>
+  <!-- Ceiling lights -->
+  <rect x="180" y="0" width="4" height="40" fill="#555"/>
+  <ellipse cx="182" cy="42" rx="20" ry="6" fill="#f9ca24" opacity="0.3"/>
+  <rect x="580" y="0" width="4" height="40" fill="#555"/>
+  <ellipse cx="582" cy="42" rx="20" ry="6" fill="#f9ca24" opacity="0.3"/>
+</svg>

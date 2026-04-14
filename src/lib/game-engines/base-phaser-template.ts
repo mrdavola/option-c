@@ -24,24 +24,57 @@ export function phaserGame(opts: PhaserGameOpts): string {
   const { config, math, option, gameSceneCode, sceneName, introText, helpText } = opts
   const c = config.colors
 
-  const characterUrl = config.characterSprite
-    ? resolveSpriteUrl("characters", config.characterSprite)
-    : resolveSpriteUrl("characters", "wizard")
+  // ─── Skeleton Mode ─────────────────────────────────────────────────────────
+  // Strip all theme — plain dark bg, white stickman, neutral white circle items.
+  // Lets the learner meet the pure math mechanic before picking a theme.
+  const SKELETON_STICKMAN_SVG =
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">' +
+      '<g stroke="#ffffff" stroke-width="6" stroke-linecap="round" fill="none">' +
+        '<circle cx="60" cy="28" r="14" fill="#ffffff" stroke="none"/>' +
+        '<line x1="60" y1="44" x2="60" y2="84"/>' +
+        '<line x1="60" y1="54" x2="36" y2="70"/>' +
+        '<line x1="60" y1="54" x2="84" y2="70"/>' +
+        '<line x1="60" y1="84" x2="40" y2="110"/>' +
+        '<line x1="60" y1="84" x2="80" y2="110"/>' +
+      '</g>' +
+    '</svg>'
+  const SKELETON_ITEM_SVG =
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">' +
+      '<circle cx="32" cy="32" r="26" fill="#e4e4e7" stroke="#a1a1aa" stroke-width="3"/>' +
+    '</svg>'
+  const SKELETON_BG_SVG =
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">' +
+      '<rect width="800" height="600" fill="#0a0a0a"/>' +
+    '</svg>'
+  const toDataUri = (svg: string) =>
+    'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg)
 
-  const itemUrl = config.itemSprite
-    ? resolveSpriteUrl("items", config.itemSprite)
-    : resolveSpriteUrl("items", "gem")
+  const skeleton = config.skeletonMode === true
 
-  const bgUrl = config.backgroundImage
-    ? resolveSpriteUrl("backgrounds", config.backgroundImage)
-    : resolveSpriteUrl("backgrounds", "cave")
+  const characterUrl = skeleton
+    ? toDataUri(SKELETON_STICKMAN_SVG)
+    : config.characterSprite
+      ? resolveSpriteUrl("characters", config.characterSprite)
+      : resolveSpriteUrl("characters", "wizard")
 
-  const bg = c.bg
-  const primary = c.primary
-  const secondary = c.secondary
-  const accent = c.accent
-  const danger = c.danger
-  const textColor = c.text
+  const itemUrl = skeleton
+    ? toDataUri(SKELETON_ITEM_SVG)
+    : config.itemSprite
+      ? resolveSpriteUrl("items", config.itemSprite)
+      : resolveSpriteUrl("items", "gem")
+
+  const bgUrl = skeleton
+    ? toDataUri(SKELETON_BG_SVG)
+    : config.backgroundImage
+      ? resolveSpriteUrl("backgrounds", config.backgroundImage)
+      : resolveSpriteUrl("backgrounds", "cave")
+
+  const bg = skeleton ? "#0a0a0a" : c.bg
+  const primary = skeleton ? "#60a5fa" : c.primary
+  const secondary = skeleton ? "#e4e4e7" : c.secondary
+  const accent = skeleton ? "#fbbf24" : c.accent
+  const danger = skeleton ? "#ef4444" : c.danger
+  const textColor = skeleton ? "#e4e4e7" : c.text
 
   // Escape help text for safe embedding in JS string
   const escapedHelpText = helpText.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n')
@@ -101,16 +134,17 @@ export function phaserGame(opts: PhaserGameOpts): string {
     cursor: pointer;
   }
 
-  /* Help button */
+  /* Help button — small, top-left, low-opacity so it doesn't compete with the game */
   #help-btn {
-    position: fixed; top: 12px; right: 12px;
-    width: 36px; height: 36px; border-radius: 50%;
+    position: fixed; top: 8px; left: 50%; transform: translateX(-50%);
+    width: 28px; height: 28px; border-radius: 50%;
     background: ${primary}; color: #fff;
-    border: none; font-size: 18px; font-weight: 700;
-    cursor: pointer; z-index: 900; line-height: 36px; text-align: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    border: none; font-size: 14px; font-weight: 700;
+    cursor: pointer; z-index: 900; line-height: 28px; text-align: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    opacity: 0.6;
   }
-  #help-btn:hover { opacity: 0.85; }
+  #help-btn:hover { opacity: 1; }
 </style>
 </head>
 <body>
