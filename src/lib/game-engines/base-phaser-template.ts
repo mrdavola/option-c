@@ -46,8 +46,10 @@ export function phaserGame(opts: PhaserGameOpts): string {
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">' +
       '<rect width="800" height="600" fill="#0a0a0a"/>' +
     '</svg>'
+  // Phaser's SVG loader calls atob() on data URIs, so they MUST be base64
+  // encoded (URL-encoded URIs trigger InvalidCharacterError in atob).
   const toDataUri = (svg: string) =>
-    'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg)
+    'data:image/svg+xml;base64,' + Buffer.from(svg, "utf-8").toString("base64")
 
   const skeleton = config.skeletonMode === true
 
