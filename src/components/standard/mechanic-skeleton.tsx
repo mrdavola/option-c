@@ -19,13 +19,34 @@ import { getGameOptionsForStandard } from "@/lib/standard-game-options"
 import { getOptionDef } from "@/lib/game-engines/game-option-registry"
 import type { GameOptionDef } from "@/lib/game-engines/game-option-registry"
 
+// A custom card lets callers (like the Eureka/Build NOW flow) provide
+// an explicit list of option+standard pairs instead of deriving them
+// from a single standardId. Each card carries its own standard context
+// so the generated skeleton game targets the right math.
+export interface SkeletonCustomCard {
+  option: GameOptionDef
+  standardId: string
+  standardDescription: string
+  standardGrade: string
+  badge?: string            // optional tag, e.g. "Best match"
+  reason?: string           // optional AI-provided explanation
+}
+
 interface MechanicSkeletonProps {
   standardId: string
   standardDescription: string
   standardGrade: string
   mathSkillLabel?: string
-  onReadyToBuild: () => void
+  onReadyToBuild: (card?: SkeletonCustomCard) => void
   onBack: () => void
+  // When provided, the skeleton page shows these cards instead of the
+  // per-standard option list. Used by the Eureka flow to offer 3
+  // cross-standard suggestions.
+  customCards?: SkeletonCustomCard[]
+  // Optional custom title for the banner.
+  title?: string
+  // Optional subtitle shown above the card grid.
+  subtitle?: string
 }
 
 interface RealWorldUses {
@@ -65,22 +86,33 @@ export function MechanicSkeleton({
   mathSkillLabel,
   onReadyToBuild,
   onBack,
+  customCards,
+  title,
+  subtitle,
 }: MechanicSkeletonProps) {
   const [phase, setPhase] = useState<Phase>("pick")
   const [selectedOption, setSelectedOption] = useState<GameOptionDef | null>(null)
+  const [selectedCard, setSelectedCard] = useState<SkeletonCustomCard | null>(null)
   const [gameHtml, setGameHtml] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [uses, setUses] = useState<RealWorldUses | null>(null)
   const [usesLoading, setUsesLoading] = useState(false)
 
-  // Resolve the 1-4 game option cards for this moon.
+  // Resolve the 1-4 game option cards for this moon (moon-mode only).
   const optionCards: GameOptionDef[] = useMemo(() => {
+    if (customCards && customCards.length > 0) return []
     const ids = getGameOptionsForStandard(standardId) ?? []
     return ids
       .map((id) => getOptionDef(id))
       .filter((o): o is GameOptionDef => Boolean(o))
-  }, [standardId])
+  }, [standardId, customCards])
+
+  // The active standard context for API calls — depends on whether we're
+  // in per-standard moon mode or custom-card Eureka mode.
+  const activeStandard = selectedCard
+    ? { id: selectedCard.standardId, description: selectedCard.standardDescription, grade: selectedCard.standardGrade }
+    : { id: standardId, description: standardDescription, grade: standardGrade }
 
   // Fetch real-world uses as soon as the learner wins a round.
   useEffect(() => {
@@ -105,13 +137,17 @@ export function MechanicSkeleton({
       })
       .finally(() => { if (!cancelled) setUsesLoading(false) })
     return () => { cancelled = true }
-  }, [phase, uses, usesLoading, standardId, standardDescription, standardGrade])
+  }, [phase, uses, usesLoading, activeStandard.id, activeStandard.description, activeStandard.grade])
 
-  async function startSkeleton(option: GameOptionDef) {
+  async function startSkeleton(option: GameOptionDef, card?: SkeletonCustomCard) {
     setSelectedOption(option)
+    setSelectedCard(card ?? null)
     setLoading(true)
     setError(null)
     setGameHtml(null)
+    const effectiveStandardId = card?.standardId ?? standardId
+    const effectiveStandardDesc = card?.standardDescription ?? standardDescription
+    const effectiveStandardGrade = card?.standardGrade ?? standardGrade
     try {
       const res = await fetch("/api/game/generate-engine", {
         method: "POST",
@@ -119,9 +155,9 @@ export function MechanicSkeleton({
         body: JSON.stringify({
           mechanicId: option.mechanicId,
           gameOption: option.id,
-          standardId,
-          standardDescription,
-          grade: standardGrade,
+          standardId: effectiveStandardId,
+          standardDescription: effectiveStandardDesc,
+          grade: effectiveStandardGrade,
           skeletonMode: true,
           designDoc: { title: "Mechanic Skeleton" },
         }),
@@ -144,11 +180,12 @@ export function MechanicSkeleton({
   function resetToPick() {
     setPhase("pick")
     setSelectedOption(null)
+    setSelectedCard(null)
     setGameHtml(null)
     setUses(null)
   }
 
-  const skillLabel = mathSkillLabel || standardDescription
+  const skillLabel = mathSkillLabel || activeStandard.description
 
   return (
     <div className="fixed inset-0 z-50 bg-zinc-950 flex flex-col text-zinc-100" style={{ fontFamily: "'Lexend', system-ui, sans-serif" }}>
@@ -167,7 +204,7 @@ export function MechanicSkeleton({
             className="text-sm sm:text-lg font-bold tracking-tight text-white whitespace-nowrap"
             style={{ fontFamily: "'Space Grotesk', sans-serif" }}
           >
-            Mechanic skeleton for your game
+            {title ?? "Mechanic skeleton for your game"}
           </h1>
           <CornerBones className="size-5 sm:size-6 text-zinc-600 scale-x-[-1]" />
         </div>
@@ -179,12 +216,14 @@ export function MechanicSkeleton({
         {phase === "pick" && (
           <PickPhase
             optionCards={optionCards}
+            customCards={customCards}
             skillLabel={skillLabel}
+            subtitle={subtitle}
             onPick={startSkeleton}
             loading={loading}
             loadingOptionId={selectedOption?.id ?? null}
             error={error}
-            onReadyToBuild={onReadyToBuild}
+            onReadyToBuild={() => onReadyToBuild(selectedCard ?? undefined)}
           />
         )}
 
@@ -202,7 +241,7 @@ export function MechanicSkeleton({
             optionName={selectedOption?.name ?? ""}
             uses={uses}
             usesLoading={usesLoading}
-            onReadyToBuild={onReadyToBuild}
+            onReadyToBuild={() => onReadyToBuild(selectedCard ?? undefined)}
             onTryAnother={resetToPick}
           />
         )}
@@ -214,7 +253,9 @@ export function MechanicSkeleton({
 // ─── Phase: Pick a mechanic ───────────────────────────────────────────────────
 function PickPhase({
   optionCards,
+  customCards,
   skillLabel,
+  subtitle,
   onPick,
   loading,
   loadingOptionId,
@@ -222,17 +263,22 @@ function PickPhase({
   onReadyToBuild,
 }: {
   optionCards: GameOptionDef[]
+  customCards?: SkeletonCustomCard[]
   skillLabel: string
-  onPick: (opt: GameOptionDef) => void
+  subtitle?: string
+  onPick: (opt: GameOptionDef, card?: SkeletonCustomCard) => void
   loading: boolean
   loadingOptionId: string | null
   error: string | null
   onReadyToBuild: () => void
 }) {
+  const usingCustom = !!(customCards && customCards.length > 0)
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6">
       <div className="space-y-2 text-center">
-        <p className="text-xs uppercase tracking-[0.2em] text-blue-400 font-semibold">Skill</p>
+        <p className="text-xs uppercase tracking-[0.2em] text-blue-400 font-semibold">
+          {usingCustom ? "Your idea matched 3 mechanics" : "Skill"}
+        </p>
         <h2
           className="text-xl sm:text-2xl font-bold text-white"
           style={{ fontFamily: "'Space Grotesk', sans-serif" }}
@@ -240,12 +286,67 @@ function PickPhase({
           {skillLabel}
         </h2>
         <p className="text-sm text-zinc-400 max-w-2xl mx-auto leading-relaxed">
-          Meet the math mechanic first. No theme, no characters — just the pure gameplay.
-          Win one round, then build your own themed version.
+          {subtitle ?? "Meet the math mechanic first. No theme, no characters — just the pure gameplay. Win one round, then build your own themed version."}
         </p>
       </div>
 
-      {optionCards.length === 0 ? (
+      {usingCustom ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {customCards!.map((card, idx) => {
+            const isLoading = loading && loadingOptionId === card.option.id
+            const badge = card.badge ?? (idx === 0 ? "Best match" : undefined)
+            return (
+              <button
+                key={`${card.option.id}-${card.standardId}`}
+                onClick={() => !loading && onPick(card.option, card)}
+                disabled={loading}
+                className="group text-left rounded-2xl border-2 border-zinc-800 bg-zinc-900 hover:border-blue-500 hover:bg-zinc-900/80 p-5 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex flex-col gap-3 min-h-[240px]"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-500">
+                    {card.option.mechanicId}
+                  </span>
+                  {badge ? (
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-300 bg-emerald-500/15 px-2 py-0.5 rounded">
+                      {badge}
+                    </span>
+                  ) : (
+                    <CornerBones className="size-4 text-zinc-700 group-hover:text-blue-400 transition-colors" />
+                  )}
+                </div>
+                <h3
+                  className="text-lg font-bold text-white"
+                  style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+                >
+                  {card.option.name}
+                </h3>
+                <p className="text-sm text-zinc-400 leading-relaxed">
+                  {card.option.description}
+                </p>
+                <div className="mt-auto space-y-2">
+                  <div className="rounded-lg bg-zinc-800/70 border border-zinc-700 px-2.5 py-1.5">
+                    <p className="text-[10px] text-blue-400 uppercase tracking-wider font-semibold">The math</p>
+                    <p className="text-xs text-zinc-300 leading-snug line-clamp-2">{card.standardDescription}</p>
+                  </div>
+                  <span className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 group-hover:bg-blue-500 text-white text-sm font-semibold transition-colors">
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="size-4 animate-spin" />
+                        Loading…
+                      </>
+                    ) : (
+                      <>
+                        <Play className="size-4" />
+                        Play this mechanic
+                      </>
+                    )}
+                  </span>
+                </div>
+              </button>
+            )
+          })}
+        </div>
+      ) : optionCards.length === 0 ? (
         <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-6 text-center text-sm text-zinc-400">
           No skeleton mechanics mapped for this moon yet.
           <div className="mt-4">

@@ -41,8 +41,9 @@ interface GamePlayerProps {
   onUnapproved?: () => void
   // What kind of play session this is. Defaults to casual.
   playMode?: GamePlayMode
-  // Called every time the student wins a round in this session
-  onWin?: () => void
+  // Called every time the student wins a round in this session.
+  // Win data includes hintUsed — when true, the attempt should earn 0 tokens.
+  onWin?: (data?: { hintUsed?: boolean; score?: number }) => void
   // Called every time the student loses a round
   onLose?: () => void
   // Optional UI element shown over the game (e.g. streak counter)
@@ -118,7 +119,7 @@ export function GamePlayer({ gameId, title, html, concept, onClose, isPendingRev
   // Forwards to the parent's onWin/onLose callbacks (for mastery state
   // tracking). The rating modal is no longer shown here — it pops on
   // Back/X click instead, so the learner doesn't get interrupted mid-play.
-  const handleGameEnd = useCallback((kind: "win" | "lose") => {
+  const handleGameEnd = useCallback((kind: "win" | "lose", winData?: { hintUsed?: boolean; score?: number }) => {
     const now = Date.now()
     if (kind === "win") {
       lastWinAtRef.current = now
@@ -128,9 +129,9 @@ export function GamePlayer({ gameId, title, html, concept, onClose, isPendingRev
         return
       }
       if (playMode === "master") {
-        posthog.capture("library_game_won", { game_id: gameId, standard_id: standardId })
+        posthog.capture("library_game_won", { game_id: gameId, standard_id: standardId, hint_used: !!winData?.hintUsed })
       }
-      onWin?.()
+      onWin?.(winData)
     } else {
       posthog.capture("game_lost", { game_id: gameId, standard_id: standardId, play_mode: playMode })
       onLose?.()
@@ -429,7 +430,7 @@ export function GamePlayer({ gameId, title, html, concept, onClose, isPendingRev
           key={iframeKey}
           html={html}
           className="w-full h-full"
-          onWin={() => handleGameEnd("win")}
+          onWin={(data) => handleGameEnd("win", data)}
           onLose={() => handleGameEnd("lose")}
         />
         {showMathMoment && concept && (

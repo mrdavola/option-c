@@ -79,6 +79,18 @@ export function phaserGame(opts: PhaserGameOpts): string {
   // Escape help text for safe embedding in JS string
   const escapedHelpText = helpText.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n')
 
+  // Backstory banner — shown as a thin strip at the top of the game (not in skeleton mode)
+  const showBackstory = !skeleton && typeof config.backstory === "string" && config.backstory.trim().length > 0
+  const backstoryText = showBackstory
+    ? config.backstory!.trim()
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/`/g, "&#96;")
+        .replace(/\$/g, "&#36;")
+    : ""
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -91,87 +103,78 @@ export function phaserGame(opts: PhaserGameOpts): string {
   html, body { width: 100%; height: 100%; overflow: hidden; background: ${bg}; font-family: 'Lexend', system-ui, sans-serif; }
   #game-container { width: 100%; height: 100%; }
 
-  /* Tutorial overlay */
-  #tutorial {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.82);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 1000;
+  /* Backstory banner — thin dark strip at top of game */
+  #backstory-banner {
+    position: fixed; top: 0; left: 0; right: 0;
+    background: rgba(0, 0, 0, 0.72);
+    color: #ffffff;
+    font-family: 'Lexend', system-ui, sans-serif;
+    font-size: 13px; font-weight: 400;
+    padding: 6px 14px;
+    line-height: 1.35;
+    z-index: 800;
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    max-height: 28px; overflow: hidden;
+    white-space: nowrap; text-overflow: ellipsis;
+    transition: max-height 0.25s ease;
   }
-  #tutorial.hidden { display: none; }
-  .tut-box {
-    background: ${bg}; border: 3px solid ${primary};
-    border-radius: 16px; padding: 28px 32px; max-width: 380px; width: 90%;
-    color: ${textColor};
+  #backstory-banner.expanded {
+    max-height: 200px; white-space: normal;
   }
-  .tut-box h2 { font-family: 'Space Grotesk', sans-serif; font-size: 20px; margin-bottom: 12px; color: ${accent}; }
-  .tut-box p { font-size: 14px; line-height: 1.6; margin-bottom: 8px; }
-  .tut-box .tut-btn {
-    margin-top: 16px; padding: 10px 28px;
-    background: ${primary}; color: #fff; border: none;
-    border-radius: 8px; font-size: 15px; font-weight: 700;
-    cursor: pointer; width: 100%;
-  }
-  .tut-btn:hover { opacity: 0.85; }
 
-  /* Help overlay */
-  #help-overlay {
+  /* Get Hint button — floating bottom-right */
+  #hint-btn {
+    position: fixed; bottom: 14px; right: 14px;
+    padding: 8px 14px; border-radius: 20px;
+    background: ${primary}; color: #fff;
+    border: none; font-family: 'Lexend', system-ui, sans-serif;
+    font-size: 12px; font-weight: 600;
+    cursor: pointer; z-index: 900;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.35);
+    opacity: 0.85;
+  }
+  #hint-btn:hover { opacity: 1; }
+
+  /* Hint modal */
+  #hint-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.82);
     display: none; align-items: center; justify-content: center;
     z-index: 1100;
   }
-  #help-overlay.open { display: flex; }
-  .help-box {
+  #hint-overlay.open { display: flex; }
+  .hint-box {
     background: ${bg}; border: 3px solid ${secondary};
-    border-radius: 16px; padding: 24px 28px; max-width: 400px; width: 90%;
+    border-radius: 16px; padding: 24px 28px; max-width: 420px; width: 90%;
     color: ${textColor}; white-space: pre-line;
   }
-  .help-box h3 { font-family: 'Space Grotesk', sans-serif; font-size: 18px; margin-bottom: 12px; color: ${accent}; }
-  .help-box p { font-size: 13px; line-height: 1.6; margin-bottom: 8px; }
-  .help-box .help-close {
+  .hint-box h3 { font-family: 'Space Grotesk', sans-serif; font-size: 18px; margin-bottom: 12px; color: ${accent}; }
+  .hint-box p { font-size: 13px; line-height: 1.6; margin-bottom: 8px; }
+  .hint-box .hint-close {
     margin-top: 12px; padding: 8px 20px;
     background: ${secondary}; color: ${bg}; border: none;
     border-radius: 8px; font-size: 14px; font-weight: 600;
     cursor: pointer;
   }
-
-  /* Help button — small, top-left, low-opacity so it doesn't compete with the game */
-  #help-btn {
-    position: fixed; top: 8px; left: 50%; transform: translateX(-50%);
-    width: 28px; height: 28px; border-radius: 50%;
-    background: ${primary}; color: #fff;
-    border: none; font-size: 14px; font-weight: 700;
-    cursor: pointer; z-index: 900; line-height: 28px; text-align: center;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-    opacity: 0.6;
-  }
-  #help-btn:hover { opacity: 1; }
 </style>
 </head>
 <body>
 
-<!-- Tutorial overlay -->
-<div id="tutorial">
-  <div class="tut-box">
-    <h2>${config.title}</h2>
-    <p>You are a <strong>${config.character}</strong> in <strong>${config.worldName}</strong>.</p>
-    <p>${introText}</p>
-    ${math.standardDescription ? `<p style="opacity:0.7;font-size:12px"><em>Skill: ${math.standardDescription}</em></p>` : ""}
-    <p style="opacity:0.7;font-size:12px">3 wrong answers = game over. Good luck!</p>
-    <button class="tut-btn" onclick="startGame()">Let's go!</button>
+<!-- Backstory banner (shown if learner wrote one, not in skeleton mode) -->
+${showBackstory ? `<div id="backstory-banner" onclick="toggleBackstory()" title="Tap to expand">${backstoryText}</div>` : ""}
+
+<!-- Hint modal -->
+<div id="hint-overlay" onclick="closeHint()">
+  <div class="hint-box" onclick="event.stopPropagation()">
+    <h3>Get Hint</h3>
+    <p id="hint-content"></p>
+    <button class="hint-close" onclick="closeHint()">Got it</button>
   </div>
 </div>
 
-<!-- Help overlay -->
-<div id="help-overlay" onclick="closeHelp()">
-  <div class="help-box" onclick="event.stopPropagation()">
-    <h3>How to play</h3>
-    <p id="help-content"></p>
-    <button class="help-close" onclick="closeHelp()">Got it</button>
-  </div>
-</div>
-
-<!-- Help button (visible after game starts) -->
-<button id="help-btn" style="display:none" onclick="showHelp()">?</button>
+<!-- Get Hint button -->
+<button id="hint-btn" onclick="showHint()">Get Hint</button>
 
 <div id="game-container"></div>
 
@@ -332,7 +335,8 @@ class VictoryScene extends Phaser.Scene {
     this.time.addEvent({ delay: 500, loop: true, callback: burst });
 
     this.time.delayedCall(2000, () => {
-      window.parent.postMessage({ type: 'game_win' }, '*');
+      var hintUsed = (typeof window.__getHintUsed === 'function') ? window.__getHintUsed() : false;
+      window.parent.postMessage({ type: 'game_win', hintUsed: hintUsed, score: data.score || 0 }, '*');
     });
   }
 }
@@ -444,31 +448,52 @@ const phaserConfig = {
 
 // ─── Bootstrap ───────────────────────────────────────────────────────────────
 let _game = null;
+let _hintUsed = false;
 
-function startGame() {
-  document.getElementById('tutorial').classList.add('hidden');
-  document.getElementById('help-btn').style.display = 'block';
-  _game = new Phaser.Game(phaserConfig);
+// Expose hintUsed globally so engine scenes can read it when posting game_win
+window.__getHintUsed = function() { return _hintUsed; };
+
+// Backstory banner expand/collapse
+function toggleBackstory() {
+  var el = document.getElementById('backstory-banner');
+  if (el) el.classList.toggle('expanded');
 }
 
-function showHelp() {
-  // Use AI-generated hints when available (standard-specific), fall back to generic
-  let helpContent = HELP_TEXT;
+function showHint() {
+  // Get current round index if the scene tracks it, else use round 0.
+  // Prefer a DIFFERENT round's hint so the teaching example has different numbers
+  // than the current problem.
+  var roundIdx = (typeof window.__currentRound === 'number') ? window.__currentRound : 0;
+  var hintContent = 'Skill: ' + MATH.standardDescription + '\\n\\n';
+
   if (AI_ROUNDS && AI_ROUNDS.length > 0) {
-    const hints = AI_ROUNDS.filter(r => r.hint).map(r => r.hint);
-    if (hints.length > 0) {
-      helpContent = 'Skill: ' + MATH.standardDescription + '\\n\\n' + hints[0] + '\\n\\nExample: ' + AI_ROUNDS[0].prompt;
-    } else {
-      helpContent = 'Skill: ' + MATH.standardDescription + '\\n\\nExample: ' + AI_ROUNDS[0].prompt + '\\n\\n' + HELP_TEXT;
+    // Pick a different round than the current one for the example
+    var exampleIdx = (roundIdx + 1) % AI_ROUNDS.length;
+    var exampleRound = AI_ROUNDS[exampleIdx];
+    if (exampleRound && exampleRound.hint) {
+      hintContent += exampleRound.hint + '\\n\\n';
     }
+    if (exampleRound && exampleRound.prompt) {
+      hintContent += 'Example: ' + exampleRound.prompt;
+      if (typeof exampleRound.target !== 'undefined') {
+        hintContent += '\\nAnswer: ' + exampleRound.target;
+      }
+    }
+  } else {
+    hintContent += HELP_TEXT;
   }
-  document.getElementById('help-content').textContent = helpContent;
-  document.getElementById('help-overlay').classList.add('open');
+
+  _hintUsed = true;
+  document.getElementById('hint-content').textContent = hintContent;
+  document.getElementById('hint-overlay').classList.add('open');
 }
 
-function closeHelp() {
-  document.getElementById('help-overlay').classList.remove('open');
+function closeHint() {
+  document.getElementById('hint-overlay').classList.remove('open');
 }
+
+// Auto-start the game — no tutorial card.
+_game = new Phaser.Game(phaserConfig);
 <\/script>
 </body>
 </html>`

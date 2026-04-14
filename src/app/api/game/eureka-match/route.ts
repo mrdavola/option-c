@@ -42,7 +42,8 @@ export async function POST(req: Request) {
   // This is the ONLY source of truth for which game options work with which standards
   const validPairs: Array<{
     optionId: string; optionName: string; description: string;
-    mechanicId: string; standardId: string; standardDescription: string
+    mechanicId: string; standardId: string; standardDescription: string;
+    standardGrade: string
   }> = []
 
   for (const standard of gradeStandards) {
@@ -58,6 +59,7 @@ export async function POST(req: Request) {
         mechanicId: opt.mechanicId,
         standardId: standard.id,
         standardDescription: standard.description,
+        standardGrade: standard.grade,
       })
     }
   }
@@ -85,7 +87,7 @@ ${pairSummary}
 Return:
 {"matches": [{"optionId": "<id>", "standardId": "<id>", "reason": "why this fits the idea"}], "count": N}
 
-Return the 3 best-matching pairs. Pick pairs where the GAMEPLAY matches the idea AND the math standard makes sense. If the idea is vague, pick the most fun/engaging options.`,
+Return exactly 3 best-matching pairs, ordered from best to third-best. Pick pairs where the GAMEPLAY matches the idea AND the math standard makes sense. If the idea is vague, pick the most fun/engaging options. Return DIFFERENT game options when possible (don't return the same optionId 3 times).`,
       messages: [{
         role: "user",
         content: `Background: ${background}
@@ -108,27 +110,17 @@ Game idea: ${gameIdea}`,
       .filter(Boolean)
       .slice(0, 3)
 
-    if (suggestions.length > 0 && suggestions.length === 1) {
-      // Single strong match — return as direct match
-      const s = suggestions[0]!
-      const opt = GAME_OPTIONS.find(o => o.id === (s as any).optionId)
-      return Response.json({
-        match: {
-          mechanicId: opt?.mechanicId || (s as any).mechanicId,
-          mechanicTitle: "",
-          optionId: (s as any).optionId,
-          optionName: (s as any).optionName,
-          optionDescription: (s as any).description,
-          standardId: (s as any).standardId,
-          standardDescription: (s as any).standardDescription,
-          moonName: "",
-          explanation: (s as any).reason || "",
-        },
-      })
+    // Always return top-3 suggestions. Top one is the "best match".
+    // If the AI only produced fewer, pad from validPairs so we always have 3.
+    let finalSuggestions = suggestions.slice(0, 3)
+    if (finalSuggestions.length < 3) {
+      for (const pair of validPairs) {
+        if (finalSuggestions.length >= 3) break
+        const already = finalSuggestions.find((s: any) => s.optionId === pair.optionId && s.standardId === pair.standardId)
+        if (!already) finalSuggestions.push(pair as any)
+      }
     }
 
-    // Multiple suggestions — let learner choose
-    // Also build a broader list of all valid options for this grade
     const allOpts = validPairs.slice(0, 30).map(p => ({
       optionId: p.optionId,
       optionName: p.optionName,
@@ -136,10 +128,12 @@ Game idea: ${gameIdea}`,
       mechanicId: p.mechanicId,
       standardId: p.standardId,
       standardDescription: p.standardDescription,
+      standardGrade: p.standardGrade,
     }))
 
     return Response.json({
-      suggestions: suggestions.length > 0 ? suggestions : validPairs.slice(0, 3),
+      suggestions: finalSuggestions,
+      bestMatchIndex: 0,
       allOptions: allOpts,
       reason: parsed.reason || matches[0]?.reason || "",
     })
@@ -148,6 +142,7 @@ Game idea: ${gameIdea}`,
     // Fallback: return first 3 valid pairs (guaranteed correct mapping)
     return Response.json({
       suggestions: validPairs.slice(0, 3),
+      bestMatchIndex: 0,
       allOptions: validPairs.slice(0, 9),
     })
   }

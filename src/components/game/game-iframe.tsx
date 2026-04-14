@@ -2,10 +2,15 @@
 
 import { useEffect, useRef } from "react"
 
+export interface GameWinData {
+  hintUsed?: boolean
+  score?: number
+}
+
 interface GameIframeProps {
   html: string
   className?: string
-  onWin?: () => void
+  onWin?: (data?: GameWinData) => void
   onLose?: () => void
 }
 
@@ -21,7 +26,10 @@ export function GameIframe({ html, className, onWin, onLose }: GameIframeProps) 
       // or from our own domain
       if (e.origin !== "null" && e.origin !== window.location.origin) return
       if (e.data?.type === "game_win") {
-        onWinRef.current?.()
+        onWinRef.current?.({
+          hintUsed: !!e.data.hintUsed,
+          score: typeof e.data.score === "number" ? e.data.score : undefined,
+        })
       }
       if (e.data?.type === "game_lose") {
         onLoseRef.current?.()

@@ -12,6 +12,12 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 export async function POST(req: Request) {
   const body = await req.json()
   const { designDoc, mechanicId, standardId, standardDescription, grade, cardChoices, sprites, gameOption, skeletonMode } = body
+  const backstory: string | undefined =
+    (cardChoices && typeof cardChoices.backstory === "string" && cardChoices.backstory.trim())
+      ? cardChoices.backstory.trim().slice(0, 300)
+      : (designDoc && typeof designDoc.backstory === "string" && designDoc.backstory.trim())
+        ? designDoc.backstory.trim().slice(0, 300)
+        : undefined
 
   if (!mechanicId || !hasEngine(mechanicId)) {
     return Response.json({ error: "No engine for this mechanic", hasEngine: false }, { status: 400 })
@@ -100,6 +106,7 @@ Return JSON:
       characterSprite: parsed.characterSprite || "explorer",
       itemSprite: parsed.itemSprite || "coin",
       backgroundImage: parsed.backgroundImage || "forest",
+      backstory,
     }
   } catch {
     // Fallback config
@@ -116,6 +123,7 @@ Return JSON:
       characterSprite: "explorer",
       itemSprite: "coin",
       backgroundImage: "forest",
+      backstory,
     }
   }
   } // end else (non-skeleton theme generation)

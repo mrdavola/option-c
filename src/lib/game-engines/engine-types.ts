@@ -17,6 +17,7 @@ export interface ThemeConfig {
   winMessage: string      // shown on victory
   loseMessage: string     // shown on defeat
   dare?: string           // optional dare from the learner
+  backstory?: string      // optional learner-written backstory shown as banner at top of game
   // Sprite overrides (Phase 1: Phaser engines)
   characterSprite?: string   // sprite library ID or upload URL
   itemSprite?: string        // sprite library ID or upload URL

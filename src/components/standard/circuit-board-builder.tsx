@@ -11,6 +11,7 @@ import { getGameOptions, getOptionDef } from "@/lib/game-engines/game-option-reg
 import { getGameOptionsForStandard } from "@/lib/standard-game-options"
 import { getRecommendedItems } from "@/lib/item-recommendations"
 import { ConsoleAnimation } from "@/components/game/console-animation"
+import { MechanicSkeleton, type SkeletonCustomCard } from "@/components/standard/mechanic-skeleton"
 import type { GameDesignDoc } from "@/lib/game-types"
 
 // The circuit board game builder.
@@ -105,68 +106,93 @@ export function CircuitBoardBuilder({
   const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null)
   const [selectedGameOption, setSelectedGameOption] = useState<GameOptionInfo | null>(null)
   const [selectedItem, setSelectedItem] = useState<string | null>(null)
+  const [backstory, setBackstory] = useState<string>("")
   const [building, setBuilding] = useState(false)
 
   // Eureka mode state
+  // Phases: "idea" → learner types idea · "skeleton" → plays mechanic skeleton ·
+  // "build" → full themed builder (sprite grids + backstory).
+  type EurekaPhase = "idea" | "skeleton" | "build"
+  const [eurekaPhase, setEurekaPhase] = useState<EurekaPhase>("idea")
   const [eurekaIdea, setEurekaIdea] = useState("")
   const [eurekaMatching, setEurekaMatching] = useState(false)
-  const [eurekaSuggestions, setEurekaSuggestions] = useState<Array<{ optionId: string; optionName: string; description: string; mechanicId: string; standardId: string; standardDescription: string }>>([])
+  const [eurekaMatchError, setEurekaMatchError] = useState<string | null>(null)
+  const [eurekaSuggestions, setEurekaSuggestions] = useState<Array<{ optionId: string; optionName: string; description: string; mechanicId: string; standardId: string; standardDescription: string; standardGrade?: string }>>([])
   const [eurekaStandardId, setEurekaStandardId] = useState("")
   const [eurekaStandardDesc, setEurekaStandardDesc] = useState("")
+  const [eurekaStandardGrade, setEurekaStandardGrade] = useState("")
 
   const allFilled = selectedBackground && selectedCharacter && selectedGameOption && selectedItem
   const filledCount = [selectedBackground, selectedCharacter, selectedGameOption, selectedItem].filter(Boolean).length
 
-  // Eureka: submit idea to AI for matching
+  // Eureka: submit idea to AI for matching. Always expects 3 suggestions now.
   const handleEurekaMatch = async () => {
     if (!eurekaIdea.trim() || eurekaMatching) return
     setEurekaMatching(true)
+    setEurekaMatchError(null)
     try {
       const res = await fetch("/api/game/eureka-match", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          background: selectedBackground,
-          character: selectedCharacter,
-          item: selectedItem,
+          // Sprites aren't picked yet in the new flow; send nulls so the AI
+          // focuses purely on the written game idea.
+          background: null,
+          character: null,
+          item: null,
           gameIdea: eurekaIdea.trim(),
           grade: learnerGrade || "6",
           uid: learnerUid || "",
         }),
       })
       const data = await res.json()
-      if (data.match) {
-        setSelectedGameOption({
-          mechanicId: data.match.mechanicId,
-          mechanicTitle: data.match.mechanicTitle || "",
-          mechanicDescription: "",
-          optionId: data.match.optionId,
-          optionName: data.match.optionName,
-          optionDescription: data.match.optionDescription,
-        })
-        setEurekaStandardId(data.match.standardId)
-        setEurekaStandardDesc(data.match.standardDescription)
-        setEurekaSuggestions([])
-      } else if (data.suggestions) {
-        setEurekaSuggestions(data.suggestions)
+      const suggestions = (data.suggestions || []) as typeof eurekaSuggestions
+      if (suggestions.length === 0) {
+        setEurekaMatchError("We couldn't match that idea. Try describing what the player DOES in the game.")
+      } else {
+        setEurekaSuggestions(suggestions)
+        setEurekaPhase("skeleton")
       }
-    } catch {}
+    } catch {
+      setEurekaMatchError("Network error — please try again.")
+    }
     setEurekaMatching(false)
   }
 
-  const handlePickEurekaSuggestion = (s: typeof eurekaSuggestions[0]) => {
+  // Called when the learner wins a skeleton round and clicks "Ready to build".
+  // The `card` arg tells us which option+standard they chose.
+  const handleSkeletonReadyToBuild = (card?: SkeletonCustomCard) => {
+    if (!card) return
     setSelectedGameOption({
-      mechanicId: s.mechanicId,
+      mechanicId: card.option.mechanicId,
       mechanicTitle: "",
       mechanicDescription: "",
-      optionId: s.optionId,
-      optionName: s.optionName,
-      optionDescription: s.description,
+      optionId: card.option.id,
+      optionName: card.option.name,
+      optionDescription: card.option.description,
     })
-    setEurekaStandardId(s.standardId)
-    setEurekaStandardDesc(s.standardDescription)
-    setEurekaSuggestions([])
+    setEurekaStandardId(card.standardId)
+    setEurekaStandardDesc(card.standardDescription)
+    setEurekaStandardGrade(card.standardGrade)
+    setEurekaPhase("build")
   }
+
+  // Build the skeleton cards from suggestions.
+  const eurekaSkeletonCards: SkeletonCustomCard[] = useMemo(() => {
+    return eurekaSuggestions
+      .map((s, idx): SkeletonCustomCard | null => {
+        const opt = getOptionDef(s.optionId)
+        if (!opt) return null
+        return {
+          option: opt,
+          standardId: s.standardId,
+          standardDescription: s.standardDescription,
+          standardGrade: s.standardGrade || learnerGrade || "6",
+          badge: idx === 0 ? "Best match" : undefined,
+        }
+      })
+      .filter((c): c is SkeletonCustomCard => c !== null)
+  }, [eurekaSuggestions, learnerGrade])
 
   // Game Criteria lights
   const criteriaWellApplied = !!selectedGameOption  // Math Well Applied: game option selected
@@ -204,7 +230,9 @@ Math: ${effectiveStandardDesc}`
         character: selectedCharacter,
         action: selectedGameOption.optionDescription,
         win: "Complete all 5 rounds",
+        backstory: backstory.trim() || undefined,
       }
+      ;(designDoc as any).backstory = backstory.trim() || undefined
       ;(designDoc as any).sprites = {
         characterSprite: selectedCharacter,
         itemSprite: selectedItem,
@@ -220,6 +248,73 @@ Math: ${effectiveStandardDesc}`
     }
   }
 
+  // ─── Eureka phase 1: idea entry ────────────────────────────────────────────
+  if (isEureka && eurekaPhase === "idea") {
+    return (
+      <div className="flex flex-col gap-4 py-4">
+        <div className="rounded-xl border border-zinc-700 bg-zinc-900 p-5 space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">💡</span>
+            <h2 className="text-lg font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              What&apos;s your game idea?
+            </h2>
+          </div>
+          <p className="text-sm text-zinc-400 leading-relaxed">
+            Describe what happens in your game — what the player DOES. The AI will
+            suggest 3 math mechanics that fit your idea. You&apos;ll play a quick
+            preview of each before picking one to theme and build.
+          </p>
+          <textarea
+            value={eurekaIdea}
+            onChange={(e) => setEurekaIdea(e.target.value)}
+            placeholder="Example: I want to make a game about rockets flying between planets, and you have to figure out how much fuel you need for each trip."
+            className="w-full h-28 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 resize-none"
+          />
+          <button
+            onClick={handleEurekaMatch}
+            disabled={!eurekaIdea.trim() || eurekaMatching}
+            className="w-full py-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-30 text-white text-base font-semibold transition-colors flex items-center justify-center gap-2"
+          >
+            {eurekaMatching ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                Finding 3 mechanics that fit your idea…
+              </>
+            ) : (
+              "Find matching mechanics →"
+            )}
+          </button>
+          {eurekaMatchError && (
+            <p className="text-sm text-red-300 text-center">{eurekaMatchError}</p>
+          )}
+        </div>
+        <button onClick={onBack} className="px-4 py-2 text-sm text-zinc-500 hover:text-zinc-300 transition-colors self-start">
+          ← Back
+        </button>
+      </div>
+    )
+  }
+
+  // ─── Eureka phase 2: play the mechanic skeleton ────────────────────────────
+  if (isEureka && eurekaPhase === "skeleton") {
+    return (
+      <MechanicSkeleton
+        // These props are only used when no customCards are passed — we pass
+        // harmless defaults so TS stays happy.
+        standardId=""
+        standardDescription=""
+        standardGrade={learnerGrade || "6"}
+        customCards={eurekaSkeletonCards}
+        title="Preview a mechanic for your idea"
+        subtitle="The AI matched your idea to these math mechanics. Play one round of the pure gameplay (no theme yet), then pick it to build your themed game."
+        mathSkillLabel={`Your idea: "${eurekaIdea.trim().slice(0, 80)}${eurekaIdea.trim().length > 80 ? "…" : ""}"`}
+        onReadyToBuild={handleSkeletonReadyToBuild}
+        onBack={() => { setEurekaPhase("idea"); setEurekaSuggestions([]) }}
+      />
+    )
+  }
+
+  // ─── Default / Eureka phase 3 (build) / Moon mode ──────────────────────────
   return (
     <div className="flex flex-col h-full overflow-y-auto">
       <ConsoleAnimation
@@ -301,56 +396,34 @@ Math: ${effectiveStandardDesc}`
           onClear={() => { setSelectedGameOption(null); setEurekaSuggestions([]) }}
         >
           {isEureka ? (
-            /* EUREKA MODE: write-in + AI match */
+            /* EUREKA MODE: by the time we're here the learner already picked
+               a mechanic via the skeleton preview. Show a summary + option to
+               try a different mechanic. */
             <div className="space-y-3">
-              {!selectedGameOption && (
-                <>
-                  <textarea
-                    value={eurekaIdea}
-                    onChange={(e) => setEurekaIdea(e.target.value)}
-                    placeholder="Describe what happens in your game... Example: The pirate sails between islands collecting treasure, but has to figure out the shortest route"
-                    className="w-full h-20 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 resize-none"
-                  />
-                  <button
-                    onClick={handleEurekaMatch}
-                    disabled={!eurekaIdea.trim() || eurekaMatching}
-                    className="w-full py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-30 text-white text-sm font-semibold transition-colors"
-                  >
-                    {eurekaMatching ? "Finding the perfect match..." : "Match my idea!"}
-                  </button>
-                </>
-              )}
-              {/* Show suggestions if no direct match */}
-              {eurekaSuggestions.length > 0 && !selectedGameOption && (
-                <div className="space-y-1.5">
-                  <p className="text-xs text-amber-300">Your character could do one of these:</p>
-                  {eurekaSuggestions.map((s) => (
-                    <button
-                      key={s.optionId}
-                      onClick={() => handlePickEurekaSuggestion(s)}
-                      className="w-full text-left px-3 py-2.5 rounded-lg border border-zinc-700 bg-zinc-900 hover:border-emerald-500/50 transition-all"
-                    >
-                      <span className="text-sm font-semibold text-white">{s.optionName}</span>
-                      <p className="text-xs text-zinc-400 mt-0.5">{s.description}</p>
-                    </button>
-                  ))}
-                </div>
-              )}
-              {/* Show matched standard + game summary */}
               {selectedGameOption && eurekaStandardDesc && (
-                <div className="space-y-2">
+                <>
+                  <div className="bg-emerald-500/5 rounded-lg p-3 border border-emerald-500/20">
+                    <p className="text-xs text-emerald-400 uppercase tracking-wide font-semibold mb-1">You picked</p>
+                    <p className="text-sm text-white font-semibold">{selectedGameOption.optionName}</p>
+                    <p className="text-xs text-zinc-400 mt-0.5">{selectedGameOption.optionDescription}</p>
+                  </div>
                   <div className="bg-zinc-800/50 rounded-lg p-3 border border-zinc-700">
                     <p className="text-xs text-blue-400 uppercase tracking-wide font-semibold mb-1">The math behind this</p>
                     <p className="text-sm text-zinc-200">{eurekaStandardDesc.split(".")[0]}.</p>
                   </div>
-                  <div className="bg-emerald-500/5 rounded-lg p-3 border border-emerald-500/20">
-                    <p className="text-xs text-emerald-400 uppercase tracking-wide font-semibold mb-1">In your game</p>
-                    <p className="text-sm text-zinc-300">
-                      Your {selectedCharacter || "character"} in {selectedBackground || "the world"} will use{" "}
-                      {selectedItem ? selectedItem + "s" : "items"} to {selectedGameOption.optionDescription.toLowerCase()}.
-                    </p>
-                  </div>
-                </div>
+                  {eurekaIdea && (
+                    <div className="bg-zinc-800/30 rounded-lg p-3 border border-zinc-800">
+                      <p className="text-xs text-zinc-500 uppercase tracking-wide font-semibold mb-1">Your idea</p>
+                      <p className="text-sm text-zinc-400 italic">&ldquo;{eurekaIdea}&rdquo;</p>
+                    </div>
+                  )}
+                  <button
+                    onClick={() => setEurekaPhase("skeleton")}
+                    className="w-full py-2 rounded-lg border border-zinc-700 hover:border-zinc-500 text-zinc-300 text-sm font-medium transition-colors"
+                  >
+                    ← Try a different mechanic
+                  </button>
+                </>
               )}
             </div>
           ) : (
@@ -399,6 +472,23 @@ Math: ${effectiveStandardDesc}`
             />
           </SlotSection>
         )}
+
+        {/* SLOT 5: Backstory — optional, shown in both modes */}
+        <SlotSection
+          icon="📖"
+          label="Backstory"
+          selected={backstory.trim() ? (backstory.length > 28 ? backstory.slice(0, 28) + "…" : backstory) : null}
+          onClear={() => setBackstory("")}
+        >
+          <textarea
+            value={backstory}
+            onChange={(e) => setBackstory(e.target.value.slice(0, 300))}
+            maxLength={300}
+            placeholder="What is your character doing? Why are they doing this math? (e.g., 'A wizard is measuring magical crystals for a potion and running out of time')"
+            className="w-full h-24 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 resize-none"
+          />
+          <div className="mt-1 text-right text-[10px] text-zinc-500">{backstory.length}/300</div>
+        </SlotSection>
 
       </div>
 
