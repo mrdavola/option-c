@@ -18,6 +18,7 @@ import { GameIframe } from "@/components/game/game-iframe"
 import { getGameOptionsForStandard } from "@/lib/standard-game-options"
 import { getOptionDef } from "@/lib/game-engines/game-option-registry"
 import type { GameOptionDef } from "@/lib/game-engines/game-option-registry"
+import { getScenarios, type StandardScenario } from "@/lib/standard-scenarios"
 
 // A custom card lets callers (like the Eureka/Build NOW flow) provide
 // an explicit list of option+standard pairs instead of deriving them
@@ -37,7 +38,7 @@ interface MechanicSkeletonProps {
   standardDescription: string
   standardGrade: string
   mathSkillLabel?: string
-  onReadyToBuild: (card?: SkeletonCustomCard) => void
+  onReadyToBuild: (card?: SkeletonCustomCard, scenario?: StandardScenario) => void
   onBack: () => void
   // When provided, the skeleton page shows these cards instead of the
   // per-standard option list. Used by the Eureka flow to offer 3
@@ -241,6 +242,8 @@ export function MechanicSkeleton({
             optionName={selectedOption?.name ?? ""}
             uses={uses}
             usesLoading={usesLoading}
+            scenarios={getScenarios(activeStandard.id)}
+            onUseScenario={(scenario) => onReadyToBuild(selectedCard ?? undefined, scenario)}
             onReadyToBuild={() => onReadyToBuild(selectedCard ?? undefined)}
             onTryAnother={resetToPick}
           />
@@ -461,17 +464,22 @@ function WonPhase({
   optionName,
   uses,
   usesLoading,
+  scenarios,
+  onUseScenario,
   onReadyToBuild,
   onTryAnother,
 }: {
   optionName: string
   uses: RealWorldUses | null
   usesLoading: boolean
+  scenarios: StandardScenario[] | null
+  onUseScenario: (scenario: StandardScenario) => void
   onReadyToBuild: () => void
   onTryAnother: () => void
 }) {
+  const hasScenarios = scenarios && scenarios.length > 0
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10 space-y-6">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10 space-y-6">
       <div className="text-center space-y-3">
         <div className="inline-flex items-center justify-center size-20 rounded-full bg-emerald-500/20 border-2 border-emerald-400/50">
           <Sparkles className="size-10 text-emerald-300" />
@@ -490,35 +498,68 @@ function WonPhase({
         )}
       </div>
 
-      <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5 sm:p-6 space-y-4">
-        <h3
-          className="text-sm font-bold uppercase tracking-wider text-zinc-300"
-          style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-        >
-          Real-world uses of this math skill
-        </h3>
-        {usesLoading || !uses ? (
-          <div className="flex items-center gap-2 text-sm text-zinc-400">
-            <Loader2 className="size-4 animate-spin" />
-            Finding real-world examples…
+      {hasScenarios ? (
+        <div className="space-y-4">
+          <div className="text-center space-y-1">
+            <h3
+              className="text-xl font-bold text-white"
+              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+            >
+              Pick an idea for your game
+            </h3>
+            <p className="text-sm text-zinc-400">
+              Here are real-world stories where this math is used. Click one and we&apos;ll set up your game!
+            </p>
           </div>
-        ) : (
-          <ul className="space-y-3">
-            <UseBullet label="For fun" color="text-fuchsia-300" text={uses.fun} />
-            <UseBullet label="As a career" color="text-blue-300" text={uses.career} />
-            <UseBullet label="Every day" color="text-emerald-300" text={uses.practical} />
-          </ul>
-        )}
-      </div>
 
-      <div className="flex flex-col sm:flex-row gap-3">
-        <button
-          onClick={onReadyToBuild}
-          className="flex-1 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-base font-bold transition-colors shadow-lg shadow-emerald-900/30"
-          style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-        >
-          Ready to build your game! →
-        </button>
+          <div className="grid gap-4 sm:grid-cols-3">
+            {scenarios!.map((s, i) => (
+              <ScenarioCard key={i} scenario={s} onPick={() => onUseScenario(s)} />
+            ))}
+          </div>
+
+          <div className="text-center pt-2">
+            <button
+              onClick={onReadyToBuild}
+              className="text-sm text-zinc-400 hover:text-white underline underline-offset-4"
+            >
+              Or come up with your own idea →
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5 sm:p-6 space-y-4">
+          <h3
+            className="text-sm font-bold uppercase tracking-wider text-zinc-300"
+            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+          >
+            Real-world uses of this math skill
+          </h3>
+          {usesLoading || !uses ? (
+            <div className="flex items-center gap-2 text-sm text-zinc-400">
+              <Loader2 className="size-4 animate-spin" />
+              Finding real-world examples…
+            </div>
+          ) : (
+            <ul className="space-y-3">
+              <UseBullet label="For fun" color="text-fuchsia-300" text={uses.fun} />
+              <UseBullet label="As a career" color="text-blue-300" text={uses.career} />
+              <UseBullet label="Every day" color="text-emerald-300" text={uses.practical} />
+            </ul>
+          )}
+        </div>
+      )}
+
+      <div className="flex flex-col sm:flex-row gap-3 pt-2">
+        {!hasScenarios && (
+          <button
+            onClick={onReadyToBuild}
+            className="flex-1 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-base font-bold transition-colors shadow-lg shadow-emerald-900/30"
+            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+          >
+            Ready to build your game! →
+          </button>
+        )}
         <button
           onClick={onTryAnother}
           className="flex-1 py-3.5 rounded-xl border-2 border-zinc-700 hover:border-zinc-500 text-zinc-200 text-base font-semibold transition-colors"
@@ -527,6 +568,33 @@ function WonPhase({
         </button>
       </div>
     </div>
+  )
+}
+
+function ScenarioCard({ scenario, onPick }: { scenario: StandardScenario; onPick: () => void }) {
+  return (
+    <button
+      onClick={onPick}
+      className="group text-left rounded-2xl border-2 border-zinc-800 bg-zinc-900 hover:border-emerald-500 hover:bg-zinc-900/80 p-5 transition-all flex flex-col gap-3 min-h-[280px]"
+    >
+      <div className="flex items-center gap-2">
+        <span className="text-2xl" aria-hidden>{scenario.icon}</span>
+        <h4
+          className="text-lg font-bold text-white"
+          style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+        >
+          {scenario.title}
+        </h4>
+      </div>
+      <p className="text-sm text-zinc-300 leading-relaxed flex-1">{scenario.story}</p>
+      <div className="rounded-lg bg-zinc-800/70 border border-zinc-700 px-3 py-2">
+        <p className="text-[10px] text-blue-400 uppercase tracking-wider font-semibold mb-0.5">The math</p>
+        <p className="text-lg text-white font-mono font-bold text-center">{scenario.math}</p>
+      </div>
+      <span className="mt-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-600 group-hover:bg-emerald-500 text-white text-sm font-bold transition-colors">
+        Use this idea! →
+      </span>
+    </button>
   )
 }
 

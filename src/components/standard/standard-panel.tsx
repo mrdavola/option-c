@@ -302,6 +302,7 @@ export function StandardPanel({
   const { gameApproved: tokenGameApproved } = useTokenConfig()
   const [step, setStep] = useState<FlowStep>("learn")
   const [approvedGameCount, setApprovedGameCount] = useState(0)
+  const [selectedScenario, setSelectedScenario] = useState<import("@/lib/standard-scenarios").StandardScenario | null>(null)
 
   // Reset step when standard changes
   useEffect(() => {
@@ -483,6 +484,7 @@ export function StandardPanel({
               standardGrade={standard.grade}
               standardDomainCode={standard.domainCode}
               planetId={`${standard.grade}.${standard.domainCode}`}
+              prefilledScenario={selectedScenario ?? undefined}
               onBuildGame={(designDoc, summary, vibe, mechanicId) => {
                 if (onBuildGame) onBuildGame(designDoc, summary, vibe, mechanicId)
               }}
@@ -515,7 +517,10 @@ export function StandardPanel({
         standardDescription={standard.description}
         standardGrade={standard.grade}
         mathSkillLabel={standard.description}
-        onReadyToBuild={() => setStep("earn")}
+        onReadyToBuild={(_card, scenario) => {
+          setSelectedScenario(scenario ?? null)
+          setStep("earn")
+        }}
         onBack={() => setStep("learn")}
       />
     )}

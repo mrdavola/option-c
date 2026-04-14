@@ -29,6 +29,10 @@ interface CircuitBoardBuilderProps {
   mode?: "moon" | "eureka"
   learnerGrade?: string
   learnerUid?: string
+  // Optional pre-fill from a scenario picked on the mechanic skeleton celebration screen.
+  // When present, auto-selects background/character/item and fills backstory.
+  // Learner can still change any of them.
+  prefilledScenario?: import("@/lib/standard-scenarios").StandardScenario
   // Callbacks
   onBuildGame: (designDoc: GameDesignDoc, summary: string, vibe: string, mechanicId: string) => void
   onBack: () => void
@@ -53,6 +57,7 @@ export function CircuitBoardBuilder({
   mode = "moon",
   learnerGrade,
   learnerUid,
+  prefilledScenario,
   onBuildGame,
   onBack,
 }: CircuitBoardBuilderProps) {
@@ -101,12 +106,20 @@ export function CircuitBoardBuilder({
     return options
   }, [isEureka, standardId, mechanics])
 
-  // Selected components
-  const [selectedBackground, setSelectedBackground] = useState<string | null>(null)
-  const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null)
+  // Selected components — initialize from prefilled scenario when present
+  const [selectedBackground, setSelectedBackground] = useState<string | null>(
+    prefilledScenario?.gameIdea.background ?? null,
+  )
+  const [selectedCharacter, setSelectedCharacter] = useState<string | null>(
+    prefilledScenario?.gameIdea.character ?? null,
+  )
   const [selectedGameOption, setSelectedGameOption] = useState<GameOptionInfo | null>(null)
-  const [selectedItem, setSelectedItem] = useState<string | null>(null)
-  const [backstory, setBackstory] = useState<string>("")
+  const [selectedItem, setSelectedItem] = useState<string | null>(
+    prefilledScenario?.gameIdea.item ?? null,
+  )
+  const [backstory, setBackstory] = useState<string>(
+    prefilledScenario?.gameIdea.backstory ?? "",
+  )
   const [building, setBuilding] = useState(false)
 
   // Eureka mode state
