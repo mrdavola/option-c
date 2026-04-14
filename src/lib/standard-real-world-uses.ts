@@ -1373,6 +1373,809 @@ export const STANDARD_REAL_WORLD_USES: Record<string, RealWorldUses> = {
     career: "Architects group shape families to speed up building plans.",
     practical: "Board games use shape categories to tell pieces apart quickly.",
   },
+
+  // ============================================================
+  // GRADE 6
+  // ============================================================
+
+  "6.RP.A": {
+    fun: "In Fortnite the ratio of wins to matches is your W/L — ratio reasoning is core to every game stat.",
+    career: "Chefs scale recipes up for 200 people using ratios; engineers mix concrete using precise ratios.",
+    practical: "Scaling a recipe up for more friends, or figuring out the best deal per ounce at the store.",
+  },
+  "6.RP.A.1": {
+    fun: "Your K/D ratio in Call of Duty is a ratio — wins:losses, kills:deaths.",
+    career: "Coaches use player stat ratios to pick a starting lineup.",
+    practical: "Compare two snack bags: chips per gram tells you which is the better buy.",
+  },
+  "6.RP.A.2": {
+    fun: "XP per minute in a video game is a unit rate — higher means faster leveling.",
+    career: "Delivery drivers calculate miles per gallon to choose fuel-efficient routes.",
+    practical: "Price per ounce at the store tells you the real deal, not the shelf sticker.",
+  },
+  "6.RP.A.3": {
+    fun: "Minecraft recipe: 4 planks per log. Scale up for a whole base using ratio reasoning.",
+    career: "Engineers scale designs using ratios — from tiny model to full-size bridge.",
+    practical: "Doubling a recipe or making half a batch of cookies uses ratio reasoning.",
+  },
+  "6.RP.A.3a": {
+    fun: "Track enemy spawns per wave in a game: 5 per wave → 15 after 3 waves. Tables predict them all.",
+    career: "Scientists make ratio tables to track dosage vs weight for medicine.",
+    practical: "Shopping list: if 2 cups flour makes 12 cookies, how many cups for 48?",
+  },
+  "6.RP.A.3b": {
+    fun: "If it takes 2 min to clear a level, how many levels in 30 min? Unit rates predict grinds.",
+    career: "Truckers track miles per hour to estimate arrival times accurately.",
+    practical: "Running at 6 mph, how long for 3 miles? Unit rates plan workouts.",
+  },
+  "6.RP.A.3c": {
+    fun: "Game sale: 30% off a $60 skin means $18 off. Percents unlock deals.",
+    career: "Salespeople calculate commissions as a percent of sales.",
+    practical: "Tipping 20% at a restaurant, or figuring out a sale discount.",
+  },
+  "6.RP.A.3d": {
+    fun: "Minecraft: 16 blocks per chunk — convert blocks to chunks using ratio reasoning.",
+    career: "Pharmacists convert mg to grams to measure out correct doses.",
+    practical: "Inches to feet, cups to quarts — conversions happen every time you cook or build.",
+  },
+
+  "6.NS.A": {
+    fun: "Split a cake into 1/3 pieces then share 1/2 the cake — fraction division shows up in game loot too.",
+    career: "Carpenters divide fractional lengths: a 1/2 inch board split into 1/8 inch strips.",
+    practical: "If a 3/4 cup of yogurt has 3 servings of 1/4 cup, division of fractions solved it.",
+  },
+  "6.NS.A.1": {
+    fun: "How many 1/4 cup energy drinks in a 2-cup bottle? 2 ÷ 1/4 = 8 drinks.",
+    career: "Chefs split batches: 6 cups of batter ÷ 3/4 cup per muffin = 8 muffins.",
+    practical: "Sharing pizza — 1/2 pie split into 1/8 slices = 4 slices each.",
+  },
+  "6.NS.B": {
+    fun: "Speedrunners calculate frame-perfect divisions to optimize their times.",
+    career: "Accountants divide large totals by categories using long division daily.",
+    practical: "Split a $156 dinner bill among 12 friends — everyone owes $13.",
+  },
+  "6.NS.B.2": {
+    fun: "1296 coins split among 36 players: each gets 36. Fair loot division.",
+    career: "Warehouse managers divide bulk shipments into store allocations.",
+    practical: "Splitting 252 minutes of screen time across 6 days means 42 min/day.",
+  },
+  "6.NS.B.3": {
+    fun: "Track YouTube earnings: $0.003 per view × 2.5M views? Decimal multiplication powers the calc.",
+    career: "Cashiers and accountants add and subtract dollar amounts all day.",
+    practical: "Adding up grocery receipt totals or calculating gas mileage.",
+  },
+  "6.NS.B.4": {
+    fun: "Rhythm games sync beats at the LCM of two rhythms — math behind the music.",
+    career: "Engineers use GCF/LCM to design gears that sync properly.",
+    practical: "Meal-prepping for 3 days and 4-day cycles? LCM says plan every 12 days.",
+  },
+
+  "6.NS.C": {
+    fun: "Subzero weather, debt in a game, elevation below sea level in Minecraft — negatives everywhere.",
+    career: "Scientists measure temperatures well below 0, from -40°C labs to outer space.",
+    practical: "Bank accounts going negative, thermostats, deep-dive elevation — negatives are real life.",
+  },
+  "6.NS.C.5": {
+    fun: "Minecraft goes to Y = -64 underground. Negative coordinates lead to diamond caves.",
+    career: "Meteorologists track temperatures from -50°F in Antarctica to 130°F in deserts.",
+    practical: "Owe a friend $10? Your 'money' balance is -$10 until you pay back.",
+  },
+  "6.NS.C.6": {
+    fun: "Plot your base in Minecraft: (120, 64, -450) — 3D coordinates with negatives included.",
+    career: "GPS engineers design systems that use positive/negative coordinates globally.",
+    practical: "Thermostats show -5° outside and 70° inside — opposite sides of zero.",
+  },
+  "6.NS.C.6a": {
+    fun: "Dealing -5 damage means you heal 5 — opposite of opposite is the original.",
+    career: "Electrical engineers flip current direction; the opposite of opposite brings it back.",
+    practical: "Undo an undo on your phone — you're back to the original.",
+  },
+  "6.NS.C.6b": {
+    fun: "Minecraft map: (-200, -300) is the opposite corner from (200, 300). Quadrants matter.",
+    career: "Pilots and ship captains use all four quadrants on navigation charts.",
+    practical: "Reading a city map grid — streets run both positive and negative from center.",
+  },
+  "6.NS.C.6c": {
+    fun: "Plot rare item drops on a coordinate plane to find patterns — both positive and negative matter.",
+    career: "Video game developers place every object using coordinates in a plane.",
+    practical: "Using a map to find a friend's house at (3, -5) blocks from the school.",
+  },
+  "6.NS.C.7": {
+    fun: "Rank game scores: -10 beats -30 (less damage taken). Absolute value tells 'how much'.",
+    career: "Scientists compare temperature extremes by magnitude regardless of sign.",
+    practical: "Comparing elevations — Death Valley at -282 ft is below sea level by 282 ft.",
+  },
+  "6.NS.C.7a": {
+    fun: "Your level in a ranked ladder: -3 rating is better than -10 (closer to the top).",
+    career: "Financial analysts compare portfolio losses: -$50 is better than -$500.",
+    practical: "If it's -3°F outside and tomorrow is -10°F, today is warmer.",
+  },
+  "6.NS.C.7b": {
+    fun: "Compare in-game debuffs: -20% speed is worse than -5% speed.",
+    career: "Climate scientists compare average temps in different regions using negatives.",
+    practical: "Saying '-2°F is warmer than -15°F' is a real-world inequality.",
+  },
+  "6.NS.C.7c": {
+    fun: "Your karma is -20 — absolute value says 'you need 20 good deeds to hit zero'.",
+    career: "Engineers care about magnitude of error, not whether it's + or -.",
+    practical: "If you owe $45, |debt| = $45 is the size of what you need to pay.",
+  },
+  "6.NS.C.7d": {
+    fun: "A -$100 balance is a bigger problem than -$10, even though -100 is 'less' numerically.",
+    career: "Financial auditors compare magnitudes of losses, not just signs.",
+    practical: "Owing $500 is way more serious than owing $50, even though both are negative.",
+  },
+  "6.NS.C.8": {
+    fun: "In Minecraft, find distance between two bases using coordinates — essential for travel.",
+    career: "Surveyors calculate distances on coordinate planes for property lines.",
+    practical: "Finding the distance between two subway stops on a city grid.",
+  },
+
+  "6.EE.A": {
+    fun: "Damage formula in a game: base damage × (1 + crit%). Expressions power every battle.",
+    career: "Programmers write expressions to calculate everything from prices to physics.",
+    practical: "Figuring out total cost = price + tax uses an expression.",
+  },
+  "6.EE.A.1": {
+    fun: "Game damage often uses exponents: level² × 10. Higher level, way more damage.",
+    career: "Physicists use exponents constantly: kinetic energy is (1/2)mv².",
+    practical: "Area of a room side² or volume = side³ both use exponents.",
+  },
+  "6.EE.A.2": {
+    fun: "Game variable 'x = your level' lets one formula work for everyone — that's algebra.",
+    career: "Programmers use variables in every line of code they write.",
+    practical: "Spreadsheets like Google Sheets run on variables and formulas.",
+  },
+  "6.EE.A.2a": {
+    fun: "Write 'hits - misses' as an expression to track accuracy in a shooter game.",
+    career: "Data analysts translate English phrases into formulas to process data.",
+    practical: "'Total minus discount' is an expression — shopping math in formula form.",
+  },
+  "6.EE.A.2b": {
+    fun: "In 2(crit+base), the sum (crit+base) is one part, the 2 is a multiplier — parts matter.",
+    career: "Coders name parts of expressions to make complex logic readable.",
+    practical: "Reading a phone bill: base + per-line × phones — each part has a meaning.",
+  },
+  "6.EE.A.2c": {
+    fun: "Plug your level (s=10) into V = s³ to find your 'volume' of power: 1000.",
+    career: "Engineers substitute real measurements into formulas to build bridges and phones.",
+    practical: "Plug ingredients into a cost formula to see what your meal actually costs.",
+  },
+  "6.EE.A.3": {
+    fun: "Game tip: 3(attack + buff) = 3·attack + 3·buff. Same damage, different calc.",
+    career: "Software engineers rewrite expressions to run faster while getting the same result.",
+    practical: "Quick mental math: 7 × 25 = 7 × 20 + 7 × 5 uses distributive property.",
+  },
+  "6.EE.A.4": {
+    fun: "Two different skill formulas that give the same damage? They're equivalent — just chill.",
+    career: "Mathematicians prove two formulas are the same even when they look different.",
+    practical: "5 × 6 and 6 × 5 = 30 — same result, commutative property in action.",
+  },
+
+  "6.EE.B": {
+    fun: "Need 500 gems, have 340. Solve 340 + x = 500 to find what's missing.",
+    career: "Programmers solve equations all day to debug: expected X, got Y, what's the gap?",
+    practical: "Saved $30 of a $50 goal — solve 30 + x = 50 for what's left.",
+  },
+  "6.EE.B.5": {
+    fun: "Check if x = 5 beats the boss: plug it in and see. Substitution is a cheat code.",
+    career: "Testers plug in values to check if software works right.",
+    practical: "Trying on sizes: does size 8 fit? Substitute and check.",
+  },
+  "6.EE.B.6": {
+    fun: "Let h = hours streamed. Your earnings formula 2h + 5 works for any day.",
+    career: "Engineers use variables to stand in for unknowns when designing products.",
+    practical: "A formula for total pay: 15h (hours times wage) covers any week.",
+  },
+  "6.EE.B.7": {
+    fun: "Power bar at 45, needs 100. Solve 45 + x = 100 for the power-ups needed.",
+    career: "Software engineers debug by thinking 'expected 100, got 45 — what's missing?'",
+    practical: "Saved $18 of $30 goal. Solve 18 + x = 30 → x = $12 more to save.",
+  },
+  "6.EE.B.8": {
+    fun: "Need at least 15 energy to summon boss: x ≥ 15. Inequality sets your target.",
+    career: "Quality engineers say 'defects must be < 1%' — inequalities set limits.",
+    practical: "Must be at least 13 to post on social apps: age ≥ 13 is an inequality.",
+  },
+  "6.EE.C": {
+    fun: "Streaming earnings: earnings = 0.05 × views. As views grow, earnings grow linearly.",
+    career: "Data scientists model how one quantity depends on another.",
+    practical: "Phone bill cost depends on data used — independent and dependent variables.",
+  },
+  "6.EE.C.9": {
+    fun: "XP per kill tracking: total XP = 50 × kills. Graph it to predict when you'll level up.",
+    career: "Engineers graph relationships to predict how systems will behave.",
+    practical: "Graph distance vs time on a road trip to estimate arrival.",
+  },
+
+  "6.G.A": {
+    fun: "Build a Minecraft mansion — need to calculate area for floors, volume for interior space.",
+    career: "Architects compute area and volume for every room they design.",
+    practical: "Measuring carpet (area) or a fish tank's water (volume) uses these formulas.",
+  },
+  "6.G.A.1": {
+    fun: "Design a triangular flag skin in your game using area formulas.",
+    career: "Roofers calculate triangular roof area to order exact shingles.",
+    practical: "Calculating how much fabric for a triangle banner.",
+  },
+  "6.G.A.2": {
+    fun: "Find volume of your Minecraft base — cube length × width × height.",
+    career: "Shippers calculate box volume to maximize what fits in a truck.",
+    practical: "Will a fish tank's water fit in your room? Volume tells you.",
+  },
+  "6.G.A.3": {
+    fun: "Plot game map corners and calculate wall lengths for base construction.",
+    career: "Landscape architects plot garden shapes on coordinate grids.",
+    practical: "Designing a backyard: plot corners to figure out fence length.",
+  },
+  "6.G.A.4": {
+    fun: "Unfold a Minecraft box into a net — the surface area is how much paint or wrap you need.",
+    career: "Package designers use nets to make boxes from flat cardboard.",
+    practical: "Wrapping a gift: surface area tells you how much paper.",
+  },
+
+  "6.SP.A": {
+    fun: "'How many hours do classmates play games?' is a stat question — answers vary.",
+    career: "Survey takers design questions that capture real variation in people.",
+    practical: "Asking 'how tall are 6th graders?' — answers vary, that's statistics.",
+  },
+  "6.SP.A.1": {
+    fun: "'What's the average kill streak in my Discord server?' — variability makes it statistical.",
+    career: "Journalists ask statistical questions and use data to answer.",
+    practical: "'How many hours of sleep do my classmates get?' is a statistical question.",
+  },
+  "6.SP.A.2": {
+    fun: "Graph your game scores — find the center (avg), spread (range), and shape (clusters).",
+    career: "Data analysts describe data with center, spread, and shape.",
+    practical: "Test scores: the average, the range, and where most people fell — describes a class.",
+  },
+  "6.SP.A.3": {
+    fun: "Your average damage per match summarizes a whole season of game data.",
+    career: "Sports analysts report averages and variability for every player.",
+    practical: "Average temp for the week + how much it varied describes the weather.",
+  },
+  "6.SP.B": {
+    fun: "Box plot of Fortnite kill stats shows medians and IQR of top players.",
+    career: "Researchers summarize huge datasets with just a few numbers.",
+    practical: "Describing your exam scores: median and range tell the story fast.",
+  },
+  "6.SP.B.4": {
+    fun: "Make a dot plot of your friends' TikTok hours per day — instantly see trends.",
+    career: "Scientists use histograms to show distributions of data.",
+    practical: "A dot plot of how many hours your family sleeps each week.",
+  },
+  "6.SP.B.5": {
+    fun: "Summarize server stats: n players, median level, IQR, skew — full picture.",
+    career: "Analysts write stats reports summarizing datasets clearly.",
+    practical: "Summarizing your week's steps on a fitness tracker.",
+  },
+  "6.SP.B.5a": {
+    fun: "Count data points: 7 games played, 7 scores to analyze.",
+    career: "Scientists report sample size on every study.",
+    practical: "Counting how many items in your survey before analyzing.",
+  },
+  "6.SP.B.5b": {
+    fun: "Describe: height in cm, screen time in hours — units matter for context.",
+    career: "Engineers always label units — mix-ups cost millions.",
+    practical: "Cooking recipes fail if you mix up cups and tablespoons.",
+  },
+  "6.SP.B.5c": {
+    fun: "Report avg damage, IQR of damage — paints a full picture of your game.",
+    career: "Data scientists report center + variability on every metric.",
+    practical: "Describing your test scores: average and spread shows strengths.",
+  },
+  "6.SP.B.5d": {
+    fun: "Skewed data (like most people's streaming hours) — use the median, not mean.",
+    career: "Statisticians pick median for incomes (avoiding billionaire outliers).",
+    practical: "Your class has one super-tall student — median height better represents the class.",
+  },
+
+  // ============================================================
+  // GRADE 7
+  // ============================================================
+
+  "7.RP.A": {
+    fun: "Your Spotify playlist: 2 minutes per song × 15 songs = 30 min. Proportions rule music.",
+    career: "Chemists scale reactions up proportionally from lab to factory.",
+    practical: "Sale tags: '25% off' is proportional reasoning on prices.",
+  },
+  "7.RP.A.1": {
+    fun: "Stream 1/2 a show in 1/4 hour — 2 shows per hour. Complex fractions solve it.",
+    career: "Mechanics use complex fractions to convert odd units.",
+    practical: "Running 3/4 mile in 6 min — unit rate tells your pace.",
+  },
+  "7.RP.A.2": {
+    fun: "Damage = 5 × level. Plot it — a straight line through the origin is proportional.",
+    career: "Pharmacists use proportional dosing: mg per kg of body weight.",
+    practical: "Cost per pound at the deli — total $ is proportional to weight.",
+  },
+  "7.RP.A.2a": {
+    fun: "Test if a game's 'XP for gold' is proportional — if not, there's a twist.",
+    career: "Data scientists test for proportional relationships all the time.",
+    practical: "Check: 2 drinks $5, 4 drinks $10 — proportional? Yes, $2.50 each.",
+  },
+  "7.RP.A.2b": {
+    fun: "y = 3x in a game means 3 XP per level — 3 is the constant of proportionality.",
+    career: "Engineers identify constants of proportionality to model systems.",
+    practical: "Miles per gallon is the constant — same car, same rate.",
+  },
+  "7.RP.A.2c": {
+    fun: "Build a cost equation for Roblox purchases: total = 10 × gems. That's proportional.",
+    career: "Accountants write equations that convert units into dollars.",
+    practical: "Total cost = price × quantity is the most common equation in stores.",
+  },
+  "7.RP.A.2d": {
+    fun: "In a scoring chart, point (1, 5) means 'one match = 5 XP'. Unit rate visualized.",
+    career: "Economists interpret graph points as real-world rates.",
+    practical: "On a time-vs-distance graph, (1, 55) means 55 mph.",
+  },
+  "7.RP.A.3": {
+    fun: "Sneaker drop: $120 shoes, 25% off, plus 8% tax. What's your actual cost?",
+    career: "Retail managers set prices with markups, discounts, and taxes.",
+    practical: "Tipping 18% on dinner, calculating the final price with tax.",
+  },
+
+  "7.NS.A": {
+    fun: "Health bar: -20 from a fire spell + 15 healing potion = -5. Net still dying.",
+    career: "Accountants work with positive and negative numbers all day long.",
+    practical: "Bank account: -$20 overdraft + $50 deposit = $30 positive.",
+  },
+  "7.NS.A.1": {
+    fun: "Tug of war: your team pulls +5, theirs -7. Net: -2, you're losing ground.",
+    career: "Pilots adjust for +wind and -wind to nail arrival times.",
+    practical: "Temperature rises 10°F from -5°F to 5°F.",
+  },
+  "7.NS.A.1a": {
+    fun: "Gain 3 coins, lose 3 coins — net 0. Additive inverses cancel out.",
+    career: "Chemists know +/- charges cancel: Na+ and Cl- make neutral NaCl.",
+    practical: "Forward 5 steps, back 5 steps — you're where you started.",
+  },
+  "7.NS.A.1b": {
+    fun: "From -3 HP, heal 8 = +5 HP. Number line thinking saves your run.",
+    career: "Physicists track +/- velocity to know direction and magnitude.",
+    practical: "Temp at -2°, rises 7° → now at +5°.",
+  },
+  "7.NS.A.1c": {
+    fun: "Subtract enemy health -5 - (-3) means you only hit for -2. Subtracting a negative = adding.",
+    career: "Financial analysts: removing a debt is like adding money.",
+    practical: "Removing a $5 charge from your bill is like adding $5 back.",
+  },
+  "7.NS.A.1d": {
+    fun: "Combine buffs: (+5 speed) + (-3 slow) + (+2 dash) = +4 speed total.",
+    career: "Engineers combine + and - forces to calculate stress on a bridge.",
+    practical: "Add up day's calories gained and burned to see the total.",
+  },
+  "7.NS.A.2": {
+    fun: "Debuff: -3 damage for 5 turns = -15 total. Multiplying negatives tracks stacks.",
+    career: "Stock traders calculate losses × days to see total drawdown.",
+    practical: "Lose $2/week for 6 weeks = -$12. Multiplication with negatives.",
+  },
+  "7.NS.A.2a": {
+    fun: "(-1)(-1) = 1 — two wrongs do make a right in math!",
+    career: "Physicists use signed multiplication in reversing directions.",
+    practical: "If you owe 3 people $5 each, that's -$15 total (3 × -5).",
+  },
+  "7.NS.A.2b": {
+    fun: "Split -$30 debt among 3 friends: each owes -$10. Negative division.",
+    career: "Accountants split losses across quarters using signed division.",
+    practical: "Shared bill over 4 weeks of losses: -$80 ÷ 4 = -$20/week.",
+  },
+  "7.NS.A.2c": {
+    fun: "Rearrange damage: -2(3+4) = -6 + -8 = -14. Distributive with negatives.",
+    career: "Engineers use distributive laws with signed numbers in physics equations.",
+    practical: "Price drops: -5 × (2 items + 3 items) = total price drop.",
+  },
+  "7.NS.A.2d": {
+    fun: "1/3 as 0.333... (repeating) — the decimal tells you the pattern.",
+    career: "Scientists convert fractions to decimals for calculators and reports.",
+    practical: "Turning 3/8 into 0.375 to split a check exactly.",
+  },
+  "7.NS.A.3": {
+    fun: "Compute damage mixing fractions, negatives, decimals — real game math.",
+    career: "Engineers mix all number types daily to design structures.",
+    practical: "Budget: +$200 pay, -$55 phone, -$15.50 game — track it all.",
+  },
+
+  "7.EE.A": {
+    fun: "Simplify damage formula 3x + 5x to 8x — makes combat faster to compute.",
+    career: "Coders simplify expressions to speed up app performance.",
+    practical: "'3 apples + 5 apples = 8 apples' — combining like terms.",
+  },
+  "7.EE.A.1": {
+    fun: "Distribute 2(attack+crit) to 2·attack + 2·crit — same hit, clearer view.",
+    career: "Accountants factor to find common rates (5% sales tax on everything).",
+    practical: "Quick math: 5(20+3) = 100 + 15 = 115.",
+  },
+  "7.EE.A.2": {
+    fun: "Price + 5% tax = 1.05 × price. Rewriting saves time at the register.",
+    career: "Retailers use multipliers (×1.08 for tax) instead of extra calcs.",
+    practical: "20% off = multiply by 0.80. Way faster than subtract-then-add.",
+  },
+  "7.EE.B": {
+    fun: "Stock up for raid: 2x + 3 = 11 potions total. Solve to find x = 4.",
+    career: "Analysts solve equations daily to hit performance targets.",
+    practical: "How many hours do I need to work to save $100?",
+  },
+  "7.EE.B.3": {
+    fun: "Concert tickets $45 each, 20% off, + $5 fee = your real cost.",
+    career: "Retail managers handle multi-step pricing problems hourly.",
+    practical: "Split a check with tax and tip fairly — multi-step real math.",
+  },
+  "7.EE.B.4": {
+    fun: "Need enough gold: 50 + 3·sales ≥ 100. Solve for min sales to hit the goal.",
+    career: "Salespeople calculate minimum sales needed for bonuses.",
+    practical: "'I need $100. I start with $20 and earn $5 per hour' — how long?",
+  },
+  "7.EE.B.4a": {
+    fun: "Fix a glitch: 3(x + 2) = 21. Solve to find level needed to unlock.",
+    career: "Engineers solve px + q = r to balance systems.",
+    practical: "Perimeter of rectangle = 54, length = 6, width = ?",
+  },
+  "7.EE.B.4b": {
+    fun: "Earn at least $100 from tips: 3·tables + $20 base ≥ 100. Solve it.",
+    career: "Business owners set minimum-sales inequalities for profit.",
+    practical: "Grade at least 90 → x + 85 ≥ 180 (average of 2 tests).",
+  },
+
+  "7.G.A": {
+    fun: "Build a scale replica of a Minecraft castle in real life — scale drawings rule.",
+    career: "Architects draw scale plans (1 inch = 10 feet) for every project.",
+    practical: "Reading a map scale: 1 in = 50 miles means your trip is 3 inches long.",
+  },
+  "7.G.A.1": {
+    fun: "Game design scale: 1 pixel = 1 inch. Build characters at scale.",
+    career: "Engineers scale designs from tiny model to real building.",
+    practical: "Dollhouse scale: 1 inch dollhouse furniture = 1 foot real furniture.",
+  },
+  "7.G.A.2": {
+    fun: "Build a triangle polygon in Blender with specific angles.",
+    career: "Drafters construct exact triangles with ruler and protractor.",
+    practical: "Cutting triangular sandwiches or pizza slices needs angle sense.",
+  },
+  "7.G.A.3": {
+    fun: "Slice a Minecraft diamond block cross-section — rectangle appears inside the cube.",
+    career: "Radiologists read cross-sections of 3D body scans.",
+    practical: "Cutting a log: the cross-section is a circle.",
+  },
+  "7.G.B": {
+    fun: "Circle arena in your game — calculate its area to plan boss battles.",
+    career: "Civil engineers compute circular areas for manhole covers and pools.",
+    practical: "Circular pizza area tells you the most pie for your money.",
+  },
+  "7.G.B.4": {
+    fun: "Pizza comparison: area of 12-in vs 16-in pizza — which is the better deal?",
+    career: "Engineers calculate circular cross-sections of pipes and wires.",
+    practical: "Fencing a circular garden? Circumference tells you how much you need.",
+  },
+  "7.G.B.5": {
+    fun: "Find missing angles in a crystal design: 180 - 35 = 145° supplementary.",
+    career: "Architects solve for unknown angles in blueprints daily.",
+    practical: "Piecing together a triangle puzzle from partial angle info.",
+  },
+  "7.G.B.6": {
+    fun: "Surface area of your Minecraft house tells you how many textures to apply.",
+    career: "Construction workers compute SA to order paint and siding.",
+    practical: "Gift wrapping a box: SA = wrapping paper needed.",
+  },
+
+  "7.SP.A": {
+    fun: "Survey 20 classmates about fave game — random sample represents the whole class.",
+    career: "Pollsters survey small random samples to predict elections.",
+    practical: "Taste-test a spoonful of soup: sample tells you about the pot.",
+  },
+  "7.SP.A.1": {
+    fun: "Sample 50 Twitch streams randomly to estimate avg viewer count — works if random.",
+    career: "Market researchers survey random samples to avoid bias.",
+    practical: "Poll 10 people at a random location for feedback — results generalize if random.",
+  },
+  "7.SP.A.2": {
+    fun: "Simulate opening 100 loot boxes — predict how many rares you'll pull.",
+    career: "Scientists run simulations to estimate outcomes before costly experiments.",
+    practical: "Sample tastes at restaurants predict the menu quality.",
+  },
+  "7.SP.B": {
+    fun: "Compare your Fortnite vs Apex stats — difference of means shows which you're better at.",
+    career: "Researchers compare groups to find statistically meaningful differences.",
+    practical: "Compare avg grades in two classes to pick teachers/methods.",
+  },
+  "7.SP.B.3": {
+    fun: "Basketball team avg ht is 6'2' vs soccer 5'10'. MAD shows if it's a big diff.",
+    career: "Sports analysts compare teams using means and variability.",
+    practical: "Comparing avg temps in two cities using variability.",
+  },
+  "7.SP.B.4": {
+    fun: "7th-grade science book words vs 4th-grade — compare medians and IQRs.",
+    career: "Educators compare reading levels to choose the right books.",
+    practical: "Grocery prices at two stores: compare to pick cheaper overall.",
+  },
+  "7.SP.C": {
+    fun: "Probability of a rare skin drop = 1/100 — probability powers loot box drops.",
+    career: "Actuaries calculate probabilities to price insurance.",
+    practical: "Weather forecast 'P(rain) = 70%' is probability in action.",
+  },
+  "7.SP.C.5": {
+    fun: "Chance of legendary drop: 0.03. Close to 0 — unlikely but not impossible.",
+    career: "Insurance companies rate events as likely/unlikely using probability.",
+    practical: "P(rain today) near 1 means pack an umbrella.",
+  },
+  "7.SP.C.6": {
+    fun: "Roll a die 600 times — predict 100 sixes (P=1/6 × 600).",
+    career: "Quality engineers predict defects in batches using probability × size.",
+    practical: "Flip a coin 100 times — expect ~50 heads.",
+  },
+  "7.SP.C.7": {
+    fun: "Build a model: 4-sided spinner, P(each)=1/4. Test 100 spins to see if it's fair.",
+    career: "Statisticians build probability models to test fairness.",
+    practical: "Is a coin fair? Flip it 100 times and see if heads ~50%.",
+  },
+  "7.SP.C.7a": {
+    fun: "30-player server, P(randomly chosen = you) = 1/30. Uniform model.",
+    career: "Lottery designers use uniform probability for fairness.",
+    practical: "Drawing names from a hat: each person has equal chance.",
+  },
+  "7.SP.C.7b": {
+    fun: "Spin a coin 100 times — 40 heads means P(H) ≈ 0.4 (not quite fair!).",
+    career: "Experimental scientists estimate probabilities from observed data.",
+    practical: "Tracking your shot success rate in basketball to predict future shots.",
+  },
+  "7.SP.C.8": {
+    fun: "Roll 2 dice: P(double six) = 1/36. Compound events in games.",
+    career: "Geneticists calculate compound probabilities for trait inheritance.",
+    practical: "Flip 2 coins: P(both heads) = 1/4.",
+  },
+  "7.SP.C.8a": {
+    fun: "Odds of a critical combo = product of each individual prob. Compound skills.",
+    career: "Risk analysts assess compound probabilities.",
+    practical: "Chance of getting both green lights = P(green1) × P(green2).",
+  },
+  "7.SP.C.8b": {
+    fun: "3 pizza sizes × 5 toppings = 15 combos. Sample space visualized!",
+    career: "Menu designers count combos using organized lists.",
+    practical: "Outfit combos: 3 shirts × 4 pants = 12 outfits.",
+  },
+  "7.SP.C.8c": {
+    fun: "Simulate a loot box with random digits — does your estimate match the real rate?",
+    career: "Epidemiologists simulate disease spread using random numbers.",
+    practical: "Flipping coins to simulate outcomes of a random event.",
+  },
+
+  // ============================================================
+  // GRADE 8
+  // ============================================================
+
+  "8.NS.A": {
+    fun: "√2 = 1.41421... never ends, never repeats. Some numbers are wild.",
+    career: "Mathematicians and physicists use irrationals like π and √2 constantly.",
+    practical: "Diagonal of a 1-ft square is √2 ft — shows up in tiling.",
+  },
+  "8.NS.A.1": {
+    fun: "1/3 = 0.333… repeats forever — that's rational (patterned).",
+    career: "Programmers handle repeating decimals carefully in calculations.",
+    practical: "Splitting 10 dollars 3 ways — 3.33 repeating.",
+  },
+  "8.NS.A.2": {
+    fun: "√10 is between 3 and 4 — narrow it to 3.16 and you've got it close.",
+    career: "Engineers approximate irrationals to decimals for real-world builds.",
+    practical: "Measure a diagonal TV screen — the actual measure involves √.",
+  },
+  "8.EE.A": {
+    fun: "Game damage scales: 2ⁿ growth. Double every level — exponents explode fast.",
+    career: "Computer scientists use exponents to describe algorithm speed.",
+    practical: "Doubling recipes: 2, 4, 8, 16 servings — exponent of 2.",
+  },
+  "8.EE.A.1": {
+    fun: "Dual enchantments stack: 3² × 3⁴ = 3⁶. Powers combine by adding exponents.",
+    career: "Engineers use exponent rules to simplify complex formulas.",
+    practical: "Compound interest doubles every few years using exponent rules.",
+  },
+  "8.EE.A.2": {
+    fun: "Minecraft diamond block volume = side³. Cube roots reverse that.",
+    career: "Architects use square/cube roots for dimensions and volumes.",
+    practical: "Room is 144 sq ft — each side is √144 = 12 ft.",
+  },
+  "8.EE.A.3": {
+    fun: "Milky Way has ~10¹¹ stars. Scientific notation handles huge numbers.",
+    career: "Astronomers and biologists write huge/tiny numbers in scientific notation.",
+    practical: "Phone storage: 10⁹ bytes = 1 GB. Makes big numbers readable.",
+  },
+  "8.EE.A.4": {
+    fun: "Game data sizes: (2×10⁶) × (3×10³) = 6×10⁹ bytes. Scientific notation FTW.",
+    career: "Scientists multiply scientific-notation values for distance, time, energy.",
+    practical: "Compute how far light travels: 3×10⁸ m/s × 60 seconds.",
+  },
+  "8.EE.B": {
+    fun: "Slope = rise/run in Parkour games — steeper hills = higher slope.",
+    career: "Civil engineers design roads with specific slopes for drainage.",
+    practical: "Wheelchair ramp needs the right slope for accessibility.",
+  },
+  "8.EE.B.5": {
+    fun: "Race cars with different speeds: slopes on distance-time graph compare speed.",
+    career: "Transit planners compare speeds by slope for scheduling.",
+    practical: "Comparing your run time to a friend's: slopes tell who's faster.",
+  },
+  "8.EE.B.6": {
+    fun: "Line y = mx + b models scoring over time in ranked games.",
+    career: "Economists model trends with linear equations.",
+    practical: "Savings grow linearly: start balance + weekly add = y = mx + b.",
+  },
+  "8.EE.C": {
+    fun: "Solve for your stat: 3x + 5 = 20. Pure algebra powers character builds.",
+    career: "Engineers solve linear equations to balance systems.",
+    practical: "'When will I save $100?' becomes a linear equation.",
+  },
+  "8.EE.C.7": {
+    fun: "Boss HP equation: 5x - 3 = 2x + 15. Solve to find turns needed.",
+    career: "Engineers rearrange equations to solve for any variable.",
+    practical: "Find unknown in formulas like P = 2L + 2W.",
+  },
+  "8.EE.C.7a": {
+    fun: "x = x + 1: no solution (impossible — infinite loop in code!).",
+    career: "Programmers debug infinite loops caused by no-solution equations.",
+    practical: "'5 = 5' is always true. 'x + 3 = x + 4' is never true.",
+  },
+  "8.EE.C.7b": {
+    fun: "Solve 3(x - 2) = 2(x + 4) to find level threshold. Multi-step algebra.",
+    career: "Scientists solve multi-step equations to isolate variables.",
+    practical: "Solving pricing equations with tax, discount, and fees.",
+  },
+  "8.EE.C.8": {
+    fun: "Two gaming plans: A = $5 + $2/month, B = $3/month. When equal? Solve the system.",
+    career: "Economists solve systems to find equilibrium (supply = demand).",
+    practical: "Choosing between two phone plans — system of equations decides.",
+  },
+  "8.EE.C.8a": {
+    fun: "Two line paths cross at a point — that's the solution to both equations.",
+    career: "Navigators solve systems to find where two paths intersect.",
+    practical: "When two runners meet up is where their position-time lines cross.",
+  },
+  "8.EE.C.8b": {
+    fun: "Parallel game strategies never intersect — no solution! Plans don't converge.",
+    career: "Engineers detect inconsistent systems quickly to save time.",
+    practical: "Parallel lines = no meeting point; same line = infinite solutions.",
+  },
+  "8.EE.C.8c": {
+    fun: "Catch-up game: A has 10 coins + 2/min, B has 0 + 4/min. When equal?",
+    career: "Economists solve 'break-even' systems for businesses.",
+    practical: "Two saving plans: when do they equal? Real-life systems solve it.",
+  },
+
+  "8.F.A": {
+    fun: "Video game damage is a function of level: f(lvl) = 2·lvl + 10.",
+    career: "Programmers write functions daily to process inputs into outputs.",
+    practical: "Your phone bill is a function of data used.",
+  },
+  "8.F.A.1": {
+    fun: "Input: button press → output: jump. Functions power game controls.",
+    career: "Engineers design functions mapping inputs to exact outputs.",
+    practical: "Put in $10 at vending machine, get exactly one bag of chips.",
+  },
+  "8.F.A.2": {
+    fun: "Compare stat curves: one game doubles damage per level, another adds 10 — compare.",
+    career: "Engineers compare functions from table, formula, or graph.",
+    practical: "Comparing two phone plans from table vs formula.",
+  },
+  "8.F.A.3": {
+    fun: "y = mx + b is linear (straight), y = x² is curved — different shapes, different games.",
+    career: "Physicists distinguish linear vs nonlinear motion all the time.",
+    practical: "Speed limit = linear; falling object distance = nonlinear (x²).",
+  },
+  "8.F.B": {
+    fun: "Model your stream growth: start with 50 followers, +10/week — linear function.",
+    career: "Data scientists build models to predict sales from trends.",
+    practical: "Predicting how long to save $500 at $20/week — linear model.",
+  },
+  "8.F.B.4": {
+    fun: "Character leveling: start at HP 100, +20 per level. Function: HP = 100 + 20·lvl.",
+    career: "Actuaries model growth over time with linear functions.",
+    practical: "Predicting savings: $50 + $10/week = total saved after x weeks.",
+  },
+  "8.F.B.5": {
+    fun: "Graph of streaming hours: when are you grinding vs chilling?",
+    career: "Economists describe trends in graphs (growth, decline, flat).",
+    practical: "A weight-loss graph showing progress is read qualitatively.",
+  },
+
+  "8.G.A": {
+    fun: "Rotate your Minecraft build with commands — rigid motions preserve everything.",
+    career: "Animators use rotations, translations, reflections for every movement.",
+    practical: "Moving furniture around a room — rotations preserve size.",
+  },
+  "8.G.A.1": {
+    fun: "Flip a character sprite — reflection keeps lengths and angles.",
+    career: "Graphic designers reflect and rotate logos to make variations.",
+    practical: "Folding paper: a reflection preserves length.",
+  },
+  "8.G.A.1a": {
+    fun: "Slide a game sprite across screen — segment lengths don't change.",
+    career: "Manufacturing uses translations to make identical parts.",
+    practical: "Sliding a couch across a room: its length stays the same.",
+  },
+  "8.G.A.1b": {
+    fun: "Rotate a puzzle piece — angles stay the same.",
+    career: "Machinists rotate precision parts while keeping exact angles.",
+    practical: "Turning a key in a lock: angles of the teeth preserve.",
+  },
+  "8.G.A.1c": {
+    fun: "Racing game lane lines are parallel — stay parallel through any rigid motion.",
+    career: "Architects rely on parallel walls through any view rotation.",
+    practical: "Train tracks stay parallel no matter where you view them.",
+  },
+  "8.G.A.2": {
+    fun: "Two character models congruent if you can rotate/flip/slide one to the other.",
+    career: "Engineers check if parts are congruent (interchangeable).",
+    practical: "Two cookie cutters make congruent cookies.",
+  },
+  "8.G.A.3": {
+    fun: "Zoom in on a game sprite — dilation scales it up while preserving shape.",
+    career: "Graphic designers scale images up/down using dilations.",
+    practical: "Photo enlargements are real-world dilations.",
+  },
+  "8.G.A.4": {
+    fun: "Scale a Minecraft house 2× — similar shape, double size.",
+    career: "Architects draw similar figures at different scales for blueprints.",
+    practical: "Enlarging a photo for a poster — similar figures at larger scale.",
+  },
+  "8.G.A.5": {
+    fun: "Triangle angles always sum to 180° — no matter how wild the shape.",
+    career: "Surveyors use angle sum rules to check measurements.",
+    practical: "Fitting triangle puzzle pieces — angles always sum to 180°.",
+  },
+  "8.G.B": {
+    fun: "Ladder leaning on wall: Pythagorean Theorem finds the exact reach.",
+    career: "Construction workers use Pyth Thm daily for rafters and ramps.",
+    practical: "Fitting a diagonal in a TV box: a² + b² = c².",
+  },
+  "8.G.B.6": {
+    fun: "3-4-5 triangle sides: 9 + 16 = 25. Pythagoras works!",
+    career: "Mathematicians prove Pyth with visual square-area proofs.",
+    practical: "Verify a corner is square using 3-4-5 rule (legit construction tip).",
+  },
+  "8.G.B.7": {
+    fun: "Spawn to boss distance in a game: coordinates give a right triangle, Pyth solves it.",
+    career: "Surveyors find straight-line distances using Pyth.",
+    practical: "Ladder, ramp, screen diagonal — everywhere there's a right angle.",
+  },
+  "8.G.B.8": {
+    fun: "Distance on Minecraft map: (0,0) to (6,8) = √(36+64) = 10 blocks.",
+    career: "GPS and nav systems use distance formula nonstop.",
+    practical: "Finding distance between two pins on a map.",
+  },
+  "8.G.C": {
+    fun: "Volume of a Minecraft sphere (water tank): (4/3)πr³ — round 3D math.",
+    career: "Engineers design cylindrical tanks, spherical pressure vessels.",
+    practical: "Ice cream cone volume: how much fits?",
+  },
+  "8.G.C.9": {
+    fun: "Volume of a basketball: (4/3)π(r³). A size-7 ball holds way more air than size-5.",
+    career: "Packaging engineers calc cylinder/cone/sphere volumes for products.",
+    practical: "Pringles tube, ice cream cone, baseball — each a classic volume formula.",
+  },
+
+  "8.SP.A": {
+    fun: "Scatter plot: gaming hours vs grades — does more gaming = lower grades?",
+    career: "Data scientists find patterns in scatter plots all the time.",
+    practical: "Relating TV watched to test scores — scatter shows the trend.",
+  },
+  "8.SP.A.1": {
+    fun: "Plot kills vs deaths across matches — positive, negative, or no association?",
+    career: "Analysts scan scatter plots for clusters and outliers.",
+    practical: "Height vs shoe size — positive association in a scatter plot.",
+  },
+  "8.SP.A.2": {
+    fun: "Draw a best-fit line through your speed-run scatter — predict future runs.",
+    career: "Regression analysts fit lines through data to predict.",
+    practical: "Best-fit line for gas cost vs miles driven predicts trip cost.",
+  },
+  "8.SP.A.3": {
+    fun: "Slope 1.5 cm/hr sun means extra hour of sun = extra 1.5 cm plant growth.",
+    career: "Biologists interpret slopes as rates of change (growth, decay).",
+    practical: "Slope of savings vs weeks tells you $ saved per week.",
+  },
+  "8.SP.A.4": {
+    fun: "Two-way table: gamers with curfews vs chores. Does having one predict the other?",
+    career: "Social scientists use two-way tables for categorical data.",
+    practical: "Survey: does owning a pet correlate with having a sibling?",
+  },
 }
 
 /**

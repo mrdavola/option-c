@@ -241,6 +241,17 @@ export function GraphPage({ data }: GraphPageProps) {
     setPanelOpen(true)
   }, [onboardingComplete, searchParams, data.nodes])
 
+  // Honor a `?planet=<planetId>` query param — opens the planet view
+  const planetParamHandled = useRef(false)
+  useEffect(() => {
+    if (!onboardingComplete || planetParamHandled.current) return
+    const planetId = searchParams?.get("planet")
+    if (!planetId) return
+    planetParamHandled.current = true
+    setCurrentPlanetId(planetId)
+    setViewMode("planet")
+  }, [onboardingComplete, searchParams])
+
   // Honor a `?fix=<gameId>` query param: load the game from Firestore
   // and drop the creator straight into the Workshop to fix it. Used by
   // the "Fix this game" button on the creator's feedback inbox. Runs

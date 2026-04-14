@@ -163,25 +163,75 @@ function LearnerStats() {
   )
 }
 
+// Strip separators so "KOAA1" matches "K.OA.A.1", "6ee" matches "6.EE", etc.
+function normalize(s: string) {
+  return s.toLowerCase().replace(/[.\s\-_]/g, "")
+}
+
+type SearchResult =
+  | { kind: "moon"; id: string; description: string; grade: string; domainCode: string }
+  | { kind: "planet"; id: string; title: string; grade: string; domainCode: string; moonCount: number }
+
 function SearchToggle() {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState("")
-  const [results, setResults] = useState<Array<{ id: string; description: string; grade: string; domainCode: string }>>([])
+  const [results, setResults] = useState<SearchResult[]>([])
 
   useEffect(() => {
     if (!query.trim()) { setResults([]); return }
-    const q = query.trim().toLowerCase()
+    const qRaw = query.trim().toLowerCase()
+    const qNorm = normalize(query)
     const dupeParents = buildDuplicateParentSet((standardsData as any).nodes.map((n: any) => n.id))
-    const matches = (standardsData as any).nodes
+    const allNodes = (standardsData as any).nodes
+
+    // ─── Moon matches ─────────────────────────────────────────────
+    const moonMatches: SearchResult[] = allNodes
       .filter((n: any) => {
         if (!isValidMoon(n.id, dupeParents)) return false
-        return n.id.toLowerCase().includes(q) ||
-          n.description.toLowerCase().includes(q) ||
-          n.domain.toLowerCase().includes(q)
+        const idNorm = normalize(n.id)
+        return idNorm.includes(qNorm) ||
+          n.description.toLowerCase().includes(qRaw) ||
+          n.domain.toLowerCase().includes(qRaw)
       })
-      .slice(0, 8)
-      .map((n: any) => ({ id: n.id, description: n.description, grade: n.grade, domainCode: n.domainCode }))
-    setResults(matches)
+      .slice(0, 6)
+      .map((n: any) => ({
+        kind: "moon" as const,
+        id: n.id,
+        description: n.description,
+        grade: n.grade,
+        domainCode: n.domainCode,
+      }))
+
+    // ─── Planet matches (grade + domainCode combos) ────────────────
+    const planetMap = new Map<string, { grade: string; domainCode: string; domain: string; moonCount: number }>()
+    for (const n of allNodes) {
+      if (!isValidMoon(n.id, dupeParents)) continue
+      const planetId = `${n.grade}.${n.domainCode}`
+      const existing = planetMap.get(planetId)
+      if (existing) {
+        existing.moonCount++
+      } else {
+        planetMap.set(planetId, { grade: n.grade, domainCode: n.domainCode, domain: n.domain, moonCount: 1 })
+      }
+    }
+    const planetMatches: SearchResult[] = []
+    planetMap.forEach((p, planetId) => {
+      const planetIdNorm = normalize(planetId)
+      if (planetIdNorm.includes(qNorm) || p.domain.toLowerCase().includes(qRaw)) {
+        planetMatches.push({
+          kind: "planet",
+          id: planetId,
+          title: p.domain,
+          grade: p.grade,
+          domainCode: p.domainCode,
+          moonCount: p.moonCount,
+        })
+      }
+    })
+    planetMatches.sort((a, b) => a.id.localeCompare(b.id))
+
+    // Planets first, then moons
+    setResults([...planetMatches.slice(0, 4), ...moonMatches].slice(0, 10))
   }, [query])
 
   if (open) {
@@ -192,25 +242,41 @@ function SearchToggle() {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search moons..."
-          className="w-48 bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-zinc-500"
+          placeholder="Search planets or moons..."
+          className="w-56 bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-zinc-500"
           onKeyDown={(e) => {
             if (e.key === "Escape") { setOpen(false); setQuery(""); setResults([]) }
           }}
         />
         {results.length > 0 && (
-          <div className="absolute top-8 right-0 w-72 bg-zinc-900/95 backdrop-blur-sm border border-zinc-700 rounded-lg overflow-hidden max-h-64 overflow-y-auto z-50 shadow-xl">
+          <div className="absolute top-8 right-0 w-80 bg-zinc-900/95 backdrop-blur-sm border border-zinc-700 rounded-lg overflow-hidden max-h-80 overflow-y-auto z-50 shadow-xl">
             {results.map((r) => (
               <button
-                key={r.id}
+                key={`${r.kind}-${r.id}`}
                 onClick={() => {
                   setOpen(false); setQuery(""); setResults([])
-                  window.location.href = `/?moon=${encodeURIComponent(r.id)}`
+                  if (r.kind === "planet") {
+                    window.location.href = `/?planet=${encodeURIComponent(r.id)}`
+                  } else {
+                    window.location.href = `/?moon=${encodeURIComponent(r.id)}`
+                  }
                 }}
                 className="w-full text-left px-3 py-2 hover:bg-zinc-800 transition-colors border-b border-zinc-800/50 last:border-0"
               >
-                <p className="text-sm text-white truncate">{r.description}</p>
-                <p className="text-[10px] text-zinc-500">{r.id} · Grade {r.grade}</p>
+                {r.kind === "planet" ? (
+                  <>
+                    <p className="text-sm text-white truncate">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-400 mr-1.5">Planet</span>
+                      {r.title}
+                    </p>
+                    <p className="text-[10px] text-zinc-500">{r.id} · Grade {r.grade} · {r.moonCount} moons</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm text-white truncate">{r.description}</p>
+                    <p className="text-[10px] text-zinc-500">{r.id} · Grade {r.grade}</p>
+                  </>
+                )}
               </button>
             ))}
           </div>
