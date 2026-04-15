@@ -385,7 +385,7 @@ export function StandardPanel({
 
   return (
     <>
-    <Sheet open={open && step !== "earn" && step !== "learn" && step !== "skeleton"} onOpenChange={(isOpen) => { if (!isOpen) onClose() }}>
+    <Sheet open={open && step !== "earn" && step !== "learn" && step !== "skeleton" && step !== "play"} onOpenChange={(isOpen) => { if (!isOpen) onClose() }}>
       <SheetContent
         side="right"
         className="w-full sm:w-[75vw] lg:w-[60vw] overflow-y-auto"
