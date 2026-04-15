@@ -29,12 +29,13 @@ export async function POST(req: Request) {
   // still AI-generated per standard so the math matches the skill.
   let themeConfig: ThemeConfig
   if (skeletonMode === true) {
+    // Neutral theme words so AI round generator doesn't invent spooky/literal-skeleton contexts.
     themeConfig = {
-      title: "Mechanic Skeleton",
-      character: "player",
-      itemName: "items",
+      title: "Math Mechanic",
+      character: "kid",
+      itemName: "dots",
       targetName: "target",
-      worldName: "skeleton",
+      worldName: "the classroom",
       colors: { ...DEFAULT_PALETTE, bg: "#0a0a0a" },
       winMessage: "You got it!",
       loseMessage: "Try again!",

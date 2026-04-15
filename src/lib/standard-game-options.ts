@@ -39,7 +39,7 @@ export const STANDARD_GAME_OPTIONS: Record<string, string[]> = {
   "K.CC.C.7": ["sorting-lane", "size-picker", "leaderboard-fix"],          // Compare two written numerals 1-10
 
   // K.OA — Operations & Algebraic Thinking
-  "K.OA.A.1": ["free-collect", "recipe-mixer", "free-balance"],             // Represent addition/subtraction
+  "K.OA.A.1": ["ten-frame-combine"],                                        // Represent addition/subtraction — new reference implementation (Apr 14)
   "K.OA.A.2": ["free-collect", "recipe-mixer", "split-the-loot"],           // Add/subtract word problems within 10
   "K.OA.A.3": ["split-the-loot", "free-collect"],                          // Decompose numbers ≤10 into pairs
   "K.OA.A.4": ["free-collect", "free-balance", "mystery-side"],             // Find number that makes 10

@@ -763,6 +763,18 @@ export const GAME_OPTIONS: GameOptionDef[] = [
     helpText: "Move the paddle with your mouse/finger or arrow keys.\n\nBreak bricks that add up to the target sum.\n\n✅ Target is 20 → break bricks 8 + 5 + 7 = 20 (perfect!)\n❌ Break too many (sum > target) = penalty bricks + lose a life",
     practiceOnly: true,
   },
+
+  // ─── Ten-Frame Combine (new reference implementation, April 14) ───
+  // First game built using the Learning Contract workflow.
+  // Covers K.OA.A.1, K.OA.A.2, K.OA.A.5. See docs/contracts/K.OA.A.1.md.
+  {
+    id: "ten-frame-combine",
+    mechanicId: "ten-frame-combine",
+    name: "Ten-Frame Combine",
+    description: "Fill ten-frames, combine them, count the total",
+    introText: "Two empty ten-frames. Fill the left one to show the first number. Fill the right one to show the second. Combine them and count how many there are in total!",
+    helpText: "Add by combining two groups.\n\nFill each frame with the right number of counters. Press Combine. Then tap each counter to count the total. Pick the answer from the choices.\n\nFor subtraction: tap counters to take them away, then count what's left.",
+  },
 ]
 
 // ─── Lookup helpers ───

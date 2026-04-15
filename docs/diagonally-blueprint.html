@@ -54,6 +54,7 @@
   <button onclick="scrollToSection('sec-generation')">Generation</button>
   <button onclick="scrollToSection('sec-science')">Learning Science</button>
   <button onclick="scrollToSection('sec-math-align')">Math Alignment</button>
+  <button onclick="scrollToSection('sec-contract')">Learning Contract</button>
   <button onclick="scrollToSection('sec-tech')">Tech</button>
   <button onclick="scrollToSection('sec-standards')">Standards</button>
   <button onclick="scrollToSection('sec-pending')">Pending</button>
@@ -619,7 +620,78 @@ function scrollToSection(id) {
   <li><strong>Play others' games</strong> — to master, play different games on the same concept built by other learners. Different game options = different ways to apply the same math. <em>(Interleaving)</em></li>
 </ol>
 
-<h2 id="sec-math-align" class="section-group">13. Math Alignment — How We Guarantee Games Teach the Right Math</h2>
+<h2 id="sec-contract" class="section-group">13. The Learning Contract — Per-Moon Specification</h2>
+<!-- ============================================ -->
+
+<p style="background:#1e3a5f; border-left:4px solid #60a5fa; padding:14px; color:#e4e4e7;"><strong>Decided April 14, 2026:</strong> Before any game is built or any standard is "done," it must have a completed Learning Contract. No contract, no code. The contract is Mr. Chesure's checklist for ensuring a game actually teaches its standard. Inspired by Brilliant.org's "one concept, hands-on, instant feedback" pedagogy and Rosebud.ai's "describe your game" creative model.</p>
+
+<h3>Core design principles (non-negotiable)</h3>
+<ul>
+  <li><strong>Split into two layers:</strong> inner = Math Mechanic (Brilliant-style, rigorous, validated), outer = Theme (Rosebud-style, AI-generated cosmetic wrapper). The math lives in the inner layer. The theme never changes how learning happens.</li>
+  <li><strong>One concept per game.</strong> Don't bundle skills.</li>
+  <li><strong>The LEARNER does the math, not the system.</strong> ⚠️ The system never displays a running count or running total while the learner is performing the math. Numbers appear only in (a) initial prompts, (b) multiple-choice answer options, and (c) correctness verification AFTER the learner commits. If the system is doing the counting/combining while the learner taps, the learner is just tapping, not learning.</li>
+  <li><strong>Force the math, prevent the shortcut.</strong> The mechanic must make the target skill the ONLY winning action. Matching, guessing, or visual pattern tricks must be impossible.</li>
+  <li><strong>Feedback is instant BUT passive.</strong> State updates show what the learner did (counters appear where tapped). They do NOT reveal math results.</li>
+  <li><strong>Concrete → Pictorial → Abstract.</strong> Start with manipulable objects. Don't show symbolic representation until later grades.</li>
+  <li><strong>One well-built game = many standards.</strong> A single validated mechanic covers every standard that shares its pedagogy. Target: ~20 total mechanics for 466 standards.</li>
+</ul>
+
+<h3>Visual / aesthetic principles (NEW)</h3>
+<p>Shifting from our current dark-mode arcade aesthetic to a Brilliant-inspired light/crisp/minimal aesthetic:</p>
+<ul>
+  <li><strong>Background:</strong> off-white (#fafafa) or very pale tint — not black. Math stands out.</li>
+  <li><strong>Typography:</strong> generous whitespace, clean sans-serif (Lexend for body, Space Grotesk reserved for major headings ONLY)</li>
+  <li><strong>Color palette:</strong> muted accents (soft blue, gentle green, warm amber). Save bold color for THE math element (the one thing the learner should focus on).</li>
+  <li><strong>Layout:</strong> lots of breathing room. Math object centered. Controls below. No UI clutter above.</li>
+  <li><strong>No arcade juice:</strong> no screen shake, no particles, no flash. Gentle success states (soft checkmark, color change) not fireworks.</li>
+  <li><strong>Animation:</strong> subtle, purposeful — items slide into place, feedback fades in. Nothing distracts from the math.</li>
+  <li><strong>Hero / character:</strong> removed from the math mechanic entirely. Lives only in the themed build layer.</li>
+  <li><strong>Chrome (score, lives, etc.):</strong> minimal and subtle — not a full top banner. Maybe just a small progress indicator.</li>
+</ul>
+
+<h3>The Learning Contract Template</h3>
+<p>Every standard gets this document filled out before any game is built or modified. Uses the word "learner" throughout (never "child" or "kid" — consistent language across internal docs and learner-facing UI).</p>
+
+<div style="background:#18181b; border:1px solid #27272a; border-radius:8px; padding:16px;">
+<h4 style="color:#fbbf24;">Standard: [id]</h4>
+
+<p><strong>0. Research step (REQUIRED — do before anything else):</strong> How is this math traditionally taught with concrete materials? Look at Montessori, Singapore Math (CPA), Waldorf, Common Core exemplars, and general research on K–12 pedagogy for this specific skill. Summarize the 2–4 proven approaches. The mechanic we design MUST adapt one of these, not invent from scratch.</p>
+
+<p><strong>1. Raw description:</strong> (from standards.json — hidden by default in learner UI; visible to admins and on the moon card when the learner explicitly clicks the standard ID)</p>
+
+<p><strong>2. Kid-friendly label:</strong> 2–6 words. Read-aloud friendly. Jargon-free. Shown to the learner in the UI.</p>
+
+<p><strong>3. Observable learning objective:</strong> "The learner can ___" — specific, testable behavior that proves mastery.</p>
+
+<p><strong>4. Prerequisite knowledge:</strong> What the learner must already know before attempting this.</p>
+
+<p><strong>5. Misconception / shortcut audit:</strong> What the learner could do that LOOKS like the skill but isn't. This is what the game and any AI round generation MUST avoid allowing.</p>
+
+<p><strong>6. Required action:</strong> What the learner's hand, eye, or voice MUST DO that the shortcut doesn't. The learner — not the system — performs the math. The system only reveals results AFTER the learner acts.</p>
+
+<p><strong>7. Game mechanic design:</strong> The specific interaction that forces the required action and prevents the shortcut. Must adapt one of the research-based approaches from step 0.</p>
+
+<p><strong>8. Success criteria:</strong> Exactly what game state counts as a win. Must require the skill — no winning by accident, matching, or shortcut.</p>
+
+<p><strong>9. Intervention when stuck:</strong> The visual hint or feedback shown when the learner struggles or tries a shortcut. Teaches rather than punishes.</p>
+
+<p><strong>10. Real-world scenarios (3):</strong> One each for money / animals-people / transport. Each with story + math + suggested game idea (sprite picks + backstory).</p>
+
+<p><strong>11. Hardcoded rounds (5):</strong> Progressive difficulty. Each MUST test the skill. No patterns the learner could memorize across rounds.</p>
+
+<p><strong>12. Visual spec:</strong> Brilliant.org-inspired. Off-white background. Generous whitespace. Math element is the visual hero. No arcade juice. Minimal chrome. Animation only to draw attention to what matters.</p>
+
+<p><strong>13. Related standards covered by this mechanic:</strong> List of other standards the same mechanic (with parameter changes) can teach.</p>
+
+<p><strong>14. Test gate:</strong> Barbara plays it. "Does a learner who doesn't know this skill leave knowing it?" Yes → ship. No → revise.</p>
+</div>
+
+<p style="margin-top:16px;"><strong>Workflow:</strong> Contract → Build → Test with Barbara → Approve → Move to related standards → Repeat.</p>
+
+<h3>Active contracts</h3>
+<p>K.OA.A.1 — <em>In progress, filling together</em></p>
+
+<h2 class="section-group">14. Math Alignment — How We Guarantee Games Teach the Right Math</h2>
 <!-- ============================================ -->
 
 <p style="color: #4ade80; font-weight: 600;">This is the backbone of Diagonally. Every design decision in this section exists to ensure that when a learner plays a game, they MUST use the exact Common Core math skill to win.</p>
