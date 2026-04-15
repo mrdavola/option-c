@@ -277,36 +277,28 @@ export function numberFramesEngine(
     if (!aOK && !bOK) { wobble("frame-a"); wobble("frame-b"); $("instruction").textContent = "Not quite — check both frames and try again."; return; }
     if (!aOK) { wobble("frame-a"); $("instruction").textContent = "Check the left frame."; return; }
     if (!bOK) { wobble("frame-b"); $("instruction").textContent = "Check the right frame."; return; }
-    // Both correct — combine
-    phase = "combine";
+    // Both correct — switch to count phase. Dots stay where they are;
+    // learner counts across both frames.
+    phase = "count";
+    merged = r.mode === "add" ? frameA + frameB : Math.max(0, frameA - frameB);
     $("done-btn").disabled = true;
     $("done-btn").style.display = "none";
-    $("frame-a").className = "frame locked";
-    $("frame-b").className = "frame locked";
-    $("instruction").textContent = "Good! Now combining them...";
-    setTimeout(() => doCombine(), 550);
-  }
-
-  function doCombine() {
-    const r = ROUNDS[roundIdx];
-    merged = r.mode === "add" ? frameA + frameB : Math.max(0, frameA - frameB);
-    // For addition: show all merged counters across the two frames (overflow)
-    drawFrame("frame-a", Math.min(merged, 10), false);
-    drawFrame("frame-b", Math.max(0, merged - 10), false);
     $("frame-a").className = "frame";
     $("frame-b").className = "frame";
-    // Wire count taps
+    // Rewire both frames for count-tapping (replace old fill handlers)
     const wireCountTaps = (id) => {
       const el = $(id);
-      for (let i = 0; i < el.children.length; i++) {
+      // Clone to strip old listeners then re-add count handlers
+      const fresh = el.cloneNode(true);
+      el.parentNode.replaceChild(fresh, el);
+      for (let i = 0; i < fresh.children.length; i++) {
         const idx = i;
-        el.children[i].addEventListener("click", () => onCountCellClick(id, idx));
+        fresh.children[i].addEventListener("click", () => onCountCellClick(id, idx));
       }
     };
     wireCountTaps("frame-a");
     wireCountTaps("frame-b");
     $("instruction").textContent = "Now tap each counter to count how many. Then pick the total.";
-    phase = "count";
   }
 
   function showNumberPad() {
