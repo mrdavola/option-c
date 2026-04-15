@@ -775,6 +775,14 @@ export const GAME_OPTIONS: GameOptionDef[] = [
     introText: "Two ten-frames. Fill each one with counters to show the two numbers, then combine them and count the total.",
     helpText: "Use the ten-frames to add.\n\nFill each frame with the right number of counters, then press Done. Combined counters appear. Tap each counter to count, then pick the total.",
   },
+  {
+    id: "number-frames-decompose",
+    mechanicId: "number-frames",
+    name: "Number Frames — Decompose",
+    description: "Split a number into two groups across two ten-frames",
+    introText: "A number is given. Split it into two groups by placing counters across the two ten-frames.",
+    helpText: "Break a number into two pairs.\n\nPlace some counters in the left frame and some in the right frame so the total matches the target. Both frames must have at least one counter.",
+  },
 ]
 
 // ─── Lookup helpers ───

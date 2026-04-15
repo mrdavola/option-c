@@ -41,7 +41,7 @@ export const STANDARD_GAME_OPTIONS: Record<string, string[]> = {
   // K.OA — Operations & Algebraic Thinking
   "K.OA.A.1": ["number-frames"],                                            // New reference implementation — Math Learning Center-inspired (Apr 14)
   "K.OA.A.2": ["free-collect", "recipe-mixer", "split-the-loot"],           // Add/subtract word problems within 10
-  "K.OA.A.3": ["split-the-loot", "free-collect"],                          // Decompose numbers ≤10 into pairs
+  "K.OA.A.3": ["number-frames-decompose"],                                 // Decompose numbers ≤10 into pairs — Number Frames decompose mode (Apr 14)
   "K.OA.A.4": ["free-collect", "free-balance", "mystery-side"],             // Find number that makes 10
   "K.OA.A.5": ["free-collect", "conveyor-belt"],                            // Fluently add/subtract within 5
 

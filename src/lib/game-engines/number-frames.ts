@@ -1,7 +1,12 @@
-// Number Frames — K.OA.A.1 (and related: K.OA.A.2, K.OA.A.3, K.OA.A.5)
+// Number Frames — K.OA.A.1, K.OA.A.3 (and related: K.OA.A.2, K.OA.A.5, K.CC)
 // Visual language adapted from Math Learning Center's free "Number Frames"
-// app (the industry-standard digital ten-frame). Plain HTML/CSS/JS,
-// light aesthetic, no Phaser.
+// app. Plain HTML/CSS/JS, light aesthetic, no Phaser.
+//
+// Modes (selected via `option`):
+//  - "number-frames" (default) — ADD mode: 2 + 1 = ?
+//      Learner fills each frame with the addends, counts total.
+//  - "number-frames-decompose" — DECOMPOSE mode: 5 = ? + ?
+//      Learner splits a total into two groups across frames.
 //
 // Principles:
 //  - The LEARNER does the math. No running count displayed while counting.
@@ -10,27 +15,34 @@
 
 import type { ThemeConfig, MathParams, GameOption } from "./engine-types"
 
-interface Round {
-  mode: "add" | "sub"
-  a: number
-  b: number
-  answer: number
-}
+interface AddRound { kind: "add"; a: number; b: number; answer: number }
+interface DecomposeRound { kind: "decompose"; total: number }
+type Round = AddRound | DecomposeRound
 
-const ROUNDS_KOA_A_1: Round[] = [
-  { mode: "add", a: 2, b: 1, answer: 3 },
-  { mode: "add", a: 3, b: 2, answer: 5 },
-  { mode: "add", a: 4, b: 3, answer: 7 },
-  { mode: "add", a: 6, b: 2, answer: 8 },
-  { mode: "add", a: 5, b: 4, answer: 9 },
+const ROUNDS_ADD: Round[] = [
+  { kind: "add", a: 2, b: 1, answer: 3 },
+  { kind: "add", a: 3, b: 2, answer: 5 },
+  { kind: "add", a: 4, b: 3, answer: 7 },
+  { kind: "add", a: 6, b: 2, answer: 8 },
+  { kind: "add", a: 5, b: 4, answer: 9 },
+]
+
+// K.OA.A.3 — decompose numbers ≤ 10 into pairs (each piece ≥ 1)
+const ROUNDS_DECOMPOSE: Round[] = [
+  { kind: "decompose", total: 3 },
+  { kind: "decompose", total: 5 },
+  { kind: "decompose", total: 6 },
+  { kind: "decompose", total: 8 },
+  { kind: "decompose", total: 10 },
 ]
 
 export function numberFramesEngine(
   _config: ThemeConfig,
   _math: MathParams,
-  _option: GameOption = "number-frames",
+  option: GameOption = "number-frames",
 ): string {
-  const rounds = JSON.stringify(ROUNDS_KOA_A_1)
+  const mode: "add" | "decompose" = option === "number-frames-decompose" ? "decompose" : "add"
+  const rounds = JSON.stringify(mode === "decompose" ? ROUNDS_DECOMPOSE : ROUNDS_ADD)
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -249,9 +261,16 @@ export function numberFramesEngine(
     const r = ROUNDS[roundIdx];
     phase = "fill";
     frameA = 0; frameB = 0; merged = 0; tapped = 0;
-    $("prompt").textContent = \`\${r.a} \${r.mode === "add" ? "+" : "−"} \${r.b} = ?\`;
-    $("operator").textContent = r.mode === "add" ? "+" : "−";
-    $("instruction").textContent = "Fill each frame with counters to show the numbers, then press Done.";
+    if (r.kind === "add") {
+      $("prompt").textContent = r.a + " + " + r.b + " = ?";
+      $("operator").textContent = "+";
+      $("instruction").textContent = "Fill each frame with counters to show the numbers, then press Done.";
+    } else {
+      // decompose: 5 = ? + ?
+      $("prompt").textContent = r.total + " = ? + ?";
+      $("operator").textContent = "+";
+      $("instruction").textContent = "Split " + r.total + " into two groups. Put some counters in each frame.";
+    }
     $("success").classList.remove("visible");
     $("number-pad").classList.remove("visible");
     $("done-btn").style.display = "inline-block";
@@ -272,6 +291,34 @@ export function numberFramesEngine(
   function onDone() {
     if (phase !== "fill") return;
     const r = ROUNDS[roundIdx];
+
+    if (r.kind === "decompose") {
+      const sum = frameA + frameB;
+      if (sum !== r.total || frameA < 1 || frameB < 1) {
+        wobble("frame-a");
+        wobble("frame-b");
+        if (frameA < 1 || frameB < 1) {
+          $("instruction").textContent = "Put at least 1 counter in each frame.";
+        } else if (sum < r.total) {
+          $("instruction").textContent = "Not enough yet — add more counters.";
+        } else {
+          $("instruction").textContent = "Too many — try again.";
+        }
+        return;
+      }
+      // Valid decomposition — celebrate
+      phase = "answered";
+      $("done-btn").disabled = true;
+      $("done-btn").style.display = "none";
+      $("frame-a").className = "frame";
+      $("frame-b").className = "frame";
+      $("instruction").textContent = "";
+      $("success-msg").textContent = frameA + " + " + frameB + " = " + r.total;
+      $("success").classList.add("visible");
+      return;
+    }
+
+    // ADD mode
     const aOK = frameA === r.a;
     const bOK = frameB === r.b;
     if (!aOK && !bOK) { wobble("frame-a"); wobble("frame-b"); $("instruction").textContent = "Not quite — check both frames and try again."; return; }
@@ -280,15 +327,13 @@ export function numberFramesEngine(
     // Both correct — switch to count phase. Dots stay where they are;
     // learner counts across both frames.
     phase = "count";
-    merged = r.mode === "add" ? frameA + frameB : Math.max(0, frameA - frameB);
+    merged = frameA + frameB;
     $("done-btn").disabled = true;
     $("done-btn").style.display = "none";
     $("frame-a").className = "frame";
     $("frame-b").className = "frame";
-    // Rewire both frames for count-tapping (replace old fill handlers)
     const wireCountTaps = (id) => {
       const el = $(id);
-      // Clone to strip old listeners then re-add count handlers
       const fresh = el.cloneNode(true);
       el.parentNode.replaceChild(fresh, el);
       for (let i = 0; i < fresh.children.length; i++) {
@@ -329,8 +374,7 @@ export function numberFramesEngine(
     if (n === r.answer) {
       $("number-pad").classList.remove("visible");
       $("instruction").textContent = "";
-      const op = r.mode === "add" ? "+" : "−";
-      $("success-msg").textContent = \`\${r.a} \${op} \${r.b} = \${r.answer}\`;
+      $("success-msg").textContent = r.a + " + " + r.b + " = " + r.answer;
       $("success").classList.add("visible");
       phase = "answered";
     } else {

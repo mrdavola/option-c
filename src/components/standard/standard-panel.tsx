@@ -18,6 +18,7 @@ import { MechanicSkeleton } from "./mechanic-skeleton"
 import { MasteryPlay } from "./mastery-play"
 import { GameIframe } from "@/components/game/game-iframe"
 import { getGameOptionsForStandard } from "@/lib/standard-game-options"
+import { getOptionDef } from "@/lib/game-engines/game-option-registry"
 import { useAuth } from "@/lib/auth"
 import { useTokenConfig } from "@/lib/token-config"
 import { InfoButton } from "@/components/info-button"
@@ -311,7 +312,7 @@ export function StandardPanel({
   // learner goes moon → game directly, skipping skeleton and builder.
   // This is guarded to a hand-picked set of standards as we validate each
   // reference implementation moon-by-moon.
-  const DIRECT_PLAY_OPTIONS = new Set(["number-frames"])
+  const DIRECT_PLAY_OPTIONS = new Set(["number-frames", "number-frames-decompose"])
   const isDirectPlayMoon = (() => {
     if (!standard) return false
     const opts = getGameOptionsForStandard(standard.id)
@@ -326,11 +327,12 @@ export function StandardPanel({
     setDirectGameLoading(true)
     setStep("play")
     try {
+      const opt = getOptionDef(opts[0])
       const res = await fetch("/api/game/generate-engine", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          mechanicId: opts[0], // engine IDs for simple games match the option ID
+          mechanicId: opt?.mechanicId ?? opts[0],
           gameOption: opts[0],
           standardId: standard.id,
           standardDescription: standard.description,
