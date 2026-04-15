@@ -189,25 +189,23 @@ export function MechanicSkeleton({
   const skillLabel = mathSkillLabel || activeStandard.description
 
   return (
-    <div className="fixed inset-0 z-50 bg-zinc-950 flex flex-col text-zinc-100" style={{ fontFamily: "'Lexend', system-ui, sans-serif" }}>
-      {/* Top banner */}
-      <div className="relative flex items-center justify-between px-4 sm:px-6 py-3 border-b border-zinc-800 bg-zinc-900 shrink-0">
+    <div className="fixed inset-0 z-50 bg-[#fafafa] flex flex-col text-zinc-900" style={{ fontFamily: "'Lexend', system-ui, sans-serif" }}>
+      {/* Top banner — light mode (Brilliant-inspired aesthetic) */}
+      <div className="relative flex items-center justify-between px-4 sm:px-6 py-3 border-b border-zinc-200 bg-white shrink-0">
         <button
           onClick={phase === "playing" || phase === "won" ? resetToPick : onBack}
-          className="flex items-center gap-1.5 text-sm text-zinc-400 hover:text-white transition-colors"
+          className="flex items-center gap-1.5 text-sm text-zinc-500 hover:text-zinc-900 transition-colors"
         >
           <ChevronLeft className="size-4" />
           Back
         </button>
         <div className="flex items-center gap-2 sm:gap-3 pointer-events-none absolute left-1/2 -translate-x-1/2">
-          <CornerBones className="size-5 sm:size-6 text-zinc-600" />
           <h1
-            className="text-sm sm:text-lg font-bold tracking-tight text-white whitespace-nowrap"
+            className="text-sm sm:text-base font-semibold tracking-tight text-zinc-900 whitespace-nowrap"
             style={{ fontFamily: "'Space Grotesk', sans-serif" }}
           >
-            {title ?? "Mechanic skeleton for your game"}
+            {title ?? "Try the mechanic"}
           </h1>
-          <CornerBones className="size-5 sm:size-6 text-zinc-600 scale-x-[-1]" />
         </div>
         <div className="w-10" aria-hidden />
       </div>

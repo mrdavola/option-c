@@ -17,6 +17,7 @@ import { CircuitBoardBuilder } from "./circuit-board-builder"
 import { MechanicSkeleton } from "./mechanic-skeleton"
 import { MasteryPlay } from "./mastery-play"
 import { GameIframe } from "@/components/game/game-iframe"
+import { getGameOptionsForStandard } from "@/lib/standard-game-options"
 import { useAuth } from "@/lib/auth"
 import { useTokenConfig } from "@/lib/token-config"
 import { InfoButton } from "@/components/info-button"
@@ -275,7 +276,7 @@ function MoonCardView({
 
 // "skeleton" sits between "learn" and "earn" — the learner plays a stripped-down
 // preview of the game mechanic (no theme) before opening the Circuit Board Builder.
-type FlowStep = "learn" | "skeleton" | "earn" | "unlocked" | "demonstrate"
+type FlowStep = "learn" | "play" | "skeleton" | "earn" | "unlocked" | "demonstrate"
 
 interface StandardPanelProps {
   standard: StandardNode | null
@@ -303,6 +304,49 @@ export function StandardPanel({
   const [step, setStep] = useState<FlowStep>("learn")
   const [approvedGameCount, setApprovedGameCount] = useState(0)
   const [selectedScenario, setSelectedScenario] = useState<import("@/lib/standard-scenarios").StandardScenario | null>(null)
+  const [directGameHtml, setDirectGameHtml] = useState<string | null>(null)
+  const [directGameLoading, setDirectGameLoading] = useState(false)
+
+  // For the new-style simple games (e.g. number-frames for K.OA.A.1) the
+  // learner goes moon → game directly, skipping skeleton and builder.
+  // This is guarded to a hand-picked set of standards as we validate each
+  // reference implementation moon-by-moon.
+  const DIRECT_PLAY_OPTIONS = new Set(["number-frames"])
+  const isDirectPlayMoon = (() => {
+    if (!standard) return false
+    const opts = getGameOptionsForStandard(standard.id)
+    if (!opts || opts.length === 0) return false
+    return DIRECT_PLAY_OPTIONS.has(opts[0])
+  })()
+
+  async function startDirectPlay() {
+    if (!standard) return
+    const opts = getGameOptionsForStandard(standard.id)
+    if (!opts || opts.length === 0) return
+    setDirectGameLoading(true)
+    setStep("play")
+    try {
+      const res = await fetch("/api/game/generate-engine", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mechanicId: opts[0], // engine IDs for simple games match the option ID
+          gameOption: opts[0],
+          standardId: standard.id,
+          standardDescription: standard.description,
+          grade: standard.grade,
+          skeletonMode: true,
+          designDoc: { title: "Math Mechanic" },
+        }),
+      })
+      const data = await res.json()
+      setDirectGameHtml(data?.html ?? null)
+    } catch {
+      setDirectGameHtml(null)
+    } finally {
+      setDirectGameLoading(false)
+    }
+  }
 
   // Reset step when standard changes
   useEffect(() => {
@@ -504,13 +548,40 @@ export function StandardPanel({
         moonName={getMoonName(standard)}
         playToMasterButton={playToMasterButton}
         onClose={onClose}
-        onBuild={() => setStep("skeleton")}
+        onBuild={() => {
+          if (isDirectPlayMoon) { startDirectPlay() } else { setStep("skeleton") }
+        }}
         onImportHtml={onImportHtml ? () => onImportHtml(standard) : undefined}
       />
     )}
 
     {/* Full-page Mechanic Skeleton — inserted between learn and earn.
          Learner meets the pure math mechanic (no theme) before themed build. */}
+    {/* Direct play — simple games (e.g. Number Frames). No skeleton, no builder, no theming. */}
+    {step === "play" && standard && open && (
+      <div className="fixed inset-0 z-50 bg-white flex flex-col">
+        <div className="flex items-center justify-between px-4 py-2 border-b border-zinc-200 shrink-0">
+          <button
+            onClick={() => { setDirectGameHtml(null); setStep("learn") }}
+            className="flex items-center gap-1.5 text-sm text-zinc-500 hover:text-zinc-900 transition-colors"
+          >
+            <ChevronLeft className="size-4" />
+            Back
+          </button>
+          <div className="w-10" aria-hidden />
+        </div>
+        <div className="flex-1 min-h-0">
+          {directGameLoading || !directGameHtml ? (
+            <div className="w-full h-full flex items-center justify-center text-zinc-400 text-sm">
+              Loading…
+            </div>
+          ) : (
+            <GameIframe html={directGameHtml} className="w-full h-full" />
+          )}
+        </div>
+      </div>
+    )}
+
     {step === "skeleton" && standard && open && (
       <MechanicSkeleton
         standardId={standard.id}

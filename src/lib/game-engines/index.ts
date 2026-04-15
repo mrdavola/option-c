@@ -27,7 +27,7 @@ import { singaporeCpaPhaserEngine } from "./singapore-cpa-phaser"
 import { standardPedagogyPhaserEngine } from "./standard-pedagogy-phaser"
 import { middleSchoolGapsPhaserEngine } from "./middle-school-gaps-phaser"
 import { classicOverlaysPhaserEngine } from "./classic-overlays-phaser"
-import { tenFrameCombineEngine } from "./ten-frame-combine"
+import { numberFramesEngine } from "./number-frames"
 
 const ENGINE_REGISTRY: Record<string, GameEngine> = {
   "resource-management": collectManagePhaserEngine,
@@ -55,7 +55,7 @@ const ENGINE_REGISTRY: Record<string, GameEngine> = {
   "standard-pedagogy": standardPedagogyPhaserEngine,
   "middle-school-gaps": middleSchoolGapsPhaserEngine,
   "classic-overlays": classicOverlaysPhaserEngine,
-  "ten-frame-combine": tenFrameCombineEngine,
+  "number-frames": numberFramesEngine,
 }
 
 export function hasEngine(mechanicId: string): boolean {
