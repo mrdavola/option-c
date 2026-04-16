@@ -264,9 +264,14 @@ function MoonCardView({
                 Open Game Assembler →
               </button>
 
-              <div className="w-full py-3 rounded-lg border-2 border-dashed border-zinc-800 text-zinc-600 text-sm font-medium text-center cursor-not-allowed">
-                Paste your own HTML game — Coming soon!
-              </div>
+              {onImportHtml && (
+                <button
+                  onClick={onImportHtml}
+                  className="w-full py-3 rounded-lg border-2 border-dashed border-zinc-700 hover:border-blue-500 text-zinc-400 hover:text-blue-400 text-sm font-medium text-center transition-colors"
+                >
+                  Paste your own HTML game →
+                </button>
+              )}
             </>
           ) : null}
         </div>

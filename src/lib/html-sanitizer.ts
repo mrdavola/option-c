@@ -49,6 +49,17 @@ export function sanitizeGameHtml(html: string): string {
     return match.replace(/action\s*=\s*["'][^"']*["']/i, 'action=""')
   })
 
+  // Inject Content-Security-Policy to lock down the iframe further.
+  // Blocks all external network requests, scripts, forms.
+  const cspTag = `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; connect-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none';">`
+  if (sanitized.toLowerCase().includes("<head>")) {
+    sanitized = sanitized.replace(/<head>/i, `<head>\n${cspTag}`)
+  } else if (sanitized.toLowerCase().includes("<html")) {
+    sanitized = sanitized.replace(/<html[^>]*>/i, (match) => `${match}\n<head>${cspTag}</head>`)
+  } else {
+    sanitized = cspTag + "\n" + sanitized
+  }
+
   return sanitized
 }
 
