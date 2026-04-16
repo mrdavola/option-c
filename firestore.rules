@@ -1,0 +1,119 @@
+rules_version = '2';
+
+// Diagonally Firestore Security Rules
+// Created: April 16, 2026
+// Purpose: Lock down database access. Previously NO rules existed —
+// any authenticated user could read/write any document.
+//
+// Architecture: Learners use Firebase Anonymous Auth.
+// Server-side uses Admin SDK (bypasses these rules).
+// These rules only affect CLIENT-SIDE access.
+//
+// Principle: Allow authenticated reads broadly (for admin page,
+// library, leaderboard). Lock down WRITES tightly (per-user only).
+// Config and system collections are server-only.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─── Helpers ──────────────────────────────────────────────────
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    // ─── Users ────────────────────────────────────────────────────
+    // Any authenticated user can read profiles (for leaderboard, class views).
+    // Users can only update their OWN profile.
+    // Creating new user profiles is allowed (for onboarding).
+    match /users/{userId} {
+      allow read: if isAuth();
+      allow create: if isAuth();
+      allow update: if isOwner(userId);
+      allow delete: if false; // Admin SDK only
+    }
+
+    // ─── Classes ──────────────────────────────────────────────────
+    // Readable by any auth user (for login flow — look up class by code).
+    // Only server (admin SDK) can create/modify classes.
+    match /classes/{classId} {
+      allow read: if isAuth();
+      allow write: if false;
+    }
+
+    // ─── Games ────────────────────────────────────────────────────
+    // Any auth user can read games (game library, playing others' games).
+    // Users can only create games with their own UID as author.
+    // Users can only update their OWN games.
+    match /games/{gameId} {
+      allow read: if isAuth();
+      allow create: if isAuth()
+        && request.resource.data.authorUid == request.auth.uid;
+      allow update: if isAuth()
+        && resource.data.authorUid == request.auth.uid;
+      allow delete: if false; // Admin SDK only
+    }
+
+    // ─── Progress ─────────────────────────────────────────────────
+    // Users can only read/write their OWN progress.
+    match /progress/{uid} {
+      allow read: if isAuth();  // Guides need to see learner progress
+      allow write: if isOwner(uid);
+
+      match /standards/{standardId} {
+        allow read: if isAuth();  // Guides need to see learner progress
+        allow write: if isOwner(uid);
+      }
+    }
+
+    // ─── Feedback ─────────────────────────────────────────────────
+    // Any auth user can read feedback (guides read all, learners read own).
+    // Any auth user can create feedback.
+    // Only admin SDK can update/delete.
+    match /feedback/{feedbackId} {
+      allow read: if isAuth();
+      allow create: if isAuth();
+      allow update, delete: if false;
+    }
+
+    // ─── Config ───────────────────────────────────────────────────
+    // Readable by auth users (token config, etc.)
+    // ONLY admin SDK can write.
+    match /config/{docId} {
+      allow read: if isAuth();
+      allow write: if false;
+    }
+
+    // ─── Explanations (cached) ────────────────────────────────────
+    // Readable by auth users. Written by server only.
+    match /explanations/{docId} {
+      allow read: if isAuth();
+      allow write: if false;
+    }
+
+    // ─── System Logs (future) ─────────────────────────────────────
+    // NO client access. Server-side only.
+    match /system_logs/{logId} {
+      allow read, write: if false;
+    }
+
+    // ─── Evaluation Results (future) ──────────────────────────────
+    match /evaluation_results/{docId} {
+      allow read, write: if false;
+    }
+
+    // ─── Cost Tracking (future) ───────────────────────────────────
+    match /cost_tracking/{docId} {
+      allow read, write: if false;
+    }
+
+    // ─── Default Deny ─────────────────────────────────────────────
+    // Any collection not explicitly listed above is DENIED.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
