@@ -431,11 +431,20 @@ export function numberFramesEngine(
     }
 
     // ADD mode
-    const aOK = frameA === r.a;
-    const bOK = frameB === r.b;
-    if (!aOK && !bOK) { wobble("frame-a"); wobble("frame-b"); $("instruction").textContent = "Not quite — check both frames and try again."; return; }
-    if (!aOK) { wobble("frame-a"); $("instruction").textContent = "Check the left frame."; return; }
-    if (!bOK) { wobble("frame-b"); $("instruction").textContent = "Check the right frame."; return; }
+    // Accept BOTH orderings: 2+4 and 4+2 are equally correct (commutativity).
+    const exactMatch = frameA === r.a && frameB === r.b;
+    const swapMatch = frameA === r.b && frameB === r.a;
+    if (!exactMatch && !swapMatch) {
+      // Check if total is right but split is wrong (e.g., 3+3 for 2+4)
+      if (frameA + frameB === r.a + r.b) {
+        wobble("frame-a"); wobble("frame-b");
+        $("instruction").textContent = "Right total, but the two groups don't match the dots above. Try again.";
+      } else {
+        wobble("frame-a"); wobble("frame-b");
+        $("instruction").textContent = "Not quite — check both frames and try again.";
+      }
+      return;
+    }
     // Both correct — count phase
     phase = "count";
     merged = frameA + frameB;
