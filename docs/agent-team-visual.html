@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagonally — Agent Team</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    color: #e2e8f0;
+    padding: 48px;
+    min-height: 100vh;
+  }
+  .container { max-width: 1100px; margin: 0 auto; }
+
+  h1 {
+    font-size: 32px; font-weight: 800;
+    background: linear-gradient(90deg, #60a5fa, #a78bfa, #f472b6);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    text-align: center; margin-bottom: 8px;
+  }
+  .subtitle {
+    text-align: center; color: #94a3b8; font-size: 15px; margin-bottom: 40px;
+  }
+
+  /* Orchestrator */
+  .orchestrator {
+    background: linear-gradient(135deg, #1e3a5f, #1e40af);
+    border: 2px solid #3b82f6;
+    border-radius: 16px; padding: 20px 28px;
+    text-align: center; margin-bottom: 24px;
+    box-shadow: 0 0 30px rgba(59, 130, 246, 0.15);
+  }
+  .orchestrator .role { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #93c5fd; margin-bottom: 4px; }
+  .orchestrator .name { font-size: 22px; font-weight: 700; color: white; }
+  .orchestrator .desc { font-size: 13px; color: #93c5fd; margin-top: 4px; }
+
+  /* Connector */
+  .connector { text-align: center; padding: 8px 0; }
+  .connector svg { width: 2px; height: 24px; }
+  .arrow { text-align: center; color: #475569; font-size: 20px; line-height: 1; }
+
+  /* Section labels */
+  .section-label {
+    display: flex; align-items: center; gap: 12px; margin: 28px 0 16px;
+  }
+  .section-label .line { flex: 1; height: 1px; background: #334155; }
+  .section-label .text {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 2px;
+    color: #64748b; font-weight: 600; white-space: nowrap;
+  }
+
+  /* Agent grid */
+  .agent-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .agent-grid.two-col { grid-template-columns: repeat(2, 1fr); }
+
+  .agent-card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 14px;
+    padding: 20px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .agent-card:hover {
+    border-color: #475569;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+  .agent-card .icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; margin-bottom: 12px;
+  }
+  .agent-card .name { font-size: 16px; font-weight: 700; color: white; margin-bottom: 4px; }
+  .agent-card .role-tag {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px;
+    color: #94a3b8; margin-bottom: 10px;
+  }
+  .agent-card .desc { font-size: 13px; color: #94a3b8; line-height: 1.5; }
+  .agent-card .checks {
+    margin-top: 12px; padding-top: 12px; border-top: 1px solid #334155;
+  }
+  .agent-card .checks p {
+    font-size: 11px; color: #64748b;
+  }
+  .agent-card .checks span { color: #a78bfa; font-weight: 600; }
+
+  /* Color coding */
+  .icon-blue { background: rgba(59, 130, 246, 0.15); }
+  .icon-green { background: rgba(16, 185, 129, 0.15); }
+  .icon-red { background: rgba(239, 68, 68, 0.15); }
+  .icon-purple { background: rgba(139, 92, 246, 0.15); }
+  .icon-amber { background: rgba(245, 158, 11, 0.15); }
+  .icon-cyan { background: rgba(6, 182, 212, 0.15); }
+  .icon-pink { background: rgba(236, 72, 153, 0.15); }
+
+  /* Superpowers section */
+  .superpowers {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    border: 1px solid #334155;
+    border-radius: 16px; padding: 24px 28px;
+    margin-top: 32px;
+  }
+  .superpowers .header {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+  }
+  .superpowers .header .badge {
+    background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+    color: white; font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 1.5px;
+    padding: 4px 10px; border-radius: 6px;
+  }
+  .superpowers .header h2 { font-size: 20px; font-weight: 700; color: white; }
+  .superpowers .flow {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    margin-top: 12px;
+  }
+  .superpowers .step {
+    background: #0f172a; border: 1px solid #475569;
+    border-radius: 8px; padding: 8px 14px;
+    font-size: 13px; font-weight: 600; color: #e2e8f0;
+  }
+  .superpowers .step-arrow { color: #475569; font-size: 16px; }
+  .superpowers .desc { font-size: 13px; color: #94a3b8; margin-top: 12px; line-height: 1.6; }
+
+  /* Footer */
+  .footer {
+    text-align: center; margin-top: 32px;
+    font-size: 11px; color: #475569;
+  }
+
+  /* Cross-check matrix */
+  .cross-check {
+    margin-top: 32px;
+    background: #1e293b; border: 1px solid #334155;
+    border-radius: 14px; padding: 20px 24px;
+  }
+  .cross-check h3 { font-size: 14px; font-weight: 700; color: white; margin-bottom: 12px; }
+  .cross-check .row {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; color: #94a3b8; padding: 4px 0;
+  }
+  .cross-check .from { color: #60a5fa; font-weight: 600; min-width: 120px; }
+  .cross-check .arrow-r { color: #475569; }
+  .cross-check .to { color: #a78bfa; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <h1>Diagonally — Agent Team</h1>
+  <p class="subtitle">A multi-agent system for building math games that actually teach. Powered by Claude + Superpowers.</p>
+
+  <!-- Orchestrator -->
+  <div class="orchestrator">
+    <div class="role">Project Manager</div>
+    <div class="name">🎯 The Orchestrator</div>
+    <div class="desc">Talks to Barbara. Delegates to agents. Cross-checks all work. Catches conflicts. Presents clean results.</div>
+  </div>
+
+  <div class="arrow">↓</div>
+
+  <!-- Quality Gate agents -->
+  <div class="section-label">
+    <div class="line"></div>
+    <div class="text">Quality Gate — every game must pass all three</div>
+    <div class="line"></div>
+  </div>
+
+  <div class="agent-grid">
+    <div class="agent-card">
+      <div class="icon icon-blue">🎓</div>
+      <div class="name">Mr. Chesure</div>
+      <div class="role-tag">Pedagogy Guardian</div>
+      <div class="desc">Ensures every game teaches its math standard correctly, using proven methods from the Common Core Progressions Documents.</div>
+      <div class="checks">
+        <p>Checks: <span>Discovery test</span> · <span>Self-Revealing Truth</span> · <span>CPA progression</span> · <span>Grade-appropriate rounds</span></p>
+      </div>
+    </div>
+
+    <div class="agent-card">
+      <div class="icon icon-red">⚖️</div>
+      <div class="name">The Critic</div>
+      <div class="role-tag">Game Quality Judge</div>
+      <div class="desc">Evaluates every game against the 3 criteria. Detects quiz-wrappers and fake-intrinsic games. No mercy.</div>
+      <div class="checks">
+        <p>Checks: <span>Real-world math</span> · <span>Math IS gameplay</span> · <span>Must know math to win</span></p>
+      </div>
+    </div>
+
+    <div class="agent-card">
+      <div class="icon icon-green">🔍</div>
+      <div class="name">The Tester</div>
+      <div class="role-tag">QA Verification</div>
+      <div class="desc">Verifies games actually work. Loads, clicks, plays through, checks every round, catches bugs.</div>
+      <div class="checks">
+        <p>Checks: <span>Loads correctly</span> · <span>Interactions work</span> · <span>Rounds progress</span> · <span>Win detection</span></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Support agents -->
+  <div class="section-label">
+    <div class="line"></div>
+    <div class="text">Support Agents</div>
+    <div class="line"></div>
+  </div>
+
+  <div class="agent-grid two-col">
+    <div class="agent-card">
+      <div class="icon icon-purple">🔬</div>
+      <div class="name">The Inspector</div>
+      <div class="role-tag">Code Explainer & Math Verifier</div>
+      <div class="desc">Reads generated game HTML and explains exactly what it does. Verifies correct math problems, right answers, and interaction paths.</div>
+      <div class="checks">
+        <p>Checks: <span>Math accuracy</span> · <span>Contract alignment</span> · <span>Shortcut analysis</span></p>
+      </div>
+    </div>
+
+    <div class="agent-card">
+      <div class="icon icon-amber">🛡️</div>
+      <div class="name">Security Guard</div>
+      <div class="role-tag">HTML Security Scanner</div>
+      <div class="desc">Scans all game HTML for security threats. Verifies CSP, blocks external scripts, catches phishing and crypto mining.</div>
+      <div class="checks">
+        <p>Checks: <span>CSP present</span> · <span>No external scripts</span> · <span>No data exfil</span> · <span>Content safety</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="agent-grid" style="margin-top: 16px;">
+    <div class="agent-card">
+      <div class="icon icon-cyan">📚</div>
+      <div class="name">The Historian</div>
+      <div class="role-tag">Docs · Logging · Archive</div>
+      <div class="desc">Maintains the Blueprint as source of truth. Logs events to Firebase. Tracks costs. Archives articles, screenshots, decisions.</div>
+      <div class="checks">
+        <p>Tracks: <span>Blueprint updates</span> · <span>Decision history</span> · <span>Failed approaches</span> · <span>API costs</span></p>
+      </div>
+    </div>
+
+    <div class="agent-card">
+      <div class="icon icon-pink">🧹</div>
+      <div class="name">The Janitor</div>
+      <div class="role-tag">Code Cleanup</div>
+      <div class="desc">Audits codebase for dead code, unused files, inconsistent patterns. Cleans without deleting anything we might want back.</div>
+      <div class="checks">
+        <p>Checks: <span>Dead files</span> · <span>Unused deps</span> · <span>Duplicates</span> · <span>Legacy code</span></p>
+      </div>
+    </div>
+
+    <div class="agent-card">
+      <div class="icon icon-green">📊</div>
+      <div class="name">The Tracker</div>
+      <div class="role-tag">Coverage Monitor</div>
+      <div class="desc">Tracks which of 466 standards are done, which have contracts, which have games. Maintains the progress dashboard.</div>
+      <div class="checks">
+        <p>Tracks: <span>466 standards</span> · <span>2 verified ✓</span> · <span>22 games planned</span> · <span>% complete</span></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cross-check matrix -->
+  <div class="cross-check">
+    <h3>🔄 Cross-Check Matrix — every agent's work is verified by another</h3>
+    <div class="row"><span class="from">Mr. Chesure</span> <span class="arrow-r">→ checked by →</span> <span class="to">The Critic</span></div>
+    <div class="row"><span class="from">The Critic</span> <span class="arrow-r">→ checked by →</span> <span class="to">Mr. Chesure</span></div>
+    <div class="row"><span class="from">The Builder</span> <span class="arrow-r">→ checked by →</span> <span class="to">Tester + Critic</span></div>
+    <div class="row"><span class="from">The Tester</span> <span class="arrow-r">→ checked by →</span> <span class="to">The Inspector</span></div>
+    <div class="row"><span class="from">The Inspector</span> <span class="arrow-r">→ checked by →</span> <span class="to">Mr. Chesure</span></div>
+    <div class="row"><span class="from">Security Guard</span> <span class="arrow-r">→ checked by →</span> <span class="to">The Tester</span></div>
+    <div class="row"><span class="from">The Historian</span> <span class="arrow-r">→ checked by →</span> <span class="to">Orchestrator</span></div>
+  </div>
+
+  <!-- Superpowers -->
+  <div class="superpowers">
+    <div class="header">
+      <div class="badge">Framework</div>
+      <h2>⚡ Superpowers</h2>
+    </div>
+    <p class="desc">Workflow discipline layer by Jesse Vincent. Enforces structured development phases so we never skip steps. Our domain agents (above) layer on top.</p>
+    <div class="flow">
+      <div class="step">🧠 Clarify</div>
+      <div class="step-arrow">→</div>
+      <div class="step">📐 Design</div>
+      <div class="step-arrow">→</div>
+      <div class="step">📝 Plan</div>
+      <div class="step-arrow">→</div>
+      <div class="step">⚒️ Code</div>
+      <div class="step-arrow">→</div>
+      <div class="step">✅ Verify</div>
+    </div>
+    <p class="desc" style="margin-top: 16px;">14 skills · TDD cycles · Systematic debugging · Code review · Subagent development · Fresh context per phase</p>
+  </div>
+
+  <div class="footer">
+    Diagonally — Building math games that actually teach · April 2026
+  </div>
+
+</div>
+</body>
+</html>
