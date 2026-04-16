@@ -365,8 +365,10 @@ export function numberFramesEngine(
       $("done-btn").style.display = "none";
       $("frame-a").className = "frame";
       $("frame-b").className = "frame";
-      drawFrame("frame-a", Math.min(r.total, 5), true);
-      drawFrame("frame-b", Math.max(0, r.total - 5), true);
+      // Put ALL counters in frame-a (ten-frame holds 10, our max total is 9).
+      // Frame-b stays empty for subtraction — only one group to work with.
+      drawFrame("frame-a", Math.min(r.total, 10), true);
+      drawFrame("frame-b", 0, false);
       // Wire click handlers for removal
       for (const fId of ["frame-a", "frame-b"]) {
         const el = $(fId);
