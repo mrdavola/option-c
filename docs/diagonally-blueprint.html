@@ -59,6 +59,7 @@
   <button onclick="scrollToSection('sec-standards')">Standards</button>
   <button onclick="scrollToSection('sec-pending')">Pending</button>
   <button onclick="scrollToSection('sec-review')">For Review</button>
+  <button onclick="scrollToSection('sec-history')">History & Lessons</button>
   <button onclick="scrollToSection('sec-log')">Change Log</button>
 </div>
 <script>
@@ -1230,7 +1231,46 @@ Drag vs click is irrelevant. What matters is whether the physical action maps to
 <p style="color: #fbbf24;">Note: Visual concepts are NOT the same as game mechanics (19) or planets (65). They are <strong>concept visualization types</strong> — the pictorial stage of the CPA learning model. One visual concept may map to multiple game mechanics, and one planet may contain standards from multiple visual concepts.</p>
 
 <!-- ============================================ -->
-<h2 id="sec-log" class="section-group">19. Change Log</h2>
+<h2 id="sec-history" class="section-group">19. Project History &amp; Lessons Learned</h2>
+<!-- ============================================ -->
+
+<p>Full narrative of what we built, what went wrong, and what we learned. Written April 16, 2026. This is the institutional memory — any agent or team member can read this and understand the full context.</p>
+<p><strong>Full document:</strong> <code>docs/project-history-and-lessons.md</code></p>
+
+<h3>The 7 Failure Modes (Summary)</h3>
+<ol>
+  <li><strong>Games didn't teach the right math</strong> — keyword matching mapped standards to wrong game options (ratio → volume game). Fixed with hardcoded per-standard mapping.</li>
+  <li><strong>Fake intrinsic problem</strong> — games LOOKED interactive but the player action didn't map to the math operation. Mystery-side taught counting, not algebra. Dragging ≠ intrinsic.</li>
+  <li><strong>AI rounds didn't match standards</strong> — AI generated generic math or used theme words literally ("skeleton" → spooky content). Fixed with hardcoded rounds.</li>
+  <li><strong>Theme layer fought the math</strong> — "Desert Athlete" theme on a scale/blocks game made no sense. Fixed by separating math mechanic from theme (theme muted for now).</li>
+  <li><strong>System did the math, not the learner</strong> — running counts, animated counting, live totals meant the learner just watched. Fixed: no counts displayed during learner's counting.</li>
+  <li><strong>Number pad allowed brute force</strong> — wrong answers faded out, leaving fewer options. Fixed: wrong answers shake, pad hides, learner recounts.</li>
+  <li><strong>Too many games, too little quality</strong> — overnight rebuild of 87 games produced code that compiled but didn't teach. Fixed: one moon at a time, Learning Contract workflow.</li>
+</ol>
+
+<h3>10 Key Insights</h3>
+<ol>
+  <li><strong>Mr. Chesure's 2 Tests:</strong> Discovery (learn by playing) + Self-Revealing Truth (physics shows correctness).</li>
+  <li><strong>The 3 Criteria:</strong> Real-world math + math IS gameplay + must know math to win.</li>
+  <li><strong>Fake intrinsic is more dangerous than quiz-wrapper</strong> — creates illusion of learning.</li>
+  <li><strong>The learner does the math.</strong> System never counts, sums, or computes on behalf of learner.</li>
+  <li><strong>Concrete before symbolic.</strong> Show objects before equations (K–2 especially).</li>
+  <li><strong>One well-built game = many standards.</strong> ~22 games for 466 standards via parameter changes.</li>
+  <li><strong>Don't invent pedagogy — adapt it.</strong> Progressions Docs for what. Math Learning Center for how.</li>
+  <li><strong>Test one moon perfectly before scaling.</strong> Quality over coverage.</li>
+  <li><strong>Cross-checking prevents errors.</strong> Every agent's work verified by another.</li>
+  <li><strong>Learner as builder</strong> is the unique value — paste HTML games, peer critique, guide approval.</li>
+</ol>
+
+<h3>What We Tried That Didn't Work</h3>
+<ul>
+  <li><strong>Overnight rebuild of 87 games</strong> — parallel agents wrote code but couldn't judge pedagogy. Bulk ≠ quality.</li>
+  <li><strong>AI-invented game mechanics</strong> — creative but pedagogically unsound. AI should ADAPT proven methods, not invent.</li>
+  <li><strong>Cross-referencing multiple sources</strong> — too many sources = confusion. Use ONE primary source per need.</li>
+  <li><strong>Showing equations as K prompts</strong> — digits let learners match without understanding. Dot clusters instead.</li>
+</ul>
+
+<h2 id="sec-log" class="section-group">20. Change Log</h2>
 <!-- ============================================ -->
 
 <table>
