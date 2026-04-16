@@ -62,7 +62,7 @@ Correct placement of each addend + correct total picked from number pad.
 
 ## 9. Intervention when stuck
 - Wrong addend count → counters wobble. No penalty. Try again.
-- Wrong total → number button fades. Counters reset to untapped. Try again.
+- Wrong total → number button SHAKES (does not fade — prevents brute force). Counters reset to untapped. Number pad hides. Learner must recount.
 - Third failure on total → hint: "Try counting one at a time, point to each counter."
 
 ## 10. Real-world scenarios (approved earlier)

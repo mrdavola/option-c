@@ -3,8 +3,8 @@
 // app. Plain HTML/CSS/JS, light aesthetic, no Phaser.
 //
 // Modes (selected via `option`):
-//  - "number-frames" (default) — ADD mode: 2 + 1 = ?
-//      Learner fills each frame with the addends, counts total.
+//  - "number-frames" (default) — ADD + SUBTRACT mode
+//      Learner fills frames, counts total (add) or removes and counts remaining (sub).
 //  - "number-frames-decompose" — DECOMPOSE mode: 5 = ? + ?
 //      Learner splits a total into two groups across frames.
 //
@@ -12,18 +12,29 @@
 //  - The LEARNER does the math. No running count displayed while counting.
 //  - System reveals correctness only AFTER the learner commits.
 //  - Both ten-frames clickable from the start. One "Done" button for both.
+//  - EQUATION IS HIDDEN during play. Shown only AFTER correct answer as recording.
+//    (Per Progressions: symbolic notation follows concrete experience at K level.)
+//  - Prompt uses DOT CLUSTERS (visual objects), not digits.
+//
+// Fixes applied (April 16, 2026 — from agent cross-check):
+//  #1 Subtraction mode added (K.OA.A.1 covers addition AND subtraction)
+//  #2 Rounds aligned with Learning Contract [2+1, 4+2, 3+3, 7-2, 5+4]
+//  #3 Wrong number-pad answers shake (don't fade — prevents brute force)
+//  #4 Equation hidden during play; shown as recording after correct answer
 
 import type { ThemeConfig, MathParams, GameOption } from "./engine-types"
 
 interface AddRound { kind: "add"; a: number; b: number; answer: number }
+interface SubRound { kind: "sub"; total: number; remove: number; answer: number }
 interface DecomposeRound { kind: "decompose"; total: number }
-type Round = AddRound | DecomposeRound
+type Round = AddRound | SubRound | DecomposeRound
 
-const ROUNDS_ADD: Round[] = [
+// Rounds aligned with Learning Contract (docs/contracts/K.OA.A.1.md)
+const ROUNDS_ADD_SUB: Round[] = [
   { kind: "add", a: 2, b: 1, answer: 3 },
-  { kind: "add", a: 3, b: 2, answer: 5 },
-  { kind: "add", a: 4, b: 3, answer: 7 },
-  { kind: "add", a: 6, b: 2, answer: 8 },
+  { kind: "add", a: 4, b: 2, answer: 6 },
+  { kind: "add", a: 3, b: 3, answer: 6 },
+  { kind: "sub", total: 7, remove: 2, answer: 5 },
   { kind: "add", a: 5, b: 4, answer: 9 },
 ]
 
@@ -42,7 +53,7 @@ export function numberFramesEngine(
   option: GameOption = "number-frames",
 ): string {
   const mode: "add" | "decompose" = option === "number-frames-decompose" ? "decompose" : "add"
-  const rounds = JSON.stringify(mode === "decompose" ? ROUNDS_DECOMPOSE : ROUNDS_ADD)
+  const rounds = JSON.stringify(mode === "decompose" ? ROUNDS_DECOMPOSE : ROUNDS_ADD_SUB)
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -66,7 +77,7 @@ export function numberFramesEngine(
     display: flex; flex-direction: column; align-items: center;
     padding: 32px 24px;
     max-width: 720px; margin: 0 auto;
-    gap: 28px;
+    gap: 20px;
   }
 
   /* Progress dots */
@@ -75,17 +86,40 @@ export function numberFramesEngine(
   #progress .dot.active { background: #2563eb; }
   #progress .dot.done { background: #10b981; }
 
-  /* Equation prompt */
-  #prompt {
-    font-size: 64px; font-weight: 700;
-    color: #1f2937;
-    letter-spacing: 0.02em;
-    font-variant-numeric: tabular-nums;
+  /* Dot cluster prompt — shows objects, not digits */
+  #dot-prompt {
+    display: flex; align-items: center; gap: 16px; justify-content: center;
+    min-height: 60px;
   }
+  .dot-cluster {
+    display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;
+    padding: 8px 14px;
+    background: #f8fafc; border: 2px solid #e2e8f0;
+    border-radius: 12px; min-width: 50px; min-height: 44px;
+    align-items: center;
+  }
+  .dot-cluster .dot-obj {
+    width: 18px; height: 18px; background: #ef4444; border-radius: 50%;
+  }
+  .prompt-symbol {
+    font-size: 32px; font-weight: 700; color: #1f2937;
+  }
+  .prompt-question {
+    font-size: 32px; font-weight: 700; color: #9ca3af;
+  }
+
+  /* Instruction text */
   #instruction {
     font-size: 17px; color: #6b7280;
     min-height: 24px; text-align: center;
   }
+
+  /* Equation reveal — hidden until correct answer */
+  #equation-reveal {
+    display: none; text-align: center;
+    font-size: 36px; font-weight: 700; color: #10b981;
+  }
+  #equation-reveal.visible { display: block; }
 
   /* Frames area */
   #frames-wrap {
@@ -95,10 +129,8 @@ export function numberFramesEngine(
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     grid-template-rows: repeat(2, 1fr);
-    gap: 2px;
-    padding: 4px;
-    background: #d1d5db;
-    border-radius: 4px;
+    gap: 2px; padding: 4px;
+    background: #d1d5db; border-radius: 4px;
   }
   .frame.locked { background: #86efac; }
   .frame.active { background: #93c5fd; }
@@ -110,26 +142,22 @@ export function numberFramesEngine(
   }
   .cell {
     width: 54px; height: 54px;
-    background: #ffffff;
-    border-radius: 2px;
+    background: #ffffff; border-radius: 2px;
     display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    user-select: none;
+    cursor: pointer; user-select: none;
     -webkit-tap-highlight-color: transparent;
   }
   .counter {
     width: 40px; height: 40px;
-    background: #ef4444;
-    border-radius: 50%;
+    background: #ef4444; border-radius: 50%;
     transform: scale(0);
     transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.18s, opacity 0.18s;
   }
   .counter.placed { transform: scale(1); }
   .counter.tapped { background: #9ca3af; transform: scale(0.75); }
+  .counter.removed { opacity: 0.15; transform: scale(0.6); }
 
-  .operator {
-    font-size: 48px; font-weight: 700; color: #1f2937;
-  }
+  .operator { font-size: 48px; font-weight: 700; color: #1f2937; }
 
   /* Buttons */
   .btn-row { display: flex; gap: 14px; }
@@ -146,9 +174,7 @@ export function numberFramesEngine(
   .btn-primary:hover { background: #1d4ed8; }
   .btn-primary:disabled { background: #cbd5e1; cursor: not-allowed; }
 
-  #number-pad {
-    display: none; gap: 12px; flex-wrap: wrap; justify-content: center;
-  }
+  #number-pad { display: none; gap: 12px; flex-wrap: wrap; justify-content: center; }
   #number-pad.visible { display: flex; }
   .num-btn {
     width: 64px; height: 64px; padding: 0;
@@ -157,19 +183,21 @@ export function numberFramesEngine(
     border: 2px solid #d1d5db; border-radius: 12px;
   }
   .num-btn:hover { background: #f3f4f6; border-color: #9ca3af; }
-  .num-btn.fade { opacity: 0.25; transition: opacity 0.3s; pointer-events: none; }
+  /* Fix #3: wrong answers SHAKE, don't fade. Prevents brute force. */
+  .num-btn.wrong { animation: wobble 0.4s ease; border-color: #fca5a5; }
 
-  #success {
-    display: none; text-align: center;
-  }
+  #success { display: none; text-align: center; }
   #success.visible { display: block; }
-  #success p { font-size: 24px; font-weight: 700; color: #10b981; margin-bottom: 16px; }
+  #success p { font-size: 20px; font-weight: 600; color: #10b981; margin-bottom: 16px; }
 </style>
 </head>
 <body>
 <div id="app">
   <div id="progress"></div>
-  <div id="prompt"></div>
+
+  <!-- Dot cluster prompt: shows OBJECTS not digits. Fix #4. -->
+  <div id="dot-prompt"></div>
+
   <div id="instruction"></div>
 
   <div id="frames-wrap">
@@ -184,8 +212,10 @@ export function numberFramesEngine(
 
   <div id="number-pad"></div>
 
+  <!-- Equation shown AFTER correct answer only. Fix #4. -->
+  <div id="equation-reveal"></div>
+
   <div id="success">
-    <p id="success-msg"></p>
     <button class="btn-primary" onclick="nextRound()">Next →</button>
   </div>
 </div>
@@ -193,11 +223,12 @@ export function numberFramesEngine(
 <script>
   const ROUNDS = ${rounds};
   let roundIdx = 0;
-  let phase = "fill"; // fill | combine | count | answered
-  let frameA = 0;   // counters in frame A
-  let frameB = 0;   // counters in frame B
-  let merged = 0;   // total counters in combined area
-  let tapped = 0;   // counters tapped during counting
+  let phase = "fill"; // fill | count | subtract_remove | subtract_count | answered
+  let frameA = 0;
+  let frameB = 0;
+  let merged = 0;
+  let tapped = 0;
+  let removedCount = 0;
 
   function $(id) { return document.getElementById(id); }
 
@@ -211,7 +242,15 @@ export function numberFramesEngine(
     }
   }
 
-  function drawFrame(id, count, interactive, tappedCount) {
+  // Render a cluster of dots (visual objects, no digits). Fix #4.
+  function renderDotCluster(count) {
+    let html = '<div class="dot-cluster">';
+    for (let i = 0; i < count; i++) html += '<div class="dot-obj"></div>';
+    html += '</div>';
+    return html;
+  }
+
+  function drawFrame(id, count, interactive) {
     const el = $(id);
     el.innerHTML = "";
     for (let i = 0; i < 10; i++) {
@@ -220,73 +259,144 @@ export function numberFramesEngine(
       const counter = document.createElement("div");
       counter.className = "counter";
       if (i < count) counter.classList.add("placed");
-      if (tappedCount && i < tappedCount) counter.classList.add("tapped");
       cell.appendChild(counter);
       if (interactive) {
-        cell.dataset.idx = String(i);
-        cell.addEventListener("click", () => onCellClick(id, i));
+        cell.addEventListener("click", function() { onCellClick(id, i); });
       }
       el.appendChild(cell);
     }
   }
 
   function onCellClick(frameId, idx) {
-    if (phase !== "fill") return;
-    const isA = frameId === "frame-a";
-    if (isA) {
-      // If clicking a filled cell or beyond, adjust count
-      frameA = idx < frameA ? idx : idx + 1;
-      drawFrame("frame-a", frameA, true);
-    } else {
-      frameB = idx < frameB ? idx : idx + 1;
-      drawFrame("frame-b", frameB, true);
+    if (phase === "fill") {
+      const isA = frameId === "frame-a";
+      if (isA) {
+        frameA = idx < frameA ? idx : idx + 1;
+        drawFrame("frame-a", frameA, true);
+      } else {
+        frameB = idx < frameB ? idx : idx + 1;
+        drawFrame("frame-b", frameB, true);
+      }
+    } else if (phase === "subtract_remove") {
+      // Tap counters to remove them
+      const el = $(frameId);
+      const cell = el.children[idx];
+      if (!cell) return;
+      const counter = cell.querySelector(".counter");
+      if (!counter || !counter.classList.contains("placed") || counter.classList.contains("removed")) return;
+      const r = ROUNDS[roundIdx];
+      if (removedCount >= r.remove) return;
+      counter.classList.add("removed");
+      removedCount++;
+      if (removedCount >= r.remove) {
+        // Done removing — now count remaining
+        phase = "subtract_count";
+        tapped = 0;
+        $("instruction").textContent = "Now tap each remaining counter to count. Then pick the total.";
+        wireCountTaps();
+      }
     }
   }
 
   function onCountCellClick(frameId, idx) {
-    if (phase !== "count") return;
+    if (phase !== "count" && phase !== "subtract_count") return;
     const el = $(frameId);
     const cell = el.children[idx];
     if (!cell) return;
     const counter = cell.querySelector(".counter");
-    if (!counter || !counter.classList.contains("placed") || counter.classList.contains("tapped")) return;
+    if (!counter || !counter.classList.contains("placed") || counter.classList.contains("tapped") || counter.classList.contains("removed")) return;
     counter.classList.add("tapped");
     tapped++;
-    // Once all merged counters are tapped, show number pad
-    if (tapped >= merged) {
+    const target = (phase === "subtract_count") ? ROUNDS[roundIdx].answer : merged;
+    if (tapped >= target) {
       showNumberPad();
+    }
+  }
+
+  function wireCountTaps() {
+    for (const fId of ["frame-a", "frame-b"]) {
+      const el = $(fId);
+      const fresh = el.cloneNode(true);
+      el.parentNode.replaceChild(fresh, el);
+      for (let i = 0; i < fresh.children.length; i++) {
+        const idx = i;
+        fresh.children[i].addEventListener("click", function() { onCountCellClick(fId, idx); });
+      }
     }
   }
 
   function startRound() {
     const r = ROUNDS[roundIdx];
     phase = "fill";
-    frameA = 0; frameB = 0; merged = 0; tapped = 0;
-    if (r.kind === "add") {
-      $("prompt").textContent = r.a + " + " + r.b + " = ?";
-      $("operator").textContent = "+";
-      $("instruction").textContent = "Fill each frame with counters to show the numbers, then press Done.";
-    } else {
-      // decompose: 5 = ? + ?
-      $("prompt").textContent = r.total + " = ? + ?";
-      $("operator").textContent = "+";
-      $("instruction").textContent = "Split " + r.total + " into two groups. Put some counters in each frame.";
-    }
+    frameA = 0; frameB = 0; merged = 0; tapped = 0; removedCount = 0;
+    $("equation-reveal").classList.remove("visible");
+    $("equation-reveal").textContent = "";
     $("success").classList.remove("visible");
     $("number-pad").classList.remove("visible");
     $("done-btn").style.display = "inline-block";
     $("done-btn").disabled = false;
-    $("frame-a").className = "frame active";
-    $("frame-b").className = "frame active";
-    drawFrame("frame-a", 0, true);
-    drawFrame("frame-b", 0, true);
+
+    if (r.kind === "add") {
+      // Show dot clusters as prompt (no digits). Fix #4.
+      $("dot-prompt").innerHTML =
+        renderDotCluster(r.a) +
+        '<span class="prompt-symbol">+</span>' +
+        renderDotCluster(r.b) +
+        '<span class="prompt-symbol">=</span>' +
+        '<span class="prompt-question">?</span>';
+      $("operator").textContent = "+";
+      $("instruction").textContent = "Count the dots above. Fill each frame to match, then press Done.";
+      $("frame-a").className = "frame active";
+      $("frame-b").className = "frame active";
+      drawFrame("frame-a", 0, true);
+      drawFrame("frame-b", 0, true);
+    } else if (r.kind === "sub") {
+      // Subtraction: show total dots, then "take away" N dots
+      $("dot-prompt").innerHTML =
+        renderDotCluster(r.total) +
+        '<span class="prompt-symbol">−</span>' +
+        renderDotCluster(r.remove) +
+        '<span class="prompt-symbol">=</span>' +
+        '<span class="prompt-question">?</span>';
+      $("operator").textContent = "";
+      $("instruction").textContent = "Tap " + r.remove + " counters to take them away.";
+      // Pre-fill frame A with the total
+      phase = "subtract_remove";
+      $("done-btn").style.display = "none";
+      $("frame-a").className = "frame";
+      $("frame-b").className = "frame";
+      drawFrame("frame-a", Math.min(r.total, 5), true);
+      drawFrame("frame-b", Math.max(0, r.total - 5), true);
+      // Wire click handlers for removal
+      for (const fId of ["frame-a", "frame-b"]) {
+        const el = $(fId);
+        const fresh = el.cloneNode(true);
+        el.parentNode.replaceChild(fresh, el);
+        for (let i = 0; i < fresh.children.length; i++) {
+          const idx = i;
+          fresh.children[i].addEventListener("click", function() { onCellClick(fId, idx); });
+        }
+      }
+    } else {
+      // Decompose: show total as dots
+      $("dot-prompt").innerHTML =
+        renderDotCluster(r.total) +
+        '<span class="prompt-symbol">=</span>' +
+        '<span class="prompt-question">? + ?</span>';
+      $("operator").textContent = "+";
+      $("instruction").textContent = "Split these into two groups. Put some in each frame.";
+      $("frame-a").className = "frame active";
+      $("frame-b").className = "frame active";
+      drawFrame("frame-a", 0, true);
+      drawFrame("frame-b", 0, true);
+    }
     renderProgress();
   }
 
   function wobble(id) {
     const el = $(id);
     el.classList.add("wobble");
-    setTimeout(() => el.classList.remove("wobble"), 420);
+    setTimeout(function() { el.classList.remove("wobble"); }, 420);
   }
 
   function onDone() {
@@ -296,25 +406,24 @@ export function numberFramesEngine(
     if (r.kind === "decompose") {
       const sum = frameA + frameB;
       if (sum !== r.total || frameA < 1 || frameB < 1) {
-        wobble("frame-a");
-        wobble("frame-b");
+        wobble("frame-a"); wobble("frame-b");
         if (frameA < 1 || frameB < 1) {
           $("instruction").textContent = "Put at least 1 counter in each frame.";
         } else if (sum < r.total) {
           $("instruction").textContent = "Not enough yet — add more counters.";
         } else {
-          $("instruction").textContent = "Too many — try again.";
+          $("instruction").textContent = "Too many — take some away.";
         }
         return;
       }
-      // Valid decomposition — celebrate
       phase = "answered";
-      $("done-btn").disabled = true;
       $("done-btn").style.display = "none";
       $("frame-a").className = "frame";
       $("frame-b").className = "frame";
       $("instruction").textContent = "";
-      $("success-msg").textContent = frameA + " + " + frameB + " = " + r.total;
+      // Show equation as recording (Fix #4)
+      $("equation-reveal").textContent = frameA + " + " + frameB + " = " + r.total;
+      $("equation-reveal").classList.add("visible");
       $("success").classList.add("visible");
       return;
     }
@@ -325,25 +434,13 @@ export function numberFramesEngine(
     if (!aOK && !bOK) { wobble("frame-a"); wobble("frame-b"); $("instruction").textContent = "Not quite — check both frames and try again."; return; }
     if (!aOK) { wobble("frame-a"); $("instruction").textContent = "Check the left frame."; return; }
     if (!bOK) { wobble("frame-b"); $("instruction").textContent = "Check the right frame."; return; }
-    // Both correct — switch to count phase. Dots stay where they are;
-    // learner counts across both frames.
+    // Both correct — count phase
     phase = "count";
     merged = frameA + frameB;
-    $("done-btn").disabled = true;
     $("done-btn").style.display = "none";
     $("frame-a").className = "frame";
     $("frame-b").className = "frame";
-    const wireCountTaps = (id) => {
-      const el = $(id);
-      const fresh = el.cloneNode(true);
-      el.parentNode.replaceChild(fresh, el);
-      for (let i = 0; i < fresh.children.length; i++) {
-        const idx = i;
-        fresh.children[i].addEventListener("click", () => onCountCellClick(id, idx));
-      }
-    };
-    wireCountTaps("frame-a");
-    wireCountTaps("frame-b");
+    wireCountTaps();
     $("instruction").textContent = "Now tap each counter to count how many. Then pick the total.";
   }
 
@@ -356,18 +453,18 @@ export function numberFramesEngine(
       const cand = correct + offset;
       if (cand >= 0 && cand <= 12 && cand !== correct) opts.add(cand);
     }
-    const arr = [...opts].sort((x, y) => x - y);
+    const arr = Array.from(opts).sort(function(x, y) { return x - y; });
     const pad = $("number-pad");
     pad.innerHTML = "";
-    arr.forEach(n => {
+    arr.forEach(function(n) {
       const btn = document.createElement("button");
       btn.className = "num-btn";
       btn.textContent = String(n);
-      btn.onclick = () => onAnswer(n, btn);
+      btn.onclick = function() { onAnswer(n, btn); };
       pad.appendChild(btn);
     });
     pad.classList.add("visible");
-    $("instruction").textContent = "Pick the total";
+    $("instruction").textContent = "Pick the total.";
   }
 
   function onAnswer(n, btn) {
@@ -375,14 +472,23 @@ export function numberFramesEngine(
     if (n === r.answer) {
       $("number-pad").classList.remove("visible");
       $("instruction").textContent = "";
-      $("success-msg").textContent = r.a + " + " + r.b + " = " + r.answer;
+      // Show equation as recording AFTER correct answer (Fix #4)
+      if (r.kind === "add") {
+        $("equation-reveal").textContent = r.a + " + " + r.b + " = " + r.answer;
+      } else if (r.kind === "sub") {
+        $("equation-reveal").textContent = r.total + " − " + r.remove + " = " + r.answer;
+      }
+      $("equation-reveal").classList.add("visible");
       $("success").classList.add("visible");
       phase = "answered";
     } else {
-      btn.classList.add("fade");
-      // Reset tapped state so they can recount
-      document.querySelectorAll(".counter.tapped").forEach(c => c.classList.remove("tapped"));
+      // Fix #3: SHAKE wrong answer (don't fade). Prevents brute force.
+      btn.classList.add("wrong");
+      setTimeout(function() { btn.classList.remove("wrong"); }, 420);
+      // Reset tapped counters so learner must recount
+      document.querySelectorAll(".counter.tapped").forEach(function(c) { c.classList.remove("tapped"); });
       tapped = 0;
+      $("number-pad").classList.remove("visible");
       $("instruction").textContent = "Not quite — tap the counters and count again.";
     }
   }
@@ -391,17 +497,18 @@ export function numberFramesEngine(
     roundIdx++;
     if (roundIdx >= ROUNDS.length) {
       try { parent.postMessage({ type: "game_win", score: ROUNDS.length }, "*"); } catch(e){}
-      $("prompt").textContent = "Great work!";
-      $("instruction").textContent = \`You solved \${ROUNDS.length} problems.\`;
+      $("dot-prompt").innerHTML = "";
+      $("instruction").textContent = "You solved " + ROUNDS.length + " problems!";
       $("frames-wrap").style.display = "none";
       $("success").classList.remove("visible");
+      $("equation-reveal").classList.remove("visible");
       return;
     }
     startRound();
   }
 
   startRound();
-</script>
+<\/script>
 </body>
 </html>`
 }
