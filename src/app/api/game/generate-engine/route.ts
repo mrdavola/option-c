@@ -5,6 +5,7 @@ import { hasEngine, generateWithEngine, DEFAULT_PALETTE } from "@/lib/game-engin
 import type { ThemeConfig, MathParams, RoundData } from "@/lib/game-engines"
 import { getHardcodedRounds } from "@/lib/standard-rounds"
 import { verifyAuth } from "@/lib/api-auth"
+import { logGameGeneration } from "@/lib/system-logger"
 import Anthropic from "@anthropic-ai/sdk"
 
 export const maxDuration = 30
@@ -12,6 +13,7 @@ export const maxDuration = 30
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
 export async function POST(req: Request) {
+  const startTime = Date.now()
   const user = await verifyAuth(req)
   if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 })
 
@@ -267,6 +269,19 @@ Return JSON array: [{"prompt":"...","target":N,"items":[...],"hint":"..."},...]`
       }
     }
   }
+
+  // Log the generation event (fire-and-forget)
+  const hardcodedUsed = !!(standardId && getHardcodedRounds(standardId))
+  logGameGeneration({
+    standardId: standardId || "",
+    gameOption: gameOption || mechanicId,
+    mechanicId: mechanicId,
+    skeletonMode: !!skeletonMode,
+    roundSource: hardcodedUsed ? "hardcoded" : (rounds ? "ai" : "fallback"),
+    roundCount: rounds?.length ?? 0,
+    durationMs: Date.now() - startTime,
+    result: html ? "served" : "error",
+  })
 
   return Response.json({ html, hasEngine: true, validationWarning })
 }
