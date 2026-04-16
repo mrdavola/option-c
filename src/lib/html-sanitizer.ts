@@ -83,5 +83,52 @@ export function findSecurityIssues(html: string): string[] {
   if (/<meta[^>]*http-equiv\s*=\s*["']refresh/i.test(html)) issues.push("Meta refresh redirect (will be removed)")
   if (/javascript:/i.test(html)) issues.push("javascript: URLs (will be removed)")
   if (/\bon[a-z]+\s*=/i.test(html)) issues.push("Inline event handlers like onerror/onload (will be removed)")
+  // Content moderation — flag inappropriate content for children
+  const contentFlags = checkInappropriateContent(html)
+  issues.push(...contentFlags)
   return issues
+}
+
+// Basic content moderation for a children's platform.
+// Returns warnings for content that should be reviewed before publishing.
+export function checkInappropriateContent(html: string): string[] {
+  const flags: string[] = []
+  const lower = html.toLowerCase()
+
+  // Profanity / slurs (basic list — expand as needed)
+  const profanity = [
+    "fuck", "shit", "damn", "ass", "bitch", "hell", "crap",
+    "dick", "penis", "vagina", "sex", "porn", "nude",
+    "kill", "murder", "suicide", "die", "blood", "gore",
+    "drug", "cocaine", "weed", "alcohol", "beer", "wine",
+    "gun", "weapon", "bomb", "terrorist",
+    "hate", "racist", "nazi",
+  ]
+  const found = profanity.filter(w => lower.includes(w))
+  if (found.length > 0) {
+    flags.push(`Inappropriate language detected: ${found.join(", ")}`)
+  }
+
+  // Fake login / phishing patterns
+  if (/type\s*=\s*["']password["']/i.test(html)) {
+    flags.push("Password input field detected — possible phishing")
+  }
+  if (/enter\s+(your\s+)?(password|email|username|login)/i.test(html)) {
+    flags.push("Text requesting credentials detected — possible phishing")
+  }
+  if (/session\s+expired|log\s*in\s+again/i.test(html)) {
+    flags.push("Fake session expiry message detected — possible phishing")
+  }
+
+  // External links
+  if (/<a[^>]+href\s*=\s*["']https?:\/\//i.test(html)) {
+    flags.push("External links detected — could navigate children off-platform")
+  }
+
+  // Crypto / gambling
+  if (/crypto|bitcoin|ethereum|gambling|casino|bet\s+money/i.test(lower)) {
+    flags.push("Crypto or gambling references detected")
+  }
+
+  return flags
 }
