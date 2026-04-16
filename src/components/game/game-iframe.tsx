@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 
 export interface GameWinData {
   hintUsed?: boolean
@@ -12,18 +12,20 @@ interface GameIframeProps {
   className?: string
   onWin?: (data?: GameWinData) => void
   onLose?: () => void
+  /** Max time in seconds before the game is considered crashed. Default: 120 (2 min). */
+  timeoutSeconds?: number
 }
 
-export function GameIframe({ html, className, onWin, onLose }: GameIframeProps) {
+export function GameIframe({ html, className, onWin, onLose, timeoutSeconds = 120 }: GameIframeProps) {
   const onWinRef = useRef(onWin)
   onWinRef.current = onWin
   const onLoseRef = useRef(onLose)
   onLoseRef.current = onLose
+  const iframeRef = useRef<HTMLIFrameElement>(null)
+  const [crashed, setCrashed] = useState(false)
 
   useEffect(() => {
     const handler = (e: MessageEvent) => {
-      // Only accept messages from sandboxed iframes (origin is "null")
-      // or from our own domain
       if (e.origin !== "null" && e.origin !== window.location.origin) return
       if (e.data?.type === "game_win") {
         onWinRef.current?.({
@@ -39,14 +41,80 @@ export function GameIframe({ html, className, onWin, onLose }: GameIframeProps) 
     return () => window.removeEventListener("message", handler)
   }, [])
 
+  // Crash protection: if no game_win or game_lose received within timeout,
+  // show a "game may have crashed" overlay with a reload button.
+  useEffect(() => {
+    let resolved = false
+    const handler = (e: MessageEvent) => {
+      if (e.data?.type === "game_win" || e.data?.type === "game_lose") {
+        resolved = true
+      }
+    }
+    window.addEventListener("message", handler)
+
+    const timer = setTimeout(() => {
+      if (!resolved) setCrashed(true)
+    }, timeoutSeconds * 1000)
+
+    return () => {
+      window.removeEventListener("message", handler)
+      clearTimeout(timer)
+    }
+  }, [html, timeoutSeconds])
+
+  const handleReload = () => {
+    setCrashed(false)
+    // Force iframe reload by briefly clearing and restoring srcDoc
+    if (iframeRef.current) {
+      iframeRef.current.srcdoc = ""
+      setTimeout(() => {
+        if (iframeRef.current) iframeRef.current.srcdoc = html
+      }, 100)
+    }
+  }
+
+  const handleKill = () => {
+    // Remove the iframe content entirely
+    if (iframeRef.current) {
+      iframeRef.current.srcdoc = "<html><body style='background:#fafafa;display:flex;align-items:center;justify-content:center;height:100vh;font-family:system-ui;color:#71717a;'>Game stopped.</body></html>"
+    }
+    setCrashed(false)
+  }
+
   return (
-    <iframe
-      srcDoc={html}
-      sandbox="allow-scripts"
-      className={className}
-      style={{ border: "none", width: "100%", height: "100%", overflow: "auto" }}
-      scrolling="yes"
-      title="Game"
-    />
+    <div style={{ position: "relative", width: "100%", height: "100%" }}>
+      <iframe
+        ref={iframeRef}
+        srcDoc={html}
+        sandbox="allow-scripts"
+        className={className}
+        style={{ border: "none", width: "100%", height: "100%", overflow: "auto" }}
+        scrolling="yes"
+        title="Game"
+      />
+      {crashed && (
+        <div style={{
+          position: "absolute", inset: 0, background: "rgba(250,250,250,0.95)",
+          display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+          gap: 12, fontFamily: "'Lexend', system-ui, sans-serif", zIndex: 10,
+        }}>
+          <p style={{ fontSize: 16, color: "#71717a" }}>This game seems stuck or frozen.</p>
+          <div style={{ display: "flex", gap: 10 }}>
+            <button
+              onClick={handleReload}
+              style={{ padding: "10px 20px", borderRadius: 8, border: "1px solid #d1d5db", background: "white", cursor: "pointer", fontSize: 14, fontWeight: 600 }}
+            >
+              Reload game
+            </button>
+            <button
+              onClick={handleKill}
+              style={{ padding: "10px 20px", borderRadius: 8, border: "none", background: "#ef4444", color: "white", cursor: "pointer", fontSize: 14, fontWeight: 600 }}
+            >
+              Stop game
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
