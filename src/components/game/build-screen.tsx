@@ -6,6 +6,7 @@ import { MatrixRain } from "./matrix-rain"
 import { FunnyStickFigure } from "./funny-stick-figure"
 import { BuildWaitMiniGame } from "./build-wait-mini-game"
 import { useAuth } from "@/lib/auth"
+import { apiFetch } from "@/lib/api-fetch"
 import posthog from "posthog-js"
 
 interface BuildScreenProps {
@@ -150,9 +151,8 @@ export function BuildScreen({ designDoc, onComplete, preSelectedVibe, mechanicId
 
       // Try pre-built engine first (instant)
       if (mechanicId) {
-        fetch("/api/game/generate-engine", {
+        apiFetch("/api/game/generate-engine", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             designDoc,
             mechanicId,

@@ -17,6 +17,7 @@ import { ChevronLeft, Loader2, Play, Sparkles } from "lucide-react"
 import { GameIframe } from "@/components/game/game-iframe"
 import { getGameOptionsForStandard } from "@/lib/standard-game-options"
 import { getOptionDef } from "@/lib/game-engines/game-option-registry"
+import { apiFetch } from "@/lib/api-fetch"
 import type { GameOptionDef } from "@/lib/game-engines/game-option-registry"
 import { getScenarios, type StandardScenario } from "@/lib/standard-scenarios"
 
@@ -150,9 +151,8 @@ export function MechanicSkeleton({
     const effectiveStandardDesc = card?.standardDescription ?? standardDescription
     const effectiveStandardGrade = card?.standardGrade ?? standardGrade
     try {
-      const res = await fetch("/api/game/generate-engine", {
+      const res = await apiFetch("/api/game/generate-engine", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           mechanicId: option.mechanicId,
           gameOption: option.id,

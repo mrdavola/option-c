@@ -19,6 +19,7 @@ import { MasteryPlay } from "./mastery-play"
 import { GameIframe } from "@/components/game/game-iframe"
 import { getGameOptionsForStandard } from "@/lib/standard-game-options"
 import { getOptionDef } from "@/lib/game-engines/game-option-registry"
+import { apiFetch } from "@/lib/api-fetch"
 import { useAuth } from "@/lib/auth"
 import { useTokenConfig } from "@/lib/token-config"
 import { InfoButton } from "@/components/info-button"
@@ -333,9 +334,8 @@ export function StandardPanel({
     setStep("play")
     try {
       const opt = getOptionDef(opts[0])
-      const res = await fetch("/api/game/generate-engine", {
+      const res = await apiFetch("/api/game/generate-engine", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           mechanicId: opt?.mechanicId ?? opts[0],
           gameOption: opts[0],

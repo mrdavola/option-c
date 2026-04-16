@@ -1,7 +1,11 @@
 // Clear cached explanations so they regenerate with new format
 import { getAdminDb } from "@/lib/firebase-admin"
+import { verifyAuth } from "@/lib/api-auth"
 
-export async function POST() {
+export async function POST(req: Request) {
+  const user = await verifyAuth(req)
+  if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 })
+
   try {
     const adminDb = getAdminDb()
     const snap = await adminDb.collection("explanations").get()

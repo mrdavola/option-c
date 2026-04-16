@@ -4,6 +4,7 @@
 import { hasEngine, generateWithEngine, DEFAULT_PALETTE } from "@/lib/game-engines"
 import type { ThemeConfig, MathParams, RoundData } from "@/lib/game-engines"
 import { getHardcodedRounds } from "@/lib/standard-rounds"
+import { verifyAuth } from "@/lib/api-auth"
 import Anthropic from "@anthropic-ai/sdk"
 
 export const maxDuration = 30
@@ -11,6 +12,9 @@ export const maxDuration = 30
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
 export async function POST(req: Request) {
+  const user = await verifyAuth(req)
+  if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 })
+
   const body = await req.json()
   const { designDoc, mechanicId, standardId, standardDescription, grade, cardChoices, sprites, gameOption, skeletonMode } = body
   const backstory: string | undefined =
