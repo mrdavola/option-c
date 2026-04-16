@@ -39,11 +39,14 @@
 
 <h1>Diagonally Blueprint</h1>
 <p style="color: #f87171; font-size: 12px; margin-bottom: 4px;">INTERNAL — DO NOT SHARE OUTSIDE THE TEAM</p>
-<p class="date">Last updated: April 13, 2026</p>
+<p class="date">Last updated: April 16, 2026</p>
 
-<div class="latest-update">
-  <strong>Latest update</strong>
-  <p><strong>Barbara + Claude (April 14, overnight):</strong> 🎉 <strong>MASSIVE INTRINSIC REBUILD COMPLETE.</strong> All 87 game options audited against Mr. Chesure's two tests (Discovery + Self-Revealing Truth). <strong>56 games fully rebuilt</strong> to be truly intrinsic (algebra tiles simplify by cancellation, scales balance by symmetric operations, number classification revealed by snap-vs-shimmer physics, etc.). <strong>14 marked as Practice-Only</strong> (unlock post-mastery). <strong>~17 already truly intrinsic</strong> (kept as-is). All games now have: no Check buttons, no typed answers, auto-detected success via physical match, solution reveal cards explaining the math, 5 rounds with fallback variation. TypeScript clean. Test any moon — games should feel fundamentally different now. Full audit at <code>docs/audit-consolidated.md</code>.</p>
+<div class="latest-update" style="background:#1a1a2e; border-color:#f87171;">
+  <strong style="color:#f87171;">⚠️ CURRENT STATE — READ THIS FIRST</strong>
+  <p><strong>Verified games: 2 of 466 standards (0.4%).</strong> Only K.OA.A.1 (Number Frames add mode) is Barbara-approved. K.OA.A.3 (decompose mode) awaits sign-off. All other 464 standards have NO verified game — legacy games were unmapped April 16.</p>
+  <p><strong>Architecture pivot (April 14-16):</strong> Abandoned the 87 Phaser game approach. Now building ~22 games total using Learning Contract workflow, one moon at a time. Plain HTML/CSS/JS (no Phaser). Light aesthetic (Brilliant.org-inspired). Sources: Common Core Progressions Documents (pedagogy) + Math Learning Center apps (digital UX).</p>
+  <p><strong>Agent team active:</strong> 9 agents (Orchestrator, Mr. Chesure, Critic, Tester, Inspector, Security Guard, Historian, Janitor, Tracker) with cross-checking and Superpowers framework for workflow discipline.</p>
+  <p style="color:#fbbf24; font-size:12px; margin-top:8px;">⚠️ Many sections below still describe the deprecated 87-game Phaser architecture. Sections marked <span style="background:#7f1d1d; padding:2px 6px; border-radius:4px; font-size:11px;">LEGACY</span> reflect that older state. Trust the Current State box and Section 19 (History &amp; Lessons) for what's actually true.</p>
 </div>
 
 <p>This document explains how Diagonally works — what every part is called, how the pieces fit together, and what happens behind the scenes. Written for the team, no coding required.</p>
@@ -55,6 +58,7 @@
   <button onclick="scrollToSection('sec-science')">Learning Science</button>
   <button onclick="scrollToSection('sec-math-align')">Math Alignment</button>
   <button onclick="scrollToSection('sec-contract')">Learning Contract</button>
+  <button onclick="scrollToSection('sec-agents')">Agent Team</button>
   <button onclick="scrollToSection('sec-tech')">Tech</button>
   <button onclick="scrollToSection('sec-standards')">Standards</button>
   <button onclick="scrollToSection('sec-pending')">Pending</button>
@@ -699,7 +703,64 @@ function scrollToSection(id) {
 <h3>Active contracts</h3>
 <p>K.OA.A.1 — <em>In progress, filling together</em></p>
 
-<h2 class="section-group">14. Math Alignment — How We Guarantee Games Teach the Right Math</h2>
+<h2 id="sec-agents" class="section-group">14. Agent Team</h2>
+<!-- ============================================ -->
+
+<p>9 AI agents work as a team to build, verify, and maintain Diagonally. Each has a specific role and every agent's output is cross-checked by at least one other agent. Powered by Claude + Superpowers framework.</p>
+
+<h3>The Orchestrator (Project Manager)</h3>
+<p>Talks to Barbara. Delegates to specialist agents. Cross-checks all work. Catches conflicts. Presents clean results. <strong>Has 3 anti-invention safeguards:</strong> (1) must cite source for every proposal, (2) Mr. Chesure cross-checks before presenting, (3) defaults to asking, not proposing.</p>
+
+<h3>Quality Gate Agents</h3>
+<table>
+  <tr><th>Agent</th><th>Role</th><th>When</th><th>Cross-checked by</th></tr>
+  <tr><td><strong>Mr. Chesure</strong></td><td>Pedagogy Guardian — ensures games teach math correctly using proven methods. Checks Discovery test, Self-Revealing Truth, CPA progression, grade-appropriateness. Knows: "Building IS learning" — the learner must make mathematical decisions (describe real-world scenario, not just pick sprites).</td><td>Before building</td><td>The Critic</td></tr>
+  <tr><td><strong>The Critic</strong></td><td>Game Quality Judge — evaluates every game against the 3 criteria: (1) math used like in real world, (2) math IS the gameplay, (3) must know math to win. Detects quiz-wrappers and fake-intrinsic games.</td><td>Before AND after building</td><td>Mr. Chesure</td></tr>
+  <tr><td><strong>The Tester</strong></td><td>QA Verification — checks if code WORKS technically: loads, clicks respond, rounds progress, win detection fires, mobile-friendly, no crashes.</td><td>After building</td><td>The Inspector</td></tr>
+  <tr><td><strong>The Inspector</strong></td><td>Code Explainer &amp; Math Verifier — reads generated game HTML, verifies correct math problems, right answers, commutativity, reachability. Catches implementation bugs.</td><td>After building</td><td>Mr. Chesure</td></tr>
+  <tr><td><strong>Security Guard</strong></td><td>HTML Security Scanner — checks CSP, external scripts, phishing, content appropriateness. Critical for children's platform.</td><td>After building + every paste</td><td>The Tester</td></tr>
+</table>
+
+<h3>Support Agents</h3>
+<table>
+  <tr><th>Agent</th><th>Role</th><th>Cross-checked by</th></tr>
+  <tr><td><strong>The Historian</strong></td><td>Maintains Blueprint as source of truth. Logs events to Firebase. Tracks costs. Archives articles, screenshots, decisions, failed approaches.</td><td>Orchestrator</td></tr>
+  <tr><td><strong>The Janitor</strong></td><td>Audits codebase for dead code, unused deps, duplicates, tech debt. Reports only — never deletes without approval.</td><td>The Tester</td></tr>
+  <tr><td><strong>The Tracker</strong></td><td>Tracks 466-standard coverage. Per-standard status: not started → contract → built → agent-checked → Barbara-approved.</td><td>Orchestrator</td></tr>
+</table>
+
+<h3>Agent Knowledge Files</h3>
+<p>Each agent has domain-specific knowledge stored in <code>docs/agents/[name]-knowledge/</code>:</p>
+<ul>
+  <li><strong>Mr. Chesure:</strong> K.OA Progressions Document excerpts, common misconceptions, proven digital tools</li>
+  <li><strong>The Critic:</strong> 7 real tested examples (6 FAIL + 2 PASS) from Barbara's testing — including Desert Runner, Recipe Mixer, Mystery-Side v1</li>
+  <li><strong>The Inspector:</strong> Math verification procedures, commutativity rules, verification checklist</li>
+  <li><strong>Security Guard:</strong> OWASP top 10, COPPA compliance, children's content safety, iframe security checklist</li>
+</ul>
+<p>Knowledge files grow as Barbara tests more games. Every correction she makes = a permanent agent upgrade.</p>
+
+<h3>Workflow — Building a New Moon</h3>
+<ol>
+  <li>Barbara picks a standard</li>
+  <li>Orchestrator spawns <strong>Mr. Chesure</strong> → drafts Learning Contract (using Progressions Doc + Math Learning Center)</li>
+  <li>Orchestrator spawns <strong>The Critic</strong> → reviews contract against 3 criteria</li>
+  <li>Barbara approves the contract</li>
+  <li>Orchestrator spawns <strong>The Builder</strong> → writes code</li>
+  <li>Orchestrator spawns <strong>The Tester</strong> → verifies code works</li>
+  <li>Orchestrator spawns <strong>The Inspector</strong> → verifies math is correct</li>
+  <li>Orchestrator spawns <strong>The Critic</strong> → re-checks built game against 3 criteria</li>
+  <li>Barbara tests on Vercel → signs off</li>
+  <li>Orchestrator spawns <strong>The Historian</strong> → updates Blueprint</li>
+  <li>Orchestrator spawns <strong>The Tracker</strong> → marks standard as done</li>
+</ol>
+
+<h3>Superpowers Framework</h3>
+<p>Installed from <a href="https://github.com/obra/superpowers" style="color:#60a5fa;">github.com/obra/superpowers</a> (official Anthropic plugin). Enforces workflow discipline: clarify → design → plan → code → verify. Includes TDD, systematic debugging, code review, brainstorming. Our domain agents layer on top of its workflow structure.</p>
+
+<h3>Full agent definitions</h3>
+<p>Stored in <code>docs/agents/</code>. Each has: role description, what it checks, what it outputs, tone, and knowledge files.</p>
+
+<h2 class="section-group">15. Math Alignment — How We Guarantee Games Teach the Right Math</h2>
 <!-- ============================================ -->
 
 <p style="color: #4ade80; font-weight: 600;">This is the backbone of Diagonally. Every design decision in this section exists to ensure that when a learner plays a game, they MUST use the exact Common Core math skill to win.</p>
@@ -744,15 +805,14 @@ function scrollToSection(id) {
   <tr><td>10</td><td>No difficulty progression</td><td style="color:#4ade80">LOW</td><td>Prompt asks for "increasing difficulty"</td></tr>
 </table>
 
-<h3>Math Teacher Audit Results (Updated April 13)</h3>
+<h3>Actual Verified Coverage (April 16 — honest numbers)</h3>
 <table>
-  <tr><th>Rating</th><th>Count</th><th>%</th><th>Meaning</th></tr>
-  <tr><td style="color:#4ade80">PERFECT</td><td>~428</td><td>92%</td><td>Game option intrinsically requires the math skill. Cannot win without it.</td></tr>
-  <tr><td style="color:#fbbf24">SO-SO</td><td>~38</td><td>8%</td><td>Related but indirect. All remaining are HS-level, awaiting engineer input for real-world game options.</td></tr>
-  <tr><td style="color:#ef4444">WRONG</td><td>0</td><td>0%</td><td>All 29 wrong matches fixed. Zero tolerance.</td></tr>
+  <tr><th>Status</th><th>Count</th><th>%</th><th>Meaning</th></tr>
+  <tr><td style="color:#4ade80">VERIFIED (Barbara-approved)</td><td>1</td><td>0.2%</td><td>K.OA.A.1 — Number Frames add mode. Full Learning Contract. Tested and signed off.</td></tr>
+  <tr><td style="color:#fbbf24">BUILT (awaiting test)</td><td>1</td><td>0.2%</td><td>K.OA.A.3 — Number Frames decompose mode. Awaiting Barbara's sign-off.</td></tr>
+  <tr><td style="color:#71717a">NOT STARTED</td><td>464</td><td>99.6%</td><td>No verified game. Legacy mappings removed April 16.</td></tr>
 </table>
-<p>Full audit: <code>docs/math-teacher-audit.md</code>. Flow analysis: <code>docs/math-flow-review.md</code>.</p>
-<p><strong>How we went from 56% → 92% PERFECT:</strong> Built 20 new pedagogically-backed game options across 5 new engines (Montessori, Singapore CPA, Standard Pedagogy, Measurement/Time, Middle School Gaps). Each option is grounded in proven teaching materials — not invented gameplay. Then individually re-mapped ~131 SO-SO moons to their new PERFECT options.</p>
+<p style="color:#f87171; font-size:12px;"><strong>Previous "92% PERFECT" claim was based on the old keyword-matching audit of 87 Phaser games. Those games were found to be mostly fake-intrinsic or quiz-wrappers. The 92% number is invalid and should not be cited.</strong></p>
 
 <h3>Intrinsic Integration — Final Status (April 14, post-rebuild)</h3>
 <p>After the overnight rebuild, all 87 game options now pass Mr. Chesure's 2 tests (learning games) OR are explicitly marked as Practice-Only (post-mastery fluency drills).</p>
