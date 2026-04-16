@@ -39,7 +39,16 @@ Use these as reference when evaluating new games.
 - Criterion 1 FAIL: The themed world (underwater, shells) had nothing to do with the math prompt (apples, oranges). The math wasn't used like in the real world — it was disconnected from the game world.
 - AI-generated rounds used generic objects instead of themed objects.
 
-### FAIL 5: Elevator Operator for Equations
+### FAIL 5: Desert Runner (Mystery-Side themed)
+**Standard:** 6.EE.B.7 (Solve equations x + p = q)
+**What it did:** Game was called "Desert Run." Character was "Desert Athlete in Scorching Desert." But the actual game showed a scale with blocks — a math manipulative that has nothing to do with running in a desert.
+**Why it failed:**
+- Criterion 1 FAIL: The backstory (athlete in desert) has zero connection to equation solving. A real scenario would be: "You have $3 and need $10 total — how much more do you need?"
+- The theme was cosmetic decoration. The math mechanic (scale with blocks) was completely disconnected from the story.
+**Barbara's words:** "The scale and the boxes have nothing to do with the athlete in the scorching desert I chose."
+**Key lesson:** This is what happens when AI generates themes without understanding the math. The theme must REQUIRE the math, not just decorate it.
+
+### FAIL 6: Elevator Operator for Equations
 **Standard:** 6.EE.B.7 (Solve equations x + p = q)
 **What it did:** Up/down elevator buttons, picking up passengers at floors.
 **Why it failed:**
