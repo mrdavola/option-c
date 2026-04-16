@@ -44,6 +44,16 @@ export function sanitizeGameHtml(html: string): string {
   sanitized = sanitized.replace(/(src|href)\s*=\s*["']javascript:[^"']*["']/gi, '$1=""')
   sanitized = sanitized.replace(/(src|href)\s*=\s*["']data:(?!image\/)[^"']*["']/gi, '$1=""')
 
+  // Remove ALL on* event handler attributes (onerror, onload, onfocus, onclick, etc.)
+  // These can execute arbitrary JS: <img src=x onerror="alert(1)">
+  // We keep onclick etc. inside <script> tags (inline JS is allowed), but strip them from HTML attributes.
+  sanitized = sanitized.replace(/<([a-z][a-z0-9]*)\s([^>]*)\bon[a-z]+\s*=\s*["'][^"']*["']([^>]*)\/?>/gi, (match) => {
+    // Strip all on* attributes from the tag
+    return match.replace(/\bon[a-z]+\s*=\s*["'][^"']*["']/gi, "")
+  })
+  // Handle on* with unquoted values: onerror=alert(1)
+  sanitized = sanitized.replace(/\bon[a-z]+\s*=\s*[^\s>"']+/gi, "")
+
   // Remove <form> action pointing to external URLs
   sanitized = sanitized.replace(/<form[^>]*action\s*=\s*["']https?:\/\/[^"']*["'][^>]*>/gi, (match) => {
     return match.replace(/action\s*=\s*["'][^"']*["']/i, 'action=""')
@@ -72,5 +82,6 @@ export function findSecurityIssues(html: string): string[] {
   if (/<link[^>]*>/i.test(html)) issues.push("External link tags (will be removed)")
   if (/<meta[^>]*http-equiv\s*=\s*["']refresh/i.test(html)) issues.push("Meta refresh redirect (will be removed)")
   if (/javascript:/i.test(html)) issues.push("javascript: URLs (will be removed)")
+  if (/\bon[a-z]+\s*=/i.test(html)) issues.push("Inline event handlers like onerror/onload (will be removed)")
   return issues
 }
