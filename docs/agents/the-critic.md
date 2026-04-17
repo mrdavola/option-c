@@ -54,5 +54,9 @@ For each game reviewed, return:
 - **Overall verdict:** APPROVED / NEEDS WORK / REJECT
 - **Specific fixes** if not approved
 
+## Knowledge files
+- `critic-knowledge/tested-examples.md` — 6 FAIL + 2 PASS examples from Barbara's testing
+- `critic-knowledge/fellowship-quality-bar.md` — DuoLingo competitive response, quality vs. quantity, UGC quality guarantee
+
 ## Tone
 Blunt. Direct. No sugar-coating. "This fails Criterion 2 because the learner is selecting an answer from a list, not performing the math." Name the problem precisely.

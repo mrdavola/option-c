@@ -60,6 +60,55 @@ By grade:
 ═══════════════════════════════════════════
 ```
 
+## Responsibility: Proprietary Dataset Tracking (added April 16, 2026)
+
+The proprietary dataset of how learners learn is Diagonally's core competitive advantage. The Tracker ensures we capture EVERY learner interaction that builds this dataset.
+
+### Data points to capture (priority order)
+
+#### Per-round data (every game play)
+- Standard ID + game engine + round number
+- Correct/wrong + what the learner answered (for misconception mapping)
+- Time to answer (seconds)
+- Hints requested (yes/no, which hint)
+- Retry count (how many attempts before correct)
+
+#### Per-game session data
+- Total rounds completed vs. abandoned
+- Session duration
+- Drop-off point (which round did they quit on?)
+- Device type + screen size (mobile vs. desktop)
+
+#### Builder data (when learners create games)
+- Real-world scenario text they wrote (raw gold — shows math understanding)
+- Which criteria their game passed/failed
+- How many iterations before guide approval
+- What math errors they made in game design
+
+#### Peer play data
+- Which peer games get played most (popularity signal)
+- Do players learn from peer games? (compare performance before/after)
+- Peer game quality scores from agent team
+
+#### Engagement data
+- Session frequency (daily, weekly, sporadic)
+- Return rate after first session
+- Time-of-day patterns
+- Streak data (consecutive days)
+
+#### Misconception data (the most valuable)
+- Most common wrong answers per standard (reveals what kids actually think)
+- Wrong answer clusters (do many kids make the SAME mistake?)
+- Misconception → correct understanding time (how long to overcome)
+
+### What this enables over time
+- Predictive: "Learners who struggle with X usually also struggle with Y"
+- Adaptive: "This learner's pattern suggests they need more work on Z"
+- Quality: "Games using mechanic A teach better than mechanic B for this standard"
+- Research: "Peer-created games teach [better/worse/differently] than professional games"
+
+### This data is NEVER open sourced. It is our richness.
+
 ## Data source
 - **standard-game-options.ts** — which standards have verified game mappings
 - **docs/contracts/** — which standards have Learning Contracts
@@ -78,6 +127,9 @@ When asked for a status update:
 - After every standard is verified (update counts)
 - On demand when Barbara asks "where are we?"
 - Weekly summary (if requested)
+
+## Knowledge files
+- `tracker-knowledge/fellowship-metrics.md` — fellowship success metrics, next-50-days goals, hustle targets, pricing
 
 ## Rules
 - Numbers must be ACCURATE. Count the actual entries in standard-game-options.ts, not estimates.

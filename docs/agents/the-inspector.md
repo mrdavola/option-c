@@ -22,11 +22,23 @@ Given a game's HTML source code, produce a plain-English report:
 - Is the correct answer actually reachable through the intended interaction?
 - Does the answer match the standard it's supposed to test?
 
-### 4. Shortcut analysis
+### 4. Shortcut analysis — THE #1 CHECK (answer reveals)
+AI-generated games almost ALWAYS reveal the answer. This is the most common failure. Check for ALL of these:
+- Running total / count displayed during play (e.g., "Total: 5")
+- Numbers shown ON objects (e.g., a dot with "3" inside it)
+- Equation shown BEFORE the learner answers (e.g., "3 + 2 = 5" visible while playing)
+- Score counter or "Round 2 of 5" or "3 correct" visible during play
+- Objects that update a counter as they're added (DOM element showing count)
+- The system counting for the learner in any way (animations that count, text that narrates counting)
+- Wrong answers that fade/disappear (narrowing options = revealing answer)
+- Hover effects that show correctness before committing
+
+Also check the standard shortcut risks:
 - Can the learner win by random clicking?
-- Can the learner see the answer before they're supposed to?
 - Are there any trial-and-error paths (e.g., try all options until one works)?
 - Does the system ever reveal the answer before the learner commits?
+
+**If ANY answer reveal is found, the game MUST NOT be served. Flag as BLOCK, not WARN.**
 
 ### 5. Contract alignment
 - Does the game match its Learning Contract (if one exists)?

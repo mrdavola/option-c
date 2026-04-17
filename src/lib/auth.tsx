@@ -33,6 +33,7 @@ import {
 } from "firebase/firestore"
 import { auth, db } from "@/lib/firebase"
 import type { UserProfile, ProgressDoc } from "@/lib/auth-types"
+import { logFromClient } from "@/lib/log-client"
 import posthog from "posthog-js"
 
 interface AuthContextValue {
@@ -310,6 +311,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     posthog.identify(currentUser.uid, { name: trimmedName, role: "student" })
     posthog.capture("learner_signed_in", { is_new_learner: !matching })
+    logFromClient({
+      type: "session_start",
+      learnerId: currentUser.uid,
+      device: typeof navigator !== "undefined" ? navigator.userAgent : undefined,
+      screenWidth: typeof window !== "undefined" ? window.innerWidth : undefined,
+      screenHeight: typeof window !== "undefined" ? window.innerHeight : undefined,
+    })
   }, [loadProfile, migrateStudentData])
 
   // Returning-student login: look up by personal code + name, then migrate
@@ -364,6 +372,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     posthog.identify(currentUser.uid, { name: existingData.name, role: "student" })
     posthog.capture("learner_signed_in", { is_new_learner: false, via: "personal_code" })
+    logFromClient({
+      type: "session_start",
+      learnerId: currentUser.uid,
+      device: typeof navigator !== "undefined" ? navigator.userAgent : undefined,
+      screenWidth: typeof window !== "undefined" ? window.innerWidth : undefined,
+      screenHeight: typeof window !== "undefined" ? window.innerHeight : undefined,
+    })
   }, [loadProfile, migrateStudentData])
 
   const signInGuide = useCallback(async (email: string, password: string) => {
@@ -387,6 +402,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user, loadProfile])
 
   const handleSignOut = useCallback(async () => {
+    if (auth.currentUser) {
+      logFromClient({ type: "session_end", learnerId: auth.currentUser.uid })
+    }
     await firebaseSignOut(auth)
     setProfile(null)
     posthog.reset()

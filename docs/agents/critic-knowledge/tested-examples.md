@@ -55,6 +55,40 @@ Use these as reference when evaluating new games.
 - Wrong game for the standard. Elevator operator teaches integer number lines and floor arithmetic, not equation solving.
 - The per-standard mapping had offered the wrong game options (keyword matching, not pedagogy matching).
 
+### FAIL 7: Scenario Gate — Red/green answer reveal
+**Component:** ScenarioGate Step 1 ("Real or Made Up?")
+**What it did:** When learner submitted wrong answers, the UI highlighted each card in red (wrong) or green (right), showing EXACTLY which ones they got wrong before resetting.
+**Why it failed:**
+- Criterion 3 FAIL: Learner can learn the answer from UI colors instead of thinking. Just memorize which were red, flip those on retry.
+- Violates Mr. Chesure's Self-Revealing Truth: correctness should come from understanding, not from the UI telling you.
+**Fix:** Reset ALL cards to neutral on wrong answer. No per-card feedback. Just "not quite — try again."
+**Barbara's words:** "When I click one wrong, it then shows me in red the one that was wrong, which it should never do."
+
+**Rule for all future gates/games:** NEVER show which specific answers were right or wrong on a retry. Just indicate the overall attempt failed and reset. The learner figures out their mistake by thinking, not by reading colors.
+
+### FAIL 9: Auto-reset timer on wrong answers
+**Component:** ScenarioGate Steps 1 and 2
+**What it did:** Wrong answer message appeared for 1.5-3.5 seconds then auto-reset. Learners couldn't read the message at their own pace.
+**Why it failed:** Different learners read at different speeds. Auto-timers either disappear too fast (can't read) or too slow (confusing wait). The learner should control the pace.
+**Fix:** Replace all auto-reset timers with a "Try again" button. Message stays until learner clicks.
+**Barbara's words:** "Have a button that says 'Try again' so the message can be read at whatever speed the learner needs."
+
+**Rule:** NEVER use auto-reset timers after wrong answers. Always use a manual "Try again" button so the learner controls the pace.
+
+### FAIL 10: Fix options duplicate the wrong answer
+**Component:** ScenarioGate Step 2 fix options
+**What it did:** The broken panel said "5 × 3 = 15 strawberries!" and one of the fix options was identically "5 × 3 = 15 strawberries!"
+**Why it failed:** Why would the correct fix be the same as the broken text? It's confusing and makes no sense. All options must be DIFFERENT from each other AND different from the broken text.
+**Fix:** Changed duplicate option to "3 + 5 = 9 strawberries!" (wrong answer but different from the original).
+
+### FAIL 8: Scenario Gate — "Real or Made Up?" framing
+**Component:** ScenarioGate Step 1 title
+**What it did:** Asked learners to sort vignettes into "Real World" vs "Made Up."
+**Why it failed:**
+- "Made Up" implies fiction. A wizard CAN use real math. A fictional baker CAN use real addition. The question isn't whether the character is real — it's whether the math is NEEDED.
+**Fix:** Changed to "Is the math actually needed?" with buttons: "Yes, math is needed" / "No, math isn't really used."
+**Barbara's words:** "A wizard can use real math and then it would be Real, even though the wizard is a made up character."
+
 ---
 
 ## PASS Examples

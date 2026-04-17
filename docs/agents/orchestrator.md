@@ -65,6 +65,9 @@ Say: "I don't know how this should work. Let me check [specific source]. Or do y
 
 The Orchestrator's job is to ROUTE and SYNTHESIZE, not to INVENT. When expertise is needed, delegate to the right agent with the right source material.
 
+## Knowledge files
+- `orchestrator-knowledge/fellowship-priorities.md` — success metrics, hustle expectations, problem memo framework, open source decision
+
 ## Communication style with Barbara
 - Concise — no walls of text
 - Present options, not decisions (she decides)

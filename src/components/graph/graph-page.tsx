@@ -25,11 +25,75 @@ import { GalaxySettingsPopover } from "./galaxy-settings-popover"
 import { RulesPopover } from "@/components/rules-popover"
 import { useTokenConfig } from "@/lib/token-config"
 import { useSearchParams } from "next/navigation"
-import { Search, X, Gamepad2 } from "lucide-react"
+import { Search, X, Gamepad2, ArrowLeft, RotateCcw, Library } from "lucide-react"
+import { GameIframe } from "@/components/game/game-iframe"
+import { apiFetch } from "@/lib/api-fetch"
+import { logFromClient } from "@/lib/log-client"
 import posthog from "posthog-js"
 import { MECHANIC_ANIMATIONS } from "@/lib/mechanic-animations"
 import moonNamesData from "@/data/moon-names.json"
 const MOON_NAMES = moonNamesData as Record<string, string>
+
+function ImportedGamePlayer({ title, html, standardId, onClose }: { title: string; html: string; standardId: string; onClose: () => void }) {
+  const { activeProfile } = useAuth()
+  const [hasWon, setHasWon] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+
+  async function handleAddToLibrary() {
+    if (!activeProfile) return
+    setSaving(true)
+    try {
+      const res = await apiFetch("/api/game/save", {
+        method: "POST",
+        body: JSON.stringify({
+          title,
+          authorUid: activeProfile.uid,
+          authorName: activeProfile.name || "Anonymous",
+          standardId,
+          gameHtml: html,
+          status: "published",
+          designDoc: `Imported HTML game: ${title}`,
+          playCount: 0,
+          ratingSum: 0,
+          ratingCount: 0,
+        }),
+      })
+      if (res.ok) setSaved(true)
+    } catch { /* silent */ } finally { setSaving(false) }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col" style={{ background: "linear-gradient(135deg, #09090b 0%, #0c1222 50%, #09090b 100%)", fontFamily: "'Lexend', system-ui, sans-serif" }}>
+      <div className="flex items-center justify-between px-4 py-2 border-b border-zinc-800/50 shrink-0">
+        <button onClick={onClose} className="flex items-center gap-1.5 text-sm text-zinc-300 hover:text-white">
+          <ArrowLeft className="size-4" />
+          Done
+        </button>
+        <p className="text-xs text-zinc-300 font-medium">{title}</p>
+        <div className="flex items-center gap-2">
+          {hasWon && !saved && (
+            <button onClick={handleAddToLibrary} disabled={saving}
+              className="flex items-center gap-1 text-xs font-semibold rounded-md px-3 py-1.5 active:scale-[0.97]"
+              style={{ background: "linear-gradient(135deg, #059669, #10b981)", color: "white", boxShadow: "0 2px 8px rgba(16,185,129,0.3)" }}>
+              <Library className="size-3.5" />
+              {saving ? "Saving..." : "Add to library"}
+            </button>
+          )}
+          {saved && <span className="text-xs text-emerald-400 font-semibold">Added!</span>}
+        </div>
+      </div>
+      {hasWon && !saved && (
+        <div className="px-4 py-2 text-center text-sm font-semibold text-emerald-300" style={{ background: "rgba(16,185,129,0.1)", borderBottom: "1px solid rgba(16,185,129,0.2)" }}>
+          You won! Add your game to the library so others can play it.
+        </div>
+      )}
+      <div className="flex-1">
+        <GameIframe html={html} className="w-full h-full" onWin={() => setHasWon(true)} />
+      </div>
+    </div>
+  )
+}
 
 interface GraphPageProps {
   data: StandardsGraph
@@ -375,6 +439,7 @@ export function GraphPage({ data }: GraphPageProps) {
   const [buildMode, setBuildMode] = useState<"idle" | "building" | "naming" | "workshop" | "importing">("idle")
   // The standard the learner is importing HTML for (only set in importing mode)
   const [importingStandard, setImportingStandard] = useState<StandardNode | null>(null)
+  const [importedGame, setImportedGame] = useState<{ title: string; html: string; standardId: string } | null>(null)
   const [currentDesignDoc, setCurrentDesignDoc] = useState<GameDesignDoc | null>(null)
   const [currentGameHtml, setCurrentGameHtml] = useState<string>("")
   const [currentGameId, setCurrentGameId] = useState<string | null>(null)
@@ -707,29 +772,13 @@ export function GraphPage({ data }: GraphPageProps) {
     setBuildMode("importing")
   }, [])
 
-  // Called by ImportHtml when the AI judge passes. Synthesise a minimal
-  // design doc and drop the learner into the workshop preview, where the
-  // play-and-win gate still applies before they can submit for review.
+  // Called by ImportHtml when paste is submitted. Skip workshop entirely —
+  // go straight to play view. For the pilot, learners play and add to library.
   const handleImportPass = useCallback((params: { title: string; html: string; visualConcept: string[] }) => {
     if (!importingStandard) return
-    const std = importingStandard
-    const designDoc: GameDesignDoc = {
-      title: params.title,
-      concept: `Imported HTML game for ${std.description.slice(0, 80)}`,
-      standardId: std.id,
-      planetId: `${std.grade}.${std.domainCode}`,
-      howItWorks: "Imported from a learner-pasted HTML file.",
-      rules: [],
-      winCondition: "Player wins as defined in the imported HTML.",
-      mathRole: std.description,
-      designChoices: {},
-      visualConcept: params.visualConcept,
-    }
-    setCurrentDesignDoc(designDoc)
-    setCurrentGameHtml(params.html)
-    setCurrentGameId(null)
+    setImportedGame({ title: params.title, html: params.html, standardId: importingStandard.id })
     setImportingStandard(null)
-    setBuildMode("workshop")
+    setBuildMode("idle")
   }, [importingStandard])
 
   // Handle build complete — move to workshop. Stash the visual concept
@@ -906,6 +955,16 @@ export function GraphPage({ data }: GraphPageProps) {
           standard={importingStandard}
           onCancel={() => { setBuildMode("idle"); setImportingStandard(null) }}
           onPass={handleImportPass}
+        />
+      )}
+
+      {/* Imported game: play and add to library (no workshop) */}
+      {importedGame && (
+        <ImportedGamePlayer
+          title={importedGame.title}
+          html={importedGame.html}
+          standardId={importedGame.standardId}
+          onClose={() => setImportedGame(null)}
         />
       )}
 

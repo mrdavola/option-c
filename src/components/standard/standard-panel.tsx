@@ -21,6 +21,7 @@ import { getGameOptionsForStandard } from "@/lib/standard-game-options"
 import { getOptionDef } from "@/lib/game-engines/game-option-registry"
 import { apiFetch } from "@/lib/api-fetch"
 import { ScenarioGate } from "./scenario-gate"
+import { BuilderHost } from "@/components/builders/builder-host"
 import { useAuth } from "@/lib/auth"
 import { useTokenConfig } from "@/lib/token-config"
 import { InfoButton } from "@/components/info-button"
@@ -284,7 +285,7 @@ function MoonCardView({
 
 // "skeleton" sits between "learn" and "earn" — the learner plays a stripped-down
 // preview of the game mechanic (no theme) before opening the Circuit Board Builder.
-type FlowStep = "learn" | "gate" | "play" | "skeleton" | "earn" | "unlocked" | "demonstrate"
+type FlowStep = "learn" | "gate" | "play" | "skeleton" | "earn" | "unlocked" | "demonstrate" | "builder"
 
 interface StandardPanelProps {
   standard: StandardNode | null
@@ -393,7 +394,7 @@ export function StandardPanel({
 
   return (
     <>
-    <Sheet open={open && step !== "earn" && step !== "learn" && step !== "skeleton" && step !== "play" && step !== "gate"} onOpenChange={(isOpen) => { if (!isOpen) onClose() }}>
+    <Sheet open={open && step !== "earn" && step !== "learn" && step !== "skeleton" && step !== "play" && step !== "gate" && step !== "builder"} onOpenChange={(isOpen) => { if (!isOpen) onClose() }}>
       <SheetContent
         side="right"
         className="w-full sm:w-[75vw] lg:w-[60vw] overflow-y-auto"
@@ -569,8 +570,17 @@ export function StandardPanel({
     {step === "gate" && standard && open && (
       <ScenarioGate
         standardId={standard.id}
-        onPass={() => startDirectPlay()}
+        onPass={() => setStep("builder")}
         onBack={() => setStep("learn")}
+      />
+    )}
+
+    {/* Builder Host — learner picks a builder type and creates their game */}
+    {step === "builder" && standard && open && (
+      <BuilderHost
+        standardId={standard.id}
+        onBack={() => setStep("learn")}
+        onImportHtml={onImportHtml ? () => onImportHtml(standard) : undefined}
       />
     )}
 

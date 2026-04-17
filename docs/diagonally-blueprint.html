@@ -45,7 +45,7 @@
   <strong style="color:#f87171;">⚠️ CURRENT STATE — READ THIS FIRST</strong>
   <p><strong>Verified games: 2 of 466 standards (0.4%).</strong> Only K.OA.A.1 (Number Frames add mode) is Barbara-approved. K.OA.A.3 (decompose mode) awaits sign-off. All other 464 standards have NO verified game — legacy games were unmapped April 16.</p>
   <p><strong>Architecture pivot (April 14-16):</strong> Abandoned the 87 Phaser game approach. Now building ~22 games total using Learning Contract workflow, one moon at a time. Plain HTML/CSS/JS (no Phaser). Light aesthetic (Brilliant.org-inspired). Sources: Common Core Progressions Documents (pedagogy) + Math Learning Center apps (digital UX).</p>
-  <p><strong>Agent team active:</strong> 9 agents (Orchestrator, Mr. Chesure, Critic, Tester, Inspector, Security Guard, Historian, Janitor, Tracker) with cross-checking and Superpowers framework for workflow discipline.</p>
+  <p><strong>Agent team active:</strong> 11 agents (Orchestrator, Mr. Chesure, Critic, Tester, Inspector, Security Guard, Historian, Janitor, Tracker, Designer, Storyteller) with cross-checking, fellowship knowledge files, and Superpowers framework for workflow discipline.</p>
   <p style="color:#fbbf24; font-size:12px; margin-top:8px;">⚠️ Many sections below still describe the deprecated 87-game Phaser architecture. Sections marked <span style="background:#7f1d1d; padding:2px 6px; border-radius:4px; font-size:11px;">LEGACY</span> reflect that older state. Trust the Current State box and Section 19 (History &amp; Lessons) for what's actually true.</p>
 </div>
 
@@ -63,6 +63,7 @@
   <button onclick="scrollToSection('sec-standards')">Standards</button>
   <button onclick="scrollToSection('sec-pending')">Pending</button>
   <button onclick="scrollToSection('sec-review')">For Review</button>
+  <button onclick="scrollToSection('sec-strategy')">Strategy</button>
   <button onclick="scrollToSection('sec-history')">History & Lessons</button>
   <button onclick="scrollToSection('sec-log')">Change Log</button>
 </div>
@@ -1291,7 +1292,72 @@ Drag vs click is irrelevant. What matters is whether the physical action maps to
 <p style="color: #fbbf24;">Note: Visual concepts are NOT the same as game mechanics (19) or planets (65). They are <strong>concept visualization types</strong> — the pictorial stage of the CPA learning model. One visual concept may map to multiple game mechanics, and one planet may contain standards from multiple visual concepts.</p>
 
 <!-- ============================================ -->
-<h2 id="sec-history" class="section-group">19. Project History &amp; Lessons Learned</h2>
+<h2 id="sec-strategy" class="section-group">19. Strategy — Open Source, Data Moat &amp; Competitive Advantage</h2>
+<!-- ============================================ -->
+
+<h3>The Three-Part Strategy (decided April 16, 2026)</h3>
+<p>Based on fellowship advice from Michael Raspuzzi, Dylan, and a guest advisor.</p>
+
+<h3>Part 1: THE SECRET (competitive advantage)</h3>
+<p><strong style="color:#f87171;">NEVER reveal publicly that learners build the games.</strong> This is Diagonally's core innovation. Publicly, we are "a math games platform." The fact that learners are both creators and players is the moat.</p>
+
+<h3>Part 2: Open Source Strategy — Modular</h3>
+<p><strong>Key insight (from Dylan):</strong> Open source PARTS of the app, not all of it. Keep the proprietary workflow private.</p>
+
+<table>
+  <tr><th>Open Source (Apache 2.0)</th><th>Keep Private</th></tr>
+  <tr>
+    <td>
+      <ul style="margin:0; color:#4ade80;">
+        <li>Game engines (Number Frames, etc.)</li>
+        <li>Agent definitions &amp; cross-check system</li>
+        <li>HTML sanitizer + security scanning</li>
+        <li>Galaxy 3D map UI</li>
+        <li>Scenario Gate component pattern</li>
+        <li>Learning Contract templates</li>
+      </ul>
+    </td>
+    <td>
+      <ul style="margin:0; color:#f87171;">
+        <li>Build-a-game workflow (THE SECRET)</li>
+        <li>Peer-play / sharing system</li>
+        <li>Data pipeline (Firebase logging, learner analytics)</li>
+        <li>Guide approval gate</li>
+        <li>Any ML / recommendation logic</li>
+        <li>Proprietary dataset of how learners learn</li>
+      </ul>
+    </td>
+  </tr>
+</table>
+
+<p><strong>Why open source the engine:</strong> Recruit builders, increase velocity between fellows, build a movement in education. Fellowship recommends Apache 2.0 license.</p>
+<p><strong>Why keep workflow + data private:</strong> The build step, peer play, and learning data are what make us unique. Cloning the code doesn't give you the workflow insight or the dataset.</p>
+
+<h3>Part 3: The Proprietary Dataset — Our Real Richness</h3>
+<p><strong>Key insight (from fellowship guest advisor):</strong> "Your richness is the proprietary dataset of how learners learn."</p>
+<p>Every learner interaction generates data nobody else has:</p>
+<ul>
+  <li><strong>Game performance:</strong> Which rounds learners get right/wrong, time per round, hint usage, retry patterns</li>
+  <li><strong>Misconception mapping:</strong> Which wrong answers are most common per standard (reveals what kids actually misunderstand)</li>
+  <li><strong>Builder decisions:</strong> What real-world scenarios learners write, which game designs pass/fail criteria</li>
+  <li><strong>Peer learning:</strong> Do learners who play peer-created games learn differently than professional games?</li>
+  <li><strong>Engagement patterns:</strong> Where learners drop off, what brings them back, session lengths by age</li>
+  <li><strong>Shortcut attempts:</strong> How learners try to game the system (reveals design weaknesses)</li>
+</ul>
+
+<p><strong>The flywheel:</strong> More learners → more data → smarter games → better outcomes → more schools adopt → more learners. This is the DuoLingo model applied to math.</p>
+<p><strong>This data is never open sourced.</strong> The Security Guard monitors the boundary. The Tracker ensures we capture everything.</p>
+
+<h3>Who Monitors What</h3>
+<table>
+  <tr><th>Agent</th><th>Strategic Role</th></tr>
+  <tr><td>Security Guard</td><td>Monitors open-source vs. proprietary boundary — flags if proprietary code would be exposed</td></tr>
+  <tr><td>The Tracker</td><td>Tracks data collection completeness — ensures every learner interaction is captured for the dataset</td></tr>
+  <tr><td>The Storyteller</td><td>Ensures public content never reveals THE SECRET and frames open-source contributions correctly</td></tr>
+  <tr><td>The Historian</td><td>Archives strategic decisions and rationale</td></tr>
+</table>
+
+<h2 id="sec-history" class="section-group">20. Project History &amp; Lessons Learned</h2>
 <!-- ============================================ -->
 
 <p>Full narrative of what we built, what went wrong, and what we learned. Written April 16, 2026. This is the institutional memory — any agent or team member can read this and understand the full context.</p>
@@ -1330,11 +1396,13 @@ Drag vs click is irrelevant. What matters is whether the physical action maps to
   <li><strong>Showing equations as K prompts</strong> — digits let learners match without understanding. Dot clusters instead.</li>
 </ul>
 
-<h2 id="sec-log" class="section-group">20. Change Log</h2>
+<h2 id="sec-log" class="section-group">21. Change Log</h2>
 <!-- ============================================ -->
 
 <table>
   <tr><th>Date</th><th>Who</th><th>What changed</th></tr>
+  <tr><td>Apr 16, late PM</td><td>Barbara + Claude</td><td>PILOT PREP: Built 4 game builder prototypes for A/B testing (sentence prompt, mad libs, scenario cards, comic strip). Integrated Gemini API with Claude fallback for game generation. New flow: Scenario Gate → pick builder → describe scenario → AI generates game → play. Removed practice step between gate and building (building IS the practice). Target age set to 10-16 (older learners build K-level games first). Proprietary data capture system: per-round learning data, session tracking, gate analytics, misconception mapping. All stored in Firestore learning_data collection (never open sourced). Scenario Gate refined: "Real math or math sprinkles?" framing, no answer reveals on wrong attempts, system never counts for learner. Fellowship knowledge distributed to 7 agents. Open source strategy decided: engines public (Apache 2.0), workflow+data private.</td></tr>
+  <tr><td>Apr 16, PM</td><td>Barbara + Claude</td><td>STRATEGY: Added Section 19 (Strategy — Open Source, Data Moat & Competitive Advantage). Decisions: (1) Open source game engines + agent system under Apache 2.0, keep build workflow + peer play + data pipeline private. (2) Proprietary dataset of how learners learn is our core competitive advantage (fellowship guest advisor insight). (3) Security Guard assigned to monitor open-source vs proprietary boundary. (4) Tracker updated to capture all learner interaction data for dataset. (5) Fellowship knowledge distributed to 7 agents (Orchestrator, Chesure, Critic, Designer, Tracker, Historian, Storyteller). Also added: The Designer + The Storyteller agents (now 11 total).</td></tr>
   <tr><td>Apr 14, overnight</td><td>Barbara + Claude</td><td>🎉 MASSIVE REBUILD: 56 games fully rebuilt to pass Mr. Chesure's 2 tests. 14 marked Practice-Only (unlock post-mastery). All games now use: physical manipulation (no typed answers, no Check buttons), auto-detected success, solution reveal cards, 5-round fallback variation, hero at W*0.88/H*0.55/0.8. Key rebuilds: expression-transformer (tiles cancel by opposite-pairing), number-classifier (rationals snap to line, irrationals shimmer), chain-scales (cascading mystery-side pattern), clock-reader (rotatable hands discovery), find-the-stat (seesaw finds mean), sequence-builder (black box experimentation), inequality-grapher (interactive shading with glow validation), proof-stepper (input/output matching), and many more. Also: fraction-circles Check button removed, bidding-auction + classic overlays marked practiceOnly, practiceOnly flag added to GameOptionDef. 5 standards flagged needing new rounding intrinsic game (3.NBT.A.1, 4.NBT.A.1, 4.NBT.A.3, 5.NBT.A.1, 5.NBT.A.4). TypeScript clean throughout.</td></tr>
   <tr><td>Apr 13, late night</td><td>Barbara + Claude</td><td>Discovered the "Fake Intrinsic" problem: my first mystery-side prototype looked intrinsic (drag weights, scale tips) but the player action was just COUNTING to match target — grade-1 skill, not grade-6 algebra. Rebuilt mystery-side v2 as "Keep the Scale Level": scale starts balanced with mystery box x + p blocks = q blocks. Player's ONLY tool is "remove N from BOTH sides" buttons. This forces the algebraic invariant. When only x remains on left, right side IS the answer. This IS inverse operations — the actual skill in 6.EE.B.7. Launched deep audit of all 87 game options to find other fake-intrinsic games.</td></tr>
   <tr><td>Apr 13, night</td><td>Barbara + Claude</td><td>CRITICAL BUG FIX: Circuit Board Builder render code was ignoring the per-standard mapping entirely and using keyword-based mechanic matching instead. Every moon was showing wrong game options (e.g., 6.EE.B.7 showed RISE & FALL options instead of Balance & Equalize). Fixed by replacing mechanics.map() with gameOptions.map() in the render. All 466 moons now correctly show their mapped options. Also fixed moon card to show for locked moons when searched (so learners can preview ahead). Search navigation no longer forces planet view — opens moon card directly over galaxy.</td></tr>

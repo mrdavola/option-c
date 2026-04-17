@@ -109,6 +109,9 @@ docs/
 - Next standard to build: [id]
 - Percentage complete: N%
 
+## Knowledge files
+- `historian-knowledge/fellowship-context.md` — key dates, decision rationale, fellowship ecosystem, archive-worthy resources
+
 ## When you run
 - After every decision or code change (Blueprint update)
 - After every game generation (Firebase logging)

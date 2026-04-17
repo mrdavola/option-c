@@ -2,9 +2,23 @@
 
 import { useEffect, useRef, useState } from "react"
 
+export interface RoundData {
+  roundIndex: number
+  correct: boolean
+  learnerAnswer: number | string | null
+  correctAnswer: number | string
+  timeMs: number
+  attempts: number
+  hintUsed: boolean
+  kind?: string
+  problem?: string
+}
+
 export interface GameWinData {
   hintUsed?: boolean
   score?: number
+  rounds?: RoundData[]
+  sessionDurationMs?: number
 }
 
 interface GameIframeProps {
@@ -12,15 +26,18 @@ interface GameIframeProps {
   className?: string
   onWin?: (data?: GameWinData) => void
   onLose?: () => void
+  onRoundComplete?: (round: RoundData) => void
   /** Max time in seconds before the game is considered crashed. Default: 120 (2 min). */
   timeoutSeconds?: number
 }
 
-export function GameIframe({ html, className, onWin, onLose, timeoutSeconds = 120 }: GameIframeProps) {
+export function GameIframe({ html, className, onWin, onLose, onRoundComplete, timeoutSeconds = 120 }: GameIframeProps) {
   const onWinRef = useRef(onWin)
   onWinRef.current = onWin
   const onLoseRef = useRef(onLose)
   onLoseRef.current = onLose
+  const onRoundRef = useRef(onRoundComplete)
+  onRoundRef.current = onRoundComplete
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [crashed, setCrashed] = useState(false)
 
@@ -31,10 +48,15 @@ export function GameIframe({ html, className, onWin, onLose, timeoutSeconds = 12
         onWinRef.current?.({
           hintUsed: !!e.data.hintUsed,
           score: typeof e.data.score === "number" ? e.data.score : undefined,
+          rounds: Array.isArray(e.data.rounds) ? e.data.rounds : undefined,
+          sessionDurationMs: typeof e.data.sessionDurationMs === "number" ? e.data.sessionDurationMs : undefined,
         })
       }
       if (e.data?.type === "game_lose") {
         onLoseRef.current?.()
+      }
+      if (e.data?.type === "round_complete") {
+        onRoundRef.current?.(e.data.round)
       }
     }
     window.addEventListener("message", handler)

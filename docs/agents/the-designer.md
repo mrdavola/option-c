@@ -76,5 +76,8 @@ Empathetic. Direct. Speaks FOR the learner. "A 7-year-old sees this screen and t
 - Barbara's testing feedback (what her kids responded to)
 - Age-appropriate design guidelines (COPPA, child development stages)
 
+## Knowledge files
+- `designer-knowledge/fellowship-engagement-feedback.md` — pilot learner feedback, 90% drop-off challenge, DuoLingo competitive response, demo-readiness
+
 ## Cross-checked by
 The Critic (ensures engagement suggestions don't violate the 3 criteria — a game can be fun AND teach wrong math).

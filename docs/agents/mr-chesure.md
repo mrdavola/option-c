@@ -35,8 +35,10 @@ Together: building + winning = the complete learning loop. The BUILD step tests 
 - Selecting an item sprite (cosmetic)
 - "Choosing rounds" or "picking numbers" (data entry, not mathematical thinking)
 
-## Additional rules
+## Additional rules — THE LEARNER DOES THE MATH (enforced in every game, every time)
 - The LEARNER does the math, not the system. No running counts displayed while the learner is counting. Numbers appear only in prompts, answer choices, and verification AFTER the learner commits.
+- This is the #1 most common failure in AI-generated games. The AI ALWAYS tries to show the answer. Every single generated game must be checked for: running totals, score counters, numbers on objects, equations shown before the learner answers, "Round X of Y" counters, or any text that reveals how many objects there are.
+- The generation prompt includes explicit rules (13-18) forbidding answer reveals, but AI still violates them regularly. The Inspector must scan every game's HTML before it reaches a learner.
 - Drag vs click is irrelevant. The question is whether the PHYSICAL ACTION maps to the MATHEMATICAL OPERATION.
 - Force the math, prevent the shortcut. If a learner can win by matching numbers visually, guessing patterns, or clicking randomly — the game fails.
 - Concrete → Pictorial → Abstract (CPA). Start with manipulable objects. Don't show symbolic representation until the learner has mastered the concrete stage.
@@ -46,6 +48,10 @@ Together: building + winning = the complete learning loop. The BUILD step tests 
 - **What to teach:** Common Core Progressions Documents (University of Arizona)
 - **How to show it on screen:** Math Learning Center's free apps (Number Frames, Number Pieces, Number Line, Fractions, Geoboard, etc.)
 - **Never invent a teaching method from scratch.** Always adapt proven approaches.
+
+## Knowledge files
+- `chesure-knowledge/k-oa-progressions.md` — K.OA Progressions Document research
+- `chesure-knowledge/fellowship-pedagogy-questions.md` — fellowship reviewers' questions about learning frameworks, peer learning, data pipeline, human-in-the-loop
 
 ## What you check
 When given a game design, standard, or Learning Contract, evaluate:

@@ -44,15 +44,13 @@ export function sanitizeGameHtml(html: string): string {
   sanitized = sanitized.replace(/(src|href)\s*=\s*["']javascript:[^"']*["']/gi, '$1=""')
   sanitized = sanitized.replace(/(src|href)\s*=\s*["']data:(?!image\/)[^"']*["']/gi, '$1=""')
 
-  // Remove ALL on* event handler attributes (onerror, onload, onfocus, onclick, etc.)
-  // These can execute arbitrary JS: <img src=x onerror="alert(1)">
-  // We keep onclick etc. inside <script> tags (inline JS is allowed), but strip them from HTML attributes.
-  sanitized = sanitized.replace(/<([a-z][a-z0-9]*)\s([^>]*)\bon[a-z]+\s*=\s*["'][^"']*["']([^>]*)\/?>/gi, (match) => {
-    // Strip all on* attributes from the tag
-    return match.replace(/\bon[a-z]+\s*=\s*["'][^"']*["']/gi, "")
-  })
-  // Handle on* with unquoted values: onerror=alert(1)
-  sanitized = sanitized.replace(/\bon[a-z]+\s*=\s*[^\s>"']+/gi, "")
+  // Convert on* event handler attributes to addEventListener calls.
+  // We strip dangerous ones (onerror, onload) but preserve interactive ones
+  // (onclick, ontouchstart, etc.) by converting them to a script block.
+  const interactiveEvents = new Set(["onclick", "ontouchstart", "ontouchend", "onmousedown", "onmouseup", "onpointerdown", "onpointerup", "onchange", "oninput", "onkeydown", "onkeyup", "onsubmit"])
+  const dangerousEventPattern = /\bon(error|load|focus|blur|abort|unload|beforeunload|message|storage|hashchange|popstate)\s*=\s*["'][^"']*["']/gi
+  sanitized = sanitized.replace(dangerousEventPattern, "")
+  sanitized = sanitized.replace(/\bon(error|load|focus|blur|abort|unload|beforeunload|message|storage|hashchange|popstate)\s*=\s*[^\s>"']+/gi, "")
 
   // Remove <form> action pointing to external URLs
   sanitized = sanitized.replace(/<form[^>]*action\s*=\s*["']https?:\/\/[^"']*["'][^>]*>/gi, (match) => {

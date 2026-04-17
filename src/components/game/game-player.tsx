@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef, useCallback } from "react"
-import { GameIframe } from "./game-iframe"
+import { GameIframe, type GameWinData, type RoundData } from "./game-iframe"
 import { MathMomentOverlay } from "./math-moment-overlay"
 import { ReviewPanel } from "./review-panel"
 import { X, Star, RotateCcw, ArrowLeft, BookOpen, Zap } from "lucide-react"
@@ -10,6 +10,7 @@ import { useAuth } from "@/lib/auth"
 import { collection, doc, setDoc, updateDoc, arrayUnion } from "firebase/firestore"
 import posthog from "posthog-js"
 import { db } from "@/lib/firebase"
+import { logFromClient } from "@/lib/log-client"
 import type { FeedbackDoc } from "@/lib/feedback-types"
 
 // Play mode controls what happens when the student wins/loses a round.
@@ -43,7 +44,7 @@ interface GamePlayerProps {
   playMode?: GamePlayMode
   // Called every time the student wins a round in this session.
   // Win data includes hintUsed — when true, the attempt should earn 0 tokens.
-  onWin?: (data?: { hintUsed?: boolean; score?: number }) => void
+  onWin?: (data?: GameWinData) => void
   // Called every time the student loses a round
   onLose?: () => void
   // Optional UI element shown over the game (e.g. streak counter)
@@ -54,8 +55,8 @@ export function GamePlayer({ gameId, title, html, concept, onClose, isPendingRev
   const { activeProfile } = useAuth()
   // Hint Card state
   const [hintMode, setHintMode] = useState<"choosing" | "real" | "hint" | "prompt_real">(
-    // Skip chooser for review mode or when there's no concept to show
-    isPendingReview || !concept ? "real" : "choosing"
+    // Go straight to playing — no hint card chooser
+    "real"
   )
   const [hintCardContent, setHintCardContent] = useState<{ heading: string; problem: string; steps: string[]; encouragement: string } | null>(null)
   const [showRating, setShowRating] = useState(false)
@@ -121,7 +122,7 @@ export function GamePlayer({ gameId, title, html, concept, onClose, isPendingRev
   // Forwards to the parent's onWin/onLose callbacks (for mastery state
   // tracking). The rating modal is no longer shown here — it pops on
   // Back/X click instead, so the learner doesn't get interrupted mid-play.
-  const handleGameEnd = useCallback((kind: "win" | "lose", winData?: { hintUsed?: boolean; score?: number }) => {
+  const handleGameEnd = useCallback((kind: "win" | "lose", winData?: GameWinData) => {
     const now = Date.now()
     if (kind === "win") {
       lastWinAtRef.current = now
@@ -141,9 +142,30 @@ export function GamePlayer({ gameId, title, html, concept, onClose, isPendingRev
         setShowHintNoTokens(true)
         setTimeout(() => setShowHintNoTokens(false), 3000)
       }
+      logFromClient({
+        type: "game_play",
+        standardId: standardId || "",
+        learnerId: activeProfile?.uid || "",
+        gameId,
+        outcome: "win",
+        hintUsed: !!winData?.hintUsed,
+        score: winData?.score,
+        sessionDurationMs: winData?.sessionDurationMs,
+        roundsCompleted: winData?.rounds?.length ?? winData?.score,
+        roundsTotal: winData?.rounds?.length ?? winData?.score,
+        rounds: winData?.rounds,
+      })
       onWin?.(winData)
     } else {
       posthog.capture("game_lost", { game_id: gameId, standard_id: standardId, play_mode: playMode })
+      logFromClient({
+        type: "game_play",
+        standardId: standardId || "",
+        learnerId: activeProfile?.uid || "",
+        gameId,
+        outcome: "lose",
+        hintUsed: false,
+      })
       onLose?.()
       // Only show the math-moment overlay if we're sure the player actually
       // lost. Buggy games sometimes post game_lose right after game_win;

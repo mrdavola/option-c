@@ -60,7 +60,7 @@ export function numberFramesEngine(
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data: blob:; connect-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none';">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Add and take away</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&display=swap');
@@ -230,6 +230,40 @@ export function numberFramesEngine(
   let tapped = 0;
   let removedCount = 0;
 
+  // ─── PROPRIETARY DATA TRACKING ─────────────────────────────
+  var gameStartTime = Date.now();
+  var roundStartTime = Date.now();
+  var roundAttempts = 0;
+  var roundResults = [];
+
+  function problemLabel(r) {
+    if (r.kind === "add") return r.a + " + " + r.b + " = ?";
+    if (r.kind === "sub") return r.total + " - " + r.remove + " = ?";
+    if (r.kind === "decompose") return r.total + " = ? + ?";
+    return "unknown";
+  }
+
+  function reportRound(correct, learnerAnswer) {
+    var r = ROUNDS[roundIdx];
+    var correctAnswer = r.answer !== undefined ? r.answer : r.total;
+    var result = {
+      roundIndex: roundIdx,
+      correct: correct,
+      learnerAnswer: learnerAnswer,
+      correctAnswer: correctAnswer,
+      timeMs: Date.now() - roundStartTime,
+      attempts: roundAttempts,
+      hintUsed: false,
+      kind: r.kind,
+      problem: problemLabel(r)
+    };
+    roundResults.push(result);
+    try {
+      parent.postMessage({ type: "round_complete", round: result }, "*");
+    } catch(e) {}
+  }
+  // ───────────────────────────────────────────────────────────
+
   function $(id) { return document.getElementById(id); }
 
   function renderProgress() {
@@ -329,6 +363,8 @@ export function numberFramesEngine(
     const r = ROUNDS[roundIdx];
     phase = "fill";
     frameA = 0; frameB = 0; merged = 0; tapped = 0; removedCount = 0;
+    roundStartTime = Date.now();
+    roundAttempts = 0;
     $("equation-reveal").classList.remove("visible");
     $("equation-reveal").textContent = "";
     $("success").classList.remove("visible");
@@ -409,6 +445,7 @@ export function numberFramesEngine(
       const sum = frameA + frameB;
       if (sum !== r.total || frameA < 1 || frameB < 1) {
         wobble("frame-a"); wobble("frame-b");
+        roundAttempts++;
         if (frameA < 1 || frameB < 1) {
           $("instruction").textContent = "Put at least 1 counter in each frame.";
         } else if (sum < r.total) {
@@ -423,10 +460,10 @@ export function numberFramesEngine(
       $("frame-a").className = "frame";
       $("frame-b").className = "frame";
       $("instruction").textContent = "";
-      // Show equation as recording (Fix #4)
       $("equation-reveal").textContent = frameA + " + " + frameB + " = " + r.total;
       $("equation-reveal").classList.add("visible");
       $("success").classList.add("visible");
+      reportRound(true, frameA + "+" + frameB);
       return;
     }
 
@@ -435,7 +472,7 @@ export function numberFramesEngine(
     const exactMatch = frameA === r.a && frameB === r.b;
     const swapMatch = frameA === r.b && frameB === r.a;
     if (!exactMatch && !swapMatch) {
-      // Check if total is right but split is wrong (e.g., 3+3 for 2+4)
+      roundAttempts++;
       if (frameA + frameB === r.a + r.b) {
         wobble("frame-a"); wobble("frame-b");
         $("instruction").textContent = "Right total, but the two groups don't match the dots above. Try again.";
@@ -483,7 +520,6 @@ export function numberFramesEngine(
     if (n === r.answer) {
       $("number-pad").classList.remove("visible");
       $("instruction").textContent = "";
-      // Show equation as recording AFTER correct answer (Fix #4)
       if (r.kind === "add") {
         $("equation-reveal").textContent = r.a + " + " + r.b + " = " + r.answer;
       } else if (r.kind === "sub") {
@@ -492,11 +528,11 @@ export function numberFramesEngine(
       $("equation-reveal").classList.add("visible");
       $("success").classList.add("visible");
       phase = "answered";
+      reportRound(true, n);
     } else {
-      // Fix #3: SHAKE wrong answer (don't fade). Prevents brute force.
+      roundAttempts++;
       btn.classList.add("wrong");
       setTimeout(function() { btn.classList.remove("wrong"); }, 420);
-      // Reset tapped counters so learner must recount
       document.querySelectorAll(".counter.tapped").forEach(function(c) { c.classList.remove("tapped"); });
       tapped = 0;
       $("number-pad").classList.remove("visible");
@@ -507,7 +543,15 @@ export function numberFramesEngine(
   function nextRound() {
     roundIdx++;
     if (roundIdx >= ROUNDS.length) {
-      try { parent.postMessage({ type: "game_win", score: ROUNDS.length }, "*"); } catch(e){}
+      var sessionMs = Date.now() - gameStartTime;
+      try {
+        parent.postMessage({
+          type: "game_win",
+          score: ROUNDS.length,
+          rounds: roundResults,
+          sessionDurationMs: sessionMs
+        }, "*");
+      } catch(e){}
       $("dot-prompt").innerHTML = "";
       $("instruction").textContent = "You solved " + ROUNDS.length + " problems!";
       $("frames-wrap").style.display = "none";
