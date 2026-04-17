@@ -102,6 +102,7 @@ export function BuilderHost({ standardId, onBack, onImportHtml }: BuilderHostPro
           title: `${scenario.slice(0, 40)}...`,
           authorUid: activeProfile.uid,
           authorName: activeProfile.name || "Anonymous",
+          designerName: activeProfile.name || "Anonymous",
           standardId,
           gameHtml,
           status: "published",

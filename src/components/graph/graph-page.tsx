@@ -50,6 +50,7 @@ function ImportedGamePlayer({ title, html, standardId, onClose }: { title: strin
           title,
           authorUid: activeProfile.uid,
           authorName: activeProfile.name || "Anonymous",
+          designerName: activeProfile.name || "Anonymous",
           standardId,
           gameHtml: html,
           status: "published",
