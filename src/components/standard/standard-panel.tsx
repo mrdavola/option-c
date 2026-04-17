@@ -584,30 +584,7 @@ export function StandardPanel({
       />
     )}
 
-    {/* Direct play — simple games (e.g. Number Frames). No skeleton, no builder, no theming. */}
-    {step === "play" && standard && open && (
-      <div className="fixed inset-0 z-50 bg-white flex flex-col">
-        <div className="flex items-center justify-between px-4 py-2 border-b border-zinc-200 shrink-0">
-          <button
-            onClick={() => { setDirectGameHtml(null); setStep("learn") }}
-            className="flex items-center gap-1.5 text-sm text-zinc-500 hover:text-zinc-900 transition-colors"
-          >
-            <ChevronLeft className="size-4" />
-            Back
-          </button>
-          <div className="w-10" aria-hidden />
-        </div>
-        <div className="flex-1 min-h-0">
-          {directGameLoading || !directGameHtml ? (
-            <div className="w-full h-full flex items-center justify-center text-zinc-400 text-sm">
-              Loading…
-            </div>
-          ) : (
-            <GameIframe html={directGameHtml} className="w-full h-full" />
-          )}
-        </div>
-      </div>
-    )}
+    {/* Direct play removed — all moons go through gate → builder now */}
 
     {step === "skeleton" && standard && open && (
       <MechanicSkeleton
