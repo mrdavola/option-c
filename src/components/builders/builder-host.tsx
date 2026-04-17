@@ -6,14 +6,15 @@ import { SentenceBuilder } from "./sentence-builder"
 import { MadlibBuilder } from "./madlib-builder"
 import { CardBuilder } from "./card-builder"
 import { ComicBuilder } from "./comic-builder"
+import { SandpackBuilder } from "./sandpack-builder"
 import { GameIframe } from "@/components/game/game-iframe"
 import { logFromClient } from "@/lib/log-client"
 import { apiFetch } from "@/lib/api-fetch"
 import { useAuth } from "@/lib/auth"
 import { ArrowLeft, RotateCcw, Library } from "lucide-react"
 
-type BuilderType = "sentence" | "madlib" | "cards" | "comic" | "paste"
-type Step = "pick" | "build" | "generating" | "play"
+type BuilderType = "sentence" | "madlib" | "cards" | "comic" | "paste" | "sandpack" | "sandpack-template"
+type Step = "pick" | "build" | "generating" | "play" | "sandpack"
 
 interface BuilderHostProps {
   standardId: string
@@ -38,6 +39,12 @@ export function BuilderHost({ standardId, onBack, onImportHtml }: BuilderHostPro
       onImportHtml?.()
       return
     }
+    if (type === "sandpack-template") {
+      setBuilderType("sandpack-template")
+      setScenario("")
+      setStep("sandpack")
+      return
+    }
     setBuilderType(type)
     setStep("build")
     logFromClient({
@@ -50,7 +57,7 @@ export function BuilderHost({ standardId, onBack, onImportHtml }: BuilderHostPro
 
   async function handleGenerate(scenarioText: string) {
     setScenario(scenarioText)
-    setStep("generating")
+    setStep("sandpack")
     setError(null)
 
     logFromClient({
@@ -133,7 +140,7 @@ export function BuilderHost({ standardId, onBack, onImportHtml }: BuilderHostPro
       <BuilderPicker
         standardId={standardId}
         onPick={handlePick}
-        onPickScenario={(scenario) => { setBuilderType("cards"); handleGenerate(scenario) }}
+        onPickScenario={(scenario) => { setBuilderType("sandpack"); setScenario(scenario); setStep("sandpack") }}
         onBack={onBack}
       />
     )
@@ -158,6 +165,39 @@ export function BuilderHost({ standardId, onBack, onImportHtml }: BuilderHostPro
         {builderType === "cards" && <CardBuilder {...builderProps} />}
         {builderType === "comic" && <ComicBuilder {...builderProps} />}
       </>
+    )
+  }
+
+  if (step === "sandpack") {
+    return (
+      <SandpackBuilder
+        standardId={standardId}
+        scenario={scenario || "A fun addition game"}
+        onBack={() => setStep("pick")}
+        onAddToLibrary={async (html, title) => {
+          if (!activeProfile) return
+          setSaving(true)
+          try {
+            await apiFetch("/api/game/save", {
+              method: "POST",
+              body: JSON.stringify({
+                title,
+                authorUid: activeProfile.uid,
+                authorName: activeProfile.name || "Anonymous",
+                designerName: activeProfile.name || "Anonymous",
+                standardId,
+                gameHtml: html,
+                status: "published",
+                designDoc: scenario,
+                playCount: 0,
+                ratingSum: 0,
+                ratingCount: 0,
+              }),
+            })
+            setSaved(true)
+          } catch { /* silent */ } finally { setSaving(false) }
+        }}
+      />
     )
   }
 

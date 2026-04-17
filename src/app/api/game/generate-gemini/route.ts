@@ -68,9 +68,8 @@ export async function POST(req: Request) {
   const googleKey = process.env.GOOGLE_AI_KEY
   const anthropicKey = process.env.ANTHROPIC_API_KEY
 
-  // --- Skip Gemini for now (games not interactive enough), use Claude ---
-  // To re-enable Gemini, change false to googleKey
-  if (false && googleKey) {
+  // --- Try Gemini first (re-enabled for Sandpack which can handle React output) ---
+  if (googleKey) {
     try {
       const genAI = new GoogleGenerativeAI(googleKey!)
       const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" })

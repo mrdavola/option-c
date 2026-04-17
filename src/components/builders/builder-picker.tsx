@@ -12,7 +12,7 @@ type BuilderChoice =
 
 interface BuilderPickerProps {
   standardId: string
-  onPick: (builderType: "sentence" | "madlib" | "cards" | "comic" | "paste") => void
+  onPick: (builderType: "sentence" | "madlib" | "cards" | "comic" | "paste" | "sandpack-template") => void
   onPickScenario: (scenario: string) => void
   onBack: () => void
 }
@@ -113,13 +113,22 @@ export function BuilderPicker({ standardId, onPick, onPickScenario, onBack }: Bu
             ))}
           </div>
 
-          {/* Paste HTML — subtle at bottom */}
-          <button
-            onClick={() => onPick("paste")}
-            className="w-full text-center py-2 text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
-          >
-            Already have code? Paste your HTML game
-          </button>
+          {/* Bottom options */}
+          <div className="flex justify-center gap-4">
+            <button
+              onClick={() => onPick("sandpack-template")}
+              className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
+            >
+              Start from a template
+            </button>
+            <span className="text-zinc-700">|</span>
+            <button
+              onClick={() => onPick("paste")}
+              className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
+            >
+              Paste your HTML
+            </button>
+          </div>
 
         </div>
       </div>
