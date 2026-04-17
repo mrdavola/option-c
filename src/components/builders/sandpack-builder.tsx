@@ -313,11 +313,17 @@ export function SandpackBuilder({
       </div>
 
       {/* Sandpack editor + preview */}
-      <div className="flex-1 min-h-0">
+      <div className="flex-1 min-h-0" style={{ display: "flex", flexDirection: "column" }}>
         <SandpackProvider
           template="static"
           files={{
             "/index.html": { code: gameHtml || "" },
+          }}
+          options={{
+            classes: {
+              "sp-wrapper": "sp-full-height",
+              "sp-layout": "sp-full-height",
+            },
           }}
           theme={{
             colors: {
@@ -351,27 +357,36 @@ export function SandpackBuilder({
             },
           }}
         >
-          <div className="flex h-full">
+          <div style={{ display: "flex", flex: 1, height: "100%", minHeight: 0 }}>
             {/* Code panel — left, 40% */}
-            <div className="w-[40%] h-full border-r border-zinc-800/50 overflow-hidden">
+            <div style={{ width: "40%", height: "100%", borderRight: "1px solid rgba(63,63,70,0.5)", overflow: "auto" }}>
               <SandpackCodeEditor
                 readOnly
                 showLineNumbers
                 showTabs={false}
-                style={{ height: "100%" }}
+                style={{ height: "100%", minHeight: "100%" }}
               />
             </div>
 
             {/* Preview panel — right, 60% */}
-            <div className="w-[60%] h-full overflow-hidden">
+            <div style={{ width: "60%", height: "100%", overflow: "hidden" }}>
               <SandpackPreview
                 showNavigator={false}
                 showOpenInCodeSandbox={false}
-                style={{ height: "100%" }}
+                style={{ height: "100%", minHeight: "100%" }}
               />
             </div>
           </div>
         </SandpackProvider>
+
+        {/* Force Sandpack to fill height */}
+        <style>{`
+          .sp-wrapper, .sp-layout { height: 100% !important; display: flex !important; flex-direction: column !important; flex: 1 !important; }
+          .sp-preview-container { height: 100% !important; }
+          .sp-preview-iframe { height: 100% !important; }
+          .sp-code-editor { height: 100% !important; }
+          .sp-cm { height: 100% !important; }
+        `}</style>
       </div>
     </div>
   )
