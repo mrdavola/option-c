@@ -20,6 +20,7 @@ import { GameIframe } from "@/components/game/game-iframe"
 import { getGameOptionsForStandard } from "@/lib/standard-game-options"
 import { getOptionDef } from "@/lib/game-engines/game-option-registry"
 import { apiFetch } from "@/lib/api-fetch"
+import { ScenarioGate } from "./scenario-gate"
 import { useAuth } from "@/lib/auth"
 import { useTokenConfig } from "@/lib/token-config"
 import { InfoButton } from "@/components/info-button"
@@ -283,7 +284,7 @@ function MoonCardView({
 
 // "skeleton" sits between "learn" and "earn" — the learner plays a stripped-down
 // preview of the game mechanic (no theme) before opening the Circuit Board Builder.
-type FlowStep = "learn" | "play" | "skeleton" | "earn" | "unlocked" | "demonstrate"
+type FlowStep = "learn" | "gate" | "play" | "skeleton" | "earn" | "unlocked" | "demonstrate"
 
 interface StandardPanelProps {
   standard: StandardNode | null
@@ -392,7 +393,7 @@ export function StandardPanel({
 
   return (
     <>
-    <Sheet open={open && step !== "earn" && step !== "learn" && step !== "skeleton" && step !== "play"} onOpenChange={(isOpen) => { if (!isOpen) onClose() }}>
+    <Sheet open={open && step !== "earn" && step !== "learn" && step !== "skeleton" && step !== "play" && step !== "gate"} onOpenChange={(isOpen) => { if (!isOpen) onClose() }}>
       <SheetContent
         side="right"
         className="w-full sm:w-[75vw] lg:w-[60vw] overflow-y-auto"
@@ -556,7 +557,7 @@ export function StandardPanel({
         playToMasterButton={playToMasterButton}
         onClose={onClose}
         onBuild={() => {
-          if (isDirectPlayMoon) { startDirectPlay() } else { setStep("skeleton") }
+          if (isDirectPlayMoon) { setStep("gate") } else { setStep("skeleton") }
         }}
         onImportHtml={onImportHtml ? () => onImportHtml(standard) : undefined}
       />
@@ -564,6 +565,15 @@ export function StandardPanel({
 
     {/* Full-page Mechanic Skeleton — inserted between learn and earn.
          Learner meets the pure math mechanic (no theme) before themed build. */}
+    {/* Scenario Gate — 3-step interactive gate before playing */}
+    {step === "gate" && standard && open && (
+      <ScenarioGate
+        standardId={standard.id}
+        onPass={() => startDirectPlay()}
+        onBack={() => setStep("learn")}
+      />
+    )}
+
     {/* Direct play — simple games (e.g. Number Frames). No skeleton, no builder, no theming. */}
     {step === "play" && standard && open && (
       <div className="fixed inset-0 z-50 bg-white flex flex-col">
