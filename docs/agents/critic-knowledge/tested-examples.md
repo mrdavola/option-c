@@ -75,6 +75,15 @@ Use these as reference when evaluating new games.
 
 **Rule:** NEVER use auto-reset timers after wrong answers. Always use a manual "Try again" button so the learner controls the pace.
 
+### FAIL 11: Intermediate "Check" button adds friction
+**Component:** ScenarioGate Steps 1 and 2
+**What it did:** Learner selects all options → clicks "Check!" button → gets feedback
+**Why it failed:** Extra click with no value. The learner already committed by making selections. The Check button just adds friction.
+**Fix:** Auto-check the moment all options are selected. Immediately show feedback with "Try again" (wrong) or "Next!" (right).
+**Barbara's words:** "Once I click buttons for all three scenarios, instead of a Check button, it should show me the answer, whether I was right or wrong. And it should have a button 'Try again' if you got it wrong, or 'Next!'"
+
+**Rule for all selectable UIs:** Auto-check on completion. No separate Check/Submit/Lock-in button. Apply everywhere in the app.
+
 ### FAIL 10: Fix options duplicate the wrong answer
 **Component:** ScenarioGate Step 2 fix options
 **What it did:** The broken panel said "5 × 3 = 15 strawberries!" and one of the fix options was identically "5 × 3 = 15 strawberries!"

@@ -213,20 +213,22 @@ function RealOrFake({ vignettes, onPass, onAttempt }: { vignettes: Vignette[]; o
   const [checked, setChecked] = useState(false)
   const [allCorrect, setAllCorrect] = useState(false)
 
-  const allSorted = Object.values(sorted).every((v) => v !== null)
-
   function handleSort(idx: number, choice: "real" | "fake") {
     if (checked) return
-    setSorted((prev) => ({ ...prev, [idx]: choice }))
-  }
-
-  function handleCheck() {
-    const correct = vignettes.every(
-      (v, i) => (v.isReal && sorted[i] === "real") || (!v.isReal && sorted[i] === "fake")
-    )
-    setChecked(true)
-    setAllCorrect(correct)
-    onAttempt()
+    setSorted((prev) => {
+      const next = { ...prev, [idx]: choice }
+      // Auto-check once all three are sorted
+      const allDone = Object.values(next).every((v) => v !== null)
+      if (allDone) {
+        const correct = vignettes.every(
+          (v, i) => (v.isReal && next[i] === "real") || (!v.isReal && next[i] === "fake")
+        )
+        setChecked(true)
+        setAllCorrect(correct)
+        onAttempt()
+      }
+      return next
+    })
   }
 
   function handleRetry() {
@@ -290,17 +292,11 @@ function RealOrFake({ vignettes, onPass, onAttempt }: { vignettes: Vignette[]; o
         ))}
       </div>
 
-      {!checked && allSorted && (
-        <button onClick={handleCheck} className="gate-btn gate-btn-primary w-full py-3 text-base">
-          Check!
-        </button>
-      )}
-
       {checked && allCorrect && (
         <div className="text-center space-y-3" style={{ animation: "gate-pop 0.5s ease" }}>
           <p className="text-lg font-bold text-emerald-400">You got it!</p>
           <button onClick={onPass} className="gate-btn gate-btn-success px-8 py-3">
-            Next step &rarr;
+            Next! &rarr;
           </button>
         </div>
       )}
@@ -329,8 +325,10 @@ function FixTheComic({ panels, onPass, onAttempt }: { panels: ComicPanel[]; onPa
 
   const brokenPanel = panels.find((p) => p.isBroken)!
 
-  function handleCheck() {
-    const isCorrect = selectedFix === brokenPanel.correctFix
+  function handleSelect(i: number) {
+    if (checked) return
+    setSelectedFix(i)
+    const isCorrect = i === brokenPanel.correctFix
     setChecked(true)
     setCorrect(isCorrect)
     onAttempt()
@@ -409,7 +407,7 @@ function FixTheComic({ panels, onPass, onAttempt }: { panels: ComicPanel[]; onPa
           {brokenPanel.fixOptions!.map((opt, i) => (
             <button
               key={i}
-              onClick={() => !checked && setSelectedFix(i)}
+              onClick={() => handleSelect(i)}
               className={`gate-card w-full text-left p-3 text-sm transition-all cursor-pointer ${
                 selectedFix === i
                   ? "border-blue-500 bg-blue-500/10 text-blue-300 font-medium"
@@ -423,12 +421,6 @@ function FixTheComic({ panels, onPass, onAttempt }: { panels: ComicPanel[]; onPa
         </div>
       )}
 
-      {!checked && selectedFix !== null && (
-        <button onClick={handleCheck} className="gate-btn gate-btn-primary w-full py-3 text-base">
-          Check!
-        </button>
-      )}
-
       {checked && correct && (
         <div className="text-center space-y-3" style={celebrating ? { animation: "gate-pop 0.5s ease" } : undefined}>
           <p className="text-lg font-bold text-emerald-400">{celebrating ? "Nice!" : "Correct"}</p>
@@ -436,7 +428,7 @@ function FixTheComic({ panels, onPass, onAttempt }: { panels: ComicPanel[]; onPa
             Yes! Adding, not multiplying!
           </p>
           <button onClick={onPass} className="gate-btn gate-btn-success px-8 py-3">
-            One more step &rarr;
+            Next! &rarr;
           </button>
         </div>
       )}
@@ -485,7 +477,7 @@ function ProveIt({ onPass, onAttempt }: { onPass: () => void; onAttempt: () => v
     <div className="max-w-lg mx-auto px-4 py-8 space-y-6">
       <div className="text-center space-y-2">
         <h2 className="text-2xl font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-          Now you do it!
+          This is what your game should teach
         </h2>
         <p className="text-sm text-zinc-200">
           Your game will need players to actually do the math — not just watch it happen. Show that you can do it yourself.
