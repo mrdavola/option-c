@@ -48,6 +48,16 @@ CRITICAL RULES — THE LEARNER DOES THE MATH, NOT THE SYSTEM:
 18. Do NOT display "Round 1 of 5" or "3 correct" or any score counter during play. The learner focuses on the math, not on tracking progress.
 19. Answer options MUST be generated dynamically for each round based on that round's correct answer. Show 5 options: the correct total plus 4 wrong numbers close to it (within +/- 2). The options must be DIFFERENT each round because the numbers in each round are different. NEVER hardcode the same set of answer options (like 3,4,5,6,7) for every round.
 
+VISUAL QUALITY — MAKE IT LOOK LIKE AN EXPENSIVE GAME:
+V1. Use CSS animations extensively: objects should bounce in when appearing, pulse when interactive, scale up on hover, glow when tapped. Every interaction needs visual feedback.
+V2. Use CSS gradients on objects (not flat colors). Example: background: linear-gradient(135deg, #ef4444, #f87171) with box-shadow: 0 4px 16px rgba(239,68,68,0.4).
+V3. Add a subtle particle or glow effect in the background. Use CSS-only animations (floating dots, pulsing circles, gradient shifts).
+V4. Transitions between rounds should be smooth — fade out old content, fade in new content. Use CSS transition and animation properties.
+V5. The success state should feel AMAZING — large animation, color burst, text that scales up with a spring effect.
+V6. Wrong answer feedback should feel firm but not punishing — a quick shake animation, then reset smoothly.
+V7. Objects should have a DEPTH feel: shadows, slight 3D transforms (translateZ, rotateX), layering.
+V8. The overall feel should be: "this looks like it was made by a professional game studio, not a student project."
+
 Return ONLY the HTML. No markdown fences, no explanation, no commentary. Just the raw HTML starting with <!DOCTYPE html>.
 `
 
