@@ -1,12 +1,13 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import {
   SandpackProvider,
   SandpackCodeEditor,
   SandpackPreview,
+  useSandpack,
 } from "@codesandbox/sandpack-react"
-import { ArrowLeft, Library } from "lucide-react"
+import { ArrowLeft, Library, Code, Eye, Sparkles, Wand2, Palette, Zap, Trophy, ChevronUp, ChevronDown } from "lucide-react"
 import { apiFetch } from "@/lib/api-fetch"
 
 const STARTER_TEMPLATE = `<!DOCTYPE html>
@@ -158,6 +159,127 @@ const STARTER_TEMPLATE = `<!DOCTYPE html>
 </body>
 </html>`
 
+// ─── Vibe Coder Toolbar (lives inside SandpackProvider) ─────────────────
+
+const FIXED_ACTIONS = [
+  { id: "harder", label: "Make harder", icon: ChevronUp, prompt: "Increase the difficulty: use larger numbers (still within 10), add more rounds, or make distractors closer to the correct answer." },
+  { id: "easier", label: "Make easier", icon: ChevronDown, prompt: "Decrease the difficulty: use smaller numbers (within 5), add visual hints, or reduce the number of answer options." },
+  { id: "celebrate", label: "Add celebration", icon: Trophy, prompt: "Add a satisfying celebration animation when the player wins a round or completes the game. Use CSS animations — confetti particles, glowing text, bouncing elements, or a burst of color. Make it feel rewarding." },
+  { id: "theme", label: "Change look", icon: Palette, prompt: "Completely change the visual theme: new colors, different CSS styling, new object shapes. Keep the dark background but make it look fresh and different. Be creative with gradients, shadows, and visual effects." },
+  { id: "animate", label: "More animation", icon: Sparkles, prompt: "Add more CSS animations and transitions: objects should bounce, glow, pulse, slide, or float. Make interactions feel smooth and satisfying. Add hover effects and click feedback." },
+]
+
+function VibeToolbar({ standardId }: { standardId: string }) {
+  const { sandpack } = useSandpack()
+  const [modifying, setModifying] = useState<string | null>(null)
+  const [customPrompt, setCustomPrompt] = useState("")
+  const [showCustom, setShowCustom] = useState(false)
+
+  const applyModification = useCallback(async (actionPrompt: string, actionId: string) => {
+    const currentCode = sandpack.files["/index.html"]?.code
+    if (!currentCode) return
+
+    setModifying(actionId)
+    try {
+      const res = await apiFetch("/api/game/modify", {
+        method: "POST",
+        body: JSON.stringify({
+          currentHtml: currentCode,
+          modification: actionPrompt,
+          standardId,
+        }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        if (data.html) {
+          sandpack.updateFile("/index.html", data.html)
+        }
+      }
+    } catch {
+      // silent — toolbar just stops spinning
+    } finally {
+      setModifying(null)
+    }
+  }, [sandpack, standardId])
+
+  const handleCustomSubmit = () => {
+    if (!customPrompt.trim()) return
+    applyModification(customPrompt.trim(), "custom")
+    setCustomPrompt("")
+    setShowCustom(false)
+  }
+
+  return (
+    <div className="shrink-0 border-t border-zinc-800/50 px-3 py-2" style={{ background: "rgba(15,15,20,0.95)" }}>
+      <div className="flex items-center gap-1.5 overflow-x-auto">
+        {FIXED_ACTIONS.map((action) => {
+          const Icon = action.icon
+          const isActive = modifying === action.id
+          return (
+            <button
+              key={action.id}
+              onClick={() => applyModification(action.prompt, action.id)}
+              disabled={!!modifying}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all shrink-0"
+              style={{
+                background: isActive ? "rgba(59,130,246,0.2)" : "rgba(39,39,42,0.8)",
+                border: isActive ? "1px solid rgba(59,130,246,0.5)" : "1px solid rgba(63,63,70,0.4)",
+                color: isActive ? "#60a5fa" : "#d4d4d8",
+                opacity: modifying && !isActive ? 0.5 : 1,
+              }}
+            >
+              {isActive ? (
+                <div className="w-3.5 h-3.5 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <Icon className="size-3.5" />
+              )}
+              {action.label}
+            </button>
+          )
+        })}
+
+        {/* Custom modification input */}
+        <button
+          onClick={() => setShowCustom(!showCustom)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all shrink-0"
+          style={{
+            background: showCustom ? "rgba(168,85,247,0.2)" : "rgba(39,39,42,0.8)",
+            border: showCustom ? "1px solid rgba(168,85,247,0.5)" : "1px solid rgba(63,63,70,0.4)",
+            color: showCustom ? "#c084fc" : "#d4d4d8",
+          }}
+        >
+          <Wand2 className="size-3.5" />
+          Your idea
+        </button>
+      </div>
+
+      {/* Custom prompt input — expands when "Your idea" is clicked */}
+      {showCustom && (
+        <div className="flex gap-2 mt-2">
+          <input
+            type="text"
+            value={customPrompt}
+            onChange={(e) => setCustomPrompt(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleCustomSubmit()}
+            placeholder="Describe what you want to change..."
+            className="flex-1 rounded-lg px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-purple-500 transition-colors"
+            style={{ background: "rgba(24,24,27,0.8)", border: "1px solid rgba(63,63,70,0.5)" }}
+            autoFocus
+          />
+          <button
+            onClick={handleCustomSubmit}
+            disabled={!customPrompt.trim() || !!modifying}
+            className="px-4 py-2 rounded-lg text-xs font-semibold text-white transition-all active:scale-[0.97] disabled:opacity-30"
+            style={{ background: "linear-gradient(135deg, #7c3aed, #a855f7)", boxShadow: "0 2px 8px rgba(139,92,246,0.3)" }}
+          >
+            {modifying === "custom" ? "..." : "Apply"}
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
 interface SandpackBuilderProps {
   standardId: string
   scenario: string
@@ -174,6 +296,7 @@ export function SandpackBuilder({
   const [gameHtml, setGameHtml] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [showCode, setShowCode] = useState(false)
 
   useEffect(() => {
     if (!scenario) {
@@ -293,23 +416,37 @@ export function SandpackBuilder({
           {truncatedTitle}
         </p>
 
-        <button
-          onClick={() => {
-            if (gameHtml) {
-              const title = scenario.slice(0, 40) + (scenario.length > 40 ? "..." : "")
-              onAddToLibrary(gameHtml, title)
-            }
-          }}
-          className="flex items-center gap-1 text-xs font-semibold rounded-md px-3 py-1.5 transition-all active:scale-[0.97]"
-          style={{
-            background: "linear-gradient(135deg, #059669, #10b981)",
-            color: "white",
-            boxShadow: "0 2px 8px rgba(16,185,129,0.3)",
-          }}
-        >
-          <Library className="size-3.5" />
-          Add to library
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowCode(!showCode)}
+            className="flex items-center gap-1 text-xs rounded-md px-2.5 py-1.5 transition-all"
+            style={{
+              background: showCode ? "rgba(59,130,246,0.15)" : "rgba(39,39,42,0.8)",
+              border: showCode ? "1px solid rgba(59,130,246,0.4)" : "1px solid rgba(63,63,70,0.5)",
+              color: showCode ? "#60a5fa" : "#a1a1aa",
+            }}
+          >
+            {showCode ? <Eye className="size-3.5" /> : <Code className="size-3.5" />}
+            {showCode ? "Hide code" : "Show code"}
+          </button>
+          <button
+            onClick={() => {
+              if (gameHtml) {
+                const title = scenario.slice(0, 40) + (scenario.length > 40 ? "..." : "")
+                onAddToLibrary(gameHtml, title)
+              }
+            }}
+            className="flex items-center gap-1 text-xs font-semibold rounded-md px-3 py-1.5 transition-all active:scale-[0.97]"
+            style={{
+              background: "linear-gradient(135deg, #059669, #10b981)",
+              color: "white",
+              boxShadow: "0 2px 8px rgba(16,185,129,0.3)",
+            }}
+          >
+            <Library className="size-3.5" />
+            Add to library
+          </button>
+        </div>
       </div>
 
       {/* Sandpack editor + preview */}
@@ -358,18 +495,20 @@ export function SandpackBuilder({
           }}
         >
           <div style={{ display: "flex", flex: 1, height: "100%", minHeight: 0 }}>
-            {/* Code panel — left, 40% */}
-            <div style={{ width: "40%", height: "100%", borderRight: "1px solid rgba(63,63,70,0.5)", overflow: "auto" }}>
-              <SandpackCodeEditor
-                readOnly
-                showLineNumbers
-                showTabs={false}
-                style={{ height: "100%", minHeight: "100%" }}
-              />
-            </div>
+            {/* Code panel — left, hidden by default */}
+            {showCode && (
+              <div style={{ width: "40%", height: "100%", borderRight: "1px solid rgba(63,63,70,0.5)", overflow: "auto" }}>
+                <SandpackCodeEditor
+                  readOnly
+                  showLineNumbers
+                  showTabs={false}
+                  style={{ height: "100%", minHeight: "100%" }}
+                />
+              </div>
+            )}
 
-            {/* Preview panel — right, 60% */}
-            <div style={{ width: "60%", height: "100%", overflow: "hidden" }}>
+            {/* Preview panel — full width when code hidden, 60% when code shown */}
+            <div style={{ width: showCode ? "60%" : "100%", height: "100%", overflow: "hidden" }}>
               <SandpackPreview
                 showNavigator={false}
                 showOpenInCodeSandbox={false}
@@ -377,6 +516,9 @@ export function SandpackBuilder({
               />
             </div>
           </div>
+
+          {/* Vibe Coder Toolbar */}
+          <VibeToolbar standardId={standardId} />
         </SandpackProvider>
 
         {/* Force Sandpack to fill height */}

@@ -26,6 +26,11 @@ const SCENARIOS = [
   { title: "Classroom", desc: "A teacher has pencils. She gets more from the closet.", scenario: "A teacher has some pencils on her desk. She gets more from the supply closet. How many pencils does she have now?" },
 ]
 
+const GAME_STYLES = [
+  { title: "Sum Jumper", desc: "Platformer — jump between platforms to collect two groups that add up to the target.", scenario: "A platformer game where a character jumps between platforms. Each level has a locked door with a target number. The player must collect objects from TWO SEPARATE platforms (e.g., 3 stars on one platform, 4 stars on another) that add up to the target number to unlock the door. Wrong combinations = door stays locked. The player physically jumps to gather and combine groups. Add smooth jumping physics, colorful platforms, and satisfying door-unlock animations." },
+  { title: "Wall Builder", desc: "Tower defense — combine two groups of defenders to match the wall strength.", scenario: "A tower defense game where enemies march toward a castle. Each gate shows a required strength number (within 10). The player must drag TWO SEPARATE groups of defenders (e.g., 3 shields from one area + 5 swords from another) onto the gate. If the groups add up to the required number, the wall holds and enemies bounce off with a satisfying effect. If not, the wall cracks. Show groups as distinct clusters with different colors. Add marching enemy animations and wall-building effects." },
+]
+
 const BUILD_METHODS = [
   { id: "madlib" as const, title: "Fill in the blanks", desc: "Complete a story template with your own characters and things." },
   { id: "comic" as const, title: "Create a comic", desc: "Tell a 3-part story where someone needs to add." },
@@ -89,6 +94,24 @@ export function BuilderPicker({ standardId, onPick, onPickScenario, onBack }: Bu
                 Build game with this scenario
               </button>
             )}
+          </div>
+
+          {/* Section 2: Game style */}
+          <div className="space-y-3">
+            <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Or try a game style</p>
+            <div className="grid grid-cols-2 gap-2">
+              {GAME_STYLES.map((s, i) => (
+                <button
+                  key={`style-${i}`}
+                  onClick={() => onPickScenario(s.scenario)}
+                  className="text-left rounded-xl p-3 transition-all hover:border-zinc-500"
+                  style={{ background: "rgba(24,24,27,0.7)", border: "1px solid rgba(139,92,246,0.3)" }}
+                >
+                  <p className="text-sm font-semibold text-purple-300">{s.title}</p>
+                  <p className="text-xs text-zinc-300 mt-0.5 leading-relaxed">{s.desc}</p>
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Divider */}
